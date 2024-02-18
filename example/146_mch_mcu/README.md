@@ -321,6 +321,89 @@ openocd -f wch-riscv.cfg -c init -c halt -c "program b/risc_test " -c exit
 Bus 003 Device 009: ID 4348:55e0 WinChipHead 
 
 ```
+
+- and lsusb -v:
+
+```
+Bus 003 Device 018: ID 4348:55e0 WinChipHead 
+Couldn't open device, some information will be missing
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               1.10
+  bDeviceClass          255 Vendor Specific Class
+  bDeviceSubClass       128 [unknown]
+  bDeviceProtocol        85 
+  bMaxPacketSize0         8
+  idVendor           0x4348 WinChipHead
+  idProduct          0x55e0 
+  bcdDevice            1.00
+  iManufacturer           0 
+  iProduct                0 
+  iSerial                 0 
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength       0x002e
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0x80
+      (Bus Powered)
+    MaxPower              100mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           4
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass    128 [unknown]
+      bInterfaceProtocol     85 
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x02  EP 2 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x01  EP 1 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+
+```
 ### Risc-V Processor Manual
 
 https://www.wch-ic.com/downloads/QingKeV4_Processor_Manual_PDF.html
@@ -333,3 +416,99 @@ https://github.com/ch32-rs/wlink
 
 - https://github.com/jmaselbas/wch-isp (C)
 - https://github.com/ch32-rs/wchisp/releases/tag/nightly (Rust)
+
+
+- press the boot button on the CH592 while plugging in the
+  connector. for a while (60sec) it seems to be registered as a usb device:
+  
+- this is the kmsg output
+```
+c<6>[26405.147714] usb 3-1: new full-speed USB device number 27 using xhci_hcd
+<6>[26405.295775] usb 3-1: New USB device found, idVendor=4348, idProduct=55e0, bcdDevice=23.00
+<6>[26405.295780] usb 3-1: New USB device strings: Mfr=0, Product=0, SerialNumber=0
+<6>[26467.621093] usb 3-1: USB disconnect, device number 27
+
+```
+
+- this is the output of the rust wchisp tool
+```
+archlinux /dev/shm # ./wchisp info
+23:54:34 [INFO] Chip: CH592[0x9222] (Code Flash: 448KiB, Data EEPROM: 32KiB)
+23:54:34 [INFO] Chip UID: DA-36-4F-10-53-5C-7C-A3
+23:54:34 [INFO] BTVER(bootloader ver): 02.30
+23:54:34 [INFO] Current config registers: ffffffffffffffff4d0fff4f00020300da364f10535c7ca3
+RESERVED: 0xFFFFFFFF
+WPROTECT: 0xFFFFFFFF
+  [0:0]   NO_KEY_SERIAL_DOWNLOAD 0x1 (0b1)
+    `- Enable
+  [1:1]   DOWNLOAD_CFG 0x1 (0b1)
+    `- PB22(Default set)
+USER_CFG: 0x4FFF0F4D
+  [2:0]   RESERVED 0x5 (0b101)
+    `- Default
+  [3:3]   CFG_RESET_EN 0x1 (0b1)
+    `- Enable
+  [4:4]   CFG_DEBUG_EN 0x0 (0b0)
+    `- Disable
+  [5:5]   RESERVED 0x0 (0b0)
+    `- Default
+  [6:6]   CFG_BOOT_EN 0x1 (0b1)
+    `- Enable
+  [7:7]   CFG_ROM_READ 0x0 (0b0)
+    `- Disable the programmer to read out, and keep the program secret
+  [27:8]  RESERVED 0xFFF0F (0b11111111111100001111)
+    `- Error
+  [31:28] VALID_SIG 0x4 (0b100)
+    `- Valid
+```
+
+
+- erase the flash:
+
+```
+
+146_mch_mcu/source01 # ./wchisp -v erase
+00:00:50 [DEBUG] (1) wchisp::transport::usb: Found USB Device Bus 003 Device 032: ID 4348:55e0
+00:00:50 [DEBUG] (1) wchisp::transport: => a11200   00004d4355204953502026205743482e434e
+00:00:50 [DEBUG] (1) wchisp::transport: <= a1000200 9222
+00:00:50 [DEBUG] (1) wchisp::transport: => a11200   00004d4355204953502026205743482e434e
+00:00:50 [DEBUG] (1) wchisp::transport: <= a1000200 9222
+00:00:50 [DEBUG] (1) wchisp::flashing: found chip: CH592[0x9222]
+00:00:50 [DEBUG] (1) wchisp::transport: => a70200   1f00
+00:00:50 [DEBUG] (1) wchisp::transport: <= a7001a00 1f00ffffffffffffffff4d0fff4f00020300da364f10535c7ca3
+00:00:50 [DEBUG] (1) wchisp::flashing: read_config: ffffffffffffffff4d0fff4f00020300da364f10535c7ca3
+00:00:50 [DEBUG] (1) wchisp::transport: => a40400   c0010000
+00:00:51 [DEBUG] (1) wchisp::transport: <= a4000200 0000
+00:00:51 [INFO] Erased 448 code flash sectors
+
+```
+
+- write program
+```
+146_mch_mcu/source01 # ./wchisp  flash b/risc_test
+00:02:49 [INFO] Chip: CH592[0x9222] (Code Flash: 448KiB, Data EEPROM: 32KiB)
+00:02:49 [INFO] Chip UID: DA-36-4F-10-53-5C-7C-A3
+00:02:49 [INFO] BTVER(bootloader ver): 02.30
+00:02:49 [INFO] Current config registers: ffffffffffffffff4d0fff4f00020300da364f10535c7ca3
+RESERVED: 0xFFFFFFFF
+WPROTECT: 0xFFFFFFFF
+...
+  [31:28] VALID_SIG 0x4 (0b100)
+    `- Valid
+00:02:49 [INFO] Read b/risc_test as ELF format
+00:02:49 [INFO] Found loadable segment, physical address: 0x00010000, virtual address: 0x00010000, flags: 0x5
+00:02:49 [INFO] Section names: [".text", ".highcode", ".rodata"]
+00:02:49 [INFO] Found loadable segment, physical address: 0x0001202c, virtual address: 0x0001202c, flags: 0x6
+00:02:49 [INFO] Section names: [".eh_frame", ".init_array", ".fini_array", ".data", ".sdata"]
+00:02:49 [INFO] Firmware size: 10240
+00:02:49 [INFO] Erasing...
+00:02:49 [INFO] Erased 11 code flash sectors
+00:02:50 [INFO] Erase done
+00:02:50 [INFO] Writing to code flash...
+██████████████████████████████████████████████████████████████████████████████████████████████████████ 10240/1024000:02:50 [INFO] Code flash 10240 bytes written
+00:02:51 [INFO] Verifying...
+██████████████████████████████████████████████████████████████████████████████████████████████████████ 10240/1024000:02:51 [INFO] Verify OK
+00:02:51 [INFO] Now reset device and skip any communication errors
+00:02:51 [INFO] Device reset
+
+```
