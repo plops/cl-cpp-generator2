@@ -1,3 +1,7 @@
+// based on https://github.com/openwch/ch592/tree/main/EVT/EXAM/BLE/RF_PHY/APP
+
+// try rf communication module in basic mode
+
 extern "C" {
 #include <CH59x_common.h>
 #include <CH59x_pwr.h>
@@ -33,7 +37,7 @@ void RF_Init() {
   cfg.CRCInit = 0x555555;
   cfg.Channel = 39;
   cfg.Frequency = 2480000;
-  cfg.LLEMode = LLE_MODE_BASIC || LLE_MODE_EX_CHANNEL;
+  cfg.LLEMode = LLE_MODE_BASIC | LLE_MODE_EX_CHANNEL;
   cfg.rfStatusCB = RF_2G4StatusCallback;
   cfg.RxMaxlen = 251;
   auto state{RF_Config(&cfg)};

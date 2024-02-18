@@ -83,7 +83,7 @@
 				(CRCInit (hex #x555555))
 				(Channel 39)
 				(Frequency 2480000)
-				(LLEMode (logior LLE_MODE_BASIC
+				(LLEMode (or LLE_MODE_BASIC
 						 LLE_MODE_EX_CHANNEL))
 				(rfStatusCB RF_2G4StatusCallback)
 				(RxMaxlen 251))
