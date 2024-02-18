@@ -32,8 +32,8 @@
 	      
 	      (include<> 
 	       CH59x_common.h
-	       HAL.h
-	       broadcaster.h
+	       ;HAL.h
+	       ;broadcaster.h
 	       )))
      (include<> cstdio)
      #+nil (include<> stdio.h
@@ -43,13 +43,14 @@
 					;cmath
      
 		      )
+    #+nil
     (space
      __HIGH_CODE
      "__attribute__((noinline))"
      (defun Main_Circulation ()
        (while 1
 	      (TMOS_SystemProcess))))
-
+    #+nil 
     (defun key_callback (keys)
       (declare (type uint8_t keys))
       (when (& keys HAL_KEY_SW_1)
@@ -78,7 +79,7 @@
        (GPIOA_SetBits bTXD1)
        (GPIOA_ModeCfg bTXD1 GPIO_ModeOut_PP_5mA)
        (UART1_DefInit))
-
+      #+nil
 
       (do0
        (PRINT (string "%s\\n") VER_LIB)

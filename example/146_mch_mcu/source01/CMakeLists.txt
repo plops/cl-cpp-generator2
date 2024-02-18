@@ -40,7 +40,7 @@ ${HAL_SOURCES}
 # Include Directories
 include_directories(
     ${HAL_PATH}/RVMSIS/
-    ${HAL_PATH}/STdPeriphDrivero/inc
+    ${HAL_PATH}/StdPeriphDriver/inc
 )
 
 # Use the custom linker script to link the firmware
