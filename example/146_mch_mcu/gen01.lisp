@@ -32,6 +32,7 @@
 	      
 	      (include<> 
 	       CH59x_common.h
+	       CH59x_sys.h
 	       ;HAL.h
 	       ;broadcaster.h
 	       )))
@@ -73,7 +74,7 @@
        (GPIOA_ModeCfg GPIO_Pin_All GPIO_ModeIN_PU)
        (GPIOB_ModeCfg GPIO_Pin_All GPIO_ModeIN_PU))
 
-      #+nil
+34      #+nil
       (do0
        (comments "For Debugging")
        (GPIOA_SetBits bTXD1)

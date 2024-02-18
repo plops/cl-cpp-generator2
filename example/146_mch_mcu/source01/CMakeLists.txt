@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.10)  # Adjust if you need a different minimum version
 
-project(risc_test CXX C)  # Name your project
+project(risc_test CXX C ASM)  # Name your project
 
 set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+add_compile_options(-nostartfiles -static)
+add_link_options(-nostartfiles -static)
 
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -26,8 +28,8 @@ set(HAL_PATH  ${CMAKE_SOURCE_DIR}/../hal)
 
 # Collect all C and assembly source files in the hal directory
 file(GLOB_RECURSE HAL_SOURCES 
-${HAL_PATH}/StdPeriphDriver/*.c
-${HAL_PATH}/RVMSIS/*.c
+${HAL_PATH}/StdPeriphDriver/*sys.c
+#${HAL_PATH}/RVMSIS/*.c
 ${HAL_PATH}/Startup/*.S
 )
 
@@ -49,9 +51,7 @@ set(LINKER_SCRIPT ${HAL_PATH}/Ld/Link.ld)
 target_link_options(${PROJECT_NAME} PRIVATE -T ${LINKER_SCRIPT})
 
 # Libraries
-target_link_libraries(${PROJECT_NAME}
-${HAL_PATH}/StdPeriphDriver/libISP592.a
-)
+target_link_libraries(${PROJECT_NAME} ${HAL_PATH}/StdPeriphDriver/libISP592.a)
 
 target_compile_options(
         ${PROJECT_NAME} PRIVATE
