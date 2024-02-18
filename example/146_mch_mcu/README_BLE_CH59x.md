@@ -45,9 +45,6 @@ translated with Google Gemini Advanced 1.0.
 * 沁恒低功耗蓝牙技术介绍: [[移除了无效网址]]([移除了无效网址])
 * 沁恒低功耗蓝牙开发例程: [[移除了无效网址]]([移除了无效网址])
 
-
-Sure, here is the translation of the summary:
-
 ## 4. Application Example
 
 ### 4.1 Overview
@@ -175,8 +172,6 @@ This process includes two parts:
 1. Initialization of the GAP role, which is completed by the low-power Bluetooth library;
 2. Initialization of the low
 
-Sure, here is the translation of the summary:
-
 ## 5. GAP (Generic Access Profile)
 
 ### 5.1 Overview
@@ -263,8 +258,6 @@ GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16_t ), &desired_ma
 2. Initialize the GAPRole task, including passing the function pointer to the application
 
 
-Sure, here is the translation of the summary:
-
 ## 5.4 GAP (Generic Access Profile)
 
 ### 5.4.1 GAP Bonding Management
@@ -345,8 +338,6 @@ A typical characteristic consists of the following attributes:
 * Client Characteristic Configuration: Through this configuration, the GATT server can configure the properties (notified) that need to be sent to the GATT server, or sent to the GATT server and expected to receive a response (indicated).
 
 * Characteristic User
-
-Sure, here is the translation of the summary:
 
 * * *
 
@@ -443,10 +434,6 @@ To implement a callback, you need to create a method that takes the same paramet
 * The `GattCharacteristic` object that was read.
 
 
-Sure, here is the translation of the summary:
-
-* * *
-
 ## RF Communication
 
 The RF communication module provides a basic API for sending and receiving data over the 2.4GHz frequency band. The API is designed to be simple and easy to use, while also providing a high level of performance.
@@ -500,9 +487,6 @@ The RF communication module is a good choice for a variety of applications, incl
 
 If you are looking for a simple and reliable way to send and receive data over the 2.4GHz frequency band, then the RF communication module is a good choice.
 
-
-Sure, here is the translation of the summary:
-
 * * *
 
 ## TMOS API
@@ -541,9 +525,6 @@ The TMOS API and the GAP API provide a set of functions for managing tasks, even
 
 If you are developing a Bluetooth application, then the TMOS API and the GAP API are a good choice for managing the application's tasks, events, timers, memory, and GAP procedures.
 
-Sure, here is the translation of the summary:
-
-* * *
 
 ## GAPRole API
 
@@ -580,11 +561,6 @@ The GAPRole API provides a set of functions for managing the GAP Role. The API i
 
 If you are developing a Bluetooth application, then the GAPRole API is a good choice for managing the application's GAP Role.
 
-
-
-Sure, here is the translation of the summary:
-
-* * *
 
 ## GAPRole API
 
@@ -657,10 +633,6 @@ The GATT Client API provides a set of functions for managing the following:
 The GAPRole API and the GATT API provide a set of functions for managing the GAP Role and the GATT protocol. The APIs are designed to be simple and easy to use, while also providing a high level of performance.
 
 If you are developing a Bluetooth application, then the GAPRole API and the GATT API are a good choice for managing the application's GAP Role and GATT protocol.
-
-Sure, here is the translation of the summary:
-
-* * *
 
 ## GATT API
 
@@ -756,9 +728,6 @@ The following table lists the GATT API return codes.
 | bleLink
 
 
-Sure, here is the translation of the summary:
-
-* * *
 
 ## GATT API Commands and Events
 
@@ -840,10 +809,6 @@ The following table lists the GATT API return codes.
 |---|---|
 | ATT_ERR_INVALID_HANDLE (0x01) | The given attribute handle value is not valid on this attribute server. |
 
-
-Sure, here is the translation of the summary:
-
-* * *
 
 ## GAPBondMgr API
 
