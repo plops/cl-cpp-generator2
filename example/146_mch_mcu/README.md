@@ -661,6 +661,50 @@ work up to 100m in free space:
 https://www.cnblogs.com/gscw/p/17387204.html . Longer distances
 require a power amplifier.
 
-If the chip is supposed the BLE host, then an external 32kHz
-oscillator is required. CH57x and CH58x chips contain an adjustable
-load capacitor for the oscillator.
+### Summary of PCB Antenna documentation:
+
+## Power supply
+
+* The chip can be supplied with a voltage between 2.3V and 3.6V.
+* The VSW/VDCID/VDCIA pins need to be connected correctly depending on whether the DCDC function is enabled or not.
+* The VINTA pin can be used to check if the power supply is stable.
+
+## Antenna
+
+* The ANT pin to the antenna should be smooth and as short as possible.
+* The antenna should be matched to 50Ω.
+* The antenna package should be selected according to the board thickness.
+* A π-filter can be used to improve the performance of the antenna.
+
+## Crystal oscillator
+
+* The 32MHz high-frequency crystal oscillator is required.
+* The 32kHz low-frequency crystal oscillator is optional.
+* The 12pF crystal oscillator is recommended.
+
+## Download
+
+* The chip can be downloaded using the SWD/serial port/USB method.
+
+## Troubleshooting
+
+* If the Bluetooth device cannot be found, check the following:
+    * The power supply
+    * The antenna
+    * The crystal oscillator
+    * The chip
+
+## CH32V208
+
+* The VDD, VIO, and VDDA pins need to be supplied with 3.3V.
+* The 32MHz crystal oscillator does not need external capacitors.
+* The 32kHz crystal oscillator needs external matching capacitors.
+* The BOOT0/BOOT1 pins can be used to select the boot mode.
+* The antenna should be matched to 50Ω.
+
+## Conclusion
+
+This article provides a comprehensive guide to the schematic and PCB
+design of the CH57x/CH58x chips. By following the guidelines in this
+article, you can ensure that your design is correct and that your
+device will function properly.
