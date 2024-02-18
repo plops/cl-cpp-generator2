@@ -43,6 +43,13 @@ git clone https://github.com/WeActStudio/WeActStudio.WCH-BLE-Core # 178MB
 - i think the best source for this code is the example that comes with MounRiverStudio:
 MounRiver_Studio_Community_Linux_x64_V160/MRS_Community/template/wizard/WCH/RISC-V/CH59X/NoneOS/CH592F.zip (112kB)
 
+```
+cd ~/stage/cl-cpp-generator2/example/146_mch_mcu
+mkdir hal
+cd hal
+unzip ../CH592F.zip
+```
+
 ## Aliexpress order
 
 ```
