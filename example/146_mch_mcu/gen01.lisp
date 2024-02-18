@@ -33,6 +33,8 @@
 	      (include<> 
 	       CH59x_common.h
 	       CH59x_sys.h
+	       CH59x_pwr.h
+	       board.h
 	       ;HAL.h
 	       ;broadcaster.h
 	       )))
@@ -62,11 +64,35 @@
     
     (defun main ()
       (declare (values int))
-      #+nil
+      #-nil
       (do0
        (comments "Enable DCDC")
        (PWR_DCDCCfg ENABLE))
       (SetSysClock CLK_SOURCE_PLL_60MHz)
+      (board_button_init)
+      (board_led_init)
+
+      (do0
+       (comments "low power test")
+       (board_led_set 1)
+       (DelayMs 10)
+       (board_led_set 0)
+       (LowPower_Shutdown 0))
+
+      (do0
+       (let ((tick (uint32_t 0))
+	     (toggle_tick (uint32_t 250)))
+	 (while 1
+		(incf tick)
+		(when (== 0 (% tick toggle_tick))
+		  (board_led_toggle))
+		(when (board_button_getstate)
+		  (while (board_button_getstate)
+			 (DelayMs 50))
+		  (if (== 250 toggle_tick)
+		      (setf toggle_tick 100)
+		      (setf toggle_tick 250)))
+		(DelayMs 1))))
 
       #+nil
       (do0
@@ -74,7 +100,7 @@
        (GPIOA_ModeCfg GPIO_Pin_All GPIO_ModeIN_PU)
        (GPIOB_ModeCfg GPIO_Pin_All GPIO_ModeIN_PU))
 
-34      #+nil
+      #+nil
       (do0
        (comments "For Debugging")
        (GPIOA_SetBits bTXD1)

@@ -28,9 +28,10 @@ set(HAL_PATH  ${CMAKE_SOURCE_DIR}/../hal)
 
 # Collect all C and assembly source files in the hal directory
 file(GLOB_RECURSE HAL_SOURCES 
-${HAL_PATH}/StdPeriphDriver/*sys.c
-#${HAL_PATH}/RVMSIS/*.c
+${HAL_PATH}/StdPeriphDriver/*.c
+${HAL_PATH}/RVMSIS/*.c
 ${HAL_PATH}/Startup/*.S
+${HAL_PATH}/board.c
 )
 
 # Source Files
@@ -43,6 +44,7 @@ ${HAL_SOURCES}
 include_directories(
     ${HAL_PATH}/RVMSIS/
     ${HAL_PATH}/StdPeriphDriver/inc
+    ${HAL_PATH}/User/
 )
 
 # Use the custom linker script to link the firmware
