@@ -13,7 +13,7 @@
 
 
 (let ((module-name "main"))
-  (defparameter *source-dir* #P"example/146_mch_mcu/source01/src/")
+  (defparameter *source-dir* #P"example/146_mch_mcu/source02/src/")
   (defparameter *full-source-dir* (asdf:system-relative-pathname
 				   'cl-cpp-generator2
 				   *source-dir*))
@@ -27,16 +27,28 @@
 		     *source-dir*))
    
    `(do0
+     #+nil(do0 
+      (RF_Init)
+      (RF_Config)
+      (RF_Tx)
+      (RF_Rx)
+      (RF_GetStatus))
+
+     ;; https://github.com/openwch/ch592/tree/main/EVT/EXAM/BLE/RF_PHY/APP
+     ;; try rf communication module in basic mode
      (space extern "\"C\""
 	    (progn
-	      
+	      (include<> CONFIG.h
+			 HAL.h
+			; RF_PHY.h
+			 )
 	      (include<> 
 	       CH59x_common.h
 	       CH59x_sys.h
 	       CH59x_pwr.h
 	       board.h
-	       ;HAL.h
-	       ;broadcaster.h
+					;HAL.h
+					;broadcaster.h
 	       )))
      (include<> cstdio)
      #+nil (include<> stdio.h
@@ -46,82 +58,100 @@
 					;cmath
      
 		      )
-    #+nil
-    (space
-     __HIGH_CODE
-     "__attribute__((noinline))"
-     (defun Main_Circulation ()
-       (while 1
-	      (TMOS_SystemProcess))))
-    #+nil 
-    (defun key_callback (keys)
-      (declare (type uint8_t keys))
-      (when (& keys HAL_KEY_SW_1)
-	(printf (string "key pressed\\n"))
-	(HalLedSet HAL_LED_ALL
-		   HAL_LED_MODE_OFF)
-	(HalLedBlink 1 2 30 1000))) 
+
+     (defun RF_2G4StatusCallback (sta crc rxBuf)
+       (declare (type uint8_t sta crc)
+		(type uint8_t* rxBuf))
+       (case sta
+	 (TX_MODE_TX_FINISH
+	  )
+	 (TX_MODE_TX_FAIL
+	  )))
+     
+     (defun RF_ProcessEvent (task_id events)
+       (declare (type uint8_t task_id)
+		(type uint16_t events)
+		(values uint16_t))
+       (when (& events SYS_EVENT_MSG)))
+     
+     (defun RF_Init ()
+       (let ((cfg (rfConfig_t)))
+	 (tmos_memset &cfg 0 (sizeof cfg))
+	 (let ((task_id (uint8_t 0))))
+	 (setf task_id (TMOS_ProcessEventRegister RF_ProcessEvent))
+	 ,@(loop for (e f) in `((accessAddress (hex #x71764129))
+				(CRCInit (hex #x555555))
+				(Channel 39)
+				(Frequency 2480000)
+				(LLEMode (logior LLE_MODE_BASIC
+						 LLE_MODE_EX_CHANNEL))
+				(rfStatusCB RF_2G4StatusCallback)
+				(RxMaxlen 251))
+		 collect
+		 `(setf (dot cfg ,e)
+			,f))
+	 (let ((state (RF_Config &cfg))))))
     
-    (defun main ()
-      (declare (values int))
-      #-nil
-      (do0
-       (comments "Enable DCDC")
-       (PWR_DCDCCfg ENABLE))
-      (SetSysClock CLK_SOURCE_PLL_60MHz)
-      (board_button_init)
-      (board_led_init)
+     (defun main ()
+       (declare (values int))
+       #-nil
+       (do0
+	(comments "Enable DCDC")
+	(PWR_DCDCCfg ENABLE))
 
-      #+nil
-      (do0
-       (comments "low power test")
-       (comments "after start the blue led flashes for a short moment and then stays off")
-       (board_led_set 1)
-       (DelayMs 10)
-       (board_led_set 0)
-       (LowPower_Shutdown 0))
+       (SetSysClock CLK_SOURCE_PLL_60MHz)
 
-      (do0
-       (comments "the blue led flashes. the BOOT button switches between a fast and a slow flashing frequency")
-       (let ((tick (uint32_t 0))
-	     (toggle_tick (uint32_t 250)))
-	 (while 1
-		(incf tick)
-		(when (== 0 (% tick toggle_tick))
-		  (board_led_toggle))
-		(when (board_button_getstate)
-		  (while (board_button_getstate)
-			 (DelayMs 50))
-		  (if (== 250 toggle_tick)
-		      (setf toggle_tick 100)
-		      (setf toggle_tick 250)))
-		(DelayMs 1))))
+       (do0
+	(board_button_init)
+	(board_led_init))
+       (do0
+	(comments "I think that fixes the gpio pins to prevent supply voltage from fluctuating")
+	(GPIOA_ModeCfg GPIO_Pin_All GPIO_ModeIN_PU)
+	(GPIOB_ModeCfg GPIO_Pin_All GPIO_ModeIN_PU))
 
-      #+nil
-      (do0
-       (comments "Enable Sleep.")
-       (GPIOA_ModeCfg GPIO_Pin_All GPIO_ModeIN_PU)
-       (GPIOB_ModeCfg GPIO_Pin_All GPIO_ModeIN_PU))
-
-      #+nil
-      (do0
-       (comments "For Debugging")
-       (GPIOA_SetBits bTXD1)
-       (GPIOA_ModeCfg bTXD1 GPIO_ModeOut_PP_5mA)
-       (UART1_DefInit))
-      #+nil
-
-      (do0
-       (PRINT (string "%s\\n") VER_LIB)
        (CH59x_BLEInit)
-       (HalKeyConfig key_callback)
-       (GAPRole_BroadcasterInit)
-       (Broadcaster_Init)
-       (Main_Circulation)
-       )
-      (return 0)
+       (HAL_Init)
+       (RF_RoleInit)
+       (RF_Init)
+       #+nil
+       (do0
+	(comments "the blue led flashes. the BOOT button switches between a fast and a slow flashing frequency")
+	(let ((tick (uint32_t 0))
+	      (toggle_tick (uint32_t 250)))
+	  (while 1
+		 (incf tick)
+		 (when (== 0 (% tick toggle_tick))
+		   (board_led_toggle))
+		 (when (board_button_getstate)
+		   (while (board_button_getstate)
+			  (DelayMs 50))
+		   (if (== 250 toggle_tick)
+		       (setf toggle_tick 100)
+		       (setf toggle_tick 250)))
+		 (DelayMs 1))))
+
        
-      )
+       
+
+       #+nil
+       (do0
+	(comments "For Debugging")
+	(GPIOA_SetBits bTXD1)
+	(GPIOA_ModeCfg bTXD1 GPIO_ModeOut_PP_5mA)
+	(UART1_DefInit))
+       #+nil
+
+       (do0
+	(PRINT (string "%s\\n") VER_LIB)
+	(CH59x_BLEInit)
+	(HalKeyConfig key_callback)
+	(GAPRole_BroadcasterInit)
+	(Broadcaster_Init)
+	(Main_Circulation)
+	)
+       (return 0)
+       
+       )
      )
    :omit-parens t
    :format t
