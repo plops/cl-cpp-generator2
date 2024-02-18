@@ -34,8 +34,8 @@
       (RF_Rx)
       (RF_GetStatus))
 
-     ;; https://github.com/openwch/ch592/tree/main/EVT/EXAM/BLE/RF_PHY/APP
-     ;; try rf communication module in basic mode
+     (comments "based on https://github.com/openwch/ch592/tree/main/EVT/EXAM/BLE/RF_PHY/APP")
+     (comments "try rf communication module in basic mode")
      (space extern "\"C\""
 	    (progn
 	      (include<> CONFIG.h
