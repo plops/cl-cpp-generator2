@@ -95,8 +95,3 @@ The CH592 code is organized into logical segments related to the following core 
 * **Interrupts**
    * Definition of available interrupts, their numbers, and routing to handlers.
 
-**Important Guidelines**
-
-* **Reference the CH592 Datasheet:** Always consult the official datasheet for comprehensive descriptions and explanations of register bits and their functions. 
-* **Understand Safe Accessing Mode:** Pay attention to instructions for safely modifying registers related to system stability and configuration.
-* **Use Comments and Naming Conventions:**  The code likely includes helpful comments clarifying the purpose of registers and code sections.  Familiarize yourself with the naming conventions to understand what registers do based on their names.
