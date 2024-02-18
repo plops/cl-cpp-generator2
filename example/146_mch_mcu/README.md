@@ -662,4 +662,5 @@ https://www.cnblogs.com/gscw/p/17387204.html . Longer distances
 require a power amplifier.
 
 If the chip is supposed the BLE host, then an external 32kHz
-oscillator is required.
+oscillator is required. CH57x and CH58x chips contain an adjustable
+load capacitor for the oscillator.
