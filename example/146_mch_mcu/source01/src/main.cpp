@@ -13,12 +13,9 @@ int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
   board_button_init();
   board_led_init();
-  // low power test
+  // the blue led flashes. the BOOT button switches between a fast and a slow
+  // flashing frequency
 
-  board_led_set(1);
-  DelayMs(10);
-  board_led_set(0);
-  LowPower_Shutdown(0);
   auto tick{uint32_t(0)};
   auto toggle_tick{uint32_t(250)};
   while (1) {

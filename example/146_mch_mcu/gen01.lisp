@@ -72,14 +72,17 @@
       (board_button_init)
       (board_led_init)
 
+      #+nil
       (do0
        (comments "low power test")
+       (comments "after start the blue led flashes for a short moment and then stays off")
        (board_led_set 1)
        (DelayMs 10)
        (board_led_set 0)
        (LowPower_Shutdown 0))
 
       (do0
+       (comments "the blue led flashes. the BOOT button switches between a fast and a slow flashing frequency")
        (let ((tick (uint32_t 0))
 	     (toggle_tick (uint32_t 250)))
 	 (while 1
