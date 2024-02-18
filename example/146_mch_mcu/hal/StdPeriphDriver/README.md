@@ -95,3 +95,44 @@ The CH592 code is organized into logical segments related to the following core 
 * **Interrupts**
    * Definition of available interrupts, their numbers, and routing to handlers.
 
+## CH59x_timer.h
+
+**Overall Purpose**
+
+This code provides a library of functions to control and interact with the onboard timers (TMR0, TMR1, TMR2, TMR3) of the CH592 microcontroller. The key timer-related capabilities include:
+
+* **Timer Configuration:**  Setting up basic timer intervals.
+* **PWM (Pulse Width Modulation):** Generating PWM signals for controlling power electronics, LEDs, motors, etc.
+* **Capture Mode:** Capturing external events based on rising/falling edges or specific intervals.
+* **Interrupts:** Using timer interrupts to trigger code execution.
+* **DMA (Direct Memory Access):** Integrating timers with DMA for memory transfers.
+
+**Key Functions and Structures**
+
+Let's break down some of the important parts:
+
+* **TMR0_TimerInit(), TMR1_TimerInit(), etc.:**  Initialize specific timers (Timer 0, Timer 1, etc.) with a  given time period.
+* **TMR0_GetCurrentTimer(), TMR1_GetCurrentTimer(), etc.:** Get the current value of a timer.
+* **TMR0_PWMInit(), TMR1_PWMInit(), etc.:**  Configure a timer for PWM output, controlling wave polarity and repetition.
+* **TMR0_PWMActDataWidth(), TMR1_PWMActDataWidth(), etc.:** Set the duty cycle (active time) of the PWM signal.
+* **TMR0_CapInit(), TMR1_CapInit(), etc.:** Initialize timers to capture external signals.
+* **TMR0_CAPTimeoutCfg(), TMR1_CAPTimeoutCfg(), etc.:** Set time windows for capture mode.
+* **TMR0_CAPGetData(), TMR1_CAPGetData(), etc.:** Retrieve captured data.
+* **TMR0_ITCfg(), TMR1_ITCfg(), etc.:** Enable/disable timer interrupts.
+* **TMR0_ClearITFlag(),  TMR1_ClearITFlag(), etc.:** Clear timer interrupt flags.
+
+**Enumerations**
+
+* **PWM_RepeatTsTypeDef:** Defines how many times a PWM signal should repeat.
+* **CapModeTypeDef:** Sets capture mode (edge-to-edge, falling edge, rising edge, etc.).
+* **DMAModeTypeDef:** Selects DMA operation mode (single or cyclical).  
+
+**Example Usage**
+
+Imagine you want to generate a PWM signal on Timer 1 to dim an LED:
+
+1.  Call `TMR1_TimerInit()` to initialize timer 1.
+2.  Call `TMR1_PWMInit()` to set the PWM mode and wave characteristics.
+3.  Use `TMR1_PWMCycleCfg()` to set the overall PWM period.
+4.  Update the duty cycle periodically with `TMR1_PWMActDataWidth()`.
+
