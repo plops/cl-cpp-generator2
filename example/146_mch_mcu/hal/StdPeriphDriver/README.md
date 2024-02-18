@@ -217,3 +217,155 @@ int main() {
    // ... rest of your code
  }
 ```
+
+
+## CH59x_usbdev.h
+
+**Overall Purpose:**
+
+* This header file offers definitions, data structures, and functions to manage USB device operations on the CH592 microcontroller.
+* It helps you set up communication endpoints and handle the transmission and reception of data using the USB protocol.
+
+**Key Components:**
+
+1. **Constants:**
+   * `DEF_USB_GET_IDLE`, `DEF_USB_GET_PROTOCOL`, etc.: These constants define standard USB Human Interface Device (HID) class requests. This suggests the microcontroller likely intends to act as a USB HID device (like a keyboard or mouse).
+
+2. **Memory Pointers:**
+   * `pEP0_RAM_Addr`, `pEP1_RAM_Addr`, etc.: These pointers define memory locations allocated for different USB communication endpoints. The CH592 likely has dedicated memory regions for data exchange with the USB host.
+   * `pSetupReqPak`: Pointer to the location where a USB setup request packet is stored. 
+
+3. **Data Buffers:**
+   * `pEP0_DataBuf`, `pEP1_OUT_DataBuf`, etc.:  Arrays that act as buffers for holding incoming and outgoing USB data for various endpoints.
+
+4. **Functions:**
+   * `USB_DeviceInit()`: Initializes the USB device with four endpoints and potentially up to eight communication channels.
+   * `USB_DevTransProcess()`: This function probably handles the USB device's main event loop, checking for incoming requests or pending data to be sent.
+   * `DevEP1_OUT_Deal()`, `DevEP2_OUT_Deal()`, etc.: Functions to process data received on specific endpoints (Endpoint 1 Output, Endpoint 2 Output, etc.).
+   * `DevEP1_IN_Deal()`, `DevEP2_IN_Deal()`, etc.: Functions to prepare and send data out over specific endpoints.
+   * `EP1_GetINSta()`, `EP2_GetINSta()`, etc.:  Functions to check an  endpoint's transmission status (whether it's ready to send data).
+
+5. **Preprocessor Macros:**
+   * `USB_DisablePin()` and `USB_Disable()`: These macros likely help to disable or power down the USB hardware on the microcontroller for purposes of power management or reconfiguration. 
+
+**How to Use (Hypothetical Example):** 
+
+1. Include this header file: `#include "CH59x_usbdev.h"`
+
+2. Initialize the USB device: `USB_DeviceInit();`
+
+3. In your main loop, continuously call: `USB_DevTransProcess();`
+
+4. Implement functions like these to handle device behavior:
+   ```c
+   void DevEP1_OUT_Deal(uint8_t l) { 
+       // Process data received on Endpoint 1
+   }
+
+   void DevEP2_IN_Deal(uint8_t l) {
+       // Load data into the buffer to be sent on Endpoint 2
+   }
+   ```
+
+## CH59x_uart.h
+
+**Purpose**
+
+This header file provides a collection of functions and definitions to control and interact with the UART (Universal Asynchronous Receiver/Transmitter) peripherals on the CH592 microcontroller. UARTs are essential for serial communication, allowing the microcontroller to send and receive data with other devices.
+
+**Key Components**
+
+1. **Error and Status Definitions:**
+   *  Defines codes representing potential UART communication errors (e.g., break in data, framing error, parity error, FIFO overflow).
+   *  Defines status flags indicating transmitter FIFO state (empty or data available), and receiver state (data ready).
+
+2. **Configuration**
+   * **UART0_DefInit(), UART1_DefInit(), etc.:** Functions to initialize UART modules (UART0, UART1, UART2, UART3) with default settings.
+   * **UART0_BaudRateCfg(), UART1_BaudRateCfg(), etc.:** Functions to configure the baud rate (communication speed) of each UART module.
+   * **UART0_ByteTrigCfg(), UART1_ByteTrigCfg(), etc.:** Functions to set the number of bytes in the receive FIFO that will trigger an interrupt (1, 2, 4, or 7 bytes).
+
+3. **Interrupts**
+    * **UART0_INTCfg(), UART1_INTCfg(), etc.:** Functions to enable or disable specific UART interrupts:
+        * Modem changes (not likely supported on all models)
+        * Line status changes (errors)
+        * Transmitter holding register empty 
+        * Receiver data ready
+
+4. **Reset and FIFO Management**
+    * **UART0_Reset(), UART1_Reset(), etc.:** Functions to reset the UART modules.
+    * **UART0_CLR_RXFIFO(), UART1_CLR_RXFIFO()**: Functions to clear the receive FIFO of each UART.
+    * **UART0_CLR_TXFIFO(), UART1_CLR_TXFIFO()**: Functions to clear the transmit FIFO of each UART.
+
+5. **Data Transmission and Reception**
+    * **UART0_GetITFlag(), UART1_GetITFlag(), etc.:** Functions to get the current UART interrupt flag.
+    * **UART0_GetLinSTA(), UART1_GetLinSTA(), etc.:** Functions to get the current line status (potential errors).
+    * **UART0_SendByte(), UART1_SendByte(), etc.:** Functions to send a single byte of data via UART.
+    * **UART0_SendString(), UART1_SendString(), etc.:** Functions to send a string of bytes (null-terminated) via UART.
+    * **UART0_RecvByte(), UART1_RecvByte(), etc.:** Functions to receive a single byte via UART.
+    * **UART0_RecvString(), UART1_RecvString(), etc.:** Functions to receive a string of bytes via UART.
+
+**Typical Usage**
+
+1. Include the header file `CH59x_uart.h` in your project.
+2. Initialize a UART module using the `UARTx_DefInit()` function.
+3. Configure the baud rate using the `UARTx_BaudRateCfg()` function.
+4. Optionally, configure byte trigger levels and enable desired interrupts.
+5. Use `UARTx_SendByte()` or `UARTx_SendString()` to transmit data.
+6. Use `UARTx_RecvByte()` or `UARTx_RecvString()`  to receive data.
+7. Check interrupt flags and communication status for robust error handling.
+
+
+
+## CH59x_i2c.h
+
+**Purpose**
+
+This code is a header file (`.h`) that defines structures, constants, and functions used to control the I2C (Inter-Integrated Circuit) communication peripheral on a CH592 microcontroller. I2C is a popular serial communication protocol used to connect multiple devices with just two wires (data and clock).
+
+**Key Components**
+
+* **Defines (`#define`)**
+    * Constants representing directions (transmitter/receiver), modes, address configurations, interrupt types, and register flags. These make the code more readable and maintainable.
+
+* **Typedefs**
+    * Creates custom data types:
+        * `I2C_ModeTypeDef`: I2C operation modes (I2C, SMBus device, SMBus host).
+        * `I2C_DutyTypeDef`: Duty cycle options for I2C fast mode.
+        * `I2C_AckTypeDef`: Acknowledgment enable/disable settings.
+        * `I2C_AckAddrTypeDef`: 7-bit or 10-bit address acknowledgment.
+        * `I2C_ITTypeDef`: I2C interrupt types.
+
+* **Functions**
+    * **Initialization**
+        * `I2C_Init()`: Sets up the I2C peripheral with specified mode, speed, duty cycle, acknowledgment settings, and device address.
+    * **Control**
+        * `I2C_Cmd()`:  Enable/disable the I2C peripheral.
+        * `I2C_GenerateSTART()`, `I2C_GenerateSTOP()`: Trigger START/STOP conditions on the I2C bus.
+        * `I2C_AcknowledgeConfig()`:  Enable/disable acknowledgements. 
+    * **Address Management**
+        * `I2C_OwnAddress2Config()`, `I2C_DualAddressCmd()`, `I2C_GeneralCallCmd()`:  Manage single/dual device addresses and respond to general call addresses.
+    * **Interrupts**
+        * `I2C_ITConfig()`: Enable/disable specific I2C interrupts.
+    * **Data Transfer**
+        * `I2C_SendData()`: Send a byte of data.
+        * `I2C_ReceiveData()`:  Receive a byte of data.
+        * `I2C_Send7bitAddress()`: Send a 7-bit device address with direction indication.
+    * **Other**
+        * `I2C_SoftwareResetCmd()`: Trigger a software reset of the I2C peripheral.
+        * `I2C_NACKPositionConfig()`, `I2C_SMBusAlertConfig()`, `I2C_TransmitPEC()`, `I2C_PECPositionConfig()`, `I2C_CalculatePEC()`, `I2C_GetPEC()`: Functions related to error checking and SMBus functionality.
+        * `I2C_ARPCmd()`, `I2C_StretchClockCmd()`, `I2C_FastModeDutyCycleConfig()`: Advanced configuration functions.
+
+* **Event and Status Management**
+   * `I2C_CheckEvent()`, `I2C_GetLastEvent()`, `I2C_GetFlagStatus()`, `I2C_ClearFlag()`, `I2C_GetITStatus()`, `I2C_ClearITPendingBit()`:  Functions to check the status of I2C flags, events, and interrupts for monitoring communication.
+
+**How to Use**
+
+1. Include this header file in your project.
+2. Initialize I2C using `I2C_Init()`.
+3. Use a combination of the provided functions to:
+   * Set up your device and other devices on the bus.
+   * Send and receive data.
+   * Handle interrupts (if needed) for efficient communication. 
+
+
+
