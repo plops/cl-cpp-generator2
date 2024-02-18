@@ -27,6 +27,12 @@ endif ()
 set(HAL_PATH  ${CMAKE_SOURCE_DIR}/../hal)
 
 # Collect all C and assembly source files in the hal directory
+
+#  I include all the files. They don't take long to compile and link
+#  and I think the linker also removes unused code. Otherwise I would
+#  have to manually add the files that are needed for whatever
+#  functionality I want
+
 file(GLOB_RECURSE HAL_SOURCES 
 ${HAL_PATH}/StdPeriphDriver/*.c
 ${HAL_PATH}/RVMSIS/*.c
