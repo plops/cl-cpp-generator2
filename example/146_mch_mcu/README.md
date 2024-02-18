@@ -642,3 +642,21 @@ These settings configure a Bluetooth Low Energy (BLE) chip. Here's a breakdown o
 * **Data:**  Packet sizes and buffering settings.
 * **Multi-connection:** How many simultaneous BLE connections are supported.
 
+## Discussion of long distance 125kbps
+
+In this forum thread it is stated that 1km BLE transmission is an
+optional part of BLE 5.4 and not supported by CH592:
+https://www.wch.cn/bbs/thread-106878-1.html
+
+
+```
+TECH_Rzz:
+Long-distance broadcasting is an optional function, and the combined use scenarios are not
+included in ch592. ch592 is a cost-effective solution; if you need to use 125Kbps, you can 
+choose ch582.
+```
+
+They link to a specification of a PCB antenna that they verified to
+work up to 100m in free space:
+https://www.cnblogs.com/gscw/p/17387204.html . Longer distances
+require a power amplifier.
