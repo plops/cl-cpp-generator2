@@ -188,7 +188,7 @@ This header offers functions to  initialize keys, get their states, and a  callb
 
 This header provides a convenient way to control onboard LEDs with functionality for simple on/off control, blinking effects, and integration with sleep modes.
 
-## CONFIG.h
+## CONFIG.h configure settings of the MCU and Bluetooth controller
 
 **Purpose**
 
