@@ -94,6 +94,13 @@
 		(type uint16_t events)
 		(values uint16_t))
        (when (& events SYS_EVENT_MSG)))
+
+     (doc "
+
+RF_Wait_Tx_End() : This function waits for a transmission to end. It continuously checks a flag called tx_end_flag. If the flag isn't set (indicating the transmission is still ongoing), it enters a loop with a brief delay.  A timeout mechanism forces the tx_end_flag to TRUE after approximately 5ms.
+
+RF_Wait_Rx_End() :  This function is very similar to the transmission wait function. It waits for a signal reception to end, monitoring the rx_end_flag. It also has a timeout mechanism of approximately 5ms.
+")
      
      (defun RF_Init ()
        (let ((cfg (rfConfig_t)))
@@ -105,7 +112,7 @@
 				(Channel 39)
 				(Frequency 2480000)
 				(LLEMode (or LLE_MODE_BASIC
-						 LLE_MODE_EX_CHANNEL))
+					     LLE_MODE_EX_CHANNEL))
 				(rfStatusCB RF_2G4StatusCallback)
 				(RxMaxlen 251))
 		 collect
@@ -113,8 +120,8 @@
 			,f))
 	 (let ((state (RF_Config &cfg))))
 
-	 #+Nil
-	 (when true
+	 
+	 (when false
 	   (comments "RX mode")
 	   (let ((state (RF_Rx (TX_DATA.data) (TX_DATA.size) (hex #xff) (hex #xff))))))
 

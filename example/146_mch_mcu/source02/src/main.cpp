@@ -42,6 +42,20 @@ uint16_t RF_ProcessEvent(uint8_t task_id, uint16_t events) {
   }
 }
 
+/**
+
+RF_Wait_Tx_End() : This function waits for a transmission to end. It
+continuously checks a flag called tx_end_flag. If the flag isn't set (indicating
+the transmission is still ongoing), it enters a loop with a brief delay.  A
+timeout mechanism forces the tx_end_flag to TRUE after approximately 5ms.
+
+RF_Wait_Rx_End() :  This function is very similar to the transmission wait
+function. It waits for a signal reception to end, monitoring the rx_end_flag. It
+also has a timeout mechanism of approximately 5ms.
+
+
+*/
+
 void RF_Init() {
   auto cfg{rfConfig_t()};
   tmos_memset(&cfg, 0, sizeof(cfg));
@@ -55,6 +69,11 @@ void RF_Init() {
   cfg.rfStatusCB = RF_2G4StatusCallback;
   cfg.RxMaxlen = 251;
   auto state{RF_Config(&cfg)};
+  if (false) {
+    // RX mode
+
+    auto state{RF_Rx(TX_DATA.data(), TX_DATA.size(), 0xFF, 0xFF)};
+  }
   if (true) {
     // TX mode
 
