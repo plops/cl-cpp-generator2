@@ -848,8 +848,11 @@
 				
 				(if core_disabled
 				    (ImGui--Text (string "%s")
-						 (dot (std--format (string "{:2} Disabled")
-								   i )
+						 (dot (std--format (string "{:2} Disabled   {:6.3f}W {:5.3f}V {:5.3f}V {:6.2f}C " )
+								   i
+								   core_power
+								   core_voltage
+								   core_voltage_true core_temperature)
 						      (c_str)))
 				    (ImGui--Text (string "%s")
 						 

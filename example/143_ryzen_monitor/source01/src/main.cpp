@@ -219,7 +219,13 @@ int main(int argc, char **argv) {
           cc1Values[i] = core_cc1;
           cc6Values[i] = core_cc6;
           if (core_disabled) {
-            ImGui::Text("%s", std::format("{:2} Disabled", i).c_str());
+            ImGui::Text(
+                "%s",
+                std::format(
+                    "{:2} Disabled   {:6.3f}W {:5.3f}V {:5.3f}V {:6.2f}C ", i,
+                    core_power, core_voltage, core_voltage_true,
+                    core_temperature)
+                    .c_str());
           } else {
             ImGui::Text(
                 "%s",
