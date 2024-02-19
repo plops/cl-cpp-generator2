@@ -84,8 +84,8 @@ target_link_options(${PROJECT_NAME} PRIVATE -T ${LINKER_SCRIPT})
 
 # Libraries
 target_link_libraries(${PROJECT_NAME}
-${HAL_PATH}/StdPeriphDriver/libISP592.a
-${HAL_PATH}/../BLE/LIB/LIBCH59xBLE.a
+        ${HAL_PATH}/../BLE/LIB/LIBCH59xBLE.a
+        ${HAL_PATH}/StdPeriphDriver/libISP592.a
 )
 
 target_compile_options(

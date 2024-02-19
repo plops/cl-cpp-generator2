@@ -50,7 +50,8 @@
 					;HAL.h
 					;broadcaster.h
 	       )))
-     (include<> cstdio)
+     (include<> cstdio
+		array)
      #+nil (include<> stdio.h
 					;format
 					;unistd.h
@@ -59,6 +60,26 @@
      
 		      )
 
+     (space (__attribute (paren (aligned 4)))
+	    uint32_t
+	    (aref MEM_BUF (/ BLE_MEMHEAP_SIZE 4)))
+
+     (space const uint8_t (aref MacAddr 6)
+	     (curly (hex #x84)
+		    (hex #xc2)
+		    (hex #xe4)
+		    3 2 2))
+
+     (space "std::array<uint8_t, 10>" TX_DATA (curly 1 2 3 4 5 6 7 8 9 0))
+
+     (space enum class SBP ": uint16_t" (curly START_DEVICE_EVT SBP_RF_PERIODIC_EVT SBP_RF_RF_RX_EVT))
+     
+     (space __HIGH_CODE
+	    (__attribute (paren noinline))
+	    (defun Main_Circulation ()
+	      (while true
+		     (TMOS_SystemProcess))))
+     
      (defun RF_2G4StatusCallback (sta crc rxBuf)
        (declare (type uint8_t sta crc)
 		(type uint8_t* rxBuf))
@@ -77,8 +98,8 @@
      (defun RF_Init ()
        (let ((cfg (rfConfig_t)))
 	 (tmos_memset &cfg 0 (sizeof cfg))
-	 (let ((task_id (uint8_t 0))))
-	 (setf task_id (TMOS_ProcessEventRegister RF_ProcessEvent))
+	 (let ((taskID (uint8_t 0))))
+	 (setf taskID (TMOS_ProcessEventRegister RF_ProcessEvent))
 	 ,@(loop for (e f) in `((accessAddress (hex #x71764129))
 				(CRCInit (hex #x555555))
 				(Channel 39)
@@ -90,7 +111,20 @@
 		 collect
 		 `(setf (dot cfg ,e)
 			,f))
-	 (let ((state (RF_Config &cfg))))))
+	 (let ((state (RF_Config &cfg))))
+
+	 #+Nil
+	 (when true
+	   (comments "RX mode")
+	   (let ((state (RF_Rx (TX_DATA.data) (TX_DATA.size) (hex #xff) (hex #xff))))))
+
+	 (when true
+	   (comments "TX mode")
+	   (tmos_set_event taskID (static_cast<uint16_t> SBP--SBP_RF_PERIODIC_EVT)))
+
+	 
+
+	 ))
     
      (defun main ()
        (declare (values int))
@@ -113,42 +147,8 @@
        (HAL_Init)
        (RF_RoleInit)
        (RF_Init)
-       #+nil
-       (do0
-	(comments "the blue led flashes. the BOOT button switches between a fast and a slow flashing frequency")
-	(let ((tick (uint32_t 0))
-	      (toggle_tick (uint32_t 250)))
-	  (while 1
-		 (incf tick)
-		 (when (== 0 (% tick toggle_tick))
-		   (board_led_toggle))
-		 (when (board_button_getstate)
-		   (while (board_button_getstate)
-			  (DelayMs 50))
-		   (if (== 250 toggle_tick)
-		       (setf toggle_tick 100)
-		       (setf toggle_tick 250)))
-		 (DelayMs 1))))
-
+       (Main_Circulation)
        
-       
-
-       #+nil
-       (do0
-	(comments "For Debugging")
-	(GPIOA_SetBits bTXD1)
-	(GPIOA_ModeCfg bTXD1 GPIO_ModeOut_PP_5mA)
-	(UART1_DefInit))
-       #+nil
-
-       (do0
-	(PRINT (string "%s\\n") VER_LIB)
-	(CH59x_BLEInit)
-	(HalKeyConfig key_callback)
-	(GAPRole_BroadcasterInit)
-	(Broadcaster_Init)
-	(Main_Circulation)
-	)
        (return 0)
        
        )
