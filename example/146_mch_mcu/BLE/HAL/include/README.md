@@ -145,4 +145,103 @@ This HAL seems to manage diverse low-level functionalities: timekeeping, power m
 
 This header offers functions to  initialize keys, get their states, and a  callback mechanism for asynchronous notification of key changes. It hides the details of interacting with low-level registers on the microcontroller.
 
-## LED.h
+## LED.h control LEDS
+
+**Purpose**
+
+* This header file provides an interface for controlling onboard LEDs on a development board (likely one containing a Nanjing Qinheng Microelectronics microcontroller).
+* It simplifies LED interactions by abstracting away the low-level register operations required to turn LEDs on, off, blink, or put them into other modes.
+
+**Key Details**
+
+* **Copyright:** Includes copyright notices (2016 and 2021) from potential authors / maintainers.
+* **Disclaimer:** Emphasizes that the code is intended for Nanjing Qinheng Microelectronics manufactured devices.
+* **Header Guards:** Employs standard `#ifndef __LED_H...#define __LED_H...#endif` to prevent multiple inclusions.
+* **C++ Compatibility:** Includes `extern "C" { ... }` for compatibility with C++ projects.
+
+**Constants**
+
+* **HAL_LED_1, HAL_LED_2, etc.:** Defines individual LEDs as unique bit values for easy selection.
+* **HAL_LED_ALL:** A bitmask representing all available LEDs on the board.
+* **HAL_LED_MODE_...:** Various modes for LED behavior (off, on, blink, flash, toggle).
+* **HAL_LED_DEFAULT_...:** Defines default values for blinking speeds, number of LEDS, etc.
+
+**Macros**
+
+* **LED1_BV, LED2_BV, etc.:** Bit values specific to the microcontroller pins connected to the LEDs.
+* **LED1_OUT, LED2_OUT, etc.:** Likely references to the output registers controlling the LEDs.
+* **LED1_DDR, LED2_DDR, etc.:** Configures the direction (output) of pins connected to the LEDs.
+* **HAL_TURN_ON/OFF_LED1/2/3/4():** These macros directly manipulate the relevant output registers to control the LEDs state.
+* **HAL_STATE_LED1/2/3/4():**  Seem to read the current state of the LED (probably not actively used in this case).
+
+**Functions**
+
+* **HAL_LedInit():** Initializes the LED system, likely setting pins as outputs.
+* **HalLedUpdate():**  This function is probably called periodically to update the LED states (e.g., create blinking effects).
+* **HalLedSet(uint8_t led, uint8_t mode):** Directly sets the mode of specified LEDs (on, off, toggle, etc.).
+* **HalLedBlink(uint8_t leds, uint8_t cnt, uint8_t duty, uint16_t time):** Configures a blinking pattern for selected LEDs. Parameters control the number of blinks, on/off duty cycle, and blinking period.
+* **HalLedEnterSleep():** Stores the current LED state, possibly as preparation for a low-power mode.
+* **HalLedExitSleep():**  Restores the LED state after exiting a low-power sleep mode.
+* **HalLedGetState():** Returns the current state of the LEDs.
+
+**Overall Impression**
+
+This header provides a convenient way to control onboard LEDs with functionality for simple on/off control, blinking effects, and integration with sleep modes.
+
+## CONFIG.h
+
+**Purpose**
+
+* This header file offers primary configuration for a system likely based on a Nanjing Qinheng Microelectronics microcontroller with integrated Bluetooth Low Energy (BLE) functionality.
+* It allows customization of memory usage, power saving features, internal temperature/clock calibration, BLE behavior, and more.
+
+**Key Details**
+
+* **Copyright:** Includes copyright notices (2022) from potential authors/maintainers.
+* **Disclaimer:** Emphasizes that the code is intended for Nanjing Qinheng Microelectronics manufactured devices.
+* **Includes:**  Brings in necessary definitions from other header files related to the BLE stack and common microcontroller settings.
+
+**Configurable Parameters:**
+
+**MAC**
+* **BLE_MAC:**  If set to TRUE,  generates a random Bluetooth MAC address. If FALSE (default), it uses the embedded MAC address on the chip.
+
+**DCDC**
+* **DCDC_ENABLE:** If set to TRUE, enables the use of an onboard DCDC converter, potentially for improved power efficiency.
+
+**SLEEP**
+* **HAL_SLEEP:** Enables or disables sleep/low-power mode functionality.
+* **SLEEP\_RTC\_MIN/MAX\_TIME:**  Set minimum and maximum sleep time periods.
+* **WAKE_UP\_RTC\_MAX\_TIME:** Time after which the chip automatically wakes even without  timed RTC wake-ups. Helps handle potential timing inaccuracies in low-power sleep.
+
+**TEMPERATURE**
+* **TEM_SAMPLE:** Enables internal temperature sensor sampling at a regular interval (likely impacts the accuracy of onboard temperature readings).
+
+**CALIBRATION**
+* **BLE_CALIBRATION_ENABLE:** Enables calibration of the internal clock source at a regular interval, possibly for improved BLE timing accuracy.
+* **BLE_CALIBRATION_PERIOD:** Sets the calibration period in milliseconds.
+
+**SNV (Storage Non-Volatile)**
+* **BLE_SNV:**   Enables the use of SNV (an area of flash memory) for storing settings.
+* **BLE_SNV_ADDR:** Starting address of the SNV section within flash memory.
+* **BLE_SNV_BLOCK:**  Size of a single SNV block.
+* **BLE_SNV_NUM:** Number of SNV blocks used.
+
+**RTC**
+* **CLK_OSC32K:**  Selects the RTC clock source (often a choice between on-chip 32KHz or 32.768KHz crystals, depending on your board's design).
+
+**MEMORY**
+* **BLE_MEMHEAP_SIZE:**  Size of RAM allocated for dynamic Bluetooth operations.
+
+**DATA**
+* **BLE_BUFF_MAX_LEN:**  Maximum size of BLE data packets.
+* **BLE_BUFF_NUM:**  Number of pre-allocated data buffers.
+* **BLE_TX_NUM_EVENT:** Number of transmission-related events queued for handling
+* **BLE_TX_POWER:** Configures the BLE transmission power.
+
+**MULTICONN (Multiple Connections)**
+* **PERIPHERAL_MAX_CONNECTION:** Maximum allowed simultaneous connections when the device acts as a BLE peripheral.
+* **CENTRAL_MAX_CONNECTION:**  Maximum allowed simultaneous connections when the device acts as a BLE central device.
+
+**Default Values**
+* The file provides defaults for all parameters if you don't explicitly redefine them.
