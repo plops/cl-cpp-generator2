@@ -3,6 +3,11 @@
   
 - 
 
+## Variables
+
+
+
+
 ## Classes
 
 
@@ -80,3 +85,32 @@ structures like containers.
   pointers and standard library containers to automate resource
   management and avoid manual definitions of the special member
   functions.
+
+## Member variables
+
+- don't use prepend or append special characters to member
+  variables. i don't want m_value or value_ to be the name of member
+  variables. this is good code:
+  
+```
+class A {
+public:
+	A() : value{0} {}
+private:
+    int value;
+};
+```
+
+## Member methods
+
+- declare methods const where possible (e.g. all getter methods):
+
+```
+class A {
+public:
+	A() : value{0} {}
+	int get_value() const { return value };
+private:
+    int value;
+};
+```

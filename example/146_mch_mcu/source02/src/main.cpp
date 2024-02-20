@@ -22,7 +22,7 @@ enum class SBP : uint16_t {
 };
 __HIGH_CODE __attribute((noinline)) void Main_Circulation() {
   while (true) {
-    TMOS_SystemProcess();
+    TMOS_SystemProcess();w
   }
 }
 
