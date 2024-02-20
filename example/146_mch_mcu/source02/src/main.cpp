@@ -14,6 +14,9 @@ extern "C" {
 #include <cstdio>
 __attribute((aligned(4))) uint32_t MEM_BUF[(BLE_MEMHEAP_SIZE / 4)];
 const uint8_t MacAddr[6]{0x84, 0xC2, 0xE4, 3, 2, 2};
+uint8_t taskID{0};
+volatile uint8_t tx_end_flag{0};
+volatile uint8_t rx_end_flag{0};
 std::array<uint8_t, 10> TX_DATA{1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
 enum class SBP : uint16_t {
   START_DEVICE_EVT,
@@ -22,7 +25,7 @@ enum class SBP : uint16_t {
 };
 __HIGH_CODE __attribute((noinline)) void Main_Circulation() {
   while (true) {
-    TMOS_SystemProcess();w
+    TMOS_SystemProcess();
   }
 }
 
@@ -72,6 +75,28 @@ void RF_2G4StatusCallback(uint8_t sta, uint8_t crc, uint8_t *rxBuf) {
     break;
   };
   case TX_MODE_TX_FAIL: {
+    tx_end_flag = TRUE;
+    break;
+  };
+  case TX_MODE_RX_DATA: {
+    break;
+  };
+  case TX_MODE_RX_TIMEOUT: {
+    // timeout is about 200us
+
+    break;
+  };
+  case RX_MODE_RX_DATA: {
+    if (0 == crc) {
+      auto i{uint8_t(0)};
+      tmos_set_event(taskID, static_cast<uint16_t>(SBP::SBP_RF_RF_RX_EVT));
+    }
+    break;
+  };
+  case RX_MODE_TX_FINISH: {
+    break;
+  };
+  case RX_MODE_TX_FAIL: {
     break;
   };
   }
@@ -130,6 +155,11 @@ or similar).
 
 uint16_t RF_ProcessEvent(uint8_t task_id, uint16_t events) {
   if ((events & SYS_EVENT_MSG)) {
+    auto msg{tmos_msg_receive(task_id)};
+    if (!(nullptr == msg)) {
+      tmos_msg_deallocate(msg);
+    }
+    return events ^ SYS_EVENT_MSG;
   }
 }
 
@@ -140,12 +170,39 @@ continuously checks a flag called tx_end_flag. If the flag isn't set (indicating
 the transmission is still ongoing), it enters a loop with a brief delay.  A
 timeout mechanism forces the tx_end_flag to TRUE after approximately 5ms.
 
+
+*/
+/**
 RF_Wait_Rx_End() :  This function is very similar to the transmission wait
 function. It waits for a signal reception to end, monitoring the rx_end_flag. It
 also has a timeout mechanism of approximately 5ms.
 
 
 */
+__HIGH_CODE __attribute((noinline)) void RF_Wait_Tx_End() {
+  auto i{uint32_t(0)};
+  while (!(tx_end_flag)) {
+    i++;
+    __nop();
+    __nop();
+    if ((FREQ_SYS / 1000) < i) {
+      tx_end_flag = TRUE;
+    }
+  }
+}
+
+__HIGH_CODE __attribute((noinline)) void RF_Wait_Rx_End() {
+  auto i{uint32_t(0)};
+  while (!(rx_end_flag)) {
+    i++;
+    __nop();
+    __nop();
+    if ((FREQ_SYS / 1000) < i) {
+      rx_end_flag = TRUE;
+    }
+  }
+}
+
 /**
 
 **Purpose**
@@ -210,7 +267,6 @@ depends on how it's defined elsewhere in the system.
 void RF_Init() {
   auto cfg{rfConfig_t()};
   tmos_memset(&cfg, 0, sizeof(cfg));
-  auto taskID{uint8_t(0)};
   taskID = TMOS_ProcessEventRegister(RF_ProcessEvent);
   cfg.accessAddress = 0x71764129;
   cfg.CRCInit = 0x555555;

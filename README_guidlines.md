@@ -145,7 +145,7 @@ private:
 class Coord {
 public:
   Coord(float x_, float y_) : x{x_}, y{y_} {}
-  const Coord operator++(int dummy){
+  const Coord operator++(int dummy) const {
 	Coord temp(*this);
 	x++;
 	y++;

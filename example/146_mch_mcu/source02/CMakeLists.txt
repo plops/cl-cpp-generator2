@@ -63,8 +63,9 @@ ${HAL_PATH}/../BLE/LIB/*.S
 )
 
 # Source Files
+add_library(mine src/main.cpp)
+
 add_executable(${PROJECT_NAME}
-src/main.cpp 
 ${HAL_SOURCES}
 )
 
@@ -86,10 +87,11 @@ target_link_options(${PROJECT_NAME} PRIVATE -T ${LINKER_SCRIPT})
 target_link_libraries(${PROJECT_NAME}
         ${HAL_PATH}/../BLE/LIB/LIBCH59xBLE.a
         ${HAL_PATH}/StdPeriphDriver/libISP592.a
+	mine
 )
 
 target_compile_options(
-        ${PROJECT_NAME} PRIVATE
+        mine PRIVATE
         -Wall -Wextra -Wconversion -Wdouble-promotion
         -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
         -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000

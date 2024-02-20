@@ -1,6 +1,7 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2")
-  (ql:quickload "alexandria"))
+  (ql:quickload "alexandria")
+  (ql:quickload "cl-change-case"))
 
 (in-package :cl-cpp-generator2)
 
@@ -70,6 +71,11 @@
 		    (hex #xe4)
 		    3 2 2))
 
+     (space uint8_t taskID (curly 0))
+
+     (space volatile uint8_t tx_end_flag (curly 0))
+     (space volatile uint8_t rx_end_flag (curly 0))
+     
      (space "std::array<uint8_t, 10>" TX_DATA (curly 1 2 3 4 5 6 7 8 9 0))
 
      (space enum class SBP ": uint16_t" (curly START_DEVICE_EVT SBP_RF_PERIODIC_EVT SBP_RF_RF_RX_EVT))
@@ -79,6 +85,11 @@
 	    (defun Main_Circulation ()
 	      (while true
 		     (TMOS_SystemProcess))))
+
+
+     
+
+     
      (doc
       "
 
@@ -109,6 +120,23 @@ The `RF_2G4StatusCallBack` function acts as a central handler for status updates
 	 (TX_MODE_TX_FINISH
 	  )
 	 (TX_MODE_TX_FAIL
+	  (setf tx_end_flag TRUE))
+	 (TX_MODE_RX_DATA
+	  )
+	 (TX_MODE_RX_TIMEOUT
+	  (comments "timeout is about 200us")
+	  )
+	 (RX_MODE_RX_DATA
+	  (if (== 0 crc)
+	      (let ((i (uint8_t 0)))
+		(tmos_set_event taskID (static_cast<uint16_t> SBP--SBP_RF_RF_RX_EVT)))))
+	 (RX_MODE_TX_FINISH
+					;(setf rx_end_flag TRUE)
+					;(tmos_set_event taskID SBP--SBP_RF_RF_RX_EVT)
+	  )
+	 (RX_MODE_TX_FAIL
+	  ;(setf rx_end_flag TRUE)
+	  ;(tmos_)
 	  )))
 
      (doc
@@ -161,15 +189,39 @@ This function suggests a system design where:
        (declare (type uint8_t task_id)
 		(type uint16_t events)
 		(values uint16_t))
-       (when (& events SYS_EVENT_MSG)))
+       (when (& events SYS_EVENT_MSG)
+	 (let ((msg (tmos_msg_receive task_id)))
+	   (unless (== nullptr msg)
+	     (tmos_msg_deallocate msg))
+	   (return (^ events SYS_EVENT_MSG)))))
 
      (doc "
 
 RF_Wait_Tx_End() : This function waits for a transmission to end. It continuously checks a flag called tx_end_flag. If the flag isn't set (indicating the transmission is still ongoing), it enters a loop with a brief delay.  A timeout mechanism forces the tx_end_flag to TRUE after approximately 5ms.
+")
+     
+     
 
+     (doc "
 RF_Wait_Rx_End() :  This function is very similar to the transmission wait function. It waits for a signal reception to end, monitoring the rx_end_flag. It also has a timeout mechanism of approximately 5ms.
 ")
 
+     ,@(loop for e in `(tx rx)
+	     collect
+	     (let ((fun (format nil "RF_Wait_~a_End" (cl-change-case:pascal-case (format nil "~a" e))))
+		   (end-flag (format nil "~a_end_flag" e)))
+	      `(space __HIGH_CODE
+		      (__attribute (paren noinline))
+		      (defun ,fun ()
+			(let ((i (uint32_t 0)))
+			  (while (! ,end-flag)
+				 (incf i)
+				 (__nop)
+				 (__nop)
+				 (when (< (/ FREQ_SYS 1000)
+					  i)
+				   (setf ,end-flag TRUE))))))))
+     
      (doc
       "
 
@@ -216,7 +268,7 @@ The `RF_Init` function initializes the radio frequency (RF) module, establishing
      (defun RF_Init ()
        (let ((cfg (rfConfig_t)))
 	 (tmos_memset &cfg 0 (sizeof cfg))
-	 (let ((taskID (uint8_t 0))))
+	 ;(let ((taskID (uint8_t 0))))
 	 (setf taskID (TMOS_ProcessEventRegister RF_ProcessEvent))
 	 ,@(loop for (e f) in `((accessAddress (hex #x71764129))
 				(CRCInit (hex #x555555))
