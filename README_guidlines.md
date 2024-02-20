@@ -1,7 +1,7 @@
 - this document lists opinionated guidelines of how i want to write
   c++ to avoid footguns
   
-- 
+- never use `using`
 
 ## Variables
 
@@ -12,6 +12,15 @@
 
 
 - never use friends
+
+- don't use static member variables
+
+- never initialize a member along with its declaration. this is forbidden:
+```
+class A {
+  int a{3};
+};
+```
 
 ### Constructors (1/2)
 
