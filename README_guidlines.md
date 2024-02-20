@@ -1,5 +1,5 @@
 - this document lists opinionated guidelines of how i want to write
-  c++ to avoid foodguns
+  c++ to avoid footguns
   
 - 
 
