@@ -32,7 +32,8 @@ int value;
 
 ### Constructors (2/2)
 
-- follow the rule of three or rule of five
+- follow the rule of zero, if that is not possible follow the rule of
+  three or rule of five
 
 **The Rule of Three**
 
@@ -101,7 +102,7 @@ private:
 };
 ```
 
-## Member methods
+## Member methods 
 
 - declare methods const where possible (e.g. all getter methods):
 
@@ -112,5 +113,25 @@ public:
 	int get_value() const { return value };
 private:
     int value;
+};
+```
+
+### Overloaded Operators
+
+- always return const objects
+
+```
+class Coord {
+public:
+  Coord(float x_, float y_) : x{x_}, y{y_} {}
+  const Coord operator++(int dummy){
+	Coord temp(*this);
+	x++;
+	y++;
+	return temp;
+  }
+private:
+  float x;
+  float y;
 };
 ```
