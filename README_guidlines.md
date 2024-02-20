@@ -21,6 +21,18 @@ class A {
   int a{3};
 };
 ```
+use this instead:
+```
+class A {
+public:
+  A() :a{3} {}
+private:
+  int a;
+};
+```
+
+
+
 
 ### Constructors (1/2)
 
