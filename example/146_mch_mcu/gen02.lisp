@@ -220,46 +220,47 @@ This function suggests a system design where:
        (declare (type uint8_t task_id)
 		(type uint16_t events)
 		(values uint16_t))
+       (let ((m1000 10)))
        ,@(loop for e in
-		     `((:event SYS_EVENT_MSG
-			       :body (let ((msg (tmos_msg_receive task_id)))
-				       (unless (== nullptr msg)
-					 (tmos_msg_deallocate msg))))
-		       (:event SBP--START_DEVICE_EVT
-			       :body (do0
-				      (tmos_start_task
-				       taskID
-				       (static_cast<uint16_t> SBP--SBP_RF_PERIODIC_EVT)
-				       1000)))
-		       (:event SBP--SBP_RF_PERIODIC_EVT
-			       :body
-			       (do0
-				(RF_Shut)
-				(setf tx_end_flag FALSE)
-				(unless (RF_Tx (TX_DATA.data)
-					       (TX_DATA.size)
-					       (hex #xff)
-					       (hex #xff))
-				  (RF_Wait_Tx_End))
-				(tmos_start_task taskID
-						 (static_cast<uint16_t> SBP--SBP_RF_PERIODIC_EVT)
-						 1000)))
-		       (:event SBP--SBP_RF_RF_RX_EVT
-			       :body
-			       (do0
-				(RF_Shut)
-				(incf (aref TX_DATA 0))
-				(let ((state_rf_rf_rx (RF_Rx (TX_DATA.data)
-						    (TX_DATA.size)
-						    (hex #xff)
-						    (hex #xff))))
-				  (std--printf (string "%x\\n")
-					  state_rf_rf_rx)))))
+	       `((:event SYS_EVENT_MSG
+		  :body (let ((msg (tmos_msg_receive task_id)))
+			  (unless (== nullptr msg)
+			    (tmos_msg_deallocate msg))))
+		 (:event SBP--START_DEVICE_EVT
+		  :body (do0
+			 (tmos_start_task
+			  taskID
+			  (static_cast<uint16_t> SBP--SBP_RF_PERIODIC_EVT)
+			  m1000)))
+		 (:event SBP--SBP_RF_PERIODIC_EVT
+		  :body
+		  (do0
+		   (RF_Shut)
+		   (setf tx_end_flag FALSE)
+		   (unless (RF_Tx (TX_DATA.data)
+				  (TX_DATA.size)
+				  (hex #xff)
+				  (hex #xff))
+		     (RF_Wait_Tx_End))
+		   (tmos_start_task taskID
+				    (static_cast<uint16_t> SBP--SBP_RF_PERIODIC_EVT)
+				    m1000)))
+		 (:event SBP--SBP_RF_RF_RX_EVT
+		  :body
+		  (do0
+		   (RF_Shut)
+		   (incf (aref TX_DATA 0))
+		   (let ((state_rf_rf_rx (RF_Rx (TX_DATA.data)
+						(TX_DATA.size)
+						(hex #xff)
+						(hex #xff))))
+		     (std--printf (string "%x\\n")
+				  state_rf_rf_rx)))))
 	       collect
 	       (destructuring-bind (&key event body) e
-		`(when (& events (static_cast<uint16_t> ,event))
-		  ,body
-		  (return (^ events (static_cast<uint16_t> ,event))))))
+		 `(when (& events (static_cast<uint16_t> ,event))
+		    ,body
+		    (return (^ events (static_cast<uint16_t> ,event))))))
        (return 0)
        )
 
@@ -315,8 +316,10 @@ The `RF_Init` function initializes the radio frequency (RF) module, establishing
 	 (setf taskID (TMOS_ProcessEventRegister RF_ProcessEvent))
 	 ,@(loop for (e f) in `((accessAddress (hex #x71764129))
 				(CRCInit (hex #x555555))
-				(Channel 39)
-				(Frequency 2480000)
+				(Channel 3 ;0 ;39
+					 )
+				(Frequency 2410000; 2404000 ;2480000
+					   )
 				(LLEMode (or LLE_MODE_BASIC
 					     LLE_MODE_EX_CHANNEL))
 				(rfStatusCB RF_2G4StatusCallback)

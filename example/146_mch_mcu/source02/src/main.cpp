@@ -189,6 +189,7 @@ or similar).
 */
 
 uint16_t RF_ProcessEvent(uint8_t task_id, uint16_t events) {
+  auto m1000{10};
   if ((events & static_cast<uint16_t>(SYS_EVENT_MSG))) {
     auto msg{tmos_msg_receive(task_id)};
     if (!(nullptr == msg)) {
@@ -198,7 +199,7 @@ uint16_t RF_ProcessEvent(uint8_t task_id, uint16_t events) {
   }
   if ((events & static_cast<uint16_t>(SBP::START_DEVICE_EVT))) {
     tmos_start_task(taskID, static_cast<uint16_t>(SBP::SBP_RF_PERIODIC_EVT),
-                    1000);
+                    m1000);
     return events ^ static_cast<uint16_t>(SBP::START_DEVICE_EVT);
   }
   if ((events & static_cast<uint16_t>(SBP::SBP_RF_PERIODIC_EVT))) {
@@ -208,7 +209,7 @@ uint16_t RF_ProcessEvent(uint8_t task_id, uint16_t events) {
       RF_Wait_Tx_End();
     }
     tmos_start_task(taskID, static_cast<uint16_t>(SBP::SBP_RF_PERIODIC_EVT),
-                    1000);
+                    m1000);
     return events ^ static_cast<uint16_t>(SBP::SBP_RF_PERIODIC_EVT);
   }
   if ((events & static_cast<uint16_t>(SBP::SBP_RF_RF_RX_EVT))) {
@@ -288,8 +289,8 @@ void RF_Init() {
   taskID = TMOS_ProcessEventRegister(RF_ProcessEvent);
   cfg.accessAddress = 0x71764129;
   cfg.CRCInit = 0x555555;
-  cfg.Channel = 39;
-  cfg.Frequency = 2480000;
+  cfg.Channel = 3;
+  cfg.Frequency = 2410000;
   cfg.LLEMode = LLE_MODE_BASIC | LLE_MODE_EX_CHANNEL;
   cfg.rfStatusCB = RF_2G4StatusCallback;
   cfg.RxMaxlen = 251;
