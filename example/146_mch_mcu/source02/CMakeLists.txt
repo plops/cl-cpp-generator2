@@ -37,9 +37,9 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 else ()
     add_compile_options(
             #-O0
-            -O3 -ffunction-sections -fdata-sections # don't use together with flto
+            -O3 #-ffunction-sections -fdata-sections # don't use together with flto
     )
-    #set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
     add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 endif ()
 
@@ -53,13 +53,17 @@ set(HAL_PATH  ${CMAKE_SOURCE_DIR}/../hal)
 #  have to manually add the files that are needed for whatever
 #  functionality I want
 
-file(GLOB_RECURSE HAL_SOURCES 
-${HAL_PATH}/StdPeriphDriver/*.c
-${HAL_PATH}/RVMSIS/*.c
+file(GLOB_RECURSE HAL_SOURCES
+${HAL_PATH}/StdPeriphDriver/*_sys.c
+${HAL_PATH}/StdPeriphDriver/*_clk.c
+${HAL_PATH}/StdPeriphDriver/*_adc.c
+${HAL_PATH}/StdPeriphDriver/*_pwr.c
+${HAL_PATH}/StdPeriphDriver/*_gpio.c
+#${HAL_PATH}/RVMSIS/*.c
 ${HAL_PATH}/Startup/*.S
 ${HAL_PATH}/board.c
 ${HAL_PATH}/../BLE/HAL/*.c
-${HAL_PATH}/../BLE/LIB/*.S
+#${HAL_PATH}/../BLE/LIB/*.S
 )
 
 # Separately define my sourcefiles and those of the HAL. I want to
@@ -73,6 +77,7 @@ add_library(mine src/main.cpp)
 
 target_compile_options(
         mine PRIVATE
+	-Werror
         -Wall -Wextra -Wconversion -Wdouble-promotion
         -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
         -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000

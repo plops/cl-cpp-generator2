@@ -45,8 +45,8 @@
 			 )
 	      (include<> 
 	       CH59x_common.h
-	       CH59x_sys.h
-	       CH59x_pwr.h
+	      ; CH59x_sys.h
+	      ; CH59x_pwr.h
 	       board.h
 					;HAL.h
 					;broadcaster.h
@@ -249,12 +249,12 @@ This function suggests a system design where:
 			       (do0
 				(RF_Shut)
 				(incf (aref TX_DATA 0))
-				(let ((state (RF_Rx (TX_DATA.data)
+				(let ((state_rf_rf_rx (RF_Rx (TX_DATA.data)
 						    (TX_DATA.size)
 						    (hex #xff)
 						    (hex #xff))))
-				  (PRINT (string "%x\\n")
-					 state)))))
+				  (std--printf (string "%x\\n")
+					  state_rf_rf_rx)))))
 	       collect
 	       (destructuring-bind (&key event body) e
 		`(when (& events (static_cast<uint16_t> ,event))
@@ -325,11 +325,12 @@ The `RF_Init` function initializes the radio frequency (RF) module, establishing
 		 `(setf (dot cfg ,e)
 			,f))
 	 (let ((state (RF_Config &cfg))))
-
+	 (std--printf (string '%d) state)
 	 
 	 (when false
 	   (comments "RX mode")
-	   (let ((state (RF_Rx (TX_DATA.data) (TX_DATA.size) (hex #xff) (hex #xff))))))
+	   (let ((state_rx (RF_Rx (TX_DATA.data) (TX_DATA.size) (hex #xff) (hex #xff)))))
+	   (std--printf (string '%d) state_rx))
 
 	 (when true
 	   (comments "TX mode")

@@ -4,8 +4,6 @@
 
 extern "C" {
 #include <CH59x_common.h>
-#include <CH59x_pwr.h>
-#include <CH59x_sys.h>
 #include <CONFIG.h>
 #include <HAL.h>
 #include <board.h>
@@ -216,8 +214,8 @@ uint16_t RF_ProcessEvent(uint8_t task_id, uint16_t events) {
   if ((events & static_cast<uint16_t>(SBP::SBP_RF_RF_RX_EVT))) {
     RF_Shut();
     TX_DATA[0]++;
-    auto state{RF_Rx(TX_DATA.data(), TX_DATA.size(), 0xFF, 0xFF)};
-    PRINT("%x\n", state);
+    auto state_rf_rf_rx{RF_Rx(TX_DATA.data(), TX_DATA.size(), 0xFF, 0xFF)};
+    std::printf("%x\n", state_rf_rf_rx);
     return events ^ static_cast<uint16_t>(SBP::SBP_RF_RF_RX_EVT);
   }
   return 0;
@@ -296,10 +294,12 @@ void RF_Init() {
   cfg.rfStatusCB = RF_2G4StatusCallback;
   cfg.RxMaxlen = 251;
   auto state{RF_Config(&cfg)};
+  std::printf("'%d", state);
   if (false) {
     // RX mode
 
-    auto state{RF_Rx(TX_DATA.data(), TX_DATA.size(), 0xFF, 0xFF)};
+    auto state_rx{RF_Rx(TX_DATA.data(), TX_DATA.size(), 0xFF, 0xFF)};
+    std::printf("'%d", state_rx);
   }
   if (true) {
     // TX mode
