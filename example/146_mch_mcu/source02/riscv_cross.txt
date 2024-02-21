@@ -1,0 +1,3 @@
+[binaries]
+c = '~/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gcc'
+cpp = '~/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-g++'
