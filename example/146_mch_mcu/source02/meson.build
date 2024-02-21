@@ -5,7 +5,8 @@ riscv_flags = [
     '-march=rv32imac_zicsr_zifencei',
     '-mabi=ilp32',
     '-msmall-data-limit=8',
-    '-mno-save-restore'
+    '-mno-save-restore',
+    '-nostartfiles'
 ]
 
 riscv_link_args = [ 
@@ -17,7 +18,8 @@ riscv_link_args = [
     '-Wl,-gc-sections,--print-gc-sections,--print-memory-usage',
     '-T../../hal/Ld/Link.ld',
     '../../hal/StdPeriphDriver/libISP592.a',
-    '../../BLE/LIB/LIBCH59xBLE.a'
+    '../../BLE/LIB/LIBCH59xBLE.a',
+    '-nostartfiles'
 ]
 
 
