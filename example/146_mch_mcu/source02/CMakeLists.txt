@@ -63,7 +63,7 @@ ${HAL_PATH}/StdPeriphDriver/*_gpio.c
 ${HAL_PATH}/Startup/*.S
 ${HAL_PATH}/board.c
 ${HAL_PATH}/../BLE/HAL/*.c
-#${HAL_PATH}/../BLE/LIB/*.S
+${HAL_PATH}/../BLE/LIB/*.S
 )
 
 # Separately define my sourcefiles and those of the HAL. I want to
