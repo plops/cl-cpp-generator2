@@ -62,8 +62,28 @@ ${HAL_PATH}/../BLE/HAL/*.c
 ${HAL_PATH}/../BLE/LIB/*.S
 )
 
+# Separately define my sourcefiles and those of the HAL. I want to
+# emit rigorous warnings for my code.
+
+
+
 # Source Files
 add_library(mine src/main.cpp)
+
+
+target_compile_options(
+        mine PRIVATE
+        -Wall -Wextra -Wconversion -Wdouble-promotion
+        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
+        -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
+        -Wshadow -Wformat=2 -fno-common -fstack-usage
+        -fvisibility=hidden
+        -fno-strict-overflow -Wno-strict-overflow
+        #-Wpadded
+)
+
+
+
 
 add_executable(${PROJECT_NAME}
 ${HAL_SOURCES}
@@ -89,15 +109,3 @@ target_link_libraries(${PROJECT_NAME}
         ${HAL_PATH}/StdPeriphDriver/libISP592.a
 	mine
 )
-
-target_compile_options(
-        mine PRIVATE
-        -Wall -Wextra -Wconversion -Wdouble-promotion
-        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
-        -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
-        -Wshadow -Wformat=2 -fno-common -fstack-usage
-        -fvisibility=hidden
-        -fno-strict-overflow -Wno-strict-overflow
-        #-Wpadded
-)
-
