@@ -127,9 +127,12 @@ The `RF_2G4StatusCallBack` function acts as a central handler for status updates
 	  (comments "timeout is about 200us")
 	  )
 	 (RX_MODE_RX_DATA
-	  (if (== 0 crc)
+	  #+nil(if (== 0 crc)
 	      (let ((i (uint8_t 0)))
-		(tmos_set_event taskID (static_cast<uint16_t> SBP--SBP_RF_RF_RX_EVT)))))
+		
+		)
+	      )
+	  (tmos_set_event taskID (static_cast<uint16_t> SBP--SBP_RF_RF_RX_EVT)))
 	 (RX_MODE_TX_FINISH
 					;(setf rx_end_flag TRUE)
 					;(tmos_set_event taskID SBP--SBP_RF_RF_RX_EVT)
@@ -138,6 +141,34 @@ The `RF_2G4StatusCallBack` function acts as a central handler for status updates
 	  ;(setf rx_end_flag TRUE)
 	  ;(tmos_)
 	  )))
+
+     (do0
+      (doc "
+
+RF_Wait_Tx_End() : This function waits for a transmission to end. It continuously checks a flag called tx_end_flag. If the flag isn't set (indicating the transmission is still ongoing), it enters a loop with a brief delay.  A timeout mechanism forces the tx_end_flag to TRUE after approximately 5ms.
+")
+      
+      
+
+      (doc "
+RF_Wait_Rx_End() :  This function is very similar to the transmission wait function. It waits for a signal reception to end, monitoring the rx_end_flag. It also has a timeout mechanism of approximately 5ms.
+")
+
+      ,@(loop for e in `(tx rx)
+	      collect
+	      (let ((fun (format nil "RF_Wait_~a_End" (cl-change-case:pascal-case (format nil "~a" e))))
+		    (end-flag (format nil "~a_end_flag" e)))
+		`(space __HIGH_CODE
+			(__attribute (paren noinline))
+			(defun ,fun ()
+			  (let ((i (uint32_t 0)))
+			    (while (! ,end-flag)
+				   (incf i)
+				   (__nop)
+				   (__nop)
+				   (when (< (/ FREQ_SYS 1000)
+					    i)
+				     (setf ,end-flag TRUE)))))))))
 
      (doc
 
@@ -189,38 +220,50 @@ This function suggests a system design where:
        (declare (type uint8_t task_id)
 		(type uint16_t events)
 		(values uint16_t))
-       (when (& events SYS_EVENT_MSG)
-	 (let ((msg (tmos_msg_receive task_id)))
-	   (unless (== nullptr msg)
-	     (tmos_msg_deallocate msg))
-	   (return (^ events SYS_EVENT_MSG)))))
+       ,@(loop for e in
+		     `((:event SYS_EVENT_MSG
+			       :body (let ((msg (tmos_msg_receive task_id)))
+				       (unless (== nullptr msg)
+					 (tmos_msg_deallocate msg))))
+		       (:event SBP--START_DEVICE_EVT
+			       :body (do0
+				      (tmos_start_task
+				       taskID
+				       (static_cast<uint16_t> SBP--SBP_RF_PERIODIC_EVT)
+				       1000)))
+		       (:event SBP--SBP_RF_PERIODIC_EVT
+			       :body
+			       (do0
+				(RF_Shut)
+				(setf tx_end_flag FALSE)
+				(unless (RF_Tx (TX_DATA.data)
+					       (TX_DATA.size)
+					       (hex #xff)
+					       (hex #xff))
+				  (RF_Wait_Tx_End))
+				(tmos_start_task taskID
+						 (static_cast<uint16_t> SBP--SBP_RF_PERIODIC_EVT)
+						 1000)))
+		       (:event SBP--SBP_RF_RF_RX_EVT
+			       :body
+			       (do0
+				(RF_Shut)
+				(incf (aref TX_DATA 0))
+				(let ((state (RF_Rx (TX_DATA.data)
+						    (TX_DATA.size)
+						    (hex #xff)
+						    (hex #xff))))
+				  (PRINT (string "%x\\n")
+					 state)))))
+	       collect
+	       (destructuring-bind (&key event body) e
+		`(when (& events (static_cast<uint16_t> ,event))
+		  ,body
+		  (return (^ events (static_cast<uint16_t> ,event))))))
+       (return 0)
+       )
 
-     (doc "
-
-RF_Wait_Tx_End() : This function waits for a transmission to end. It continuously checks a flag called tx_end_flag. If the flag isn't set (indicating the transmission is still ongoing), it enters a loop with a brief delay.  A timeout mechanism forces the tx_end_flag to TRUE after approximately 5ms.
-")
      
-     
-
-     (doc "
-RF_Wait_Rx_End() :  This function is very similar to the transmission wait function. It waits for a signal reception to end, monitoring the rx_end_flag. It also has a timeout mechanism of approximately 5ms.
-")
-
-     ,@(loop for e in `(tx rx)
-	     collect
-	     (let ((fun (format nil "RF_Wait_~a_End" (cl-change-case:pascal-case (format nil "~a" e))))
-		   (end-flag (format nil "~a_end_flag" e)))
-	      `(space __HIGH_CODE
-		      (__attribute (paren noinline))
-		      (defun ,fun ()
-			(let ((i (uint32_t 0)))
-			  (while (! ,end-flag)
-				 (incf i)
-				 (__nop)
-				 (__nop)
-				 (when (< (/ FREQ_SYS 1000)
-					  i)
-				   (setf ,end-flag TRUE))))))))
      
      (doc
       "

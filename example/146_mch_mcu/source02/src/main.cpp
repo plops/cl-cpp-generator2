@@ -87,10 +87,7 @@ void RF_2G4StatusCallback(uint8_t sta, uint8_t crc, uint8_t *rxBuf) {
     break;
   };
   case RX_MODE_RX_DATA: {
-    if (0 == crc) {
-      auto i{uint8_t(0)};
-      tmos_set_event(taskID, static_cast<uint16_t>(SBP::SBP_RF_RF_RX_EVT));
-    }
+    tmos_set_event(taskID, static_cast<uint16_t>(SBP::SBP_RF_RF_RX_EVT));
     break;
   };
   case RX_MODE_TX_FINISH: {
@@ -99,6 +96,46 @@ void RF_2G4StatusCallback(uint8_t sta, uint8_t crc, uint8_t *rxBuf) {
   case RX_MODE_TX_FAIL: {
     break;
   };
+  }
+}
+
+/**
+
+RF_Wait_Tx_End() : This function waits for a transmission to end. It
+continuously checks a flag called tx_end_flag. If the flag isn't set (indicating
+the transmission is still ongoing), it enters a loop with a brief delay.  A
+timeout mechanism forces the tx_end_flag to TRUE after approximately 5ms.
+
+
+*/
+/**
+RF_Wait_Rx_End() :  This function is very similar to the transmission wait
+function. It waits for a signal reception to end, monitoring the rx_end_flag. It
+also has a timeout mechanism of approximately 5ms.
+
+
+*/
+__HIGH_CODE __attribute((noinline)) void RF_Wait_Tx_End() {
+  auto i{uint32_t(0)};
+  while (!(tx_end_flag)) {
+    i++;
+    __nop();
+    __nop();
+    if ((FREQ_SYS / 1000) < i) {
+      tx_end_flag = TRUE;
+    }
+  }
+}
+
+__HIGH_CODE __attribute((noinline)) void RF_Wait_Rx_End() {
+  auto i{uint32_t(0)};
+  while (!(rx_end_flag)) {
+    i++;
+    __nop();
+    __nop();
+    if ((FREQ_SYS / 1000) < i) {
+      rx_end_flag = TRUE;
+    }
   }
 }
 
@@ -154,53 +191,36 @@ or similar).
 */
 
 uint16_t RF_ProcessEvent(uint8_t task_id, uint16_t events) {
-  if ((events & SYS_EVENT_MSG)) {
+  if ((events & static_cast<uint16_t>(SYS_EVENT_MSG))) {
     auto msg{tmos_msg_receive(task_id)};
     if (!(nullptr == msg)) {
       tmos_msg_deallocate(msg);
     }
-    return events ^ SYS_EVENT_MSG;
+    return events ^ static_cast<uint16_t>(SYS_EVENT_MSG);
   }
-}
-
-/**
-
-RF_Wait_Tx_End() : This function waits for a transmission to end. It
-continuously checks a flag called tx_end_flag. If the flag isn't set (indicating
-the transmission is still ongoing), it enters a loop with a brief delay.  A
-timeout mechanism forces the tx_end_flag to TRUE after approximately 5ms.
-
-
-*/
-/**
-RF_Wait_Rx_End() :  This function is very similar to the transmission wait
-function. It waits for a signal reception to end, monitoring the rx_end_flag. It
-also has a timeout mechanism of approximately 5ms.
-
-
-*/
-__HIGH_CODE __attribute((noinline)) void RF_Wait_Tx_End() {
-  auto i{uint32_t(0)};
-  while (!(tx_end_flag)) {
-    i++;
-    __nop();
-    __nop();
-    if ((FREQ_SYS / 1000) < i) {
-      tx_end_flag = TRUE;
+  if ((events & static_cast<uint16_t>(SBP::START_DEVICE_EVT))) {
+    tmos_start_task(taskID, static_cast<uint16_t>(SBP::SBP_RF_PERIODIC_EVT),
+                    1000);
+    return events ^ static_cast<uint16_t>(SBP::START_DEVICE_EVT);
+  }
+  if ((events & static_cast<uint16_t>(SBP::SBP_RF_PERIODIC_EVT))) {
+    RF_Shut();
+    tx_end_flag = FALSE;
+    if (!RF_Tx(TX_DATA.data(), TX_DATA.size(), 0xFF, 0xFF)) {
+      RF_Wait_Tx_End();
     }
+    tmos_start_task(taskID, static_cast<uint16_t>(SBP::SBP_RF_PERIODIC_EVT),
+                    1000);
+    return events ^ static_cast<uint16_t>(SBP::SBP_RF_PERIODIC_EVT);
   }
-}
-
-__HIGH_CODE __attribute((noinline)) void RF_Wait_Rx_End() {
-  auto i{uint32_t(0)};
-  while (!(rx_end_flag)) {
-    i++;
-    __nop();
-    __nop();
-    if ((FREQ_SYS / 1000) < i) {
-      rx_end_flag = TRUE;
-    }
+  if ((events & static_cast<uint16_t>(SBP::SBP_RF_RF_RX_EVT))) {
+    RF_Shut();
+    TX_DATA[0]++;
+    auto state{RF_Rx(TX_DATA.data(), TX_DATA.size(), 0xFF, 0xFF)};
+    PRINT("%x\n", state);
+    return events ^ static_cast<uint16_t>(SBP::SBP_RF_RF_RX_EVT);
   }
+  return 0;
 }
 
 /**
