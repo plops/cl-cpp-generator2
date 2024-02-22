@@ -32,16 +32,17 @@
 
      (comments "based on https://github.com/openwch/ch592/tree/main/EVT/EXAM/USB/Device/VendorDefinedDev/src")
      (comments "try to write send data via USB to computer")
+     (comments "AI summary of the example code is here: https://github.com/plops/cl-cpp-generator2/tree/master/example/146_mch_mcu/doc/examples/usb/device")
      (space extern "\"C\""
 	    (progn
 	      (include<> CONFIG.h
 			 HAL.h
-			; RF_PHY.h
+					; RF_PHY.h
 			 )
 	      (include<> 
 	       CH59x_common.h
-	      ; CH59x_sys.h
-	      ; CH59x_pwr.h
+					; CH59x_sys.h
+					; CH59x_pwr.h
 	       board.h
 					;HAL.h
 					;broadcaster.h
