@@ -155,17 +155,17 @@ void USB_DevTransProcess() {
             switch ((pSetupReqPak->wValue & 0xFF)) {
             case 0: {
               pDescr = LangDescr.data();
-              len = LangDescr.data()[0];
+              len = LangDescr.at(0);
               break;
             };
             case 1: {
               pDescr = ManuInfo.data();
-              len = ManuInfo.data()[0];
+              len = ManuInfo.at(0);
               break;
             };
             case 2: {
               pDescr = ProdInfo.data();
-              len = ProdInfo.data()[0];
+              len = ProdInfo.at(0);
               break;
             };
             default: {

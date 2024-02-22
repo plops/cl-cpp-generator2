@@ -232,7 +232,7 @@
 				     collect
 				     `(,e
 				       (setf pDescr (dot ,f (data))
-					     len (aref (dot ,f (data)) 0))))
+					     len (dot ,f (at 0)))))
 			     (t (comments "Unsupported string descriptor type.")
 			      (setf errflag (hex #xff)))))
 			  (t (setf errflag (hex #xff)))
