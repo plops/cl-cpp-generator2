@@ -34,6 +34,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
             -g -g3 -ggdb -gdwarf-4
     )
+    add_link_options(-Wl,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
+
 else ()
     add_compile_options(
             #-O0
@@ -54,16 +56,17 @@ set(HAL_PATH  ${CMAKE_SOURCE_DIR}/../hal)
 #  functionality I want
 
 file(GLOB_RECURSE HAL_SOURCES
-${HAL_PATH}/StdPeriphDriver/*_sys.c
-${HAL_PATH}/StdPeriphDriver/*_clk.c
-${HAL_PATH}/StdPeriphDriver/*_adc.c
-${HAL_PATH}/StdPeriphDriver/*_pwr.c
-${HAL_PATH}/StdPeriphDriver/*_gpio.c
+#${HAL_PATH}/StdPeriphDriver/*_sys.c
+#${HAL_PATH}/StdPeriphDriver/*_clk.c
+#${HAL_PATH}/StdPeriphDriver/*_adc.c
+#${HAL_PATH}/StdPeriphDriver/*_pwr.c
+#${HAL_PATH}/StdPeriphDriver/*_gpio.c
+${HAL_PATH}/StdPeriphDriver/*_usbdev.c
 #${HAL_PATH}/RVMSIS/*.c
 ${HAL_PATH}/Startup/*.S
-${HAL_PATH}/board.c
-${HAL_PATH}/../BLE/HAL/*.c
-${HAL_PATH}/../BLE/LIB/*.S
+#${HAL_PATH}/board.c
+#${HAL_PATH}/../BLE/HAL/*.c
+#${HAL_PATH}/../BLE/LIB/*.S
 )
 
 # Separately define my sourcefiles and those of the HAL. I want to
