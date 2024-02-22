@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)  # Adjust if you need a different minimum version
 
-project(risc_test CXX C ASM)  # Name your project
+project(risc_usb_test CXX C ASM)  # Name your project
 
 set(CMAKE_CXX_STANDARD 20)
 
