@@ -301,7 +301,42 @@
 			    SetupReqLen (std--min (static_cast<uint16_t> 2) SetupReqLen)))
 		     (t
 		      (comments "Catch-all for unsupported request codes. Sets an error flag.")
-		      (setf errflag (hex #xff)))))))))))
+		      (setf errflag (hex #xff))))))
+
+	      (if (== (hex #xff)
+			errflag)
+		  (do0
+		   (comments "If the previously set errflag is 0xff (signaling an unsupported request), this code forces a STALL condition on the control endpoint. This signals to the host that the device doesn't recognize the request.")
+		   (setf R8_UEP0_CTRL (or RB_UEP_R_TOG
+					  RB_UEP_T_TOG
+					  UEP_R_RES_STALL
+					  UEP_T_RES_STALL)))
+		  (do0
+		   (doc "Determines Transfer Direction: Checks chtype. If the 0x80 bit is set, the host expects data from the device (upload/IN direction), otherwise, the host is sending data (download/OUT direction)."
+			"Sets the data transfer 2length (len) for this stage of the control transfer."
+			
+			)
+		   (if (& (hex #x80)
+			  chtype)
+		       (do0
+			(comments "Upload")
+			(let ((new_len (std--min DevEP0Size SetupReqLen))))
+			(assert (< new_len 256))
+			(setf len (static_cast<uint8_t> new_len))
+			(decf SetupReqLen len))
+		       (do0
+			(comments "Download")
+			(setf len 0)))
+		   (comments "Configures Endpoint: Prepares the control endpoint register (R8_UEP0_CTRL) for data transmission (likely transitioning to the DATA1 stage of the control transfer).")
+		   (setf R8_UEP0_T_LEN len
+			 R8_UEP0_CTRL (or RB_UEP_R_TOG
+					  RB_UEP_T_TOG
+					  UEP_R_RES_ACK
+					  UEP_T_RES_ACK)))
+		)
+	      (comments "Signals Completion: Sets an interrupt flag (R8_USB_INT_FG = RB_UIF_TRANSFER;) to indicate the setup process is finished.")
+	      (setf R8_USB_INT_FG RB_UIF_TRANSFER)
+	      )))))
      
      )
    :omit-parens t
