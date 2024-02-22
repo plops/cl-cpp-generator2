@@ -1,7 +1,11 @@
 #!/bin/bash
 
 # This script is used to configure the meson build system for the RISC-V project
-meson setup bmeson --cross-file riscv_cross.txt --unity=on --default-library=static --buildtype=release --unity-size=2048
+meson setup bmeson \
+  --cross-file riscv_cross.txt \
+  --buildtype=release \
+  --unity=on --unity-size=2048
+  
 cd bmeson
 # perform the build
 meson compile

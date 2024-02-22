@@ -1,5 +1,12 @@
 # Cheap Risc-V microcontroller
 
+## Code examples
+
+| file  | comment                                  |   |   |
+|-------|------------------------------------------|---|---|
+| gen01 | flash LED                                |   |   |
+| gen02 | emit RF signal at 2410 MHz with 2 MBit/s |   |   |
+
 ## Introduction
 
 - i want to write some code for MCH microcontrollers with risc-v

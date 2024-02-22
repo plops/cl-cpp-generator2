@@ -58,7 +58,8 @@ else
   optimization_flags = ['-O3']
   riscv_link_args += [
     '-Wl,-gc-sections,--print-gc-sections,--print-memory-usage',
-    #'-Map=' + meson.build_root() + '/' + project_name + '.map'
+    '-Wl,-Map=' + meson.build_root() + '/risc_test.map',
+    '-Wl,--cref',
   ]
 endif
 
