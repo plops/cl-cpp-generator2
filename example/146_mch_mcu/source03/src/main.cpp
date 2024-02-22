@@ -363,24 +363,39 @@ resuming from suspend).
   }
 }
 
-void DebugInit() {
-  /**
-Sets a bit on GPIOA, Pin 9. This likely turns on an LED or some indicator
+int main() {
+  SetSysClock(CLK_SOURCE_PLL_60MHz);
+  pEP0_RAM_Addr = EP0_Databuf.data();
+  USB_DeviceInit();
+  // Enable the interrupt associated with the USB peripheral.
 
-Configures GPIOA, Pin 8 as an input with internal pull-up resistor
+  PFIC_EnableIRQ(USB_IRQn);
+  while (1) {
+    // inifinite loop
+  }
+}
 
+__INTERRUPT __HIGH_CODE void USB_IRQHandler() {
+  // Handle interrupts coming from the USB Peripheral
 
-Configures GPIOA, Pin 9 as a push-pull output with 5mA drive strength
+  USB_DevTransProcess();
+}
 
+void DevEP1_OUT_Deal(uint8_t l) {
+  /** Endpoint 1 data reception
 
-Initializes UART1 with default settings. This sets up a serial port for
-debugging communication
+1. l Parameter: The argument l represents the length (in bytes) of the received
+data packet.
 
+2. Data Inversion: The core of the function is a loop that iterates through each
+received byte:
+
+pEP1_IN_DataBuf[i] = ~pEP1_OUT_DataBuf[i]; : This line inverts each byte of data
+(~ is the bitwise NOT operator) and stores the result in pEP1_IN_DataBuf.
+3. Response Preparation:  The function calls DevEP1_IN_Deal(l).  This other
+function is likely responsible for sending the modified data (now in
+pEP1_IN_DataBuf) back to the host.
 
 
 */
-  GPIOA_SetBits(GPIO_Pin_9);
-  GPIOA_ModeCfg(GPIO_Pin_8, GPIO_ModeIN_PU);
-  GPIOA_ModeCfg(GPIO_Pin_9, GPIO_ModeOut_PP_5mA);
-  UART1_DefInit();
 }

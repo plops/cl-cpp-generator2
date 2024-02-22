@@ -385,6 +385,45 @@
        (GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
        (GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
        (UART1_DefInit))
+
+     (defun main ()
+       (declare (values int))
+       (SetSysClock CLK_SOURCE_PLL_60MHz)
+       (setf pEP0_RAM_Addr (EP0_Databuf.data))
+       (USB_DeviceInit)
+       (comments "Enable the interrupt associated with the USB peripheral.")
+       (PFIC_EnableIRQ USB_IRQn)
+       (while 1
+	      (comments "inifinite loop")))
+
+
+     (do0
+      (doc "
+
+__INTERRUPT is defined with __attribute__((interrupt("WCH-Interrupt-fast"))). This likely indicates a specialized, 'fast' interrupt mechanism specific to your compiler or microcontroller (WCH).
+
+
+The compiler attribute __attribute__((section('.highcode'))) will be assigned to the __HIGH_CODE macro. This attribute likely instructs the compiler to place functions or code blocks marked with __HIGH_CODE into a special memory section named '.highcode' (possibly a faster memory region).
+
+
+")
+      (space __INTERRUPT
+	     __HIGH_CODE
+	     (defun USB_IRQHandler ()
+	       (comments "Handle interrupts coming from the USB Peripheral")
+	       (USB_DevTransProcess))))
+
+     (defun DevEP1_OUT_Deal (l)
+       (declare (type uint8_t l))
+       (doc "Endpoint 1 data reception
+
+1. l Parameter: The argument l represents the length (in bytes) of the received data packet.
+
+2. Data Inversion: The core of the function is a loop that iterates through each received byte:
+
+      pEP1_IN_DataBuf[i] = ~pEP1_OUT_DataBuf[i]; : This line inverts each byte of data (~ is the bitwise NOT operator) and stores the result in pEP1_IN_DataBuf.
+3. Response Preparation:  The function calls DevEP1_IN_Deal(l).  This other function is likely responsible for sending the modified data (now in pEP1_IN_DataBuf) back to the host.
+"))
      
      )
    :omit-parens t
