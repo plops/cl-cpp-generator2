@@ -52,7 +52,7 @@
       (comments "vendor id and product id:")
       ,(let ((l `(#x12 1 #x10 1 #xff #x80 #x55 DevEP0Size #x48 #x43 #x37 #x55
 		       0 1 1 2 0 1)))
-	 `(space ,(format nil "std::array<uint8_t, ~a>" (length l))
+	 `(space ,(format nil "const std::array<uint8_t, ~a>" (length l))
 		 DevDescr (curly
 			   ,@(loop for e in l
 				   collect
@@ -66,7 +66,7 @@
 		    0 0 7 5 #x83 2 #x40 0 0 7 5 3 2 #x40 0
 		    0 7 5 #x82 2 #x40 0 0 7 5 2 2 #x40 0 0
 		    7 5 #x81 2 #x40 0 0 7 5 1 2 #x40 0 0)))
-	 `(space ,(format nil "std::array<uint8_t, ~a>" (length l))
+	 `(space ,(format nil "const std::array<uint8_t, ~a>" (length l))
 		 CfgDescr (curly
 			   ,@(loop for e in l
 				   collect
@@ -77,7 +77,7 @@
 				       e)))))
 
       ,(let ((l `(4 3 9 4)))
-	 `(space ,(format nil "std::array<uint8_t, ~a>" (length l))
+	 `(space ,(format nil "const std::array<uint8_t, ~a>" (length l))
 		 ;; language descriptor
 		 LangDescr (curly
 			    ,@(loop for e in l
@@ -90,7 +90,7 @@
 
       ;; manufacturer information
       ,(let ((l `(#xe 3 (char "w") 0 (char "c") 0 (char "h") 0 (char ".") 0 (char "c") 0 (char "n"))))
-	 `(space ,(format nil "std::array<uint8_t, ~a>" (length l))
+	 `(space ,(format nil "const std::array<uint8_t, ~a>" (length l))
 		 ManuInfo (curly
 			   ,@(loop for e in l
 				   collect
@@ -106,7 +106,7 @@
 		      (char "5") 0
 		      (char "9") 0
 		      (char "x") 0)))
-	 `(space ,(format nil "std::array<uint8_t, ~a>" (length l))
+	 `(space ,(format nil "const std::array<uint8_t, ~a>" (length l))
 		 ProdInfo (curly
 			   ,@(loop for e in l
 				   collect
@@ -198,10 +198,37 @@
 	       (setf chtype (-> pSetupReqPak bRequestType))
 	       (setf len 0
 		     errflag 0)
-	       (unless (== USB_REQ_TYP_STANDARD
+	       (if (!= USB_REQ_TYP_STANDARD
 			   (& chtype USB_REQ_TYP_MASK))
-		 (comments "If the request type is NOT a standard request, set an error flag.")
-		 (setf errflag (hex #xff))))))))
+		   (do0 (comments "If the request type is NOT a standard request, set an error flag.")
+			(setf errflag (hex #xff)))
+		   (do0
+		    (comments "Handle standard request.")
+		    (case SetupReqCode
+		      (USB_GET_DESCRIPTOR
+		       (comments "Handle requests for device, configuration, or string descriptors.")
+		       (case (>> pSetupReqPak->wValue 8)
+			 (USB_DESCR_TYP_DEVICE
+			  (setf pDescr (dot DevDescr (data))
+				len (aref DevDescr 0)))
+			 (USB_DESCR_TYP_CONFIG
+			  (setf pDescr (dot CfgDescr (data))
+				len (aref CfgDescr 2)))
+			 (USB_DESCR_TYP_STRING
+			  (case (& pSetupReqPak->wValue (hex #xff))
+			    ,@(loop for (e f ) in `((0 LangDescr)
+						    (1 ManuInfo)
+						    (2 ProdInfo)
+						    )
+				    collect
+				    `(,e
+				     (setf pDescr (dot ,f (data))
+					   len (aref (dot ,f (data)) 0))))
+			    (t (comments "Unsupported string descriptor type.")
+			     (setf errflag (hex #xff)))))
+			 (t (setf errflag (hex #xff)))
+			 ))
+		     ))))))))
      
     )
    :omit-parens t
