@@ -362,3 +362,25 @@ resuming from suspend).
     R8_USB_INT_FG = intflag;
   }
 }
+
+void DebugInit() {
+  /**
+Sets a bit on GPIOA, Pin 9. This likely turns on an LED or some indicator
+
+Configures GPIOA, Pin 8 as an input with internal pull-up resistor
+
+
+Configures GPIOA, Pin 9 as a push-pull output with 5mA drive strength
+
+
+Initializes UART1 with default settings. This sets up a serial port for
+debugging communication
+
+
+
+*/
+  GPIOA_SetBits(GPIO_Pin_9);
+  GPIOA_ModeCfg(GPIO_Pin_8, GPIO_ModeIN_PU);
+  GPIOA_ModeCfg(GPIO_Pin_9, GPIO_ModeOut_PP_5mA);
+  UART1_DefInit();
+}
