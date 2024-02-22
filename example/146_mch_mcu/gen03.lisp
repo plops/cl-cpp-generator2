@@ -400,7 +400,7 @@
      (do0
       (doc "
 
-__INTERRUPT is defined with __attribute__((interrupt("WCH-Interrupt-fast"))). This likely indicates a specialized, 'fast' interrupt mechanism specific to your compiler or microcontroller (WCH).
+__INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))). This likely indicates a specialized, 'fast' interrupt mechanism specific to your compiler or microcontroller (WCH).
 
 
 The compiler attribute __attribute__((section('.highcode'))) will be assigned to the __HIGH_CODE macro. This attribute likely instructs the compiler to place functions or code blocks marked with __HIGH_CODE into a special memory section named '.highcode' (possibly a faster memory region).
@@ -423,7 +423,11 @@ The compiler attribute __attribute__((section('.highcode'))) will be assigned to
 
       pEP1_IN_DataBuf[i] = ~pEP1_OUT_DataBuf[i]; : This line inverts each byte of data (~ is the bitwise NOT operator) and stores the result in pEP1_IN_DataBuf.
 3. Response Preparation:  The function calls DevEP1_IN_Deal(l).  This other function is likely responsible for sending the modified data (now in pEP1_IN_DataBuf) back to the host.
-"))
+")
+       (dotimes (i l)
+	 (setf (aref pEP1_IN_DataBuf i)
+	       (~ (aref pEP1_OUT_DataBuf i))))
+       (DevEP1_IN_Deal l))
      
      )
    :omit-parens t

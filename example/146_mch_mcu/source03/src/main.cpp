@@ -375,6 +375,22 @@ int main() {
   }
 }
 
+/**
+
+__INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))).
+This likely indicates a specialized, 'fast' interrupt mechanism specific to your
+compiler or microcontroller (WCH).
+
+
+The compiler attribute __attribute__((section('.highcode'))) will be assigned to
+the __HIGH_CODE macro. This attribute likely instructs the compiler to place
+functions or code blocks marked with __HIGH_CODE into a special memory section
+named '.highcode' (possibly a faster memory region).
+
+
+
+
+*/
 __INTERRUPT __HIGH_CODE void USB_IRQHandler() {
   // Handle interrupts coming from the USB Peripheral
 
@@ -398,4 +414,8 @@ pEP1_IN_DataBuf) back to the host.
 
 
 */
+  for (auto i = 0; i < l; i += 1) {
+    pEP1_IN_DataBuf[i] = ~(pEP1_OUT_DataBuf[i]);
+  }
+  DevEP1_IN_Deal(l);
 }

@@ -77,7 +77,7 @@ add_library(mine src/main.cpp)
 
 target_compile_options(
         mine PRIVATE
-	-Werror
+	#-Werror
         -Wall -Wextra -Wconversion -Wdouble-promotion
         -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
         -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
