@@ -1,4 +1,4 @@
-project('risc_test', ['c', 'cpp'], default_options: ['cpp_std=c++20'])
+project('risc_usb_test', ['c', 'cpp'], default_options: ['cpp_std=c++20'])
 
 # Compiler/linker options 
 riscv_flags = [
@@ -58,13 +58,13 @@ else
   compiler_flags = ['-O3']
   riscv_link_args += [
     '-Wl,-gc-sections,--print-gc-sections,--print-memory-usage',
-    '-Wl,-Map=' + meson.build_root() + '/risc_test.map',
+    '-Wl,-Map=' + meson.build_root() + '/risc_usb_test.map',
     '-Wl,--cref',
   ]
 endif
 
 # Executable linking it all together
-executable('risc_test',
+executable('risc_usb_test',
            sources : hal_sources + mine_src,
            include_directories : include_directories(
                '../hal/RVMSIS',
