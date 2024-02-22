@@ -14,7 +14,7 @@
 
 
 (let ((module-name "main"))
-  (defparameter *source-dir* #P"example/146_mch_mcu/source02/src/")
+  (defparameter *source-dir* #P"example/146_mch_mcu/source03/src/")
   (defparameter *full-source-dir* (asdf:system-relative-pathname
 				   'cl-cpp-generator2
 				   *source-dir*))
@@ -28,15 +28,10 @@
 		     *source-dir*))
    
    `(do0
-     #+nil(do0 
-      (RF_Init)
-      (RF_Config)
-      (RF_Tx)
-      (RF_Rx)
-      (RF_GetStatus))
+  
 
-     (comments "based on https://github.com/openwch/ch592/tree/main/EVT/EXAM/BLE/RF_PHY/APP")
-     (comments "try rf communication module in basic mode")
+     (comments "based on https://github.com/openwch/ch592/tree/main/EVT/EXAM/USB/Device/VendorDefinedDev/src")
+     (comments "try to write send data via USB to computer")
      (space extern "\"C\""
 	    (progn
 	      (include<> CONFIG.h
