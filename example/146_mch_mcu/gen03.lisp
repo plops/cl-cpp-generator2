@@ -205,7 +205,7 @@
 			  (or (& R8_UEP1_CTRL
 				 ~MASK_UEP_T_RES)
 			      UEP_T_RES_NAK)))
-		   (t )
+		   (t ) 
 		   ))
 		(setf R8_USB_INT_FG RB_UIF_TRANSFER))
 	      (comments "This code handles the initial 'Setup' stage of USB control transfers. When the host sends a setup packet to the device, this code analyzes the request and prepares a response.")
