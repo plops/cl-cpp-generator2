@@ -3,10 +3,9 @@
 here i want to develop a structure of how to represent the registers of the MCU in modern c++
 
 
-## Prompts for Gemini / GPT4
+## Prompt a
 
-propose code to represent usb registers of the CH592 MCU in modern
-c++. i want to avoid the user having to perform direct bit
+i want to avoid the user having to perform direct bit
 manipulation. 
 
 use std::bitset and possibly std::byte to make the interface easy.
@@ -19,6 +18,15 @@ fields are supported as well.
 
 what follows is the description of some of the registers:
 
+as the registers are consecutive in memory you can also define the
+structure of the registers and use placement new to get their
+addresses.
+
+
+## Prompts for Gemini / GPT4
+
+write code to represent usb registers of the CH592 MCU in modern
+c++. it shall be convenient to use.
 
 The base address of the USB controller is 0x40008000 and the USB related registers are divided into 3 parts, some
 of which are multiplexed in host and device mode.
@@ -26,7 +34,7 @@ of which are multiplexed in host and device mode.
 (2) USB device control registers.
 (3) USB host control registers. 
 
-heres is the first register:
+heres is the list of global registers:
 
 | Name           | Access address | Description                       | Reset value |
 |----------------|----------------|-----------------------------------|-------------|
