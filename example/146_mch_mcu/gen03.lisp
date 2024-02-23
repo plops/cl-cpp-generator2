@@ -143,54 +143,70 @@
 	     (do0
 	      (unless (== MASK_UIS_TOKEN
 			  (& R8_USB_INT_ST MASK_UIS_TOKEN))
-		(case (& R8_USB_INT_ST (or MASK_UIS_TOKEN
-					   MASK_UIS_ENDP))
-		  (UIS_TOKEN_IN
-		   (case SetupReqCode
-		     (USB_GET_DESCRIPTOR
-		      (comments "Handles the standard 'Get Descriptor' request. The device sends the appropriate descriptor data to the host.")
-		      (comments "Calculate length of data to send. Limit to device endpoint size if needed.")
-		      (let ((new_len (std--min DevEP0Size
-					       SetupReqLen)))
-			(assert (< new_len 256)))
+		(do0
+		 (comments "The following switch extracts the type of token (in/out) and the endpoint number.")
+		 (case (& R8_USB_INT_ST (or MASK_UIS_TOKEN
+					    MASK_UIS_ENDP))
+		   (UIS_TOKEN_IN
+		    (case SetupReqCode
+		      (USB_GET_DESCRIPTOR
+		       (comments "Handles the standard 'Get Descriptor' request. The device sends the appropriate descriptor data to the host.")
+		       (comments "Calculate length of data to send. Limit to device endpoint size if needed.")
+		       (let ((new_len (std--min DevEP0Size
+						SetupReqLen)))
+			 (assert (< new_len 256)))
 		      
-		      (setf len (static_cast<uint8_t> new_len)
-			    #+nil(? (<= DevEP0Size SetupReqLen)
-				    DevEP0Size
-				    SetupReqLen))
-		      (comments "Copy the descriptor data to the endpoint buffer for transmission to the host.")
-		      (memcpy pEP0_DataBuf pDescr len )
-		      (decf SetupReqLen len)
-		      (incf pDescr len)
-		      (comments "Update state variables (length of the remaining request, pointer to the next chunk of descriptor data) and prepare for the next stage of the transfer.")
-		      (setf R8_UEP0_T_LEN len
-			    )
-		      (setf R8_UEP0_CTRL (^ R8_UEP0_CTRL RB_UEP_T_TOG)))
-		     (USB_SET_ADDRESS
-		      (comments "Handles the standard 'Set Address' request. The device records the new USB address.")
-		      (assert (< SetupReqLen 256))
-		      (setf R8_USB_DEV_AD (or (& R8_USB_DEV_AD RB_UDA_GP_BIT)
-					      (static_cast<uint8_t> SetupReqLen)))
-		      (setf R8_UEP0_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK)))
-		     (t
-		      (comments "Handles any other control requests. This usually results in a stall condition, as the device didn't recognize the request.")
-		      (setf R8_UEP0_T_LEN 0
-			    R8_UEP0_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK))))
-		   )
-		  (UIS_TOKEN_OUT
-		   (comments "Handles 'OUT' token transactions, meaning the host is sending data to the device.")
-		   (comments "Get length of received data.")
-		   (setf len R8_USB_RX_LEN))
-		  #+nil ((or UIS_TOKEN_OUT 1)
-			 (when (& R8_USB_INT_ST
-				  RB_UIS_TOG_OK)
-			   (comments "f a particular status flag is set (indicating data is ready to be processed)")
-			   (setf R8_UEP1_CTRL  (^  R8_UEP1_CTRL RB_UEP_R_TOG)
-				 len R8_USB_RX_LEN)
-			   (comments "Update state, get the data length, and call a function (DevEP1_OUT_Deal) to process the received data (on endpoint 1).")
-			   (DevEP1_OUT_Deal len)))
-		  (t )
-		  )
+		       (setf len (static_cast<uint8_t> new_len)
+			     #+nil(? (<= DevEP0Size SetupReqLen)
+				     DevEP0Size
+				     SetupReqLen))
+		       (comments "Copy the descriptor data to the endpoint buffer for transmission to the host.")
+		       (memcpy pEP0_DataBuf pDescr len )
+		       (decf SetupReqLen len)
+		       (incf pDescr len)
+		       (comments "Update state variables (length of the remaining request, pointer to the next chunk of descriptor data) and prepare for the next stage of the transfer.")
+		       (setf R8_UEP0_T_LEN len
+			     )
+		       (setf R8_UEP0_CTRL (^ R8_UEP0_CTRL RB_UEP_T_TOG)))
+		      (USB_SET_ADDRESS
+		       (comments "Handles the standard 'Set Address' request. The device (we) records the new USB address.")
+		       (assert (< SetupReqLen 256))
+		       (setf R8_USB_DEV_AD (or (& R8_USB_DEV_AD RB_UDA_GP_BIT)
+					       (static_cast<uint8_t> SetupReqLen)))
+		       (setf R8_UEP0_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK)))
+		      (t
+		       (comments "Handles any other control requests. This usually results in a stall condition, as the device didn't recognize the request.")
+		       (setf R8_UEP0_T_LEN 0
+			     R8_UEP0_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK))))
+		    )
+		   (UIS_TOKEN_OUT
+		    (comments "Handles 'OUT' token transactions, meaning the host is sending data to the device.")
+		    (comments "Get length of received data.")
+		    (setf len R8_USB_RX_LEN))
+		   ((or UIS_TOKEN_OUT 1)
+		    (comments "Handle data reception on endpoint 1.")
+		    (when (& R8_USB_INT_ST
+			     RB_UIS_TOG_OK)
+		      (comments "If the data toggle is correct and data is ready.")
+		      (comments "Toggles the receive (IN) data toggle bit for endpoint 1.")
+		      (setf R8_UEP1_CTRL  (^  R8_UEP1_CTRL RB_UEP_R_TOG)
+			    len R8_USB_RX_LEN)
+		      (comments "Get the data length, and call a function (DevEP1_OUT_Deal) to process the received data (on endpoint 1).")
+		      (DevEP1_OUT_Deal len)))
+
+		   ((or UIS_TOKEN_IN 1)
+		    (comments "Prepare an empty (?) response on endpoint 1.")
+		    (comments "Toggle the transmit (OUT) data toggle bit for endpoint 1.")
+		    (setf R8_UEP1_CTRL
+			  (^ R8_UEP1_CTRL
+			     RB_UEP_T_TOG))
+		    (comments "Prepares endpoint 1 for a NAK response (indicating no data is ready to send).")
+		    (setf R8_UEP1_CTRL
+			  (or (& R8_UEP1_CTRL
+				 ~MASK_UEP_T_RES)
+			      UEP_T_RES_NAK)))
+		   (t )
+		   ))
 		(setf R8_USB_INT_FG RB_UIF_TRANSFER))
 	      (comments "This code handles the initial 'Setup' stage of USB control transfers. When the host sends a setup packet to the device, this code analyzes the request and prepares a response.")
 	      (when (& R8_USB_INT_ST

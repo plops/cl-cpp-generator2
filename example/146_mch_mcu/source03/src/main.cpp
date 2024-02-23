@@ -48,6 +48,9 @@ void USB_DevTransProcess() {
   auto intflag{uint8_t(R8_USB_INT_FG)};
   if ((intflag & RB_UIF_TRANSFER)) {
     if (!(MASK_UIS_TOKEN == ((R8_USB_INT_ST & MASK_UIS_TOKEN)))) {
+      // The following switch extracts the type of token (in/out) and the
+      // endpoint number.
+
       switch ((R8_USB_INT_ST & (MASK_UIS_TOKEN | MASK_UIS_ENDP))) {
       case UIS_TOKEN_IN: {
         switch (SetupReqCode) {
@@ -76,8 +79,8 @@ void USB_DevTransProcess() {
           break;
         };
         case USB_SET_ADDRESS: {
-          // Handles the standard 'Set Address' request. The device records the
-          // new USB address.
+          // Handles the standard 'Set Address' request. The device (we) records
+          // the new USB address.
 
           assert(SetupReqLen < 256);
           R8_USB_DEV_AD = (R8_USB_DEV_AD & RB_UDA_GP_BIT) |
@@ -103,6 +106,35 @@ void USB_DevTransProcess() {
         // Get length of received data.
 
         len = R8_USB_RX_LEN;
+        break;
+      };
+      case UIS_TOKEN_OUT | 1: {
+        // Handle data reception on endpoint 1.
+
+        if ((R8_USB_INT_ST & RB_UIS_TOG_OK)) {
+          // If the data toggle is correct and data is ready.
+
+          // Toggles the receive (IN) data toggle bit for endpoint 1.
+
+          R8_UEP1_CTRL = R8_UEP1_CTRL ^ RB_UEP_R_TOG;
+          len = R8_USB_RX_LEN;
+          // Get the data length, and call a function (DevEP1_OUT_Deal) to
+          // process the received data (on endpoint 1).
+
+          DevEP1_OUT_Deal(len);
+        }
+        break;
+      };
+      case UIS_TOKEN_IN | 1: {
+        // Prepare an empty (?) response on endpoint 1.
+
+        // Toggle the transmit (OUT) data toggle bit for endpoint 1.
+
+        R8_UEP1_CTRL = R8_UEP1_CTRL ^ RB_UEP_T_TOG;
+        // Prepares endpoint 1 for a NAK response (indicating no data is ready
+        // to send).
+
+        R8_UEP1_CTRL = (R8_UEP1_CTRL & ~MASK_UEP_T_RES) | UEP_T_RES_NAK;
         break;
       };
       default: {
