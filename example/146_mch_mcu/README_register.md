@@ -67,3 +67,4 @@ the contents of USB Device Address Register (R8_USB_DEV_AD) are:
 |-------|---------------|--------|
 | 7     | RB_UDA_GP_BIT | RW     |
 | [6:0] | MASK_USB_ADDR | RW     |
+ 
