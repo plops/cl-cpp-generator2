@@ -56,7 +56,7 @@ set(HAL_PATH  ${CMAKE_SOURCE_DIR}/../hal)
 #  functionality I want
 
 file(GLOB_RECURSE HAL_SOURCES
-#${HAL_PATH}/StdPeriphDriver/*_sys.c
+${HAL_PATH}/StdPeriphDriver/*_sys.c
 #${HAL_PATH}/StdPeriphDriver/*_clk.c
 #${HAL_PATH}/StdPeriphDriver/*_adc.c
 #${HAL_PATH}/StdPeriphDriver/*_pwr.c
@@ -101,9 +101,9 @@ ${HAL_SOURCES}
 include_directories(
     ${HAL_PATH}/RVMSIS/
     ${HAL_PATH}/StdPeriphDriver/inc
-    ${HAL_PATH}/User/
-    ${HAL_PATH}/../BLE/HAL/include
-    ${HAL_PATH}/../BLE/LIB
+ #   ${HAL_PATH}/User/
+ #   ${HAL_PATH}/../BLE/HAL/include
+ #   ${HAL_PATH}/../BLE/LIB
 )
 
 # Use the custom linker script to link the firmware
@@ -113,7 +113,7 @@ target_link_options(${PROJECT_NAME} PRIVATE -T ${LINKER_SCRIPT})
 
 # Libraries
 target_link_libraries(${PROJECT_NAME}
-        ${HAL_PATH}/../BLE/LIB/LIBCH59xBLE.a
-        ${HAL_PATH}/StdPeriphDriver/libISP592.a
+ #       ${HAL_PATH}/../BLE/LIB/LIBCH59xBLE.a
+ #       ${HAL_PATH}/StdPeriphDriver/libISP592.a
 	mine
 )
