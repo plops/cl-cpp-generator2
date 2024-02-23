@@ -6,11 +6,11 @@
 // AI summary of the example code is here:
 // https://github.com/plops/cl-cpp-generator2/tree/master/example/146_mch_mcu/doc/examples/usb/device
 
+#include <array>
+#include <cassert>
 extern "C" {
 #include <CH59x_common.h>
 };
-#include <array>
-#include <cassert>
 constexpr uint16_t DevEP0Size = 0x40;
 static_assert(DevEP0Size < 256, "DevEP0Size must fit into one byte.");
 // vendor id and product id:

@@ -33,14 +33,16 @@
      (comments "based on https://github.com/openwch/ch592/tree/main/EVT/EXAM/USB/Device/VendorDefinedDev/src")
      (comments "try to write send data via USB to computer")
      (comments "AI summary of the example code is here: https://github.com/plops/cl-cpp-generator2/tree/master/example/146_mch_mcu/doc/examples/usb/device")
+
+     (include<> 
+      array
+      cassert)
      (space extern "\"C\""
 	    (progn
 	      
 	      (include<> 
 	       CH59x_common.h)))
-     (include<> 
-      array
-      cassert)
+     
      #+nil (include<> stdio.h
 					;format
 					;unistd.h
