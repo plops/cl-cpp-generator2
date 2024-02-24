@@ -8,6 +8,25 @@
 | gen02 | emit RF signal at 2410 MHz with 2 MBit/s |   |   | 
 | gen03 | USB device                               |   |   |
 
+## Other documentation in this folder
+
+| file                              | comment                                                                                                      |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------------|
+| doc/examples/usb/device/README.md | gemini summary of Main.c of USB example                                                                      |
+| README_BLE_CH59x.md               | gemini summary and translation of chinese manual for BLE library                                             |
+| hal/StdPeriphDriver/README.md     | gemini summaries of HAL headers                                                                              |
+| README_register.md                | gpt4 code exploration of how to best represent USB registers in c++                                          |
+| BLE/HAL/include/README.md         | gemini summaries of headers in the HAL folder for BLE radio, sleep modes, input/output, and internal sensors |
+| source03/README_usb_packets.md    | wireshark capture of USB handshake that doesn't succeed                                                      |
+| doc/README_openocd.md             | gemini summary of MounRiverStudio OpenOCD manual. so far i wasn't able to get it to work.                    |
+| hal/Startup/README.md             | gemini summary of startup assembly                                                                           |
+| hal/Ld/README.md                  | gemini summary of linker script                                                                              |
+| hal/RVMSIS/README.md              | gemini summary of header for interrupt controller                                                            |
+| README_RF_PHY.md                  | gemini summary of blog post for RF_PHY, a library to transmit on 2.4GHz complications of BLE                 |
+| hal/User/README.md                | gemini summary of Main.c, a UART example                                                                     |
+|                                   |                                                                                                              |
+
+
 ## Introduction
 
 - i want to write some code for MCH microcontrollers with risc-v
