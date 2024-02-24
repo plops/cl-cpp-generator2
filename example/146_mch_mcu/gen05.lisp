@@ -20,8 +20,113 @@
 				   *source-dir*))
   (ensure-directories-exist *full-source-dir*)
 
-
   
+  (let* ((name `Ch592UsbRegisters)
+	 (l-regs `((:name ctrl :addr #x40008000
+		    :fields ((:fname host-mode :bit 7 :access rw)
+			     (:fname low-speed :bit 6 :access rw)
+			     (:fname dev-pull-up-en :bit 5 :access rw)
+			     (:fname sys-ctlr :bit (5 4) :access rw :help "host-mode==0: 00..disable usb device function and disable internal pull-up (can be overridden by dev-pullup-en), 01..enable device fucntion, disable internal pull-up, external pull-up-needed, 1x..enable usb device fucntion and internal 1.5k pull-up, pull-up has priority over pull-down resistor")
+			     (:fname int-busy :bit 3 :access rw :help "Auto pause")
+			     (:fname reset-sie :bit 2 :access rw :help "Software reset USB protocol processor")
+			     (:fname clr-all :bit 1 :access rw :help "USB FIFO and interrupt flag clear")
+			     (:fname dma-en :bit 0 :access rw)
+			     
+			     ))))
+	 (members `((max-cores :type int :param t)
+		    (max-points :type int :param t)
+		    (diagrams :type "std::vector<DiagramData>")
+					;(x :type "std::vector<float>")
+					;(y :type "std::vector<float>")
+		    (name-y :type "std::string" :param t)
+		    (time-points :type "std::deque<float>"))))
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> vector deque string)
+			(space struct DiagramData (progn
+					   "std::string name;"
+					   "std::deque<float> values;"
+					   ))
+			(doc "@brief The DiagramBase class represents a base class for diagrams."))
+     :implementation-preamble
+     `(do0
+       
+       (include<>
+		  stdexcept
+		  format
+		  )
+       )
+     :code `(do0
+	     
+	     (defclass ,name ()
+	       "public:"
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param (initform 0)) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param (initform 0)) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param (initform 0)) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname)) 
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor)
+		  )
+		 )
+
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (get (cl-change-case:pascal-case (format nil "get-~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      `(defmethod ,get ()
+					 (declare (values ,type))
+					 (return ,nname_))))))
+	       
+	       "protected:"
+	       
+	       
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      `(space ,type ,nname_))))))))
+
+    )
 
   (write-source 
    (asdf:system-relative-pathname
