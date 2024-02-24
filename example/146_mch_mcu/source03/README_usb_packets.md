@@ -1,0 +1,103 @@
+# Intro
+
+- at time of writing the example code given in the ch592 repo for a
+  vendor specified device doesn't correctly enumerate on the usb bus
+  (on my linux)
+
+- wireshark shows the following packets
+
+- the device is plugged in at 24.87. in packet 59, the host sends a
+  status request
+- at packet 78 the host sends a get descriptor request. the response
+  comes 5 seconds later (!)
+
+```
+No.	Time	    Source	Destination	Protocol	Length	Info
+59	24.870123	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+60	24.870149	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+61	24.870158	host	3.1.0	USBHUB	64	CLEAR_FEATURE Request  [Port 1: C_PORT_CONNECTION]
+62	24.870165	3.1.0	host	USBHUB	64	CLEAR_FEATURE Response [Port 1: C_PORT_CONNECTION]
+63	24.870168	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 2]
+64	24.870173	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 2]
+65	24.870177	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 3]
+66	24.870181	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 3]
+67	24.870184	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 4]
+68	24.870188	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 4]
+69	24.976854	host	3.1.1	USB	64	URB_INTERRUPT in
+70	24.976889	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+71	24.976908	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+72	24.976997	host	3.1.0	USBHUB	64	SET_FEATURE Request    [Port 1: PORT_RESET]
+73	24.977005	3.1.0	host	USBHUB	64	SET_FEATURE Response   [Port 1: PORT_RESET]
+74	25.043531	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+75	25.043560	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+76	25.043571	host	3.1.0	USBHUB	64	CLEAR_FEATURE Request  [Port 1: C_PORT_RESET]
+77	25.043578	3.1.0	host	USBHUB	64	CLEAR_FEATURE Response [Port 1: C_PORT_RESET]
+78	25.100283	host	3.0.0	USB	64	GET DESCRIPTOR Request DEVICE
+
+79	30.273381	3.0.0	host	USB	64	GET DESCRIPTOR Response
+80	30.273393	host	3.0.0	USB	64	GET DESCRIPTOR Request DEVICE
+
+81	35.393592	3.0.0	host	USB	64	GET DESCRIPTOR Response
+82	35.393631	host	3.0.0	USB	64	GET DESCRIPTOR Request DEVICE
+
+83	40.513404	3.0.0	host	USB	64	GET DESCRIPTOR Response
+84	40.513420	host	3.1.0	USBHUB	64	SET_FEATURE Request    [Port 1: PORT_RESET]
+85	40.513434	3.1.0	host	USBHUB	64	SET_FEATURE Response   [Port 1: PORT_RESET]
+86	40.580213	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+87	40.580237	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+88	40.580248	host	3.1.0	USBHUB	64	CLEAR_FEATURE Request  [Port 1: C_PORT_RESET]
+89	40.580257	3.1.0	host	USBHUB	64	CLEAR_FEATURE Response [Port 1: C_PORT_RESET]
+90	40.743331	host	3.0.0	USB	64	GET DESCRIPTOR Request DEVICE
+
+91	45.846708	3.0.0	host	USB	64	GET DESCRIPTOR Response
+92	45.846719	host	3.0.0	USB	64	GET DESCRIPTOR Request DEVICE
+
+93	47.892178	3.1.1	host	USB	65	URB_INTERRUPT in
+94	47.892202	host	3.1.1	USB	64	URB_INTERRUPT in
+95	47.893441	3.0.0	host	USB	64	GET DESCRIPTOR Response
+96	47.893470	host	3.0.0	USB	64	GET DESCRIPTOR Request DEVICE
+97	47.896227	3.0.0	host	USB	64	GET DESCRIPTOR Response
+98	47.896250	host	3.1.0	USBHUB	64	SET_FEATURE Request    [Port 1: PORT_RESET]
+99	47.896263	3.1.0	host	USBHUB	64	SET_FEATURE Response   [Port 1: PORT_RESET]
+100	47.960200	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+101	47.960227	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+102	48.026926	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+103	48.026952	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+104	48.140176	3.1.1	host	USB	65	URB_INTERRUPT in
+105	48.140189	host	3.1.1	USB	64	URB_INTERRUPT in
+106	48.233542	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+107	48.233570	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+108	48.380185	3.1.1	host	USB	65	URB_INTERRUPT in
+109	48.380198	host	3.1.1	USB	64	URB_INTERRUPT in
+110	48.443520	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+111	48.443546	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+112	48.620217	3.1.1	host	USB	65	URB_INTERRUPT in
+113	48.620229	host	3.1.1	USB	64	URB_INTERRUPT in
+114	48.649950	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+115	48.649960	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+116	48.649964	host	3.1.0	USBHUB	64	CLEAR_FEATURE Request  [Port 1: C_PORT_RESET]
+117	48.649967	3.1.0	host	USBHUB	64	CLEAR_FEATURE Response [Port 1: C_PORT_RESET]
+118	48.649972	host	3.1.0	USBHUB	64	CLEAR_FEATURE Request  [Port 1: PORT_ENABLE]
+119	48.649985	3.1.0	host	USBHUB	64	CLEAR_FEATURE Response [Port 1: PORT_ENABLE]
+120	48.650037	host	3.1.0	USBHUB	64	CLEAR_FEATURE Request  [Port 1: PORT_ENABLE]
+121	48.650041	3.1.0	host	USBHUB	64	CLEAR_FEATURE Response [Port 1: PORT_ENABLE]
+122	48.650050	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+123	48.650052	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+124	48.650054	host	3.1.0	USBHUB	64	CLEAR_FEATURE Request  [Port 1: C_PORT_CONNECTION]
+125	48.650058	3.1.0	host	USBHUB	64	CLEAR_FEATURE Response [Port 1: C_PORT_CONNECTION]
+126	48.650060	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+127	48.650062	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+128	48.683524	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+129	48.683555	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+130	48.716864	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+131	48.716891	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+132	48.750287	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+133	48.750314	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+134	48.783282	host	3.1.0	USBHUB	64	GET_STATUS Request     [Port 1]
+135	48.783288	3.1.0	host	USBHUB	68	GET_STATUS Response    [Port 1]
+136	48.783305	3.1.1	host	USB	64	URB_INTERRUPT in
+
+```
+
+- i think i have to understand what the binary configuration data
+  means that is sent in the initial status requests
