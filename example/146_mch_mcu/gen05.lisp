@@ -32,7 +32,21 @@
 			     (:fname clr-all :bit 1 :access rw :help "USB FIFO and interrupt flag clear")
 			     (:fname dma-en :bit 0 :access rw)
 			     
-			     ))))
+			     ))
+		   (:name int-en :addr #x40008002
+		    :fields ((:fname dev-sof :bit 7 :access rw :help "in device mode receive start of frame (SOF) packet interrupt")
+			     (:fname dev-nak :bit 6 :access rw :help "in device mode receive NAK interrupt")
+			     (:fname mod-1-wire-en :bit 5  :access rw :help "USB single line mode enable")
+			     (:fname fifo-overflow :bit 4 :access rw :help "Fifo overflow interrupt")
+			     (:fname host-sof :bit 3  :access rw :help "host start of frame timing interrupt")
+			     (:fname suspend :bit 2 :access rw :help "USB bus suspend or wake-up event interrupt")
+			     (:fname transfer :bit 1  :access rw :help "USB transfer completion interrupt")
+			     (:fname bus-reset :bit 0  :access rw :help "in USB device mode USB bus reset event interrupt")
+			     ))
+		   (:name ctrl :addr #x40008000
+		    :fields ((:fname host-mode :bit 7 :access rw :help "")
+			     ))
+		   ))
 	 (members `((max-cores :type int :param t)
 		    (max-points :type int :param t)
 		    (diagrams :type "std::vector<DiagramData>")
