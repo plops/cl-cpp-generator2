@@ -45,6 +45,7 @@
 			     (:fname bus-reset :bit 0  :access rw :help "in USB device mode USB bus reset event interrupt")
 			     ))
 		   (:name dev-ad :addr #x40008003
+			  :size 4
 		    :fields ((:fname gp-bit :bit 7 :access rw :help "USB general flag, user-defined")
 			     (:fname usb-addr :bit (6 0) :access rw :help "device mode: the address of the USB itself")
 			     ))
@@ -52,6 +53,7 @@
 		    :fields ((:fname :bit 7 :access rw :help "")
 			     ))
 		   (:name misc-status :addr #x40008005
+			  :reg-access ro
 		    :fields ((:fname sof-pre :bit 7 :access ro :help "SOF packet will be sent in host mode")
 			     (:fname sof-act :bit 6 :access ro :help "SOF packet is being sent in host mode")
 			     (:fname sie-free :bit 5 :access ro :help "USB proctocol processor free (not busy)")
@@ -77,10 +79,17 @@
 			     (:fname bus-reset :bit 0 :access rw :help "in device mode: bus reset event trigger. Write 1 to reset.")
 			     ))
 		   (:name int-status  :addr #x40008007
-		    :fields ((:fname host-mode :bit 7 :access rw :help "")
+			  :reg-access ro
+		    :fields ((:fname setup-act :bit 7 :access ro :help "in device mode, when this bit is 1, 8-byte setup request packet has been successfully received.")
+			     (:fname tog-ok :bit 6 :access ro :help "current usb transmission sync flag matching status (same as RB_U_TOG_OK), 1=>sync")
+			     (:fname token :bit (5 4) :access ro :help "in device mode the token pid of the current usb transfer transaction")
+			     (:fname endp :bit (3 0) :access ro :help "in device mode the endpoint number of the current usb transfer transaction")
+			     
+			     
 			     ))
 		   (:name rx-len :addr #x40008008
-		    :fields ((:fname host-mode :bit 7 :access rw :help "")
+			  :reg-access ro
+		    :fields ((:fname len :bit (7 0) :access ro :help "number of data bytes received by the current usb endpoint")
 			     ))
 		   
 		   ))
