@@ -20,7 +20,8 @@
 				   *source-dir*))
   (ensure-directories-exist *full-source-dir*)
   ;; instead of manually transferring the register settings from the manual, i should parse this xml file: CH59Xxx.svd 
-  
+  ;; the xml contains all the required information (even read-only)
+  ;; i can't find the fields of R32_USB_STATUS in the pdf or xml
   (let* ((name `Ch592UsbRegisters)
 	 (l-regs `((:name ctrl :addr #x40008000
 		    :fields ((:fname host-mode :bit 7 :access rw)
@@ -79,8 +80,8 @@
 		    :fields ((:fname host-mode :bit 7 :access rw :help "")
 			     ))
 		   (:name rx-len :addr #x40008008
-			   :fields ((:fname host-mode :bit 7 :access rw :help "")
-				    ))
+		    :fields ((:fname host-mode :bit 7 :access rw :help "")
+			     ))
 		   
 		   ))
 	 (members `((max-cores :type int :param t)
@@ -99,17 +100,17 @@
      :header-preamble `(do0
 			(include<> vector deque string)
 			(space struct DiagramData (progn
-					   "std::string name;"
-					   "std::deque<float> values;"
-					   ))
+						    "std::string name;"
+						    "std::deque<float> values;"
+						    ))
 			(doc "@brief The DiagramBase class represents a base class for diagrams."))
      :implementation-preamble
      `(do0
        
        (include<>
-		  stdexcept
-		  format
-		  )
+	stdexcept
+	format
+	)
        )
      :code `(do0
 	     
