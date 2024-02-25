@@ -23,7 +23,11 @@ https://www.keil.com/pack/doc/CMSIS/SVD/html/schema_1_2_gr.htmlx
   SVDConv, at time of writing:
   https://github.com/Open-CMSIS-Pack/devtools/releases/download/tools%2Fsvdconv%2F3.3.46/svdconv-3.3.46-linux-amd64.tbz2
 
+
+- this python project has 1k stars: https://github.com/cmsis-svd/cmsis-svd/
 - a rust generator: https://github.com/rust-embedded/svd2rust
+
+
 
 ## Prompt a
 
