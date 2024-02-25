@@ -134,6 +134,7 @@ int main(int argc, char **argv) {
   }
   glfwMakeContextCurrent(window);
   auto vsyncOn{true};
+  auto sumOn{true};
   glfwSwapInterval(vsyncOn ? 1 : 0);
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -166,6 +167,7 @@ int main(int argc, char **argv) {
         if (ImGui::Checkbox("vsync", &vsyncOn)) {
           glfwSwapInterval(vsyncOn ? 1 : 0);
         }
+        ImGui::Checkbox("sum", &sumOn);
         ImGui::Text("%s",
                     std::format("cpu_name='{}'", sysinfo.cpu_name).c_str());
         ImGui::Text("%s",
@@ -248,12 +250,28 @@ int main(int argc, char **argv) {
         cc1Diagram.AddDataPoint(elapsedTime, cc1Values);
         cc6Diagram.AddDataPoint(elapsedTime, cc6Values);
         temperatureDiagram.RenderGui(false);
-        powerDiagram.RenderGuiSum(false);
+        if (sumOn) {
+          powerDiagram.RenderGuiSum(false);
+        } else {
+          powerDiagram.RenderGui(false);
+        }
         frequencyDiagram.RenderGui(false);
         voltageDiagram.RenderGui(false);
-        c0Diagram.RenderGui(false);
-        cc1Diagram.RenderGui(false);
-        cc6Diagram.RenderGui(true);
+        if (sumOn) {
+          c0Diagram.RenderGuiSum(false);
+        } else {
+          c0Diagram.RenderGui(false);
+        }
+        if (sumOn) {
+          cc1Diagram.RenderGuiSum(false);
+        } else {
+          cc1Diagram.RenderGui(false);
+        }
+        if (sumOn) {
+          cc6Diagram.RenderGuiSum(true);
+        } else {
+          cc6Diagram.RenderGui(true);
+        }
         ImGui::End();
       }
     }

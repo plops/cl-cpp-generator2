@@ -802,6 +802,7 @@
 	    (return 1))
 	  (glfwMakeContextCurrent window)
 	  (let ((vsyncOn true)))
+	  (let ((sumOn true)))
 	  (glfwSwapInterval (? vsyncOn 1 0))
 	  (IMGUI_CHECKVERSION)
 	  (ImGui--CreateContext)
@@ -817,7 +818,7 @@
 
        
        ,(let ((l-columns `((:col temperature) (:col power :sum t) (:col frequency) (:col voltage)
-			   (:col c0) (:col cc1) (:col cc6) )))
+			   (:col c0 :sum t) (:col cc1 :sum t) (:col cc6 :sum t) )))
 	  `(do0
 
 	    (let (((bracket sysinfo pm_buf pmt) (start_pm_monitor2))))
@@ -857,6 +858,9 @@
 			    (when (ImGui--Checkbox (string "vsync")
 						   &vsyncOn)
 			      (glfwSwapInterval (? vsyncOn 1 0)))
+
+			    (ImGui--Checkbox (string "sum")
+					     &sumOn)
 
 			    ,@(loop for var in `(cpu_name codename cores ccds ccxs
 							  ;; fixme: different for older ryzen
@@ -950,13 +954,27 @@
 				    (destructuring-bind (&key col sum) e
 				     (let ((dia (format nil "~aDiagram" col)
 						))
-				       `(dot ,dia
-					     (,(if sum
-						   `RenderGuiSum
-						   `RenderGui)
+				       (if sum
+					    
+					    `(if sumOn
+						 (dot ,dia
+						      (RenderGuiSum
+						       ,(if (eq e-i (length l-columns))
+							    `true
+							    `false)))
+						 (dot ,dia
+						      (RenderGui
+						       ,(if (eq e-i (length l-columns))
+							    `true
+							    `false))))
+					   `(dot ,dia
+					     (RenderGui
 					      ,(if (eq e-i (length l-columns))
 						   `true
-						   `false))))))
+						   `false)))
+					   )
+				       
+				       )))
 			    
 			    (ImGui--End))))
 		 
