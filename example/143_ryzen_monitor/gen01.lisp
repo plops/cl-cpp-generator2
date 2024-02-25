@@ -227,8 +227,10 @@
 					  (get (cl-change-case:pascal-case (format nil "get-~a" name)))
 					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
 				      `(defmethod ,get ()
-					 (declare (values ,(format nil "const ~a&" type))
-						  (const))
+					 (declare (values ,type ;(format nil "const ~a&" type)
+							  )
+						  ;(const)
+						  )
 					 (return ,nname_))))))
 	       
 	       ;"protected:"
@@ -336,15 +338,20 @@
 			       (manager (CpuAffinityManagerBase pid n)))))
 	 "protected:"
 	 (defmethod SetUp ()
-	   (declare (override))
+	   (declare (final))
+	   (comments "not needed")
 	   #+nil (setf n ("std::thread::hardware_concurrency")
-		 pid (getpid)
-		 manager (CpuAffinityManagerBase pid n))
+		       pid (getpid)
+		       manager (CpuAffinityManagerBase pid n))
 	   ;(setf manager (std--make_unique<CpuAffinityManagerBase> pid n))
 	   )
 	 (defmethod TearDown ()
-	   (declare (override)))
-	 "int n, pid;"
+	   (declare (final)
+		    )
+	   (comments "not needed"))
+	 
+	 "unsigned int n;"
+	 "int pid;"
 	 "CpuAffinityManagerBase manager;"
 	 ;"std::unique_ptr<CpuAffinityManagerBase> manager;"
 	 )

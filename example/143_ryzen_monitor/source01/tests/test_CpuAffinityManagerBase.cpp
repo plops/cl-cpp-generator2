@@ -9,9 +9,14 @@ public:
         manager{CpuAffinityManagerBase(pid, n)} {}
 
 protected:
-  void SetUp() {}
-  void TearDown() {}
-  int n, pid;
+  void SetUp() final {
+    // not needed
+  }
+  void TearDown() final {
+    // not needed
+  }
+  unsigned int n;
+  int pid;
   CpuAffinityManagerBase manager;
 };
 TEST_F(CpuAffinityManagerBaseTest, GetSelectedCpus_Initialized_FullBitset) {

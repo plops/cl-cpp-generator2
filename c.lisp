@@ -635,8 +635,14 @@ Common Lisp DEFMETHOD form.
 			"const")
 		  (when header-only pure-p)
 		  noexcept-p
-		  (when header-only final-p)
-		  (when header-only override-p) ;; FIXME: not working in defclass+
+		  ;(when header-only final-p)
+		  (cond (header-only final-p)
+			((eq in-class-p 'defclass+)
+			 final-p))
+		  (cond (header-only override-p)
+			((eq in-class-p 'defclass+)
+			 override-p))
+		  ;(when header-only override-p) ;; FIXME: not working in defclass+
 		  ;; semicolon if header only
 		  (and (not inline-p) header-only)
 		  ;; constructor initializers

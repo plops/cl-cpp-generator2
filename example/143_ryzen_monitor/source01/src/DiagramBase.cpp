@@ -31,12 +31,8 @@ void DiagramBase::AddDataPoint(float time, const std::vector<float> &values) {
     diagrams_[i].values.push_back(values[i]);
   }
 }
-const int &DiagramBase::GetMaxCores() const { return max_cores_; }
-const int &DiagramBase::GetMaxPoints() const { return max_points_; }
-const std::vector<DiagramData> &DiagramBase::GetDiagrams() const {
-  return diagrams_;
-}
-const std::string &DiagramBase::GetNameY() const { return name_y_; }
-const std::deque<float> &DiagramBase::GetTimePoints() const {
-  return time_points_;
-}
+int DiagramBase::GetMaxCores() { return max_cores_; }
+int DiagramBase::GetMaxPoints() { return max_points_; }
+std::vector<DiagramData> DiagramBase::GetDiagrams() { return diagrams_; }
+std::string DiagramBase::GetNameY() { return name_y_; }
+std::deque<float> DiagramBase::GetTimePoints() { return time_points_; }
