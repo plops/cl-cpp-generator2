@@ -22,7 +22,35 @@ https://www.keil.com/pack/doc/CMSIS/SVD/html/schema_1_2_gr.htmlx
   https://github.com/Open-CMSIS-Pack/devtools/releases and search for
   SVDConv, at time of writing:
   https://github.com/Open-CMSIS-Pack/devtools/releases/download/tools%2Fsvdconv%2F3.3.46/svdconv-3.3.46-linux-amd64.tbz2
-- i tried this tool in the svd/ subfolder
+- i tried this tool in the svd/ subfolder, here is example output
+```
+union {
+        __IOM uint8_t reg;                          /*!< USB interrupt enable                                                      */
+    
+        struct {
+          __IOM uint8_t RB_UIE_BUS_RST__RB_UIE_DETECT : 1;/*!< enable interrupt for USB bus reset event for USB device mode;enable
+                                                         interrupt for USB device detected event for USB host mode                 */
+          __IOM uint8_t RB_UIE_TRANSFER : 1;        /*!< enable interrupt for USB transfer completion                              */
+          __IOM uint8_t RB_UIE_SUSPEND : 1;         /*!< enable interrupt for USB suspend or resume event                          */
+          __IOM uint8_t RB_UIE_HST_SOF : 1;         /*!< enable interrupt for host SOF timer action for USB host mode              */
+          __IOM uint8_t RB_UIE_FIFO_OV : 1;         /*!< enable interrupt for FIFO overflow                                        */
+          __IOM uint8_t RB_MOD_1_WIRE : 1;          /*!< enable USB single line mode                                               */
+          __IOM uint8_t RB_UIE_DEV_NAK : 1;         /*!< enable interrupt for NAK responded for USB device mode                    */
+          __IOM uint8_t RB_UIE_DEV_SOF : 1;         /*!< enable interrupt for SOF received for USB device mode                     */
+        } bit;
+      } R8_USB_INT_EN;
+    
+      union {
+        __IOM uint8_t reg;                          /*!< USB device address                                                        */
+    
+        struct {
+          __IOM uint8_t MASK_USB_ADDR : 7;          /*!< bit mask for USB device address                                           */
+          __IOM uint8_t RB_UDA_GP_BIT : 1;          /*!< general purpose bit                                                       */
+        } bit;
+      } R8_USB_DEV_AD;
+      __IM  uint8_t   RESERVED;
+```
+
 
 - this python project has 1k stars: https://github.com/cmsis-svd/cmsis-svd/
 - a rust generator: https://github.com/rust-embedded/svd2rust
