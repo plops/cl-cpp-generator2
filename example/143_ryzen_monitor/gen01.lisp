@@ -185,9 +185,9 @@
 							      (cl-change-case:snake-case (format nil "~a" name)))))
 					  (cond
 					    (param
-					     `(space ,nname_ (curly ,nname))) 
+					     `(,nname_ ,nname)) 
 					    (initform
-					     `(space ,nname_ (curly ,initform))))))))
+					     `(,nname_ ,initform)))))))
 		   )
 		  (explicit)	    
 		  (values :constructor)
@@ -445,7 +445,7 @@
 					   
 					   `(type ,type ,nname))))))
 		  (construct
-		   (space selected_cpus_ (curly (std--vector<bool> threads false)))
+		   (selected_cpus_ (std--vector<bool> threads false))
 		   ,@(remove-if #'null
 				(loop for e in members
 				      collect
@@ -455,9 +455,9 @@
 							      (cl-change-case:snake-case (format nil "~a" name)))))
 					  (cond
 					    (param
-					     `(space ,nname_ (curly ,nname))) 
+					     `(,nname_ ,nname)) 
 					    (initform
-					     `(space ,nname_ (curly ,initform))))))))
+					     `(,nname_ ,initform)))))))
 		   )
 		  (explicit)	    
 		  (values :constructor)

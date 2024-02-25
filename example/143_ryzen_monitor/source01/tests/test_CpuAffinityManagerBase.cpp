@@ -5,8 +5,8 @@
 class CpuAffinityManagerBaseTest : public ::testing::Test {
 public:
   CpuAffinityManagerBaseTest()
-      : n(std::thread::hardware_concurrency()), pid(getpid()),
-        manager(CpuAffinityManagerBase(pid, n)) {}
+      : n{std::thread::hardware_concurrency()}, pid{getpid()},
+        manager{CpuAffinityManagerBase(pid, n)} {}
 
 protected:
   void SetUp() {}

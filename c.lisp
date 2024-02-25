@@ -642,7 +642,9 @@ Common Lisp DEFMETHOD form.
 		  ;; constructor initializers
 		  (when (and constructs
 			     (not header-only))
-		    (funcall emit `(comma ,@(mapcar emit constructs)))))
+		    (funcall emit `(comma ,@(mapcar emit (loop for (var init) in  constructs
+							       collect
+							       `(space ,var (curly ,init))))))))
 	  (when (or inline-p (not header-only))
 	    (format s "~a" (funcall emit `(progn ,@body)))))))))
 
