@@ -2,6 +2,19 @@
 
 here i want to develop a structure of how to represent the registers of the MCU in modern c++
 
+## The register definitions
+
+- the datasheet lists the registers of the periphery devices
+- an svd file specifies the registers and fields using xml
+- the xsd schema definition is here: https://www.keil.com/pack/doc/CMSIS/SVD/html/schema_1_2_gr.html
+  - i think we need version 1.1 of this file
+- documentation of the svd file format is here:
+https://www.keil.com/pack/doc/CMSIS/SVD/html/svd_Format_pg.html
+
+-there is an svdconv tool that can validate the svd file. it can also
+create header files.
+
+https://www.keil.com/pack/doc/CMSIS/SVD/html/schema_1_2_gr.htmlx
 
 ## Prompt a
 
