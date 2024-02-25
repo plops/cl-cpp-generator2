@@ -445,7 +445,7 @@
 					   
 					   `(type ,type ,nname))))))
 		  (construct
-		   (selected_cpus_ (std--vector<bool> threads false))
+		   (space selected_cpus_ (curly (std--vector<bool> threads false)))
 		   ,@(remove-if #'null
 				(loop for e in members
 				      collect
@@ -473,15 +473,17 @@
 		       (throw (std--runtime_error (string "Failed to get CPU affinity"))))))
 	       (defmethod GetSelectedCpus ()
 		 (declare (values ; "std::bitset<12>"
-			   "std::vector<bool>"))
+			   "const std::vector<bool>&")
+			  (const))
 		 (return selected_cpus_))
 	       (defmethod SetSelectedCpus (selected_cpus)
-		 (declare (type "std::vector<bool>"  ;"std::bitset<12>"
+		 (declare (type "const std::vector<bool>&"  ;"std::bitset<12>"
 				selected_cpus))
 		 (setf selected_cpus_ selected_cpus))
 	       (defmethod GetAffinity ()
 		 (declare (values "std::vector<bool>" ; "std::bitset<12>"
-				  ))
+				  )
+			  (const))
 		 (let ((cpuset (cpu_set_t)))
 		   (when (== 0 (sched_getaffinity pid_
 						  (sizeof cpu_set_t)
@@ -535,7 +537,7 @@
      :implementation-preamble
      `(do0
        (include imgui.h)
-       (include<> sched.h
+       (include<> ; sched.h
 		  stdexcept
 		  
 		  )

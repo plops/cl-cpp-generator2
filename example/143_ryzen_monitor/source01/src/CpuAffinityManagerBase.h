@@ -21,9 +21,9 @@
 class CpuAffinityManagerBase  {
         public:
         explicit  CpuAffinityManagerBase (pid_t pid, int threads)       ;   
-        std::vector<bool> GetSelectedCpus ()       ;   
-        void SetSelectedCpus (std::vector<bool> selected_cpus)       ;   
-        std::vector<bool> GetAffinity ()       ;   
+        const std::vector<bool>& GetSelectedCpus () const      ;   
+        void SetSelectedCpus (const std::vector<bool>& selected_cpus)       ;   
+        std::vector<bool> GetAffinity () const      ;   
         void ApplyAffinity ()       ;   
         std::vector<bool> selected_cpus_;
         pid_t pid_;

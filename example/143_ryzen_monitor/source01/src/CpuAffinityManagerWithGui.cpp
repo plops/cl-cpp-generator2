@@ -2,7 +2,6 @@
 
 #include "CpuAffinityManagerWithGui.h"
 #include "imgui.h"
-#include <sched.h>
 #include <stdexcept>
 void CpuAffinityManagerWithGui::RenderGui() {
   ImGui::Begin("CPU Affinity");

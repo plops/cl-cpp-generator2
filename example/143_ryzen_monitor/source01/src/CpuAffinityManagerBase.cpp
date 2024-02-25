@@ -4,7 +4,7 @@
 #include <sched.h>
 #include <stdexcept>
 CpuAffinityManagerBase::CpuAffinityManagerBase(pid_t pid, int threads)
-    : selected_cpus_(std::vector<bool>(threads, false)), pid_{pid},
+    : selected_cpus_{std::vector<bool>(threads, false)}, pid_{pid},
       threads_{threads} {
   auto cpuset{cpu_set_t()};
   if (0 == sched_getaffinity(pid_, sizeof(cpu_set_t), &cpuset)) {
@@ -17,13 +17,14 @@ CpuAffinityManagerBase::CpuAffinityManagerBase(pid_t pid, int threads)
     throw std::runtime_error("Failed to get CPU affinity");
   }
 }
-std::vector<bool> CpuAffinityManagerBase::GetSelectedCpus() {
+const std::vector<bool> &CpuAffinityManagerBase::GetSelectedCpus() const {
   return selected_cpus_;
 }
-void CpuAffinityManagerBase::SetSelectedCpus(std::vector<bool> selected_cpus) {
+void CpuAffinityManagerBase::SetSelectedCpus(
+    const std::vector<bool> &selected_cpus) {
   selected_cpus_ = selected_cpus;
 }
-std::vector<bool> CpuAffinityManagerBase::GetAffinity() {
+std::vector<bool> CpuAffinityManagerBase::GetAffinity() const {
   auto cpuset{cpu_set_t()};
   if (0 == sched_getaffinity(pid_, sizeof(cpu_set_t), &cpuset)) {
     auto affinity{std::vector<bool>(threads_, false)};
