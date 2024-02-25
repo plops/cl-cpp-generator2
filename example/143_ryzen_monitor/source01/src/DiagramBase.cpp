@@ -3,7 +3,8 @@
 #include "DiagramBase.h"
 #include <format>
 #include <stdexcept>
-DiagramBase::DiagramBase(int max_cores, int max_points, std::string name_y)
+DiagramBase::DiagramBase(unsigned long max_cores, unsigned int max_points,
+                         std::string name_y)
     : max_cores_{max_cores}, max_points_{max_points}, diagrams_{0},
       name_y_{name_y}, time_points_{0} {
   diagrams_.reserve(max_cores_);
@@ -31,8 +32,8 @@ void DiagramBase::AddDataPoint(float time, const std::vector<float> &values) {
     diagrams_[i].values.push_back(values[i]);
   }
 }
-int DiagramBase::GetMaxCores() { return max_cores_; }
-int DiagramBase::GetMaxPoints() { return max_points_; }
+unsigned long DiagramBase::GetMaxCores() { return max_cores_; }
+unsigned int DiagramBase::GetMaxPoints() { return max_points_; }
 std::vector<DiagramData> DiagramBase::GetDiagrams() { return diagrams_; }
 std::string DiagramBase::GetNameY() { return name_y_; }
 std::deque<float> DiagramBase::GetTimePoints() { return time_points_; }

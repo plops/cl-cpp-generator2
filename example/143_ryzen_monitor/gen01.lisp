@@ -23,8 +23,8 @@
   (load "util.lisp")
 
   (let* ((name `DiagramBase)
-	 (members `((max-cores :type int :param t)
-		    (max-points :type int :param t)
+	 (members `((max-cores :type "unsigned long" :param t)
+		    (max-points :type "unsigned int" :param t)
 		    (diagrams :type "std::vector<DiagramData>")
 		    ;(x :type "std::vector<float>")
 		    ;(y :type "std::vector<float>")

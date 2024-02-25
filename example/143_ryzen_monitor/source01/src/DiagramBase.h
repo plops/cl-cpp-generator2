@@ -20,15 +20,15 @@ class DiagramBase  {
 @param name_y The name of the y-axis.
 
     */ 
-        explicit  DiagramBase (int max_cores, int max_points, std::string name_y)       ;   
+        explicit  DiagramBase (unsigned long max_cores, unsigned int max_points, std::string name_y)       ;   
         void AddDataPoint (float time, const std::vector<float>& values)       ;   
-        int GetMaxCores ()       ;   
-        int GetMaxPoints ()       ;   
+        unsigned long GetMaxCores ()       ;   
+        unsigned int GetMaxPoints ()       ;   
         std::vector<DiagramData> GetDiagrams ()       ;   
         std::string GetNameY ()       ;   
         std::deque<float> GetTimePoints ()       ;   
-        int max_cores_;
-        int max_points_;
+        unsigned long max_cores_;
+        unsigned int max_points_;
         std::vector<DiagramData> diagrams_;
         std::string name_y_;
         std::deque<float> time_points_;
