@@ -4,7 +4,7 @@
 #  cd build
 #  cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
 
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.27)
 project(ryzen_mon_glgui CXX C)
 
 if(NOT CMAKE_BUILD_TYPE)

@@ -227,7 +227,7 @@
 					  (get (cl-change-case:pascal-case (format nil "get-~a" name)))
 					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
 				      `(defmethod ,get ()
-					 (declare (values ,type))
+					 (declare (values ,(format nil "const ~a&" type)))
 					 (return ,nname_))))))
 	       
 	       "protected:"
