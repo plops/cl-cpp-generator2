@@ -12,7 +12,7 @@ here i want to develop a structure of how to represent the registers of the MCU 
 https://www.keil.com/pack/doc/CMSIS/SVD/html/svd_Format_pg.html
 
 -there is an svdconv tool that can validate the svd file. it can also
-create header files.
+create header files using structs or bitfields. 
 
 https://www.keil.com/pack/doc/CMSIS/SVD/html/schema_1_2_gr.htmlx
 
