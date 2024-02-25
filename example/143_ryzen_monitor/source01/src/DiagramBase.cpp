@@ -5,8 +5,8 @@
 #include <stdexcept>
 DiagramBase::DiagramBase(unsigned long max_cores, unsigned int max_points,
                          std::string name_y)
-    : max_cores_{max_cores}, max_points_{max_points}, diagrams_{0},
-      name_y_{name_y}, time_points_{0} {
+    : max_cores_{max_cores}, max_points_{max_points}, diagrams_{},
+      name_y_{name_y}, time_points_{} {
   diagrams_.reserve(max_cores_);
   for (auto i = 0; i < max_cores_; i += 1) {
     diagrams_.push_back({std::format("Core {}", i), {}});

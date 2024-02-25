@@ -25,11 +25,11 @@
   (let* ((name `DiagramBase)
 	 (members `((max-cores :type "unsigned long" :param t)
 		    (max-points :type "unsigned int" :param t)
-		    (diagrams :type "std::vector<DiagramData>")
+		    (diagrams :type "std::vector<DiagramData>" :initform "")
 		    ;(x :type "std::vector<float>")
 		    ;(y :type "std::vector<float>")
 		    (name-y :type "std::string" :param t)
-		    (time-points :type "std::deque<float>"))))
+		    (time-points :type "std::deque<float>" :initform ""))))
     (write-source 
    (asdf:system-relative-pathname
     'cl-cpp-generator2 
