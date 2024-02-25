@@ -276,7 +276,7 @@
 			  "const std::deque<float>& time_points_;"
 			  "const std::vector<DiagramData>& diagrams_;"
 			  "int i;"
-			  "PlotData(const std::deque<float> &time_points, const std::vector<DiagramData> &diagrams, int index) : time_points_(time_points), diagrams_(diagrams), i(index) {}"))
+			  "PlotData(const std::deque<float> &time_points, const std::vector<DiagramData> &diagrams, int index) : time_points_{time_points}, diagrams_{diagrams}, i{index} {}"))
 		 (when (ImPlot--BeginPlot (dot name_y_ (c_str))
 					  (ImVec2 -1 130)
 					  (or ImPlotFlags_NoFrame
@@ -306,6 +306,53 @@
 							  i)
 					     (c_str))
 					getter
+					(static_cast<void*> &data)
+					(static_cast<int> (time_points_.size))))
+		   (ImPlot--EndPlot)))
+
+	       (defmethod RenderGuiSum (&key (xticks false))
+		 (declare (type bool xticks))
+		 (space struct PlotDataSum
+			(progn
+			  "const std::deque<float>& time_points_;"
+			  "const std::vector<DiagramData>& diagrams_;"
+			  "std::vector<float> &sum_values_;"
+			  "int i;"
+			  "PlotDataSum(const std::deque<float> &time_points, const std::vector<DiagramData> &diagrams, std::vector<float> &sum, int index) : time_points_{time_points}, diagrams_{diagrams}, sum_values_{sum}, i{index} {}"))
+		 (when (ImPlot--BeginPlot (dot name_y_ (c_str))
+					  (ImVec2 -1 130)
+					  (or ImPlotFlags_NoFrame
+					      ImPlotFlags_NoTitle))
+		   (let ((sum_values (std--vector<float> (time_points_.size)
+							 0s0))))
+		   (dotimes (i max_cores_)
+		     (let ((data (PlotDataSum time_points_ diagrams_ sum_values i))))
+		     (let ((getterS (lambda (idx data_)
+				     (declare (type void* data_)
+					      (type int idx)
+					      (values ImPlotPoint)
+					      (capture "")
+					      )
+				     (let ((d (static_cast<PlotDataSum*> data_)))
+				       (declare (type "const auto" d)))
+				     
+				     (let ((x (dot d->time_points_ (at idx)))
+					   (y (dot d->diagrams_ (at d->i) values (at idx)))))
+				     (incf (aref d->sum_values_ idx)
+					   y)
+				     (return (ImPlotPoint x (aref d->sum_values_ idx)))))))
+		     (ImPlot--SetupAxes (string "X")
+					(dot name_y_ (c_str))
+					(or ImPlotAxisFlags_AutoFit
+					    ImPlotAxisFlags_NoLabel
+					    (? xticks 0 ImPlotAxisFlags_NoTickLabels))
+					ImPlotAxisFlags_AutoFit
+					)
+		     
+		     (ImPlot--PlotLineG (dot (std--format (string "Core {:2}")
+							  i)
+					     (c_str))
+					getterS
 					(static_cast<void*> &data)
 					(static_cast<int> (time_points_.size))))
 		   (ImPlot--EndPlot)))))))
@@ -769,7 +816,8 @@
 	)
 
        
-       ,(let ((l-columns `(temperature power frequency voltage c0 cc1 cc6 )))
+       ,(let ((l-columns `((:col temperature) (:col power :sum t) (:col frequency) (:col voltage)
+			   (:col c0) (:col cc1) (:col cc6) )))
 	  `(do0
 
 	    (let (((bracket sysinfo pm_buf pmt) (start_pm_monitor2))))
@@ -783,10 +831,11 @@
 
 	      ,@(loop for e in l-columns
 		      collect
-		      (let ((dia (format nil "~aDiagram" e)))
-		       `(let ((,dia (DiagramWithGui 8
-						    maxDataPoints
-						    (string ,e)))))))
+		      (destructuring-bind (&key col sum) e
+		       (let ((dia (format nil "~aDiagram" col)))
+			 `(let ((,dia (DiagramWithGui 8
+						      maxDataPoints
+						      (string ,col))))))))
 	      
 	      #+affinity (let ((affinityManager (CpuAffinityManagerWithGui (getpid) maxThreads))))
 	      
@@ -837,7 +886,8 @@
 
 			    ,@(loop for e in l-columns
 				    collect
-				    `(let ((,(format nil "~aValues" e) (std--vector<float> pmt.max_cores)))))
+				    (destructuring-bind (&key col sum) e
+				      `(let ((,(format nil "~aValues" col) (std--vector<float> pmt.max_cores))))))
 			    
 			    (dotimes (i pmt.max_cores)
 			      (let ((core_disabled (and (>> sysinfo.core_disable_map i) 1))
@@ -856,8 +906,9 @@
 				    (core_cc6 (pmta (aref CORE_CC6 i))))
 				,@(loop for e in l-columns
 					collect
-					`(setf (aref ,(format nil "~aValues" e) i)
-					       ,(format nil "core_~a" e)))
+					(destructuring-bind (&key col sum) e
+					 `(setf (aref ,(format nil "~aValues" col) i)
+						,(format nil "core_~a" col))))
 				
 				(if core_disabled
 				    (ImGui--Text (string "%s")
@@ -887,19 +938,25 @@
 
 			    ,@(loop for e in l-columns
 				    collect
-				    (let ((val (format nil "~aValues" e))
-					  (dia (format nil "~aDiagram" e)))
-				      `(dot ,dia
-					    (AddDataPoint elapsedTime ,val))))
+				    (destructuring-bind (&key col sum) e
+				     (let ((val (format nil "~aValues" col))
+					   (dia (format nil "~aDiagram" col)))
+				       `(dot ,dia
+					     (AddDataPoint elapsedTime ,val)))))
 			    
 			    ,@(loop for e in l-columns
 				    and e-i from 1
 				    collect
-				    (let ((dia (format nil "~aDiagram" e)))
-				      `(dot ,dia
-					    (RenderGui ,(if (eq e-i (length l-columns))
-							    `true
-							    `false)))))
+				    (destructuring-bind (&key col sum) e
+				     (let ((dia (format nil "~aDiagram" col)
+						))
+				       `(dot ,dia
+					     (,(if sum
+						   `RenderGuiSum
+						   `RenderGui)
+					      ,(if (eq e-i (length l-columns))
+						   `true
+						   `false))))))
 			    
 			    (ImGui--End))))
 		 

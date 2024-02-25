@@ -248,7 +248,7 @@ int main(int argc, char **argv) {
         cc1Diagram.AddDataPoint(elapsedTime, cc1Values);
         cc6Diagram.AddDataPoint(elapsedTime, cc6Values);
         temperatureDiagram.RenderGui(false);
-        powerDiagram.RenderGui(false);
+        powerDiagram.RenderGuiSum(false);
         frequencyDiagram.RenderGui(false);
         voltageDiagram.RenderGui(false);
         c0Diagram.RenderGui(false);

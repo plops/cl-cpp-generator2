@@ -9,6 +9,7 @@ class DiagramWithGui : public DiagramBase {
         public:
         using DiagramBase::DiagramBase; 
         void RenderGui (bool xticks = false)       ;   
+        void RenderGuiSum (bool xticks = false)       ;   
 };
 
 #endif /* !DIAGRAMWITHGUI_H */
