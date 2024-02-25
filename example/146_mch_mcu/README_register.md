@@ -22,11 +22,12 @@ https://www.keil.com/pack/doc/CMSIS/SVD/html/schema_1_2_gr.htmlx
   https://github.com/Open-CMSIS-Pack/devtools/releases and search for
   SVDConv, at time of writing:
   https://github.com/Open-CMSIS-Pack/devtools/releases/download/tools%2Fsvdconv%2F3.3.46/svdconv-3.3.46-linux-amd64.tbz2
-
+- i tried this tool in the svd/ subfolder
 
 - this python project has 1k stars: https://github.com/cmsis-svd/cmsis-svd/
 - a rust generator: https://github.com/rust-embedded/svd2rust
-
+- a register viewer for openocd that parses svd: https://github.com/esynr3z/openocd-svd
+- java based code converter (for different languages), 9 years old and only 18 stars https://github.com/postspectacular/cmsis-svd-srcgen
 
 
 ## Prompt a
