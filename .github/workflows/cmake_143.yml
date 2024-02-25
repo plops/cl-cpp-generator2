@@ -84,15 +84,15 @@ jobs:
     - name: Build with Ninja
       run: ninja -C build
 
-    - name: Collect coverage
-      run: |
-        ninja -C build cov
-        lcov --list build/coverage.info
+    # - name: Collect coverage
+    #   run: |
+    #     ninja -C build cov
+    #     lcov --list build/coverage.info
 
-    - name: Generate JSON coverage report
-      working-directory: ./build
-      run: |
-        gcovr -r .. . --branches --cobertura > coverage.xml
+    # - name: Generate JSON coverage report
+    #   working-directory: ./build
+    #   run: |
+    #     gcovr -r .. . --branches --cobertura > coverage.xml
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v3
