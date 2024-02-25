@@ -258,7 +258,7 @@
 			(include DiagramBase.h))
      :implementation-preamble
      `(do0
-       (include<> stdexcept
+       (include<> ;stdexcept
 		  format)
        (include implot.h))
      :code `(do0
@@ -280,12 +280,14 @@
 					      ImPlotFlags_NoTitle))
 		   (dotimes (i max_cores_)
 		     (let ((data (PlotData time_points_ diagrams_ i))))
-		     (let ((getter (lambda (idx data)
-				     (declare (type void* data)
+		     (let ((getter (lambda (idx data_)
+				     (declare (type void* data_)
 					      (type int idx)
 					      (values ImPlotPoint)
 					      (capture ""))
-				     (let ((*d (static_cast<PlotData*> data))))
+				     (let ((d (static_cast<PlotData*> data_)))
+				       (declare (type "const auto" d)))
+				     
 				     (let ((x (dot d->time_points_ (at idx)))
 					   (y (dot d->diagrams_ (at d->i) values (at idx)))))
 				     (return (ImPlotPoint x y))))))
@@ -301,8 +303,8 @@
 							  i)
 					     (c_str))
 					getter
-					(reinterpret_cast<void*> &data)
-					(time_points_.size)))
+					(static_cast<void*> &data)
+					(static_cast<int> (time_points_.size))))
 		   (ImPlot--EndPlot)))))))
 
   (let* ((name `CpuAffinityManagerBase)

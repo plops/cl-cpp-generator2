@@ -3,7 +3,6 @@
 #include "DiagramWithGui.h"
 #include "implot.h"
 #include <format>
-#include <stdexcept>
 void DiagramWithGui::RenderGui(bool xticks) {
   struct PlotData {
     const std::deque<float> &time_points_;
@@ -17,8 +16,8 @@ void DiagramWithGui::RenderGui(bool xticks) {
                         ImPlotFlags_NoFrame | ImPlotFlags_NoTitle)) {
     for (auto i = 0; i < max_cores_; i += 1) {
       auto data{PlotData(time_points_, diagrams_, i)};
-      auto getter{[](int idx, void *data) -> ImPlotPoint {
-        auto *d{static_cast<PlotData *>(data)};
+      auto getter{[](int idx, void *data_) -> ImPlotPoint {
+        const auto d{static_cast<PlotData *>(data_)};
         auto x{d->time_points_.at(idx)};
         auto y{d->diagrams_.at(d->i).values.at(idx)};
         return ImPlotPoint(x, y);
@@ -28,7 +27,8 @@ void DiagramWithGui::RenderGui(bool xticks) {
                             (xticks ? 0 : ImPlotAxisFlags_NoTickLabels),
                         ImPlotAxisFlags_AutoFit);
       ImPlot::PlotLineG(std::format("Core {:2}", i).c_str(), getter,
-                        reinterpret_cast<void *>(&data), time_points_.size());
+                        static_cast<void *>(&data),
+                        static_cast<int>(time_points_.size()));
     }
     ImPlot::EndPlot();
   }
