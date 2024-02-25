@@ -8,4 +8,6 @@ cmake -G Ninja \
  -DBUILD_TESTS=OFF \
  -DGLFW_BUILD_WAYLAND=OFF \
  -DDEP_DIR=/home/martin/src \
+ -DCMAKE_UNITY_BUILD=ON \
+ -DCMAKE_UNITY_BUILD_MODE=GROUP \
  ..

@@ -22,11 +22,11 @@ class DiagramBase  {
     */ 
         explicit  DiagramBase (unsigned long max_cores, unsigned int max_points, std::string name_y)       ;   
         void AddDataPoint (float time, const std::vector<float>& values)       ;   
-        unsigned long GetMaxCores ()       ;   
-        unsigned int GetMaxPoints ()       ;   
-        std::vector<DiagramData> GetDiagrams ()       ;   
-        std::string GetNameY ()       ;   
-        std::deque<float> GetTimePoints ()       ;   
+        const unsigned long& GetMaxCores () const      ;   
+        const unsigned int& GetMaxPoints () const      ;   
+        const std::vector<DiagramData>& GetDiagrams () const      ;   
+        const std::string& GetNameY () const      ;   
+        const std::deque<float>& GetTimePoints () const      ;   
         unsigned long max_cores_;
         unsigned int max_points_;
         std::vector<DiagramData> diagrams_;

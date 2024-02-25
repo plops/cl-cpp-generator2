@@ -11,6 +11,11 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+	# enable link time optimization
+	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
+
 # GCC 13, CLANG 14 and MSVC 16.10/VS 2019 all have the {fmt} based std::format 
 
 set(CMAKE_CXX_STANDARD 20)
@@ -55,6 +60,7 @@ set(LIBRARIES "glfw;OpenGL")
 
 include_directories(${GLFW_DIR}/deps)
 
+
 set(sources 
 	src/main.cpp
 	src/CpuAffinityManagerBase.cpp
@@ -62,7 +68,43 @@ set(sources
 	src/DiagramBase.cpp
 	src/DiagramWithGui.cpp	
 )
+# the files  in sources can be merged into one for a unity build
+# place them into the same UNITY_GROUP
+set_source_files_properties(${sources} PROPERTIES UNITY_GROUP "Sources")
 
+set(imgui_sources_backends
+	${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+	${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+
+)
+#set_source_files_properties(${imgui_sources_backends} PROPERTIES UNITY_GROUP "ImGui_backends")
+
+set(imgui_sources_separate
+		${IMGUI_DIR}/imgui.cpp
+		#${IMGUI_DIR}/imgui_demo.cpp
+
+		${IMGUI_DIR}/imgui_draw.cpp
+
+		${IMGUI_DIR}/imgui_widgets.cpp
+		${IMGUI_DIR}/imgui_tables.cpp
+
+)
+set_source_files_properties(${imgui_sources_separate} PROPERTIES UNITY_GROUP "ImPlotImGui")
+
+set(implot_sources
+		${IMPLOT_DIR}/implot.cpp
+		${IMPLOT_DIR}/implot_items.cpp
+		#${IMPLOT_DIR}/implot_demo.cpp
+)
+set_source_files_properties(${implot_sources} PROPERTIES UNITY_GROUP "ImPlotImGui")
+
+set(ryzen_sources
+		${RYZEN_DIR}/lib/libsmu.c
+		${RYZEN_DIR}/pm_tables.c
+		${RYZEN_DIR}/readinfo.c
+		${RYZEN_DIR}/ryzen_monitor.c
+)
+set_source_files_properties(${ryzen_sources} PROPERTIES UNITY_GROUP "Ryzen")
 #file(GLOB sources src/*.cpp)
 
 include(FetchContent)
@@ -76,21 +118,11 @@ FetchContent_MakeAvailable(popl)
 include_directories(${popl_SOURCE_DIR}/include)
 
 add_executable(${PROJECT_NAME}
-	${sources}
-	${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
-	${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
-	${IMGUI_DIR}/imgui.cpp
-	${IMGUI_DIR}/imgui_draw.cpp
-	#${IMGUI_DIR}/imgui_demo.cpp
-	${IMGUI_DIR}/imgui_tables.cpp
-	${IMGUI_DIR}/imgui_widgets.cpp
-	${IMPLOT_DIR}/implot.cpp
-	${IMPLOT_DIR}/implot_items.cpp
-	#${IMPLOT_DIR}/implot_demo.cpp
-	${RYZEN_DIR}/lib/libsmu.c
-	${RYZEN_DIR}/pm_tables.c
-	${RYZEN_DIR}/readinfo.c
-	${RYZEN_DIR}/ryzen_monitor.c
+		${sources}
+		${imgui_sources_backends}
+		${imgui_sources_separate}
+		${implot_sources}
+		${ryzen_sources}
 )
 
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
@@ -116,11 +148,16 @@ if(ENABLE_RYZEN_TESTS)
 	)
 	FetchContent_MakeAvailable(googletest)
 
-	add_executable(unit_tests
+	set(test_sources
 		tests/test_CpuAffinityManagerBase.cpp
 		tests/test_DiagramBase.cpp
-		src/CpuAffinityManagerBase.cpp  # Include the source file with actual implementation 
+		src/CpuAffinityManagerBase.cpp  # Include the source file with actual implementation
 		src/DiagramBase.cpp
+	)
+	set_source_files_properties(${test_sources} PROPERTIES UNITY_GROUP "Tests")
+
+	add_executable(unit_tests
+		${test_sources}
 	)    
 	
 	# Set specific compiler options for the unit_tests target (turn of optimizations for coverage)
