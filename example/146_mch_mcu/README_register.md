@@ -16,6 +16,14 @@ create header files using structs or bitfields.
 
 https://www.keil.com/pack/doc/CMSIS/SVD/html/schema_1_2_gr.htmlx
 
+- linux binary can be obtained with the code here:
+  https://github.com/ARM-software/CMSIS_5/tree/develop/CMSIS/Utilities
+- alternatively go to
+  https://github.com/Open-CMSIS-Pack/devtools/releases and search for
+  SVDConv
+
+- a rust generator: https://github.com/rust-embedded/svd2rust
+
 ## Prompt a
 
 i want to avoid the user having to perform direct bit
