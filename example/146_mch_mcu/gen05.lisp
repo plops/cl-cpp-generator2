@@ -19,7 +19,7 @@
 				   'cl-cpp-generator2
 				   *source-dir*))
   (ensure-directories-exist *full-source-dir*)
-
+  ;; instead of manually transferring the register settings from the manual, i should parse this xml file: CH59Xxx.svd 
   
   (let* ((name `Ch592UsbRegisters)
 	 (l-regs `((:name ctrl :addr #x40008000
