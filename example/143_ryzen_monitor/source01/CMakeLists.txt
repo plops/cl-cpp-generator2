@@ -81,12 +81,12 @@ add_executable(${PROJECT_NAME}
 	${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
 	${IMGUI_DIR}/imgui.cpp
 	${IMGUI_DIR}/imgui_draw.cpp
-	${IMGUI_DIR}/imgui_demo.cpp
+	#${IMGUI_DIR}/imgui_demo.cpp
 	${IMGUI_DIR}/imgui_tables.cpp
 	${IMGUI_DIR}/imgui_widgets.cpp
 	${IMPLOT_DIR}/implot.cpp
 	${IMPLOT_DIR}/implot_items.cpp
-	${IMPLOT_DIR}/implot_demo.cpp
+	#${IMPLOT_DIR}/implot_demo.cpp
 	${RYZEN_DIR}/lib/libsmu.c
 	${RYZEN_DIR}/pm_tables.c
 	${RYZEN_DIR}/readinfo.c

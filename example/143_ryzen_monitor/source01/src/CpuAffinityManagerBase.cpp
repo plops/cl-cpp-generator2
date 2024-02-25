@@ -4,8 +4,8 @@
 #include <sched.h>
 #include <stdexcept>
 CpuAffinityManagerBase::CpuAffinityManagerBase(pid_t pid, int threads)
-    : selected_cpus_(std::vector<bool>(threads, false)), pid_(pid),
-      threads_(threads) {
+    : selected_cpus_(std::vector<bool>(threads, false)), pid_{pid},
+      threads_{threads} {
   auto cpuset{cpu_set_t()};
   if (0 == sched_getaffinity(pid_, sizeof(cpu_set_t), &cpuset)) {
     for (auto i = 0; i < threads_; i += 1) {

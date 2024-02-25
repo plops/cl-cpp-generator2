@@ -185,9 +185,9 @@
 							      (cl-change-case:snake-case (format nil "~a" name)))))
 					  (cond
 					    (param
-					     `(,nname_ ,nname)) 
+					     `(space ,nname_ (curly ,nname))) 
 					    (initform
-					     `(,nname_ ,initform)))))))
+					     `(space ,nname_ (curly ,initform))))))))
 		   )
 		  (explicit)	    
 		  (values :constructor)
@@ -227,10 +227,11 @@
 					  (get (cl-change-case:pascal-case (format nil "get-~a" name)))
 					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
 				      `(defmethod ,get ()
-					 (declare (values ,(format nil "const ~a&" type)))
+					 (declare (values ,(format nil "const ~a&" type))
+						  (const))
 					 (return ,nname_))))))
 	       
-	       "protected:"
+	       ;"protected:"
 	       
 	       
 	       ,@(remove-if #'null
@@ -452,9 +453,9 @@
 							      (cl-change-case:snake-case (format nil "~a" name)))))
 					  (cond
 					    (param
-					     `(,nname_ ,nname)) 
+					     `(space ,nname_ (curly ,nname))) 
 					    (initform
-					     `(,nname_ ,initform)))))))
+					     `(space ,nname_ (curly ,initform))))))))
 		   )
 		  (explicit)	    
 		  (values :constructor)
@@ -500,7 +501,7 @@
 		   (when (!= 0 (sched_setaffinity pid_ (sizeof cpu_set_t) &cpuset))
 		     (throw (std--runtime_error (string "Failed to set CPU affinity"))))))
 	       
-	       "protected:"
+	       ;"protected:"
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect

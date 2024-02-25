@@ -25,7 +25,6 @@ class CpuAffinityManagerBase  {
         void SetSelectedCpus (std::vector<bool> selected_cpus)       ;   
         std::vector<bool> GetAffinity ()       ;   
         void ApplyAffinity ()       ;   
-        protected:
         std::vector<bool> selected_cpus_;
         pid_t pid_;
         int threads_;
