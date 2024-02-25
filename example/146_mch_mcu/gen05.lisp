@@ -43,9 +43,45 @@
 			     (:fname transfer :bit 1  :access rw :help "USB transfer completion interrupt")
 			     (:fname bus-reset :bit 0  :access rw :help "in USB device mode USB bus reset event interrupt")
 			     ))
-		   (:name ctrl :addr #x40008000
+		   (:name dev-ad :addr #x40008003
+		    :fields ((:fname gp-bit :bit 7 :access rw :help "USB general flag, user-defined")
+			     (:fname usb-addr :bit (6 0) :access rw :help "device mode: the address of the USB itself")
+			     ))
+		   (:name status :addr #x40008004
+		    :fields ((:fname :bit 7 :access rw :help "")
+			     ))
+		   (:name misc-status :addr #x40008005
+		    :fields ((:fname sof-pre :bit 7 :access ro :help "SOF packet will be sent in host mode")
+			     (:fname sof-act :bit 6 :access ro :help "SOF packet is being sent in host mode")
+			     (:fname sie-free :bit 5 :access ro :help "USB proctocol processor free (not busy)")
+			     (:fname r-fifo-rdy :bit 4 :access ro :help "USB receiver fifo data ready status (not empty)")
+			     (:fname bus-reset :bit 3 :access ro :help "USB bus reset (is at reset status)")
+			     (:fname bus-suspend :bit 2 :access ro :help "USB suspend status (is in suspended status)")
+			     (:fname dm-level :bit 1 :access ro :help "In USB host mode, the level status of data minus (D-, DM) pin when the device is just connected to the USB port. used to determine speed (high level, = low speed)")
+			     (:fname dev-attach :bit 0 :access ro :help "USB device connection status of the port in USB host mode (1 == port has been connected)")
+			     
+			     
+			     
+			     
+			     ))
+
+		   (:name int-flag  :addr #x40008006
+		    :fields ((:fname is-nak :bit 7 :access ro :help "in device mode: NAK acknowledge during current USB transmission")
+			     (:fname tog-ok :bit 6 :access ro :help "USB transmission data synchronous flag match status (1==synchronous, 0==asynchronous)")
+			     (:fname sie-free :bit 5 :access ro :help "USB processor is idle")
+			     (:fname fifo-ov :bit 4 :access rw :help "USB FIFO overflow interrupt flag. Write 1 to reset")
+			     (:fname hst-sof :bit 3 :access rw :help "SOF packet transmission completion trigger in USB host mode. Write 1 to reset.")
+			     (:fname suspend :bit 2 :access rw :help "USB suspend or wake-up event trigger. Write 1 to reset.")
+			     (:fname transfer :bit 1 :access rw :help "USB transmission completion trigger. Write 1 to reset.")
+			     (:fname bus-reset :bit 0 :access rw :help "in device mode: bus reset event trigger. Write 1 to reset.")
+			     ))
+		   (:name int-status  :addr #x40008007
 		    :fields ((:fname host-mode :bit 7 :access rw :help "")
 			     ))
+		   (:name rx-len :addr #x40008008
+			   :fields ((:fname host-mode :bit 7 :access rw :help "")
+				    ))
+		   
 		   ))
 	 (members `((max-cores :type int :param t)
 		    (max-points :type int :param t)
