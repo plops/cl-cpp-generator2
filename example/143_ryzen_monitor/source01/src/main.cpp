@@ -154,6 +154,7 @@ int main(int argc, char **argv) {
   auto c0Diagram{DiagramWithGui(8, maxDataPoints, "c0")};
   auto cc1Diagram{DiagramWithGui(8, maxDataPoints, "cc1")};
   auto cc6Diagram{DiagramWithGui(8, maxDataPoints, "cc6")};
+  auto power_extraDiagram{DiagramWithGui(3, maxDataPoints, "power_extra")};
   auto affinityManager{CpuAffinityManagerWithGui(getpid(), maxThreads)};
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -256,6 +257,9 @@ int main(int argc, char **argv) {
         c0Diagram.AddDataPoint(elapsedTime, c0Values);
         cc1Diagram.AddDataPoint(elapsedTime, cc1Values);
         cc6Diagram.AddDataPoint(elapsedTime, cc6Values);
+        power_extraDiagram.AddDataPoint(
+            elapsedTime,
+            std::vector<float>({l3_logic_power, ddr_phy_power, socket_power}));
         temperatureDiagram.RenderGui(false);
         if (sumOn) {
           powerDiagram.RenderGuiSum(false);
@@ -275,10 +279,11 @@ int main(int argc, char **argv) {
           cc1Diagram.RenderGui(false);
         }
         if (sumOn) {
-          cc6Diagram.RenderGuiSum(true);
+          cc6Diagram.RenderGuiSum(false);
         } else {
-          cc6Diagram.RenderGui(true);
+          cc6Diagram.RenderGui(false);
         }
+        power_extraDiagram.RenderGui(true);
         ImGui::End();
       }
     }

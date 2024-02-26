@@ -8,12 +8,12 @@
 class DiagramWithGui : public DiagramBase {
         public:
         using DiagramBase::DiagramBase; 
-                /**  * Renders the GUI for the DiagramWithGui class.
+            /**  * Renders the GUI for the DiagramWithGui class.
  * 
  * @param xticks A boolean value indicating whether to render x-axis ticks.
 
     */ 
-    void RenderGui (bool xticks = false)       ;    
+        void RenderGui (bool xticks = false)       ;   
             /**  * Renders the GUI with summed diagrams. The sum is computed over all previous cpus.
  * 
  * @param xticks Flag indicating whether to render x-axis ticks.

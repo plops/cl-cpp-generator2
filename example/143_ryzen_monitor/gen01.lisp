@@ -198,33 +198,32 @@
 							    i)
 					       (curly)))))
 
-	       (do0
-		(doc "@brief Adds a data point to the diagram.
+	       (doc "@brief Adds a data point to the diagram.
  
   This function adds a data point to the diagram at the specified time with the given values.
   
   @param time The time of the data point.
   @param values The values of the data point.")
-		(defmethod AddDataPoint (time values)
-		  (declare 
-		   (type float time)
-		   (type "const std::vector<float>&" values))
-		  (unless (== (values.size)
-			      (diagrams_.size))
-		    (throw (std--invalid_argument (std--format (string "Number of values doesn't match the number of diagrams. expected: {} actual: {}")
-							       (values.size)
-							       (diagrams_.size)))))
-		  (when (<= max_points_ (time_points_.size))
-		    (time_points_.pop_front)
-		    (for-range (diagram diagrams_)
-			       (declare (type "auto&" diagram))
-			       (unless (diagram.values.empty)
-				 (diagram.values.pop_front))))
-		  (time_points_.push_back time)
-		  (dotimes (i (values.size))
-		    (dot (aref diagrams_ i)
-			 values
-			 (push_back (aref values i))))))
+	       (defmethod AddDataPoint (time values)
+		 (declare 
+		  (type float time)
+		  (type "const std::vector<float>&" values))
+		 (unless (== (values.size)
+			     (diagrams_.size))
+		   (throw (std--invalid_argument (std--format (string "Number of values doesn't match the number of diagrams. expected: {} actual: {}")
+							      (values.size)
+							      (diagrams_.size)))))
+		 (when (<= max_points_ (time_points_.size))
+		   (time_points_.pop_front)
+		   (for-range (diagram diagrams_)
+			      (declare (type "auto&" diagram))
+			      (unless (diagram.values.empty)
+				(diagram.values.pop_front))))
+		 (time_points_.push_back time)
+		 (dotimes (i (values.size))
+		   (dot (aref diagrams_ i)
+			values
+			(push_back (aref values i)))))
 
 	       ,@(remove-if #'null
 			    (loop for e in members
@@ -276,50 +275,51 @@
 	       "public:"
 	       "using DiagramBase::DiagramBase;"
 
-	       (do0
-		(doc " * Renders the GUI for the DiagramWithGui class.
+	       (doc " * Renders the GUI for the DiagramWithGui class.
  * 
  * @param xticks A boolean value indicating whether to render x-axis ticks.")
-		(defmethod RenderGui (&key (xticks false))
-		  (declare (type bool xticks))
-		  (space struct PlotData
-			 (progn
-			   "const std::deque<float>& time_points_;"
-			   "const std::vector<DiagramData>& diagrams_;"
-			   "int i;"
-			   "PlotData(const std::deque<float> &time_points, const std::vector<DiagramData> &diagrams, int index) : time_points_{time_points}, diagrams_{diagrams}, i{index} {}"))
-		  (when (ImPlot--BeginPlot (dot name_y_ (c_str))
-					   (ImVec2 -1 130)
-					   (or ImPlotFlags_NoFrame
-					       ImPlotFlags_NoTitle))
-		    (dotimes (i max_cores_)
-		      (let ((data (PlotData time_points_ diagrams_ i))))
-		      (let ((getter (lambda (idx data_)
-				      (declare (type void* data_)
-					       (type int idx)
-					       (values ImPlotPoint)
-					       (capture ""))
-				      (let ((d (static_cast<PlotData*> data_)))
-					(declare (type "const auto" d)))
+	       (defmethod RenderGui (&key (xticks false))
+		 (declare (type bool xticks))
+		 (space struct PlotData
+			(progn
+			  "const std::deque<float>& time_points_;"
+			  "const std::vector<DiagramData>& diagrams_;"
+			  "int i;"
+			  "PlotData(const std::deque<float> &time_points, const std::vector<DiagramData> &diagrams, int index) : time_points_{time_points}, diagrams_{diagrams}, i{index} {}"))
+		 (when (ImPlot--BeginPlot (dot name_y_ (c_str))
+					  (ImVec2 -1 130)
+					  (or ImPlotFlags_NoFrame
+					      ImPlotFlags_NoTitle))
+		   (dotimes (i (diagrams_.size)
+			       ;max_cores_
+			     )
+		     (let ((data (PlotData time_points_ diagrams_ i))))
+		     (let ((getter (lambda (idx data_)
+				     (declare (type void* data_)
+					      (type int idx)
+					      (values ImPlotPoint)
+					      (capture ""))
+				     (let ((d (static_cast<PlotData*> data_)))
+				       (declare (type "const auto" d)))
 				     
-				      (let ((x (dot d->time_points_ (at idx)))
-					    (y (dot d->diagrams_ (at d->i) values (at idx)))))
-				      (return (ImPlotPoint x y))))))
-		      (ImPlot--SetupAxes (string "X")
-					 (dot name_y_ (c_str))
-					 (or ImPlotAxisFlags_AutoFit
-					     ImPlotAxisFlags_NoLabel
-					     (? xticks 0 ImPlotAxisFlags_NoTickLabels))
-					 ImPlotAxisFlags_AutoFit
-					 )
+				     (let ((x (dot d->time_points_ (at idx)))
+					   (y (dot d->diagrams_ (at d->i) values (at idx)))))
+				     (return (ImPlotPoint x y))))))
+		     (ImPlot--SetupAxes (string "X")
+					(dot name_y_ (c_str))
+					(or ImPlotAxisFlags_AutoFit
+					    ImPlotAxisFlags_NoLabel
+					    (? xticks 0 ImPlotAxisFlags_NoTickLabels))
+					ImPlotAxisFlags_AutoFit
+					)
 		     
-		      (ImPlot--PlotLineG (dot (std--format (string "Core {:2}")
-							   i)
-					      (c_str))
-					 getter
-					 (static_cast<void*> &data)
-					 (static_cast<int> (time_points_.size))))
-		    (ImPlot--EndPlot))))
+		     (ImPlot--PlotLineG (dot (std--format (string "Core {:2}")
+							  i)
+					     (c_str))
+					getter
+					(static_cast<void*> &data)
+					(static_cast<int> (time_points_.size))))
+		   (ImPlot--EndPlot)))
 
 	       (doc " * Renders the GUI with summed diagrams. The sum is computed over all previous cpus.
  * 
@@ -339,7 +339,9 @@
 					      ImPlotFlags_NoTitle))
 		   (let ((sum_values (std--vector<float> (time_points_.size)
 							 0s0))))
-		   (dotimes (i max_cores_)
+		   (dotimes (i (diagrams_.size)
+			       ;max_cores_
+			       )
 		     (let ((data (PlotDataSum time_points_ diagrams_ sum_values i))))
 		     (let ((getterS (lambda (idx data_)
 				      (declare (type void* data_)
@@ -832,7 +834,7 @@
 
        
        ,(let ((l-columns `((:col temperature) (:col power :sum t) (:col frequency) (:col voltage)
-			   (:col c0 :sum t) (:col cc1 :sum t) (:col cc6 :sum t) )))
+			   (:col c0 :sum t) (:col cc1 :sum t) (:col cc6 :sum t)  (:col power_extra :fields (l3 ddr socket)))))
 	  `(do0
 
 	    (let (((bracket sysinfo pm_buf pmt) (start_pm_monitor2))))
@@ -846,9 +848,11 @@
 
 	      ,@(loop for e in l-columns
 		      collect
-		      (destructuring-bind (&key col sum) e
+		      (destructuring-bind (&key col sum fields) e
 		       (let ((dia (format nil "~aDiagram" col)))
-			 `(let ((,dia (DiagramWithGui 8
+			 `(let ((,dia (DiagramWithGui ,(if fields
+							   (length fields)
+							   8)
 						      maxDataPoints
 						      (string ,col))))))))
 	      
@@ -902,10 +906,12 @@
 				  (elapsedTime (dot (std--chrono--duration<float> (- currentTime startTime))
 						    (count)))))
 
-			    ,@(loop for e in l-columns
-				    collect
-				    (destructuring-bind (&key col sum) e
-				      `(let ((,(format nil "~aValues" col) (std--vector<float> pmt.max_cores))))))
+			    ,@(remove-if #'null
+					  (loop for e in l-columns
+						collect
+						(destructuring-bind (&key col sum fields) e
+						  (unless fields
+						    `(let ((,(format nil "~aValues" col) (std--vector<float> pmt.max_cores))))))))
 
 			    (let ((l3_logic_power (pmta (aref L3_LOGIC_POWER 0)))
 				  (ddr_phy_power (pmta DDR_PHY_POWER))
@@ -938,11 +944,13 @@
 				    (core_cc1 (pmta (aref CORE_CC1 i)))
 				    (core_cc6 (pmta (aref CORE_CC6 i)))
 				    )
-				,@(loop for e in l-columns
-					collect
-					(destructuring-bind (&key col sum) e
-					  `(setf (aref ,(format nil "~aValues" col) i)
-						 ,(format nil "core_~a" col))))
+				,@(remove-if #'null
+					      (loop for e in l-columns
+						    collect
+						    (destructuring-bind (&key col sum fields) e
+						      (unless fields
+							`(setf (aref ,(format nil "~aValues" col) i)
+							       ,(format nil "core_~a" col))))))
 				
 				(if core_disabled
 				    (ImGui--Text (string "%s")
@@ -970,41 +978,49 @@
 						      (c_str)))
 				    )))
 
-			    ,@(loop for e in l-columns
-				    collect
-				    (destructuring-bind (&key col sum) e
-				     (let ((val (format nil "~aValues" col))
-					   (dia (format nil "~aDiagram" col)))
-				       `(dot ,dia
-					     (AddDataPoint elapsedTime ,val)))))
+			    ,@ (remove-if #'null
+					  (loop for e in l-columns
+						collect
+						(destructuring-bind (&key col sum fields) e
+						  (let ((val (format nil "~aValues" col))
+							(dia (format nil "~aDiagram" col)))
+						    (unless fields
+						      `(dot ,dia
+							    (AddDataPoint elapsedTime ,val)))))))
+
+			       (dot power_extraDiagram
+				    (AddDataPoint elapsedTime (std--vector<float> (curly
+										   l3_logic_power 
+										   ddr_phy_power 
+										   socket_power))))
 			    
-			    ,@(loop for e in l-columns
-				    and e-i from 1
-				    collect
-				    (destructuring-bind (&key col sum) e
-				     (let ((dia (format nil "~aDiagram" col)
-						))
-				       (if sum
+			       ,@(loop for e in l-columns
+				       and e-i from 1
+				       collect
+				       (destructuring-bind (&key col sum fields) e
+					 (let ((dia (format nil "~aDiagram" col)
+						    ))
+					   (if sum
 					    
-					    `(if sumOn
-						 (dot ,dia
-						      (RenderGuiSum
-						       ,(if (eq e-i (length l-columns))
-							    `true
-							    `false)))
-						 (dot ,dia
-						      (RenderGui
-						       ,(if (eq e-i (length l-columns))
-							    `true
-							    `false))))
-					   `(dot ,dia
-					     (RenderGui
-					      ,(if (eq e-i (length l-columns))
-						   `true
-						   `false)))
-					   )
+					       `(if sumOn
+						    (dot ,dia
+							 (RenderGuiSum
+							  ,(if (eq e-i (length l-columns))
+							       `true
+							       `false)))
+						    (dot ,dia
+							 (RenderGui
+							  ,(if (eq e-i (length l-columns))
+							       `true
+							       `false))))
+					       `(dot ,dia
+						     (RenderGui
+						      ,(if (eq e-i (length l-columns))
+							   `true
+							   `false)))
+					       )
 				       
-				       )))
+					   )))
 			    
 			    (ImGui--End))))
 		 

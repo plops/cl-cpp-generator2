@@ -21,7 +21,7 @@ class DiagramBase  {
 
     */ 
         explicit  DiagramBase (unsigned long max_cores, unsigned int max_points, std::string name_y)       ;   
-                /** @brief Adds a data point to the diagram.
+            /** @brief Adds a data point to the diagram.
  
   This function adds a data point to the diagram at the specified time with the given values.
   
@@ -29,7 +29,7 @@ class DiagramBase  {
   @param values The values of the data point.
 
     */ 
-    void AddDataPoint (float time, const std::vector<float>& values)       ;    
+        void AddDataPoint (float time, const std::vector<float>& values)       ;   
         const unsigned long& GetMaxCores () const      ;   
         const unsigned int& GetMaxPoints () const      ;   
         const std::vector<DiagramData>& GetDiagrams () const      ;   
