@@ -29,7 +29,8 @@
 		    ;(x :type "std::vector<float>")
 		    ;(y :type "std::vector<float>")
 		    (name-y :type "std::string" :param t)
-		    (time-points :type "std::deque<float>" :initform ""))))
+		    (time-points :type "std::deque<float>" :initform "")
+		    )))
     (write-source 
    (asdf:system-relative-pathname
     'cl-cpp-generator2 
@@ -834,7 +835,9 @@
 
        
        ,(let ((l-columns `((:col temperature) (:col power :sum t) (:col frequency) (:col voltage)
-			   (:col c0 :sum t) (:col cc1 :sum t) (:col cc6 :sum t)  (:col power_extra :fields (l3 ddr socket)))))
+			   (:col c0 :sum t) (:col cc1 :sum t) (:col cc6 :sum t)
+			   (:col power_mem :fields (l3 ddr))
+			   (:col power_socket :fields (socket)))))
 	  `(do0
 
 	    (let (((bracket sysinfo pm_buf pmt) (start_pm_monitor2))))
@@ -988,10 +991,13 @@
 						      `(dot ,dia
 							    (AddDataPoint elapsedTime ,val)))))))
 
-			       (dot power_extraDiagram
+			       (dot power_memDiagram
 				    (AddDataPoint elapsedTime (std--vector<float> (curly
 										   l3_logic_power 
 										   ddr_phy_power 
+										   ))))
+			       (dot power_socketDiagram
+				    (AddDataPoint elapsedTime (std--vector<float> (curly
 										   socket_power))))
 			    
 			       ,@(loop for e in l-columns
