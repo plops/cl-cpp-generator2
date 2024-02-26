@@ -892,6 +892,21 @@
 				    collect
 				    (destructuring-bind (&key col sum) e
 				      `(let ((,(format nil "~aValues" col) (std--vector<float> pmt.max_cores))))))
+
+			    (let ((l3_logic_power (pmta (aref L3_LOGIC_POWER 0)))
+				  (ddr_phy_power (pmta DDR_PHY_POWER))
+				  (socket_power (pmta SOCKET_POWER)))
+
+			      (ImGui--Text (string "%s")
+						 
+						 (dot (std--format
+						       (string "L3={:6.3f}W DDR={:6.3f}W SOCKET={:6.3f}W")
+						       l3_logic_power
+						       ddr_phy_power
+						       socket_power
+						       )
+						      (c_str)))
+			      )
 			    
 			    (dotimes (i pmt.max_cores)
 			      (let ((core_disabled (and (>> sysinfo.core_disable_map i) 1))
@@ -907,12 +922,13 @@
 				    (core_power (pmta (aref CORE_POWER i)))
 				    (core_c0 (pmta (aref CORE_C0 i)))
 				    (core_cc1 (pmta (aref CORE_CC1 i)))
-				    (core_cc6 (pmta (aref CORE_CC6 i))))
+				    (core_cc6 (pmta (aref CORE_CC6 i)))
+				    )
 				,@(loop for e in l-columns
 					collect
 					(destructuring-bind (&key col sum) e
-					 `(setf (aref ,(format nil "~aValues" col) i)
-						,(format nil "core_~a" col))))
+					  `(setf (aref ,(format nil "~aValues" col) i)
+						 ,(format nil "core_~a" col))))
 				
 				(if core_disabled
 				    (ImGui--Text (string "%s")

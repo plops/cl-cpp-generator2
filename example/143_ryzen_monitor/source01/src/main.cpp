@@ -201,6 +201,13 @@ int main(int argc, char **argv) {
         auto c0Values{std::vector<float>(pmt.max_cores)};
         auto cc1Values{std::vector<float>(pmt.max_cores)};
         auto cc6Values{std::vector<float>(pmt.max_cores)};
+        auto l3_logic_power{pmta(L3_LOGIC_POWER[0])};
+        auto ddr_phy_power{pmta(DDR_PHY_POWER)};
+        auto socket_power{pmta(SOCKET_POWER)};
+        ImGui::Text("%s",
+                    std::format("L3={:6.3f}W DDR={:6.3f}W SOCKET={:6.3f}W",
+                                l3_logic_power, ddr_phy_power, socket_power)
+                        .c_str());
         for (auto i = 0; i < pmt.max_cores; i += 1) {
           auto core_disabled{sysinfo.core_disable_map >> i & 1};
           auto core_frequency{pmta(CORE_FREQEFF[i]) * 1.00e+3F};
