@@ -96,19 +96,29 @@
 			     ))
 		   (:name rx-len :addr #x40008008
 			  :reg-access ro
-		    :fields ((:fname len :bit (7 0) :access ro :help "number of data bytes received by the current usb endpoint")
-			     ;(:fname reserved7 :bit 7 :access ro )
+		    :fields ((:fname len :bit (6 0) :access ro :help "number of data bytes received by the current usb endpoint")
+			     (:fname reserved7 :bit 7 :access ro )
 			     ))
 
 		   (:name reserved8009 :addr #x40008009
-			  :reg-access ro
-		    :fields ((:fname reserved :bit (7 0) :access ro)))
+			  :reg-access ro)
 		   (:name reserved800a :addr #x4000800a
-			  :reg-access ro
-		    :fields ((:fname reserved :bit (7 0) :access ro)))
+			  :reg-access ro)
 		   (:name reserved800b :addr #x4000800b
-			  :reg-access ro
-		    :fields ((:fname reserved :bit (7 0) :access ro)))
+			  :reg-access ro)
+
+		   (:name ep4-1-mod :addr #x4000800c
+			  :reg-access rw
+		    :fields (
+			     (:fname ep1-tx-en :bit 0 :access rw :help "enable endpoint 1 receiving (OUT)")
+			     (:fname ep1-tx-en :bit 1 :access rw :help "enable endpoint 1 transmittal (IN)")
+			     (:fname reserved :bit 2 :access ro)
+			     (:fname ep1-buf-mod :bit 3 :access rw :help "endpoint 1 buffer mode")
+			     (:fname ep4-rx-en :bit 4 :access rw :help "enable endpoint 4 receiving (OUT)")
+			     (:fname ep4-tx-en :bit 5 :access rw :help "enable endpoint 4 transmittal (IN)")
+			     
+			     (:fname reserved76 :bit (7 6) :access ro )
+			     ))
 		   
 		   ))
 	 (members `((max-cores :type int :param t)
@@ -132,9 +142,8 @@
 						    "std::deque<float> values;"
 						    )
 			       )
-			(doc "@brief The DiagramBase class represents a base class for diagrams.")
-
-			(doc "
+			(doc "@brief The DiagramBase class represents a base class for diagrams.
+			    
 # Description of Interrupt status register
 
 - MASK_UIS_TOKEN identifies the token PID in USB device mode:  
@@ -166,7 +175,8 @@
 - Synchronization trigger bit (RB_UEP_R_TOG) for OUT transactions ensures data packet received matches the endpoint; data is discarded if not synchronous.  
 - RB_UEP_AUTO_TOG option available for automatically flipping synchronization trigger bit after successful transmission or reception.  
 - Data to be sent/received is stored in their own buffer; sent data length set in R8_UEPn_T_LEN, received data length in R8_USB_RX_LEN, distinguishable by current endpoint number during interrupt.
-"))
+")
+)
      :implementation-preamble
      `(do0
        
@@ -182,38 +192,43 @@
 	       ,@(loop for e in l-regs
 		       collect
 		       (destructuring-bind (&key name addr (reg-access 'rw) size fields ) e
-			 `(space
-			   union
-			   (progn
-			    (space uint8_t reg)
-			    (space struct
-				   ;,(cl-change-case:snake-case (format nil "~a-t" name))
-				   (progn
-				    ,(let ((count-bits 0))
-					`(do0 ,@(loop for field in (reverse fields)
-						collect
-						(destructuring-bind (&key fname bit access help) field
-						  (let ((bit-len (if (listp bit)
-								     (+ 1
-									(- (first bit)
-									   (second bit)))
-								     1)))
-						    (incf count-bits bit-len)
-						    `(space uint8_t ,(format nil "~a:~a~@[; // ~a~]"
-									     (cl-change-case:snake-case (format nil "~a" fname))
-									     bit-len
-									     help)))))
+			 (if fields
+			  `(space
+			    union
+			    (progn
+			      (space uint8_t reg)
+			      (space struct
+					;,(cl-change-case:snake-case (format nil "~a-t" name))
+				     (progn
+				       ,(let ((count-bits 0))
+					  `(do0 ,@(loop for field in (reverse fields)
+							collect
+							(destructuring-bind (&key fname bit access help) field
+							  (let ((bit-len (if (listp bit)
+									     (+ 1
+										(- (first bit)
+										   (second bit)))
+									     1)))
+							    (incf count-bits bit-len)
+							    `(space uint8_t ,(format nil "~a:~a~@[; // ~a~]"
+										     (cl-change-case:snake-case (format nil "~a" fname))
+										     bit-len
+										     help)))))
 					      
 					      
-					      ,(prog1
-						   " " ;`(comments ,(format nil "sum of bits = ~a" count-bits))
-						 (assert (eq count-bits 8)))
+						,(prog1
+						     " " ;`(comments ,(format nil "sum of bits = ~a" count-bits))
+						   (when fields
+						     (assert (eq count-bits 8))))
 					      
-					      )
-					))
-				   bit))
-			   ,(cl-change-case:snake-case (format nil "~a" name))
-			   )))
+						)
+					  ))
+				     bit))
+			    ,(cl-change-case:snake-case (format nil "~a" name))
+			    )
+			  `(space uint8_t ,(cl-change-case:snake-case (format nil "~a" name)))
+			  
+			  )))
 	       "public:" 
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
