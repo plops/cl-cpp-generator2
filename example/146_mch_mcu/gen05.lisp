@@ -34,6 +34,19 @@
 			     (:fname clr-all :bit 1 :access rw :help "USB FIFO and interrupt flag clear")
 			     (:fname dma-en :bit 0 :access rw)
 			     ))
+
+		   (:name port-ctrl :addr #x40008001
+		    :fields ((:fname pd-dis :bit 7 :access rw :help "disable USB-UDP-UDM pulldown resistance")
+			     (:fname reserved6 :bit 6 :access ro)
+			     (:fname dp-pin :bit 5 :access ro :help "UDP pin level")
+			     (:fname dm-pin :bit 4 :access ro :help "UDM pin level")
+			     (:fname reserved3 :bit 3 :access ro)
+
+			     (:fname low-speed :bit 2 :access rw :help "enable USB port low speed (0==full speed, 1== low speed)")
+			     (:fname hub0-reset :bit 1 :access rw :help "0=normal 1=force bus reset")
+			     (:fname port-en :bit 0 :access rw :help "enable USB physical port (disabled automatically when device detached)")
+			     
+			     ))
 		   (:name int-en :addr #x40008002
 		    :fields ((:fname dev-sof :bit 7 :access rw :help "in device mode receive start of frame (SOF) packet interrupt")
 			     (:fname dev-nak :bit 6 :access rw :help "in device mode receive NAK interrupt")
@@ -84,7 +97,18 @@
 		   (:name rx-len :addr #x40008008
 			  :reg-access ro
 		    :fields ((:fname len :bit (7 0) :access ro :help "number of data bytes received by the current usb endpoint")
+			     ;(:fname reserved7 :bit 7 :access ro )
 			     ))
+
+		   (:name reserved8009 :addr #x40008009
+			  :reg-access ro
+		    :fields ((:fname reserved :bit (7 0) :access ro)))
+		   (:name reserved800a :addr #x4000800a
+			  :reg-access ro
+		    :fields ((:fname reserved :bit (7 0) :access ro)))
+		   (:name reserved800b :addr #x4000800b
+			  :reg-access ro
+		    :fields ((:fname reserved :bit (7 0) :access ro)))
 		   
 		   ))
 	 (members `((max-cores :type int :param t)
@@ -95,6 +119,7 @@
 		    (name-y :type "std::string" :param t)
 		    (time-points :type "std::deque<float>"))))
     (write-class
+     :format-p t
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
 	   *source-dir*)
@@ -105,8 +130,43 @@
 			(space struct DiagramData (progn
 						    "std::string name;"
 						    "std::deque<float> values;"
-						    ))
-			(doc "@brief The DiagramBase class represents a base class for diagrams."))
+						    )
+			       )
+			(doc "@brief The DiagramBase class represents a base class for diagrams.")
+
+			(doc "
+# Description of Interrupt status register
+
+- MASK_UIS_TOKEN identifies the token PID in USB device mode:  
+  - 00: OUT packet  
+  - 01: SOF packet  
+  - 10: IN packet  
+  - 11: Idle  
+- When MASK_UIS_TOKEN is not idle and RB_UIS_SETUP_ACT is 1:  
+  - Process MASK_UIS_TOKEN first  
+  - Clear RB_UIF_TRANSFER to make it idle  
+  - Then process RB_UIS_SETUP_ACT  
+  - Finally, clear RB_UIF_TRANSFER again  
+- MASK_UIS_H_RES is valid only in host mode:  
+  - For OUT/SETUP token packets from host: PID can be ACK/NAK/STALL or indicate no response/timeout  
+  - For IN token packets from host: PID can be data packet PID (DATA0/DATA1) or handshake packet PID
+
+# Description of USB Device Registers
+
+- USB device mode supports 8 bidirectional endpoints: endpoint0 through endpoint7.  
+- Maximum data packet length for each endpoint is 64 bytes.  
+- Endpoint0: Default endpoint, supports control transmission with a shared 64-byte data buffer for transmission and reception.  
+- Endpoint1, endpoint2, endpoint3: Each has a transmission endpoint IN and a reception endpoint OUT with separate 64-byte or double 64-byte data buffers, supporting bulk, interrupt, and real-time/synchronous transmission.  
+- Endpoint4, endpoint5, endpoint6, endpoint7: Each has a transmission endpoint IN and a reception endpoint OUT with separate 64-byte data buffers, supporting bulk, interrupt, and real-time/synchronous transmission.  
+- Each endpoint has a control register (R8_UEPn_CTRL) and a transmit length register (R8_UEPn_T_LEN) for setting synchronization trigger bit, response to OUT/IN transactions, and length of data to be sent.  
+- USB bus pull-up resistor can be software-controlled via USB control register (R8_USB_CTRL) for enabling USB device function; not usable in sleep or power-down mode.  
+- In sleep mode, pull-up resistor of DP pin can be enabled via R16_PIN_ANALOG_IE register without being affected.  
+- USB protocol processor sets interrupt flag for USB bus reset, suspend, wake-up events, data sending, or receiving; generates interrupt request if enabled.  
+- Application can query interrupt flag register (R8_USB_INT_FG) and USB interrupt state register (R8_USB_INT_ST) for processing events based on endpoint number (MASK_UIS_ENDP) and transaction token PID (MASK_UIS_TOKEN).  
+- Synchronization trigger bit (RB_UEP_R_TOG) for OUT transactions ensures data packet received matches the endpoint; data is discarded if not synchronous.  
+- RB_UEP_AUTO_TOG option available for automatically flipping synchronization trigger bit after successful transmission or reception.  
+- Data to be sent/received is stored in their own buffer; sent data length set in R8_UEPn_T_LEN, received data length in R8_USB_RX_LEN, distinguishable by current endpoint number during interrupt.
+"))
      :implementation-preamble
      `(do0
        
@@ -127,7 +187,7 @@
 			   (progn
 			    (space uint8_t reg)
 			    (space struct
-				   ,(cl-change-case:snake-case (format nil "~a-t" name))
+				   ;,(cl-change-case:snake-case (format nil "~a-t" name))
 				   (progn
 				    ,(let ((count-bits 0))
 					`(do0 ,@(loop for field in (reverse fields)
@@ -146,11 +206,14 @@
 					      
 					      
 					      ,(prog1
-						  `(comments ,(format nil "sum of bits = ~a" count-bits))
-						  (assert (eq count-bits 8)))
+						   " " ;`(comments ,(format nil "sum of bits = ~a" count-bits))
+						 (assert (eq count-bits 8)))
 					      
 					      )
-					)))))))
+					))
+				   bit))
+			   ,(cl-change-case:snake-case (format nil "~a" name))
+			   )))
 	       "public:" 
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members

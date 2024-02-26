@@ -53,7 +53,7 @@
 (defun uniq (name)
   (format nil "std::unique_ptr<~a>" name))
 
-(defun write-class (&key name dir code headers header-preamble implementation-preamble preamble format)
+(defun write-class (&key name dir code headers header-preamble implementation-preamble preamble format-p)
   "split class definition in .h file and implementation in .cpp file. use defclass in code. headers will only be included into the .cpp file. the .h file will get forward class declarations. additional headers can be added to the .h file with header-preamble and to the .cpp file with implementation preamble."
   (let* ((fn-h (format nil "~a/~a.h" dir name))
 	 (once-guard (string-upcase (format nil "~a_H" name)))
@@ -87,7 +87,7 @@
 			 :header-only t
 			 ))
 	       (format sh "~%#endif /* !~a */" once-guard))))
-      (if format
+      (if format-p
 	  (only-write-when-hash-changed
 	   fn-h
 	   fn-h-str
