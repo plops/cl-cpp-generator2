@@ -18,6 +18,7 @@
   (defparameter *full-source-dir* (asdf:system-relative-pathname
 				   'cl-cpp-generator2
 				   *source-dir*))
+  (load "util.lisp")
   (ensure-directories-exist *full-source-dir*)
   ;; instead of manually transferring the register settings from the manual, i should parse this xml file: CH59Xxx.svd 
   ;; the xml contains all the required information (even read-only)
@@ -26,13 +27,12 @@
 	 (l-regs `((:name ctrl :addr #x40008000
 		    :fields ((:fname host-mode :bit 7 :access rw)
 			     (:fname low-speed :bit 6 :access rw)
-			     (:fname dev-pull-up-en :bit 5 :access rw)
+			   ;  (:fname dev-pull-up-en :bit 5 :access rw)
 			     (:fname sys-ctlr :bit (5 4) :access rw :help "host-mode==0: 00..disable usb device function and disable internal pull-up (can be overridden by dev-pullup-en), 01..enable device fucntion, disable internal pull-up, external pull-up-needed, 1x..enable usb device fucntion and internal 1.5k pull-up, pull-up has priority over pull-down resistor")
 			     (:fname int-busy :bit 3 :access rw :help "Auto pause")
 			     (:fname reset-sie :bit 2 :access rw :help "Software reset USB protocol processor")
 			     (:fname clr-all :bit 1 :access rw :help "USB FIFO and interrupt flag clear")
 			     (:fname dma-en :bit 0 :access rw)
-			     
 			     ))
 		   (:name int-en :addr #x40008002
 		    :fields ((:fname dev-sof :bit 7 :access rw :help "in device mode receive start of frame (SOF) packet interrupt")
@@ -45,12 +45,12 @@
 			     (:fname bus-reset :bit 0  :access rw :help "in USB device mode USB bus reset event interrupt")
 			     ))
 		   (:name dev-ad :addr #x40008003
-			  :size 4
+		    :size 4
 		    :fields ((:fname gp-bit :bit 7 :access rw :help "USB general flag, user-defined")
 			     (:fname usb-addr :bit (6 0) :access rw :help "device mode: the address of the USB itself")
 			     ))
-		   (:name status :addr #x40008004
-		    :fields ((:fname :bit 7 :access rw :help "")
+		   #+nil (:name status :addr #x40008004
+		    :fields ((:fname status :bit 7 :access rw :help "")
 			     ))
 		   (:name misc-status :addr #x40008005
 			  :reg-access ro
@@ -62,10 +62,6 @@
 			     (:fname bus-suspend :bit 2 :access ro :help "USB suspend status (is in suspended status)")
 			     (:fname dm-level :bit 1 :access ro :help "In USB host mode, the level status of data minus (D-, DM) pin when the device is just connected to the USB port. used to determine speed (high level, = low speed)")
 			     (:fname dev-attach :bit 0 :access ro :help "USB device connection status of the port in USB host mode (1 == port has been connected)")
-			     
-			     
-			     
-			     
 			     ))
 
 		   (:name int-flag  :addr #x40008006
@@ -84,8 +80,6 @@
 			     (:fname tog-ok :bit 6 :access ro :help "current usb transmission sync flag matching status (same as RB_U_TOG_OK), 1=>sync")
 			     (:fname token :bit (5 4) :access ro :help "in device mode the token pid of the current usb transfer transaction")
 			     (:fname endp :bit (3 0) :access ro :help "in device mode the endpoint number of the current usb transfer transaction")
-			     
-			     
 			     ))
 		   (:name rx-len :addr #x40008008
 			  :reg-access ro
@@ -124,7 +118,40 @@
      :code `(do0
 	     
 	     (defclass ,name ()
-	       "public:"
+	       "private:"
+	       ,@(loop for e in l-regs
+		       collect
+		       (destructuring-bind (&key name addr (reg-access 'rw) size fields ) e
+			 `(space
+			   union
+			   (progn
+			    (space uint8_t reg)
+			    (space struct
+				   ,(cl-change-case:snake-case (format nil "~a-t" name))
+				   (progn
+				    ,(let ((count-bits 0))
+					`(do0 ,@(loop for field in (reverse fields)
+						collect
+						(destructuring-bind (&key fname bit access help) field
+						  (let ((bit-len (if (listp bit)
+								     (+ 1
+									(- (first bit)
+									   (second bit)))
+								     1)))
+						    (incf count-bits bit-len)
+						    `(space uint8_t ,(format nil "~a:~a~@[; // ~a~]"
+									     (cl-change-case:snake-case (format nil "~a" fname))
+									     bit-len
+									     help)))))
+					      
+					      
+					      ,(prog1
+						  `(comments ,(format nil "sum of bits = ~a" count-bits))
+						  (assert (eq count-bits 8)))
+					      
+					      )
+					)))))))
+	       "public:" 
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
 					  collect
