@@ -92,8 +92,6 @@ cd ryzen_smu
 git checkout de976a9b43d629b7fa0c32e5124bc28bc91d47ef  
 ```
 
-The repo on gitlab seems newer but I haven't tried it:
-https://gitlab.com/leogx9r/ryzen_smu/
 
 After module compilation and load:
 
@@ -105,6 +103,17 @@ After module compilation and load:
 # cat /sys/kernel/ryzen_smu_drv/mp1_if_version 
 3
 
+```
+
+
+The repo on gitlab seems newer but I haven't tried it much:
+https://gitlab.com/leogx9r/ryzen_smu/
+
+If I try to run my code with the most recent kernel module I get this error:
+```
+example/143_ryzen_monitor/source01/b $ sudo /usr/local/bin/ryzen_mon_glgui 
+ryzen_smu version string: 0.1.5
+error smu_return_to_str(ret)='SMU Driver Version Incompatible With Library Version'
 ```
 
 ## Future Improvements  
