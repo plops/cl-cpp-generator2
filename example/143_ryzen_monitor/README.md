@@ -92,6 +92,9 @@ cd ryzen_smu
 git checkout de976a9b43d629b7fa0c32e5124bc28bc91d47ef  
 ```
 
+The repo on gitlab seems newer but I haven't tried it:
+https://gitlab.com/leogx9r/ryzen_smu/
+
 After module compilation and load:
 
 ```
