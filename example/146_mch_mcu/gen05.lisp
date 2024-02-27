@@ -237,9 +237,13 @@
 					  (destructuring-bind (name &key type param (initform 0)) e
 					    (let ((nname (intern
 							  (string-upcase
-							   (cl-change-case:snake-case (format nil "~a" name))))))
+							   (cl-change-case:snake-case (format nil "~a" name)))))
+						  (nname_ (intern
+							   (string-upcase
+							    (format nil "~a_"
+							     (cl-change-case:snake-case (format nil "~a" name)))))))
 					      (when param
-						nname))))))
+						nname_))))))
 		 (declare
 		  ,@(remove-if #'null
 			       (loop for e in members
@@ -247,10 +251,21 @@
 				     (destructuring-bind (name &key type param (initform 0)) e
 				       (let ((nname (intern
 						     (string-upcase
-						      (cl-change-case:snake-case (format nil "~a" name))))))
+						      (cl-change-case:snake-case (format nil "~a" name)))))
+					     (nname_ (intern (string-upcase
+							      (format nil "~a_"
+								      (cl-change-case:snake-case (format nil "~a" name)))))))
 					 (when param
 					   
-					   `(type ,type ,nname))))))
+					   `(type ,(cond
+						     ((and (stringp type)
+							   (or (str:starts-with-p "std::vector<" type)
+							       (str:starts-with-p "std::deque<" type)
+							       (str:starts-with-p "std::array<" type)
+							       (str:starts-with-p "std::string" type)))
+						      (format nil "const ~a&" type))
+						     (t type))
+						  ,nname_))))))
 		  (construct
 		   ,@(remove-if #'null
 				(loop for e in members
@@ -261,7 +276,7 @@
 							      (cl-change-case:snake-case (format nil "~a" name)))))
 					  (cond
 					    (param
-					     `(,nname_ ,nname)) 
+					     `(,nname ,nname_)) 
 					    #+nil (initform
 					     `(,nname_ ,initform)))))))
 		   )
@@ -278,8 +293,16 @@
 					  (get (cl-change-case:pascal-case (format nil "get-~a" name)))
 					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
 				      `(defmethod ,get ()
-					 (declare (values ,type))
-					 (return ,nname_))))))
+					 (declare (values ,(cond
+							     ((and (stringp type)
+								   (or (str:starts-with-p "std::vector<" type)
+								       (str:starts-with-p "std::deque<" type)
+								       (str:starts-with-p "std::array<" type)
+								       (str:starts-with-p "std::string" type)))
+							      (format nil "const ~a&" type))
+							     (t type)))
+						  (const))
+					 (return ,nname))))))
 	       
 	       "protected:"
 	       
