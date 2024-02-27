@@ -1,7 +1,8 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2")
   (ql:quickload "alexandria")
-  (ql:quickload "cl-change-case"))
+  (ql:quickload "cl-change-case")
+  (ql:quickload "str"))
 
 (in-package :cl-cpp-generator2)
 
@@ -261,7 +262,7 @@
 					  (cond
 					    (param
 					     `(,nname_ ,nname)) 
-					    (initform
+					    #+nil (initform
 					     `(,nname_ ,initform)))))))
 		   )
 		  (explicit)	    
@@ -289,7 +290,15 @@
 				  (destructuring-bind (name &key type param (initform 0)) e
 				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-				      `(space ,type ,nname_))))))))
+				      (cond
+					(param `(space ,type ,nname_))
+					((and (stringp type)
+					      (or (str:starts-with-p "std::vector<" type)
+						  (str:starts-with-p "std::deque<" type)
+						  (str:starts-with-p "std::array<" type)
+						  (str:starts-with-p "std::string" type)))
+					 `(space ,type ,nname_ (curly)))
+					(t `(space ,type ,nname_ (curly ,initform)))))))))))
 
     )
 
