@@ -26,9 +26,16 @@ void DiagramWithGui::RenderGui(bool xticks) {
                         ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoLabel |
                             (xticks ? 0 : ImPlotAxisFlags_NoTickLabels),
                         ImPlotAxisFlags_AutoFit);
-      ImPlot::PlotLineG(std::format("Core {:2}", i).c_str(), getter,
-                        static_cast<void *>(&data),
-                        static_cast<int>(time_points_.size()));
+      ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.50F);
+      ImPlot::PlotShadedG(
+          std::format("Core {:2}", i).c_str(), getter,
+          static_cast<void *>(&data),
+          [](int idx, void *data_) -> ImPlotPoint {
+            const auto d{static_cast<PlotData *>(data_)};
+            auto x{d->time_points_.at(idx)};
+            return ImPlotPoint(x, 0);
+          },
+          static_cast<void *>(&data), static_cast<int>(time_points_.size()));
     }
     ImPlot::EndPlot();
   }
@@ -61,9 +68,16 @@ void DiagramWithGui::RenderGuiSum(bool xticks) {
                         ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoLabel |
                             (xticks ? 0 : ImPlotAxisFlags_NoTickLabels),
                         ImPlotAxisFlags_AutoFit);
-      ImPlot::PlotLineG(std::format("Core {:2}", i).c_str(), getterS,
-                        static_cast<void *>(&data),
-                        static_cast<int>(time_points_.size()));
+      ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.50F);
+      ImPlot::PlotShadedG(
+          std::format("Core {:2}", i).c_str(), getterS,
+          static_cast<void *>(&data),
+          [](int idx, void *data_) -> ImPlotPoint {
+            const auto d{static_cast<PlotDataSum *>(data_)};
+            auto x{d->time_points_.at(idx)};
+            return ImPlotPoint(x, 0);
+          },
+          static_cast<void *>(&data), static_cast<int>(time_points_.size()));
     }
     ImPlot::EndPlot();
   }

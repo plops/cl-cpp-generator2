@@ -291,9 +291,7 @@
 					  (ImVec2 -1 130)
 					  (or ImPlotFlags_NoFrame
 					      ImPlotFlags_NoTitle))
-		   (dotimes (i (diagrams_.size)
-			       ;max_cores_
-			     )
+		   (dotimes (i (diagrams_.size))
 		     (let ((data (PlotData time_points_ diagrams_ i))))
 		     (let ((getter (lambda (idx data_)
 				     (declare (type void* data_)
@@ -313,7 +311,34 @@
 					    (? xticks 0 ImPlotAxisFlags_NoTickLabels))
 					ImPlotAxisFlags_AutoFit
 					)
-		     
+		     (do0
+
+		      (ImPlot--PushStyleVar
+		       ImPlotStyleVar_FillAlpha .5s0)
+		      (ImPlot--PlotShadedG
+		       (dot (std--format (string "Core {:2}")
+					 i)
+			    (c_str))
+		       getter
+		       (static_cast<void*> &data)
+		       (lambda (idx data_)
+			 (declare (type void* data_)
+				  (type int idx)
+				  (values ImPlotPoint)
+				  (capture "")
+				  )
+			 (let ((d (static_cast<PlotData*> data_)))
+			   (declare (type "const auto" d)))
+			 
+			 (let ((x (dot d->time_points_ (at idx)))
+			       ))
+			 
+			 (return (ImPlotPoint x 0)))
+		       
+		       (static_cast<void*> &data)
+		       (static_cast<int> (time_points_.size))
+		       ))
+		     #+nil
 		     (ImPlot--PlotLineG (dot (std--format (string "Core {:2}")
 							  i)
 					     (c_str))
@@ -339,9 +364,9 @@
 					  (or ImPlotFlags_NoFrame
 					      ImPlotFlags_NoTitle))
 		   (let ((sum_values (std--vector<float> (time_points_.size)
-							 0s0))))
+							 0s0))
+			 ))
 		   (dotimes (i (diagrams_.size)
-			       ;max_cores_
 			       )
 		     (let ((data (PlotDataSum time_points_ diagrams_ sum_values i))))
 		     (let ((getterS (lambda (idx data_)
@@ -365,7 +390,35 @@
 					    (? xticks 0 ImPlotAxisFlags_NoTickLabels))
 					ImPlotAxisFlags_AutoFit
 					)
+		     (do0
+
+		      (ImPlot--PushStyleVar
+		       ImPlotStyleVar_FillAlpha .5s0)
+		      (ImPlot--PlotShadedG
+		       (dot (std--format (string "Core {:2}")
+					 i)
+			    (c_str))
+		       getterS
+		       (static_cast<void*> &data)
+		       (lambda (idx data_)
+			 (declare (type void* data_)
+				  (type int idx)
+				  (values ImPlotPoint)
+				  (capture "")
+				  )
+			 (let ((d (static_cast<PlotDataSum*> data_)))
+			   (declare (type "const auto" d)))
+			 
+			 (let ((x (dot d->time_points_ (at idx)))
+			       ))
+			 
+			 (return (ImPlotPoint x 0)))
+		       
+		       (static_cast<void*> &data)
+		       (static_cast<int> (time_points_.size))
+		       ))
 		     
+		     #+nil
 		     (ImPlot--PlotLineG (dot (std--format (string "Core {:2}")
 							  i)
 					     (c_str))
@@ -809,7 +862,8 @@
 	  (return 1))
 	(let ((glsl_version (string "#version 130")))
 	  (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 4)
-	  (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 6))
+	  (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 6)
+	  (glfwWindowHint GLFW_SAMPLES 4))
 	(let ((window (glfwCreateWindow 1280 720
 					(string "ryzen_mon_glgui")
 					nullptr
@@ -821,6 +875,7 @@
 	  (let ((vsyncOn true)))
 	  (let ((sumOn true)))
 	  (glfwSwapInterval (? vsyncOn 1 0))
+	  
 	  (IMGUI_CHECKVERSION)
 	  (ImGui--CreateContext)
 	  (ImPlot--CreateContext)

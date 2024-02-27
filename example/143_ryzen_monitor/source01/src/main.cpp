@@ -127,6 +127,7 @@ int main(int argc, char **argv) {
   auto glsl_version{"#version 130"};
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+  glfwWindowHint(GLFW_SAMPLES, 4);
   auto window{glfwCreateWindow(1280, 720, "ryzen_mon_glgui", nullptr, nullptr)};
   if (nullptr == window) {
     std::cout << std::format("Can't open glfw window\n");
