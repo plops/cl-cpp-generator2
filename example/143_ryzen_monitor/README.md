@@ -54,6 +54,11 @@ git clone https://github.com/orcornut/imgui
 git clone https://github.com/epezent/implot  
 git clone https://github.com/hattedsquirrel/ryzen_monitor  
 ```  
+
+Maybe ryzen_monitor needs a particular commit. For me it works with:
+```
+git checkout 7529c7cfc2688d9781912c84adfc0343d83dc78c
+```
    
 Our CMake configuration includes the necessary source files from these
 dependencies to produce a statically linked binary. Currently, the
