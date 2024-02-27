@@ -97,6 +97,8 @@ git checkout de976a9b43d629b7fa0c32e5124bc28bc91d47ef
 After module compilation and load:
 
 ```
+# cat /sys/kernel/ryzen_smu_drv/drv_version 
+0.1.2
 # cat /sys/kernel/ryzen_smu_drv/version 
 64.64.0
 ```
