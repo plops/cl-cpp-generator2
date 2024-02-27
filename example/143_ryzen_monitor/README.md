@@ -64,13 +64,6 @@ Regarding ImPlot, the default settings for coordinate precision have
 not been modified, but improvements in this area could enhance graph
 fidelity.
    
-## Runtime dependency (kernel module)
-
-```
-git clone  https://gitlab.com/leogx9r/ryzen_smu.git
-git checkout de976a9b43d629b7fa0c32e5124bc28bc91d47ef
-```
-   
    
 ## Dependencies for code coverage
 
@@ -101,6 +94,9 @@ After module compilation and load:
 0.1.2
 # cat /sys/kernel/ryzen_smu_drv/version 
 64.64.0
+# cat /sys/kernel/ryzen_smu_drv/mp1_if_version 
+3
+
 ```
 
 ## Future Improvements  
