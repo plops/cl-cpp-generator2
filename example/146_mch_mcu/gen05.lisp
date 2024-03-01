@@ -102,7 +102,7 @@
 		   (:name reserved8009 :addr #x40008009
 			  :reg-access ro)
 		   (:name reserved800a :addr #x4000800a
-			  :reg-access ro)
+		    :reg-access ro)
 		   (:name reserved800b :addr #x4000800b
 			  :reg-access ro)
 
@@ -140,6 +140,17 @@
 			     (:fname ep7-tx-en :bit 4 :access rw)
 			     (:fname ep7-rx-en :bit 5 :access rw )
 			     (:fname reserved76 :bit (7 6) :access ro )
+			     ))
+		   (:name reserved800f :addr #x4000800f
+			  :reg-access ro)
+		   (:name ep0-dma :addr #x4000800g
+			  :reg-access rw
+			  :type uint16_t
+		    :fields (
+			     (:fname reserved01 :bit (0 1) :access ro)
+			     (:fname dma :bit (14 2) :access rw)
+			     (:fname reserved :bit 15 :access ro)
+			     
 			     ))
 		   
 		   ))
