@@ -12,8 +12,6 @@
   (setf *features* (set-exclusive-or *features* (list ;:more
 						      ))))
 
-
-
 (let ((module-name "main"))
   (defparameter *source-dir* #P"example/146_mch_mcu/source05/src/")
   (defparameter *full-source-dir* (asdf:system-relative-pathname
@@ -113,11 +111,34 @@
 		    :fields (
 			     (:fname ep1-tx-en :bit 0 :access rw :help "enable endpoint 1 receiving (OUT)")
 			     (:fname ep1-tx-en :bit 1 :access rw :help "enable endpoint 1 transmittal (IN)")
-			     (:fname reserved :bit 2 :access ro)
+			     (:fname reserved2 :bit 2 :access ro)
 			     (:fname ep1-buf-mod :bit 3 :access rw :help "endpoint 1 buffer mode")
 			     (:fname ep4-rx-en :bit 4 :access rw :help "enable endpoint 4 receiving (OUT)")
 			     (:fname ep4-tx-en :bit 5 :access rw :help "enable endpoint 4 transmittal (IN)")
-			     
+			     (:fname reserved76 :bit (7 6) :access ro )
+			     ))
+
+		   (:name ep2-3-mod :addr #x4000800d
+			  :reg-access rw
+		    :fields (
+			     (:fname ep2-buf-mod :bit 0 :access rw)
+			     (:fname reserved1 :bit 1 :access ro )
+			     (:fname ep2-tx-en :bit 2 :access rw)
+			     (:fname ep2-rx-en :bit 3 :access rw)
+			     (:fname ep3-buf-mod :bit 4 :access rw )
+			     (:fname reserved5 :bit 5 :access ro )
+			     (:fname ep3-tx-en :bit 6 :access rw )
+			     (:fname ep3-rx-en :bit 7 :access rw )
+			     ))
+		   (:name ep567-mod :addr #x4000800e
+			  :reg-access rw
+		    :fields (
+			     (:fname ep5-tx-en :bit 0 :access rw)
+			     (:fname ep5-rx-en :bit 1 :access rw )
+			     (:fname ep6-tx-en :bit 2 :access rw)
+			     (:fname ep6-rx-en :bit 3 :access rw )
+			     (:fname ep7-tx-en :bit 4 :access rw)
+			     (:fname ep7-rx-en :bit 5 :access rw )
 			     (:fname reserved76 :bit (7 6) :access ro )
 			     ))
 		   
