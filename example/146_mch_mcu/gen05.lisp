@@ -147,45 +147,51 @@
 			  :reg-access ro)
 		   ,@(loop for e in `(0 1 2 3)
 			   appending
-			   `(
-			    (:name ,(format nil "ep~a-dma" e) :addr (+ 1 #x4000800f ,(* 2 (+ 1 e)))
-			      :reg-access rw
-			     :type uint16_t
-			     :fields (
-				      (:fname reserved0 :bit 0 :access ro)
-				      (:fname dma :bit (13 1) :access rw)
-				      (:fname reserved1514 :bit (15 14) :access ro)
-				      
-				      
-				      ))
-			    (:name ,(format nil "reserved~4,'0x" (+ 1 #x800f (* 2 (+ 1 e 1)))) :addr (+ 1 #x4000800f (* 2 (+ 1 e 1)))
-			     :reg-access ro
-			     :type uint16_t)))
+			   (let ((offset #x40008010))
+			    `(
+			      (:name ,(format nil "ep~a-dma" e)
+			       :addr ,(+ offset (* 4 e))
+			       :reg-access rw
+			       :type uint16_t
+			       :fields (
+					(:fname reserved0 :bit 0 :access ro)
+					(:fname dma :bit (13 1) :access rw)
+					(:fname reserved1514 :bit (15 14) :access ro)
+					))
+			      (:name ,(format nil "reserved~8,'0x"
+					      (+ offset (+ 2 (* 4 e))))
+			       :addr ,(+ offset (+ 2 (* 4 e)))
+			       :reg-access ro
+			       :type uint16_t))))
 
 		   ,@(loop for e in `(0 1 2 3 4)
 			   appending
-			   `((:name ,(format nil "ep~a-t-len" e)	;:addr #x400080ff
-			      :reg-access rw
-			      :fields (
-				       (:fname reserved0  :bit 0 :access ro )
-				       (:fname ep0-t-len :bit (7 1) :access rw :help "transmit length")
-				       ))
-			     (:name ,(format nil "reserved~4,'0x" (+ 1 #x80ff (* 2 (+ 1 e 0)))) 
-				    ;:addr #x4000800f
-			      :reg-access ro)
-			     (:name ,(format nil "ep~a-ctlr" e) ;:addr #x400080ff
-			      :reg-access rw
-			      :fields (
-				       (:fname t-res :bit (1 0) :access rw :help "bitmask for of handshake response type for usb endpoint X, transmittal (in)" )
-				       (:fname r-res :bit (3 2) :access rw :help "bitmask for of handshake response type for usb endpoint X, receiving (out)" )
-				       (:fname auto-tog :bit 4 :access rw :help "automatic toggle after successful transfer completion of on of endpoints 1, 2 or 3")
-				       (:fname reserved5 :bit 5 :access ro )
-				       (:fname t-tog :bit 6 :access rw :help "prepared data toggle flag of USB endpoint X transmittal (IN), 0=DATA0, 1=DATA1 ")
-				       (:fname r-tog :bit 7 :access rw :help "prepared data toggle flag of USB endpoint X receiving (OUT), 0=DATA0, 1=DATA1 ")
+			   (let ((offset #x40008024))
+			    `((:name ,(format nil "ep~a-t-len" e)
+			       :addr ,(+ offset (* e 4))
+			       :reg-access rw
+			       :fields (
+					(:fname ep0-t-len :bit (6 0) :access rw :help "transmit length")
+					(:fname reserved0  :bit 7 :access ro )
+					))
+			      (:name ,(format nil "reserved~8,'0x"
+					      (+ offset (+ 1 (* e 4)))) 
+					:addr ,(+ offset (+ 1 (* e 4)))
+				     :reg-access ro)
+			      (:name ,(format nil "ep~a-ctlr" e) :addr ,(+ offset (+ 2 (* e 4))) 
+			       :reg-access rw
+			       :fields (
+					(:fname r-tog :bit 0 :access rw :help "prepared data toggle flag of USB endpoint X receiving (OUT), 0=DATA0, 1=DATA1 ")
+					(:fname t-tog :bit 1 :access rw :help "prepared data toggle flag of USB endpoint X transmittal (IN), 0=DATA0, 1=DATA1 ")
+					(:fname reserved2 :bit 2 :access ro )
+					(:fname auto-tog :bit 3 :access rw :help "automatic toggle after successful transfer completion of on of endpoints 1, 2 or 3")
+					(:fname r-res :bit (5 4) :access rw :help "bitmask for of handshake response type for usb endpoint X, receiving (out)" )
+					(:fname t-res :bit (7 6) :access rw :help "bitmask for of handshake response type for usb endpoint X, transmittal (in)" )
 				       
-				       ))
-			     (:name ,(format nil "reserved~4,'0x" (+ 1 #x80ff (* 2 (+ 1 e 1)))) 
-			      :reg-access ro)))
+					))
+			      (:name ,(format nil "reserved~8,'0x" (+ offset (+ 3 (* e 4))))
+				     :addr ,(+ offset (+ 3 (* e 4)))
+			       :reg-access ro))))
 		   
 		   ))
 	 (members `((max-cores :type int :param t)
@@ -265,7 +271,7 @@
 			     `(space
 			       union
 			       (progn
-				 (space ,type reg)
+				 (space ,type reg ,(format nil "; // ~8,'0x" addr))
 				 (space struct
 					;,(cl-change-case:snake-case (format nil "~a-t" name))
 					(progn

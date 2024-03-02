@@ -21,10 +21,10 @@
        std--endl))
 
 
-(defmacro only-write-when-hash-changed (fn str &key ;format-p #+nil
-						 #+nil(formatter `(sb-ext:run-program "/usr/bin/clang-format"
-										 (list "-i"  (namestring ,fn)
-										       "-o"))))
+(defmacro only-write-when-hash-changed (fn str ; &key ;format-p #+nil
+						    #+nil(formatter `(sb-ext:run-program "/usr/bin/clang-format"
+											 (list "-i"  (namestring ,fn)
+											       "-o"))))
   (let ((hash-db 'file-hash)
 					;(gensym "file-hash")
 		)
