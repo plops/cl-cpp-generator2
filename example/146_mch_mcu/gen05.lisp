@@ -145,7 +145,7 @@
 			     ))
 		   (:name reserved800f :addr #x4000800f
 			  :reg-access ro)
-		   ,@(loop for e in `(0 1 2)
+		   ,@(loop for e in `(0 1 2 3)
 			   appending
 			   `(
 			    (:name ,(format nil "ep~a-dma" e) :addr (+ 1 #x4000800f ,(* 2 (+ 1 e)))
@@ -158,9 +158,34 @@
 				      
 				      
 				      ))
-			    (:name (format nil "reserved~4,'0x" (+ 1 #x800f ,(* 2 (+ 1 e 1)))) :addr (+ 1 #x4000800f ,(* 2 (+ 1 e 1)))
+			    (:name ,(format nil "reserved~4,'0x" (+ 1 #x800f (* 2 (+ 1 e 1)))) :addr (+ 1 #x4000800f (* 2 (+ 1 e 1)))
 			     :reg-access ro
 			     :type uint16_t)))
+
+		   ,@(loop for e in `(0 1 2 3 4)
+			   appending
+			   `((:name ,(format nil "ep~a-t-len" e)	;:addr #x400080ff
+			      :reg-access rw
+			      :fields (
+				       (:fname reserved0  :bit 0 :access ro )
+				       (:fname ep0-t-len :bit (7 1) :access rw :help "transmit length")
+				       ))
+			     (:name ,(format nil "reserved~4,'0x" (+ 1 #x80ff (* 2 (+ 1 e 0)))) 
+				    ;:addr #x4000800f
+			      :reg-access ro)
+			     (:name ,(format nil "ep~a-ctlr" e) ;:addr #x400080ff
+			      :reg-access rw
+			      :fields (
+				       (:fname t-res :bit (1 0) :access rw :help "bitmask for of handshake response type for usb endpoint X, transmittal (in)" )
+				       (:fname r-res :bit (3 2) :access rw :help "bitmask for of handshake response type for usb endpoint X, receiving (out)" )
+				       (:fname auto-tog :bit 4 :access rw :help "automatic toggle after successful transfer completion of on of endpoints 1, 2 or 3")
+				       (:fname reserved5 :bit 5 :access ro )
+				       (:fname t-tog :bit 6 :access rw :help "prepared data toggle flag of USB endpoint X transmittal (IN), 0=DATA0, 1=DATA1 ")
+				       (:fname r-tog :bit 7 :access rw :help "prepared data toggle flag of USB endpoint X receiving (OUT), 0=DATA0, 1=DATA1 ")
+				       
+				       ))
+			     (:name ,(format nil "reserved~4,'0x" (+ 1 #x80ff (* 2 (+ 1 e 1)))) 
+			      :reg-access ro)))
 		   
 		   ))
 	 (members `((max-cores :type int :param t)
