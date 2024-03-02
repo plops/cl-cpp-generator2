@@ -57,7 +57,7 @@
 			     (:fname bus-reset :bit 0  :access rw :help "in USB device mode USB bus reset event interrupt")
 			     ))
 		   (:name dev-ad :addr #x40008003
-		    :size 4
+		    ;:size 4
 		    :fields ((:fname gp-bit :bit 7 :access rw :help "USB general flag, user-defined")
 			     (:fname usb-addr :bit (6 0) :access rw :help "device mode: the address of the USB itself")
 			     ))
@@ -143,15 +143,22 @@
 			     ))
 		   (:name reserved800f :addr #x4000800f
 			  :reg-access ro)
-		   (:name ep0-dma :addr #x4000800g
-			  :reg-access rw
-			  :type uint16_t
-		    :fields (
-			     (:fname reserved01 :bit (0 1) :access ro)
-			     (:fname dma :bit (14 2) :access rw)
-			     (:fname reserved :bit 15 :access ro)
-			     
-			     ))
+		   ,@(loop for e in `(0 1 2)
+			   appending
+			   `(
+			    (:name ,(format nil "ep~a-dma" e) :addr (+ 1 #x4000800f ,(* 2 (+ 1 e)))
+			      :reg-access rw
+			     :type uint16_t
+			     :fields (
+				      (:fname reserved01 :bit (0 1) :access ro)
+				      (:fname dma :bit (14 2) :access rw)
+				      (:fname reserved :bit (16 14) :access ro)
+				      
+				      
+				      ))
+			    (:name (format nil "reserved~4,'0x" (+ 1 #x800f ,(* 2 (+ 1 e 1)))) :addr (+ 1 #x4000800f ,(* 2 (+ 1 e 1)))
+			     :reg-access ro
+			     :type uint16_t)))
 		   
 		   ))
 	 (members `((max-cores :type int :param t)
@@ -224,56 +231,62 @@
 	       "private:"
 	       ,@(loop for e in l-regs
 		       collect
-		       (destructuring-bind (&key name addr (reg-access 'rw) size fields ) e
+		       (destructuring-bind (&key name addr (reg-access 'rw) ;(size 1)
+					      (type 'uint8_t) fields ) e
+			 (declare (ignorable addr reg-access))
 			 (if fields
-			  `(space
-			    union
-			    (progn
-			      (space uint8_t reg)
-			      (space struct
+			     `(space
+			       union
+			       (progn
+				 (space ,type reg)
+				 (space struct
 					;,(cl-change-case:snake-case (format nil "~a-t" name))
-				     (progn
-				       ,(let ((count-bits 0))
-					  `(do0 ,@(loop for field in (reverse fields)
-							collect
-							(destructuring-bind (&key fname bit access help) field
-							  (let ((bit-len (if (listp bit)
-									     (+ 1
-										(- (first bit)
-										   (second bit)))
-									     1)))
-							    (incf count-bits bit-len)
-							    `(space uint8_t ,(format nil "~a:~a~@[; // ~a~]"
-										     (cl-change-case:snake-case (format nil "~a" fname))
-										     bit-len
-										     help)))))
+					(progn
+					  ,(let ((count-bits 0))
+					     `(do0 ,@(loop for field in (reverse fields)
+							   collect
+							   (destructuring-bind (&key fname bit access help) field
+							     (let ((bit-len (if (listp bit)
+										(+ 1
+										   (- (first bit)
+										      (second bit)))
+										1)))
+							       (incf count-bits bit-len)
+							       `(space ,type ,(format nil "~a:~a; // ~a ~@[ ~a~]"
+										      (cl-change-case:snake-case (format nil "~a" fname))
+										      bit-len
+										      access
+										      help)))))
 					      
 					      
-						,(prog1
-						     " " ;`(comments ,(format nil "sum of bits = ~a" count-bits))
-						   (when fields
-						     (assert (eq count-bits 8))))
+						   ,(prog1
+							" " ;`(comments ,(format nil "sum of bits = ~a" count-bits))
+						      (when fields
+							(assert (eq count-bits (ecase type
+										 (uint8_t 8)
+										 (uint16_t 16))))))
 					      
-						)
-					  ))
-				     bit))
-			    ,(cl-change-case:snake-case (format nil "~a" name))
-			    )
-			  `(space uint8_t ,(cl-change-case:snake-case (format nil "~a" name)))
+						   )
+					     ))
+					bit))
+			       ,(cl-change-case:snake-case (format nil "~a" name))
+			       )
+			     `(space ,type ,(cl-change-case:snake-case (format nil "~a" name)))
 			  
-			  )))
+			     )))
 	       "public:" 
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
 					  collect
 					  (destructuring-bind (name &key type param (initform 0)) e
-					    (let ((nname (intern
+					    (declare (ignorable type initform))
+					    (let (#+nil(nname (intern
 							  (string-upcase
 							   (cl-change-case:snake-case (format nil "~a" name)))))
 						  (nname_ (intern
 							   (string-upcase
 							    (format nil "~a_"
-							     (cl-change-case:snake-case (format nil "~a" name)))))))
+								    (cl-change-case:snake-case (format nil "~a" name)))))))
 					      (when param
 						nname_))))))
 		 (declare
@@ -281,7 +294,8 @@
 			       (loop for e in members
 				     collect
 				     (destructuring-bind (name &key type param (initform 0)) e
-				       (let ((nname (intern
+				       (declare (ignorable initform))
+				       (let (#+nil (nname (intern
 						     (string-upcase
 						      (cl-change-case:snake-case (format nil "~a" name)))))
 					     (nname_ (intern (string-upcase
@@ -303,6 +317,7 @@
 				(loop for e in members
 				      collect
 				      (destructuring-bind (name &key type param (initform 0)) e
+					(declare (ignorable type initform))
 					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					      (nname_ (format nil "~a_"
 							      (cl-change-case:snake-case (format nil "~a" name)))))
@@ -310,7 +325,7 @@
 					    (param
 					     `(,nname ,nname_)) 
 					    #+nil (initform
-					     `(,nname_ ,initform)))))))
+						   `(,nname_ ,initform)))))))
 		   )
 		  (explicit)	    
 		  (values :constructor)
@@ -321,9 +336,10 @@
 			    (loop for e in members
 				  collect
 				  (destructuring-bind (name &key type param (initform 0)) e
+				    (declare (ignorable initform param))
 				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					  (get (cl-change-case:pascal-case (format nil "get-~a" name)))
-					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+					  #+nil (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
 				      `(defmethod ,get ()
 					 (declare (values ,(cond
 							     ((and (stringp type)
@@ -343,7 +359,7 @@
 			    (loop for e in members
 				  collect
 				  (destructuring-bind (name &key type param (initform 0)) e
-				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+				    (let (#+nil(nname (cl-change-case:snake-case (format nil "~a" name)))
 					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
 				      (cond
 					(param `(space ,type ,nname_))

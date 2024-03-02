@@ -21,12 +21,13 @@
        std--endl))
 
 
-(defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"
-										    (list "-i"  (namestring ,fn)
-											  "-o"))))
-  (let ((hash-db 'file-hash
+(defmacro only-write-when-hash-changed (fn str &key ;format-p #+nil
+						 #+nil(formatter `(sb-ext:run-program "/usr/bin/clang-format"
+										 (list "-i"  (namestring ,fn)
+										       "-o"))))
+  (let ((hash-db 'file-hash)
 					;(gensym "file-hash")
-		 ))
+		)
     `(progn
        (defvar
 					;  parameter
@@ -45,11 +46,18 @@
 				   :if-exists :supersede
 				   :if-does-not-exist :create)
        		 (format sh "~a" ,str))
-	       ,formatter)
+	       #+nil(format t "~a" ,(format nil "run formatter ~a" formatter))
+	       
+	       ;;,formatter
+	       (format t "run formatter on ~a" (namestring ,fn))
+	       (sb-ext:run-program "/usr/bin/clang-format"
+				   (list "-i"  (namestring ,fn)
+					 "-o")))
 	     (setf (gethash fn-hash ,hash-db) code-hash)
 	     ))))))
+
 (defun share (name)
-    (format nil "std::shared_ptr<~a>" name))
+  (format nil "std::shared_ptr<~a>" name))
 (defun uniq (name)
   (format nil "std::unique_ptr<~a>" name))
 
@@ -75,7 +83,8 @@
 		     do
 			(when e
 			  (format sh "~a~%"
-				  (emit-c :code e))))
+				  (emit-c :code e
+					  ))))
 	       (when code
 		 (emit-c :code
 			 `(do0
@@ -87,15 +96,26 @@
 			 :header-only t
 			 ))
 	       (format sh "~%#endif /* !~a */" once-guard))))
-      (if format-p
+       (only-write-when-hash-changed
+	   fn-h
+	   fn-h-str
+	   )
+      #+nil (if format-p
 	  (only-write-when-hash-changed
 	   fn-h
 	   fn-h-str
+	   :format-p format-p
+	   #+nil :formatter
+	   #+nil(list 'sb-ext:run-program "/usr/bin/clang-format"
+		      (list "-i" fn-h
+			    "-o"))
 	   )
 	  (only-write-when-hash-changed
 	   fn-h
 	   fn-h-str
-	   :formatter nil)))
+	   :format-p format-p
+					;:formatter nil
+	   )))
     (write-source fn-cpp
 		  `(do0
 		    ,(if preamble
