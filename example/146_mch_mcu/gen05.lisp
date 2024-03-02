@@ -121,25 +121,27 @@
 		   (:name ep2-3-mod :addr #x4000800d
 			  :reg-access rw
 		    :fields (
-			     (:fname ep2-buf-mod :bit 0 :access rw)
-			     (:fname reserved1 :bit 1 :access ro )
-			     (:fname ep2-tx-en :bit 2 :access rw)
-			     (:fname ep2-rx-en :bit 3 :access rw)
-			     (:fname ep3-buf-mod :bit 4 :access rw )
-			     (:fname reserved5 :bit 5 :access ro )
-			     (:fname ep3-tx-en :bit 6 :access rw )
-			     (:fname ep3-rx-en :bit 7 :access rw )
+			     
+			     (:fname ep3-rx-en :bit 0 :access rw )
+			     (:fname ep3-tx-en :bit 1 :access rw )
+			     (:fname reserved2 :bit 2 :access ro )
+			     (:fname ep3-buf-mod :bit 3 :access rw )
+			     (:fname ep2-rx-en :bit 4 :access rw)
+			     (:fname ep2-tx-en :bit 5 :access rw)
+			     (:fname reserved6 :bit 6 :access ro )
+			     (:fname ep2-buf-mod :bit 7 :access rw)
+
 			     ))
 		   (:name ep567-mod :addr #x4000800e
 			  :reg-access rw
 		    :fields (
-			     (:fname ep5-tx-en :bit 0 :access rw)
-			     (:fname ep5-rx-en :bit 1 :access rw )
-			     (:fname ep6-tx-en :bit 2 :access rw)
-			     (:fname ep6-rx-en :bit 3 :access rw )
-			     (:fname ep7-tx-en :bit 4 :access rw)
-			     (:fname ep7-rx-en :bit 5 :access rw )
-			     (:fname reserved76 :bit (7 6) :access ro )
+			     (:fname reserved01 :bit (1 0) :access ro )
+			     (:fname ep7-rx-en :bit 2 :access rw )
+			     (:fname ep7-tx-en :bit 3 :access rw)
+			     (:fname ep6-rx-en :bit 4 :access rw )
+			     (:fname ep6-tx-en :bit 5 :access rw)
+			     (:fname ep5-rx-en :bit 6 :access rw )
+			     (:fname ep5-tx-en :bit 7 :access rw)
 			     ))
 		   (:name reserved800f :addr #x4000800f
 			  :reg-access ro)
@@ -150,9 +152,9 @@
 			      :reg-access rw
 			     :type uint16_t
 			     :fields (
-				      (:fname reserved01 :bit (0 1) :access ro)
-				      (:fname dma :bit (14 2) :access rw)
-				      (:fname reserved :bit (16 14) :access ro)
+				      (:fname reserved0 :bit 0 :access ro)
+				      (:fname dma :bit (13 1) :access rw)
+				      (:fname reserved1514 :bit (15 14) :access ro)
 				      
 				      
 				      ))
