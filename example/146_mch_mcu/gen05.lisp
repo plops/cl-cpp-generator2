@@ -23,10 +23,47 @@
   ;; the xml contains all the required information (even read-only)
   ;; i can't find the fields of R32_USB_STATUS in the pdf or xml
   (let* ((name `Ch592UsbRegisters)
+	 (ds-regs `(R8_USB_CTRL #x40008000 
+R8_USB_INT_EN #x40008002 
+R8_USB_DEV_AD #x40008003 
+R32_USB_STATUS #x40008004 
+R8_USB_MIS_ST #x40008005 
+R8_USB_INT_FG #x40008006 
+R8_USB_INT_ST #x40008007 
+R8_USB_RX_LEN #x40008008 
+R8_UDEV_CTRL #x40008001 
+R8_UEP4_1_MOD #x4000800c 
+R8_UEP2_3_MOD #x4000800d 
+R8_UEP567_MOD #x4000800e 
+R16_UEP0_DMA #x40008010 
+R16_UEP1_DMA #x40008014 
+R16_UEP2_DMA #x40008018 
+R16_UEP3_DMA #x4000801c 
+R8_UEP0_T_LEN #x40008020 
+R8_UEP0_CTRL #x40008022 
+R8_UEP1_T_LEN #x40008024 
+R8_UEP1_CTRL #x40008026 
+R8_UEP2_T_LEN #x40008028 
+R8_UEP2_CTRL #x4000802a 
+R8_UEP3_T_LEN #x4000802c 
+R8_UEP3_CTRL #x4000802e 
+R8_UEP4_T_LEN #x40008030 
+R8_UEP4_CTRL #x40008032 
+R16_UEP5_DMA #x40008054 
+R16_UEP6_DMA #x40008058 
+R16_UEP7_DMA #x4000805c 
+R8_UEP5_T_LEN #x40008064 
+R8_UEP5_CTRL #x40008066 
+R8_UEP6_T_LEN #x40008068 
+R8_UEP6_CTRL #x4000806a 
+R8_UEP7_T_LEN #x4000806c 
+R8_UEP7_CTRL #x4000806e 
+R32_EPX_MODE #x40008070 
+))
 	 (l-regs `((:name ctrl :addr #x40008000
 		    :fields ((:fname host-mode :bit 7 :access rw)
 			     (:fname low-speed :bit 6 :access rw)
-			   ;  (:fname dev-pull-up-en :bit 5 :access rw)
+					;  (:fname dev-pull-up-en :bit 5 :access rw)
 			     (:fname sys-ctlr :bit (5 4) :access rw :help "host-mode==0: 00..disable usb device function and disable internal pull-up (can be overridden by dev-pullup-en), 01..enable device fucntion, disable internal pull-up, external pull-up-needed, 1x..enable usb device fucntion and internal 1.5k pull-up, pull-up has priority over pull-down resistor")
 			     (:fname int-busy :bit 3 :access rw :help "Auto pause")
 			     (:fname reset-sie :bit 2 :access rw :help "Software reset USB protocol processor")
@@ -57,15 +94,15 @@
 			     (:fname bus-reset :bit 0  :access rw :help "in USB device mode USB bus reset event interrupt")
 			     ))
 		   (:name dev-ad :addr #x40008003
-		    ;:size 4
-		    :fields ((:fname gp-bit :bit 7 :access rw :help "USB general flag, user-defined")
-			     (:fname usb-addr :bit (6 0) :access rw :help "device mode: the address of the USB itself")
-			     ))
+					;:size 4
+			  :fields ((:fname gp-bit :bit 7 :access rw :help "USB general flag, user-defined")
+				   (:fname usb-addr :bit (6 0) :access rw :help "device mode: the address of the USB itself")
+				   ))
 		   #+nil (:name status :addr #x40008004
-		    :fields ((:fname status :bit 7 :access rw :help "")
-			     ))
+			  :fields ((:fname status :bit 7 :access rw :help "")
+				   ))
 		   (:name misc-status :addr #x40008005
-			  :reg-access ro
+		    :reg-access ro
 		    :fields ((:fname sof-pre :bit 7 :access ro :help "SOF packet will be sent in host mode")
 			     (:fname sof-act :bit 6 :access ro :help "SOF packet is being sent in host mode")
 			     (:fname sie-free :bit 5 :access ro :help "USB proctocol processor free (not busy)")
@@ -87,27 +124,27 @@
 			     (:fname bus-reset :bit 0 :access rw :help "in device mode: bus reset event trigger. Write 1 to reset.")
 			     ))
 		   (:name int-status  :addr #x40008007
-			  :reg-access ro
+		    :reg-access ro
 		    :fields ((:fname setup-act :bit 7 :access ro :help "in device mode, when this bit is 1, 8-byte setup request packet has been successfully received.")
 			     (:fname tog-ok :bit 6 :access ro :help "current usb transmission sync flag matching status (same as RB_U_TOG_OK), 1=>sync")
 			     (:fname token :bit (5 4) :access ro :help "in device mode the token pid of the current usb transfer transaction")
 			     (:fname endp :bit (3 0) :access ro :help "in device mode the endpoint number of the current usb transfer transaction")
 			     ))
 		   (:name rx-len :addr #x40008008
-			  :reg-access ro
+		    :reg-access ro
 		    :fields ((:fname len :bit (6 0) :access ro :help "number of data bytes received by the current usb endpoint")
 			     (:fname reserved7 :bit 7 :access ro )
 			     ))
 
 		   (:name reserved8009 :addr #x40008009
-			  :reg-access ro)
+		    :reg-access ro)
 		   (:name reserved800a :addr #x4000800a
 		    :reg-access ro)
 		   (:name reserved800b :addr #x4000800b
-			  :reg-access ro)
+		    :reg-access ro)
 
 		   (:name ep4-1-mod :addr #x4000800c
-			  :reg-access rw
+		    :reg-access rw
 		    :fields (
 			     (:fname ep1-tx-en :bit 0 :access rw :help "enable endpoint 1 receiving (OUT)")
 			     (:fname ep1-tx-en :bit 1 :access rw :help "enable endpoint 1 transmittal (IN)")
@@ -119,7 +156,7 @@
 			     ))
 
 		   (:name ep2-3-mod :addr #x4000800d
-			  :reg-access rw
+		    :reg-access rw
 		    :fields (
 			     
 			     (:fname ep3-rx-en :bit 0 :access rw )
@@ -133,7 +170,7 @@
 
 			     ))
 		   (:name ep567-mod :addr #x4000800e
-			  :reg-access rw
+		    :reg-access rw
 		    :fields (
 			     (:fname reserved01 :bit (1 0) :access ro )
 			     (:fname ep7-rx-en :bit 2 :access rw )
@@ -144,54 +181,54 @@
 			     (:fname ep5-tx-en :bit 7 :access rw)
 			     ))
 		   (:name reserved800f :addr #x4000800f
-			  :reg-access ro)
+		    :reg-access ro)
 		   ,@(loop for e in `(0 1 2 3)
 			   appending
 			   (let ((offset #x40008010))
-			    `(
-			      (:name ,(format nil "ep~a-dma" e)
-			       :addr ,(+ offset (* 4 e))
-			       :reg-access rw
-			       :type uint16_t
-			       :fields (
-					(:fname reserved0 :bit 0 :access ro)
-					(:fname dma :bit (13 1) :access rw)
-					(:fname reserved1514 :bit (15 14) :access ro)
-					))
-			      (:name ,(format nil "reserved~8,'0x"
-					      (+ offset (+ 2 (* 4 e))))
-			       :addr ,(+ offset (+ 2 (* 4 e)))
-			       :reg-access ro
-			       :type uint16_t))))
+			     `(
+			       (:name ,(format nil "ep~a-dma" e)
+				:addr ,(+ offset (* 4 e))
+				:reg-access rw
+				:type uint16_t
+				:fields (
+					 (:fname reserved0 :bit 0 :access ro)
+					 (:fname dma :bit (13 1) :access rw)
+					 (:fname reserved1514 :bit (15 14) :access ro)
+					 ))
+			       (:name ,(format nil "reserved~8,'0x"
+					       (+ offset (+ 2 (* 4 e))))
+				:addr ,(+ offset (+ 2 (* 4 e)))
+				:reg-access ro
+				:type uint16_t))))
 
 		   ,@(loop for e in `(0 1 2 3 4)
 			   appending
 			   (let ((offset #x40008024))
-			    `((:name ,(format nil "ep~a-t-len" e)
-			       :addr ,(+ offset (* e 4))
-			       :reg-access rw
-			       :fields (
-					(:fname ep0-t-len :bit (6 0) :access rw :help "transmit length")
-					(:fname reserved0  :bit 7 :access ro )
-					))
-			      (:name ,(format nil "reserved~8,'0x"
-					      (+ offset (+ 1 (* e 4)))) 
-					:addr ,(+ offset (+ 1 (* e 4)))
-				     :reg-access ro)
-			      (:name ,(format nil "ep~a-ctlr" e) :addr ,(+ offset (+ 2 (* e 4))) 
-			       :reg-access rw
-			       :fields (
-					(:fname r-tog :bit 0 :access rw :help "prepared data toggle flag of USB endpoint X receiving (OUT), 0=DATA0, 1=DATA1 ")
-					(:fname t-tog :bit 1 :access rw :help "prepared data toggle flag of USB endpoint X transmittal (IN), 0=DATA0, 1=DATA1 ")
-					(:fname reserved2 :bit 2 :access ro )
-					(:fname auto-tog :bit 3 :access rw :help "automatic toggle after successful transfer completion of on of endpoints 1, 2 or 3")
-					(:fname r-res :bit (5 4) :access rw :help "bitmask for of handshake response type for usb endpoint X, receiving (out)" )
-					(:fname t-res :bit (7 6) :access rw :help "bitmask for of handshake response type for usb endpoint X, transmittal (in)" )
+			     `((:name ,(format nil "ep~a-t-len" e)
+				:addr ,(+ offset (* e 4))
+				:reg-access rw
+				:fields (
+					 (:fname ep0-t-len :bit (6 0) :access rw :help "transmit length")
+					 (:fname reserved0  :bit 7 :access ro )
+					 ))
+			       (:name ,(format nil "reserved~8,'0x"
+					       (+ offset (+ 1 (* e 4)))) 
+				:addr ,(+ offset (+ 1 (* e 4)))
+				:reg-access ro)
+			       (:name ,(format nil "ep~a-ctlr" e) :addr ,(+ offset (+ 2 (* e 4))) 
+				:reg-access rw
+				:fields (
+					 (:fname r-tog :bit 0 :access rw :help "prepared data toggle flag of USB endpoint X receiving (OUT), 0=DATA0, 1=DATA1 ")
+					 (:fname t-tog :bit 1 :access rw :help "prepared data toggle flag of USB endpoint X transmittal (IN), 0=DATA0, 1=DATA1 ")
+					 (:fname reserved2 :bit 2 :access ro )
+					 (:fname auto-tog :bit 3 :access rw :help "automatic toggle after successful transfer completion of on of endpoints 1, 2 or 3")
+					 (:fname r-res :bit (5 4) :access rw :help "bitmask for of handshake response type for usb endpoint X, receiving (out)" )
+					 (:fname t-res :bit (7 6) :access rw :help "bitmask for of handshake response type for usb endpoint X, transmittal (in)" )
 				       
-					))
-			      (:name ,(format nil "reserved~8,'0x" (+ offset (+ 3 (* e 4))))
-				     :addr ,(+ offset (+ 3 (* e 4)))
-			       :reg-access ro))))
+					 ))
+			       (:name ,(format nil "reserved~8,'0x" (+ offset (+ 3 (* e 4))))
+				:addr ,(+ offset (+ 3 (* e 4)))
+				:reg-access ro))))
 		   
 		   ))
 	 (members `((max-cores :type int :param t)
