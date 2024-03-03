@@ -23,43 +23,42 @@
   ;; the xml contains all the required information (even read-only)
   ;; i can't find the fields of R32_USB_STATUS in the pdf or xml
   (let* ((name `Ch592UsbRegisters)
-	 (ds-regs `(R8_USB_CTRL #x40008000 
-R8_USB_INT_EN #x40008002 
-R8_USB_DEV_AD #x40008003 
-R32_USB_STATUS #x40008004 
-R8_USB_MIS_ST #x40008005 
-R8_USB_INT_FG #x40008006 
-R8_USB_INT_ST #x40008007 
-R8_USB_RX_LEN #x40008008 
-R8_UDEV_CTRL #x40008001 
-R8_UEP4_1_MOD #x4000800c 
-R8_UEP2_3_MOD #x4000800d 
-R8_UEP567_MOD #x4000800e 
-R16_UEP0_DMA #x40008010 
-R16_UEP1_DMA #x40008014 
-R16_UEP2_DMA #x40008018 
-R16_UEP3_DMA #x4000801c 
-R8_UEP0_T_LEN #x40008020 
-R8_UEP0_CTRL #x40008022 
-R8_UEP1_T_LEN #x40008024 
-R8_UEP1_CTRL #x40008026 
-R8_UEP2_T_LEN #x40008028 
-R8_UEP2_CTRL #x4000802a 
-R8_UEP3_T_LEN #x4000802c 
-R8_UEP3_CTRL #x4000802e 
-R8_UEP4_T_LEN #x40008030 
-R8_UEP4_CTRL #x40008032 
-R16_UEP5_DMA #x40008054 
-R16_UEP6_DMA #x40008058 
-R16_UEP7_DMA #x4000805c 
-R8_UEP5_T_LEN #x40008064 
-R8_UEP5_CTRL #x40008066 
-R8_UEP6_T_LEN #x40008068 
-R8_UEP6_CTRL #x4000806a 
-R8_UEP7_T_LEN #x4000806c 
-R8_UEP7_CTRL #x4000806e 
-R32_EPX_MODE #x40008070 
-))
+	 (ds-regs `((:name ctrl :ds-name R8_USB_CTRL :addr #x40008000) 
+ (:name port-ctrl :ds-name R8_UDEV_CTRL :addr #x40008001)
+ (:name int-en :ds-name R8_USB_INT_EN :addr #x40008002) 
+ (:name dev-ad :ds-name R8_USB_DEV_AD :addr #x40008003) 
+ (:name :ds-name R32_USB_STATUS :addr #x40008004) 
+ (:name misc-status :ds-name R8_USB_MIS_ST :addr #x40008005) 
+ (:name int-flag :ds-name R8_USB_INT_FG :addr #x40008006) 
+ (:name int-status :ds-name R8_USB_INT_ST :addr #x40008007) 
+ (:name rx-len :ds-name R8_USB_RX_LEN :addr #x40008008) 
+ (:name ep4-1-mod :ds-name R8_UEP4_1_MOD :addr #x4000800c) 
+ (:name ep2-3-mod :ds-name R8_UEP2_3_MOD :addr #x4000800d) 
+ (:name ep567-mod :ds-name R8_UEP567_MOD :addr #x4000800e) 
+ (:name ep0-dma :ds-name R16_UEP0_DMA :addr #x40008010) 
+ (:name ep1-dma :ds-name R16_UEP1_DMA :addr #x40008014) 
+ (:name ep2-dma :ds-name R16_UEP2_DMA :addr #x40008018) 
+ (:name ep3-dma :ds-name R16_UEP3_DMA :addr #x4000801c) 
+ (:name ep0-t-len :ds-name R8_UEP0_T_LEN :addr #x40008020) 
+ (:name ep0-ctrl :ds-name R8_UEP0_CTRL :addr #x40008022) 
+ (:name ep1-t-len :ds-name R8_UEP1_T_LEN :addr #x40008024) 
+ (:name ep1-ctrl :ds-name R8_UEP1_CTRL :addr #x40008026) 
+ (:name ep2-t-len :ds-name R8_UEP2_T_LEN :addr #x40008028) 
+ (:name ep2-ctrl :ds-name R8_UEP2_CTRL :addr #x4000802a) 
+ (:name ep3-t-len :ds-name R8_UEP3_T_LEN :addr #x4000802c) 
+ (:name ep3-ctrl :ds-name R8_UEP3_CTRL :addr #x4000802e) 
+ (:name ep4-t-len :ds-name R8_UEP4_T_LEN :addr #x40008030) 
+ (:name ep4-ctrl :ds-name R8_UEP4_CTRL :addr #x40008032) 
+ (:name ep5-dma :ds-name R16_UEP5_DMA :addr #x40008054) 
+ (:name ep6-dma :ds-name R16_UEP6_DMA :addr #x40008058) 
+ (:name ep7-dma :ds-name R16_UEP7_DMA :addr #x4000805c) 
+ (:name ep5-t-len :ds-name R8_UEP5_T_LEN :addr #x40008064) 
+ (:name ep5-ctrl :ds-name R8_UEP5_CTRL :addr #x40008066) 
+ (:name ep6-t-len :ds-name R8_UEP6_T_LEN :addr #x40008068) 
+ (:name ep6-ctrl :ds-name R8_UEP6_CTRL :addr #x4000806a) 
+ (:name ep7-t-len :ds-name R8_UEP7_T_LEN :addr #x4000806c) 
+ (:name ep7-ctrl :ds-name R8_UEP7_CTRL :addr #x4000806e) 
+ (:name epx-mode :ds-name R32_EPX_MODE :addr #x40008070)))
 	 (l-regs `((:name ctrl :addr #x40008000
 		    :fields ((:fname host-mode :bit 7 :access rw)
 			     (:fname low-speed :bit 6 :access rw)
