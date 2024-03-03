@@ -202,19 +202,19 @@
 
 		   ,@(loop for e in `(0 1 2 3 4)
 			   appending
-			   (let ((offset #x40008024))
+			   (let ((offset #x40008020))
 			     `((:name ,(format nil "ep~a-t-len" e)
 				:addr ,(+ offset (* e 4))
 				:reg-access rw
 				:fields (
-					 (:fname ep0-t-len :bit (6 0) :access rw :help "transmit length")
+					 (:fname t-len :bit (6 0) :access rw :help "transmit length")
 					 (:fname reserved0  :bit 7 :access ro )
 					 ))
 			       (:name ,(format nil "reserved~8,'0x"
 					       (+ offset (+ 1 (* e 4)))) 
 				:addr ,(+ offset (+ 1 (* e 4)))
 				:reg-access ro)
-			       (:name ,(format nil "ep~a-ctlr" e) :addr ,(+ offset (+ 2 (* e 4))) 
+			       (:name ,(format nil "ep~a-ctrl" e) :addr ,(+ offset (+ 2 (* e 4))) 
 				:reg-access rw
 				:fields (
 					 (:fname r-tog :bit 0 :access rw :help "prepared data toggle flag of USB endpoint X receiving (OUT), 0=DATA0, 1=DATA1 ")
@@ -237,6 +237,28 @@
 					;(y :type "std::vector<float>")
 		    (name-y :type "std::string" :param t)
 		    (time-points :type "std::deque<float>"))))
+    (defun verify-register-addresses (l-regs ds-regs)
+      "Verifies that all register addresses in l-regs (used for code generation) match the corresponding addresses in ds-regs (from the datasheet)."
+      (loop for l-reg in l-regs
+	    do
+	    (destructuring-bind (&key name addr reg-access type fields) l-reg
+	      
+	      (unless (str:starts-with-p "reserved" (format nil "~a" name))
+		
+		(format t "check register ~a~%" name)
+		(let ((ds-reg (find name ds-regs
+				    :key #'(lambda (item) (getf item :name))
+				    :test #'(lambda (x y) (string= (format nil "~a" x)
+								   (format nil "~a" y))))))
+		  (unless ds-regs
+		    (break "register ~a not found" name))
+		  
+		  (unless (eq (getf ds-reg :addr)
+			      addr)
+		    (break "address ~8,'0x of register ~a does not match datasheet value ~8,'0x"
+			   addr name (getf ds-reg :addr))))))
+	    ))
+    (verify-register-addresses l-regs ds-regs)
     (write-class
      :format-p t
      :dir (asdf:system-relative-pathname
@@ -285,7 +307,7 @@
 - RB_UEP_AUTO_TOG option available for automatically flipping synchronization trigger bit after successful transmission or reception.  
 - Data to be sent/received is stored in their own buffer; sent data length set in R8_UEPn_T_LEN, received data length in R8_USB_RX_LEN, distinguishable by current endpoint number during interrupt.
 ")
-)
+			)
      :implementation-preamble
      `(do0
        
@@ -350,8 +372,8 @@
 					  (destructuring-bind (name &key type param (initform 0)) e
 					    (declare (ignorable type initform))
 					    (let (#+nil(nname (intern
-							  (string-upcase
-							   (cl-change-case:snake-case (format nil "~a" name)))))
+							       (string-upcase
+								(cl-change-case:snake-case (format nil "~a" name)))))
 						  (nname_ (intern
 							   (string-upcase
 							    (format nil "~a_"
@@ -365,8 +387,8 @@
 				     (destructuring-bind (name &key type param (initform 0)) e
 				       (declare (ignorable initform))
 				       (let (#+nil (nname (intern
-						     (string-upcase
-						      (cl-change-case:snake-case (format nil "~a" name)))))
+							   (string-upcase
+							    (cl-change-case:snake-case (format nil "~a" name)))))
 					     (nname_ (intern (string-upcase
 							      (format nil "~a_"
 								      (cl-change-case:snake-case (format nil "~a" name)))))))
