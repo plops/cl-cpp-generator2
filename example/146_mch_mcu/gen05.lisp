@@ -320,7 +320,7 @@
      :code `(do0
 	     
 	     (defclass ,name ()
-	       "private:"
+	       "public:"
 	       ,@(loop for e in l-regs
 		       collect
 		       (destructuring-bind (&key name addr (reg-access 'rw) ;(size 1)
@@ -588,7 +588,9 @@
      (do0
 
       (defun USB_DevTransProcess2 ()
-	)
+	(when usb.int_flag.bit.transfer
+	  (comments "clear interrupt by writing to flag")
+	  (setf usb.int_flag.bit.transfer 1)))
       
       (doc "Handle USB transaction processing. Respond to standard USB requests (e.g. Get Descriptor, Set Address). Manage data transfers on endpoints.")
       #+nil (defun USB_DevTransProcess ()
@@ -887,7 +889,7 @@ The compiler attribute __attribute__((section('.highcode'))) will be assigned to
 	     __HIGH_CODE
 	     (defun USB_IRQHandler ()
 	       (comments "Handle interrupts coming from the USB Peripheral")
-	       (USB_DevTransProcess))))
+	       (USB_DevTransProcess2))))
 
      (defun DevEP1_OUT_Deal (l)
        (declare (type uint8_t l))

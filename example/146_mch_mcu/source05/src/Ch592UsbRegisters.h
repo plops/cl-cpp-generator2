@@ -66,7 +66,7 @@ current endpoint number during interrupt.
 
 */
 class Ch592UsbRegisters {
-private:
+public:
   union {
     uint8_t reg; // 40008000;
     struct {
