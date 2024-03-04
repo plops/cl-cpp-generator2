@@ -230,13 +230,14 @@
 				:reg-access ro))))
 		   
 		   ))
-	 (members `((max-cores :type int :param t)
-		    (max-points :type int :param t)
-		    (diagrams :type "std::vector<DiagramData>")
+	 (members `(;(max-cores :type int :param t)
+		    ;(max-points :type int :param t)
+		    #+nil(diagrams :type "std::vector<DiagramData>")
 					;(x :type "std::vector<float>")
 					;(y :type "std::vector<float>")
-		    (name-y :type "std::string" :param t)
-		    (time-points :type "std::deque<float>"))))
+		    ;(name-y :type "std::string" :param t)
+		    ;(time-points :type "std::deque<float>")
+		    )))
     (defun verify-register-addresses (l-regs ds-regs)
       "Verifies that all register addresses in l-regs (used for code generation) match the corresponding addresses in ds-regs (from the datasheet)."
       (loop for l-reg in l-regs
@@ -260,14 +261,14 @@
 	    ))
     (verify-register-addresses l-regs ds-regs)
     (write-class
-     :format-p t
+     :do-format t
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
 	   *source-dir*)
      :name name
      :headers `()
      :header-preamble `(do0
-			(include<> vector deque string)
+			(include<> vector deque string cstdint)
 			(space struct DiagramData (progn
 						    "std::string name;"
 						    "std::deque<float> values;"
