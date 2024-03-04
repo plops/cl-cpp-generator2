@@ -83,8 +83,7 @@ public:
                         // pull-up has priority over pull-down resistor;
       uint8_t low_speed : 1; // rw ;
       uint8_t host_mode : 1; // rw ;
-
-    } bit;
+    };
   } ctrl;
   union {
     uint8_t reg; // 40008001;
@@ -99,8 +98,7 @@ public:
       uint8_t dp_pin : 1;     // ro  UDP pin level;
       uint8_t reserved6 : 1;  // ro ;
       uint8_t pd_dis : 1;     // rw  disable USB-UDP-UDM pulldown resistance;
-
-    } bit;
+    };
   } port_ctrl;
   union {
     uint8_t reg; // 40008002;
@@ -115,16 +113,14 @@ public:
       uint8_t dev_nak : 1;       // rw  in device mode receive NAK interrupt;
       uint8_t dev_sof : 1; // rw  in device mode receive start of frame (SOF)
                            // packet interrupt;
-
-    } bit;
+    };
   } int_en;
   union {
     uint8_t reg; // 40008003;
     struct {
       uint8_t usb_addr : 7; // rw  device mode: the address of the USB itself;
       uint8_t gp_bit : 1;   // rw  USB general flag, user-defined;
-
-    } bit;
+    };
   } dev_ad;
   union {
     uint8_t reg; // 40008005;
@@ -143,8 +139,7 @@ public:
       uint8_t sie_free : 1;   // ro  USB proctocol processor free (not busy);
       uint8_t sof_act : 1;    // ro  SOF packet is being sent in host mode;
       uint8_t sof_pre : 1;    // ro  SOF packet will be sent in host mode;
-
-    } bit;
+    };
   } misc_status;
   union {
     uint8_t reg; // 40008006;
@@ -164,8 +159,7 @@ public:
                             // status (1==synchronous, 0==asynchronous);
       uint8_t is_nak : 1; // ro  in device mode: NAK acknowledge during current
                           // USB transmission;
-
-    } bit;
+    };
   } int_flag;
   union {
     uint8_t reg; // 40008007;
@@ -179,8 +173,7 @@ public:
       uint8_t
           setup_act : 1; // ro  in device mode, when this bit is 1, 8-byte setup
                          // request packet has been successfully received.;
-
-    } bit;
+    };
   } int_status;
   union {
     uint8_t reg; // 40008008;
@@ -188,8 +181,7 @@ public:
       uint8_t reserved7 : 1; // ro ;
       uint8_t len : 7; // ro  number of data bytes received by the current usb
                        // endpoint;
-
-    } bit;
+    };
   } rx_len;
   uint8_t reserved8009;
   uint8_t reserved800a;
@@ -204,8 +196,7 @@ public:
       uint8_t reserved2 : 1;   // ro ;
       uint8_t ep1_tx_en : 1;   // rw  enable endpoint 1 transmittal (IN);
       uint8_t ep1_rx_en : 1;   // rw  enable endpoint 1 receiving (OUT);
-
-    } bit;
+    };
   } ep4_1_mod;
   union {
     uint8_t reg; // 4000800D;
@@ -218,8 +209,7 @@ public:
       uint8_t reserved2 : 1;   // ro ;
       uint8_t ep3_tx_en : 1;   // rw ;
       uint8_t ep3_rx_en : 1;   // rw ;
-
-    } bit;
+    };
   } ep2_3_mod;
   union {
     uint8_t reg; // 4000800E;
@@ -231,8 +221,7 @@ public:
       uint8_t ep7_tx_en : 1;  // rw ;
       uint8_t ep7_rx_en : 1;  // rw ;
       uint8_t reserved01 : 2; // ro ;
-
-    } bit;
+    };
   } ep567_mod;
   uint8_t reserved800f;
   union {
@@ -241,8 +230,7 @@ public:
       uint16_t reserved1514 : 2; // ro ;
       uint16_t dma : 13;         // rw ;
       uint16_t reserved0 : 1;    // ro ;
-
-    } bit;
+    };
   } ep0_dma;
   uint16_t reserved40008012;
   union {
@@ -251,8 +239,7 @@ public:
       uint16_t reserved1514 : 2; // ro ;
       uint16_t dma : 13;         // rw ;
       uint16_t reserved0 : 1;    // ro ;
-
-    } bit;
+    };
   } ep1_dma;
   uint16_t reserved40008016;
   union {
@@ -261,8 +248,7 @@ public:
       uint16_t reserved1514 : 2; // ro ;
       uint16_t dma : 13;         // rw ;
       uint16_t reserved0 : 1;    // ro ;
-
-    } bit;
+    };
   } ep2_dma;
   uint16_t reserved4000801_a;
   union {
@@ -271,8 +257,7 @@ public:
       uint16_t reserved1514 : 2; // ro ;
       uint16_t dma : 13;         // rw ;
       uint16_t reserved0 : 1;    // ro ;
-
-    } bit;
+    };
   } ep3_dma;
   uint16_t reserved4000801_e;
   union {
@@ -280,8 +265,7 @@ public:
     struct {
       uint8_t reserved0 : 1; // ro ;
       uint8_t t_len : 7;     // rw  transmit length;
-
-    } bit;
+    };
   } ep0_t_len;
   uint8_t reserved40008021;
   union {
@@ -298,8 +282,7 @@ public:
                              // transmittal (IN), 0=DATA0, 1=DATA1 ;
       uint8_t r_tog : 1;     // rw  prepared data toggle flag of USB endpoint X
                              // receiving (OUT), 0=DATA0, 1=DATA1 ;
-
-    } bit;
+    };
   } ep0_ctrl;
   uint8_t reserved40008023;
   union {
@@ -307,8 +290,7 @@ public:
     struct {
       uint8_t reserved0 : 1; // ro ;
       uint8_t t_len : 7;     // rw  transmit length;
-
-    } bit;
+    };
   } ep1_t_len;
   uint8_t reserved40008025;
   union {
@@ -325,8 +307,7 @@ public:
                              // transmittal (IN), 0=DATA0, 1=DATA1 ;
       uint8_t r_tog : 1;     // rw  prepared data toggle flag of USB endpoint X
                              // receiving (OUT), 0=DATA0, 1=DATA1 ;
-
-    } bit;
+    };
   } ep1_ctrl;
   uint8_t reserved40008027;
   union {
@@ -334,8 +315,7 @@ public:
     struct {
       uint8_t reserved0 : 1; // ro ;
       uint8_t t_len : 7;     // rw  transmit length;
-
-    } bit;
+    };
   } ep2_t_len;
   uint8_t reserved40008029;
   union {
@@ -352,8 +332,7 @@ public:
                              // transmittal (IN), 0=DATA0, 1=DATA1 ;
       uint8_t r_tog : 1;     // rw  prepared data toggle flag of USB endpoint X
                              // receiving (OUT), 0=DATA0, 1=DATA1 ;
-
-    } bit;
+    };
   } ep2_ctrl;
   uint8_t reserved4000802_b;
   union {
@@ -361,8 +340,7 @@ public:
     struct {
       uint8_t reserved0 : 1; // ro ;
       uint8_t t_len : 7;     // rw  transmit length;
-
-    } bit;
+    };
   } ep3_t_len;
   uint8_t reserved4000802_d;
   union {
@@ -379,8 +357,7 @@ public:
                              // transmittal (IN), 0=DATA0, 1=DATA1 ;
       uint8_t r_tog : 1;     // rw  prepared data toggle flag of USB endpoint X
                              // receiving (OUT), 0=DATA0, 1=DATA1 ;
-
-    } bit;
+    };
   } ep3_ctrl;
   uint8_t reserved4000802_f;
   union {
@@ -388,8 +365,7 @@ public:
     struct {
       uint8_t reserved0 : 1; // ro ;
       uint8_t t_len : 7;     // rw  transmit length;
-
-    } bit;
+    };
   } ep4_t_len;
   uint8_t reserved40008031;
   union {
@@ -406,8 +382,7 @@ public:
                              // transmittal (IN), 0=DATA0, 1=DATA1 ;
       uint8_t r_tog : 1;     // rw  prepared data toggle flag of USB endpoint X
                              // receiving (OUT), 0=DATA0, 1=DATA1 ;
-
-    } bit;
+    };
   } ep4_ctrl;
   uint8_t reserved40008033;
 

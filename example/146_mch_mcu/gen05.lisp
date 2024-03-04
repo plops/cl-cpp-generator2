@@ -307,6 +307,30 @@
 - Synchronization trigger bit (RB_UEP_R_TOG) for OUT transactions ensures data packet received matches the endpoint; data is discarded if not synchronous.  
 - RB_UEP_AUTO_TOG option available for automatically flipping synchronization trigger bit after successful transmission or reception.  
 - Data to be sent/received is stored in their own buffer; sent data length set in R8_UEPn_T_LEN, received data length in R8_USB_RX_LEN, distinguishable by current endpoint number during interrupt.
+
+
+I decided to use an anonymous struct inside of the union, so that I
+can write usb.int_flag.transfer instead of usb.int_flag.bit.transfer.
+For maximum portability and to adhere strictly to the C++ standard,
+it's better to name these structs and access them through named
+members. However, compilers like GCC and Clang do support anonymous
+structs and unions in C++ as an extension.
+
+As this is only an experiment and only has to work for this particular
+chip and the GCC compiler, I'm willing to loose compatibility for
+convenience.
+
+
+
+When using bit fields and packing them into uint8_t, you're unlikely
+to encounter alignment issues for this particular use case. However,
+when dealing with larger structs or different types, be mindful of
+alignment and how different compilers may pack bit fields differently.
+I think I will have to look at the compiler output of -Wpadding and do
+some testing to verify the memory alignment of this class matches the
+registers.
+
+
 ")
 			)
      :implementation-preamble
@@ -359,8 +383,18 @@
 										 (uint16_t 16))))))
 						   
 						   )
-					     ))
-					bit))
+					     )
+					  )
+					;bit
+					)
+				 #+nil ,@(loop for field in (reverse fields)
+						  collect
+						  (destructuring-bind (&key fname bit access help) field
+						    (let ((aname  (cl-change-case:snake-case (format nil "access_~a" fname)))
+							  (sname  (cl-change-case:snake-case (format nil "~a" fname))))
+						     `(defun+ ,aname ()
+							(declare (values "uint8_t&"))
+							(return (reinterpret_cast<uint8_t&> (dot bit ,sname))))))))
 			       ,(cl-change-case:snake-case (format nil "~a" name))
 			       )
 			     `(space ,type ,(cl-change-case:snake-case (format nil "~a" name)))
@@ -588,9 +622,9 @@
      (do0
 
       (defun USB_DevTransProcess2 ()
-	(when usb.int_flag.bit.transfer
+	(when usb.int_flag.transfer
 	  (comments "clear interrupt by writing to flag")
-	  (setf usb.int_flag.bit.transfer 1)))
+	  (setf usb.int_flag.transfer 1)))
       
       (doc "Handle USB transaction processing. Respond to standard USB requests (e.g. Get Descriptor, Set Address). Manage data transfers on endpoints.")
       #+nil (defun USB_DevTransProcess ()
