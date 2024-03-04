@@ -621,8 +621,12 @@ registers.
      
      (do0
 
+      (comments "overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml")
       (defun USB_DevTransProcess2 ()
 	(when usb.int_flag.transfer
+	  (when (or usb.int_status.token
+		    usb.int_status.endp)
+	    (case ))
 	  (comments "clear interrupt by writing to flag")
 	  (setf usb.int_flag.transfer 1)))
       
