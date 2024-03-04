@@ -145,7 +145,7 @@
 		   (:name ep4-1-mod :addr #x4000800c
 		    :reg-access rw
 		    :fields (
-			     (:fname ep1-tx-en :bit 0 :access rw :help "enable endpoint 1 receiving (OUT)")
+			     (:fname ep1-rx-en :bit 0 :access rw :help "enable endpoint 1 receiving (OUT)")
 			     (:fname ep1-tx-en :bit 1 :access rw :help "enable endpoint 1 transmittal (IN)")
 			     (:fname reserved2 :bit 2 :access ro)
 			     (:fname ep1-buf-mod :bit 3 :access rw :help "endpoint 1 buffer mode")
