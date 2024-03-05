@@ -57,7 +57,7 @@ set(HAL_PATH  ${CMAKE_SOURCE_DIR}/../hal)
 
 file(GLOB_RECURSE HAL_SOURCES
 ${HAL_PATH}/StdPeriphDriver/*_sys.c
-#${HAL_PATH}/StdPeriphDriver/*_uart*.c
+${HAL_PATH}/StdPeriphDriver/*_uart*.c
 #${HAL_PATH}/StdPeriphDriver/*_clk.c
 #${HAL_PATH}/StdPeriphDriver/*_adc.c
 #${HAL_PATH}/StdPeriphDriver/*_pwr.c
@@ -78,12 +78,6 @@ ${HAL_PATH}/Startup/*.S
 # Source Files
 add_library(mine 
         src/main.cpp
-        src/Ch592UsbRegisters.cpp   
-        src/Ch592UsbRegisters.h
-        src/UsbDeviceDescriptor.cpp
-        src/UsbDeviceDescriptor.h
-        src/UsbConfigurationDescriptor.cpp
-        src/UsbConfigurationDescriptor.h
 )
 
 

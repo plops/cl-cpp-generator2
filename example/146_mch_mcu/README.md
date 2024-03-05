@@ -8,6 +8,7 @@
 | gen02 | emit RF signal at 2410 MHz with 2 MBit/s |   |   |
 | gen03 | USB device                               |   |   |
 | gen05 | try do define my own USB registers       |   |   |
+| gen06 | uart                                     |   |   |
 
 ## Other documentation in this folder
 
