@@ -61,6 +61,11 @@
        (SetSysClock CLK_SOURCE_PLL_60MHz)
 
        (let ((len (uint8_t 0))))
+
+       (GPIOA_SetBits GPIO_Pin_9)
+       (GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
+       (GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
+       (UART1_DefInit)
        
        )
 
