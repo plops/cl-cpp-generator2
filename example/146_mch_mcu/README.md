@@ -767,6 +767,8 @@ https://hackaday.io/project/194904-getting-started-with-the-weact-studio-ch5xx-r
 
 # Serial Port and other pins
 
+- pins are documented here: WeAct-CH57xCH58xCoreBoard_V10_SchDoc.pdf 
+
 - rxd0 PB4
 - txd0 PB7 (i have to trigger on txd)
 
@@ -781,3 +783,4 @@ https://hackaday.io/project/194904-getting-started-with-the-weact-studio-ch5xx-r
 - B10 carries data during programming (pulses with period 1ms when sampled at 4MS/s)
 
 - blue led is pin8 (PCB label says ~A8), source01 toggles it and drives with 5mA 
+
