@@ -499,14 +499,6 @@ registers.
 		    (iSerialNumber :type "const  uint8_t" :initform 0)
 		    (bNumConfigurations :type uint8_t :param t)
 		    
-		    
-					;(max-cores :type int :param t)
-					;(max-points :type int :param t)
-		    #+nil(diagrams :type "std::vector<DiagramData>")
-					;(x :type "std::vector<float>")
-					;(y :type "std::vector<float>")
-					;(name-y :type "std::string" :param t)
-					;(time-points :type "std::deque<float>")
 		    )))
     (write-class
      :do-format t
@@ -622,8 +614,191 @@ tampered with or incorrectly modified due to a programming error or
 memory corruption.
 
 This method shall be used if you cast an arbitrary uint8_t array to
-UsbDeviceDescriptor.
+UsbDeviceDescriptor. 
 ")
+	       (defmethod isValid ()
+		 (declare (const)
+			  (values bool))
+		 (when (logior
+			,@(remove-if #'null
+				     (loop for e in members
+					   collect
+					   (destructuring-bind (name &key type param (initform 0)) e
+					     (let (#+nil(nname (cl-change-case:snake-case (format nil "~a" name)))
+						   (nname (format nil "~a" (cl-change-case:snake-case (format nil "~a" name)))))
+					       (cond
+						 ((and (stringp type)
+						       (str:starts-with-p "const" type)
+						       )
+						  `(!= ,initform ,nname))))))))
+		   (return false))
+		 (return true)
+		 )
+
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (declare (ignorable initform param))
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (get (cl-change-case:pascal-case (format nil "get-~a" name)))
+					  #+nil (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      `(defmethod ,get ()
+					 (declare (values ,(cond
+							     ((and (stringp type)
+								   (or (str:starts-with-p "std::vector<" type)
+								       (str:starts-with-p "std::deque<" type)
+								       (str:starts-with-p "std::array<" type)
+								       (str:starts-with-p "std::string" type)))
+							      (format nil "const ~a&" type))
+							     (t type)))
+						  (const))
+					 (return ,nname))))))
+	       
+	       "private:"
+	       
+	       
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (let (#+nil(nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname (format nil "~a" (cl-change-case:snake-case (format nil "~a" name)))))
+				      (cond
+					(param `(space ,type ,nname))
+					((and (stringp type)
+					      (or (str:starts-with-p "std::vector<" type)
+						  (str:starts-with-p "std::deque<" type)
+						  (str:starts-with-p "std::array<" type)
+						  (str:starts-with-p "std::string" type)))
+					 `(space ,type ,nname (curly)))
+					(t `(space ,type ,nname (curly ,initform)))))))))))
+
+    )
+
+  (let* ((name `UsbConfigurationDescriptor)
+	 (members `((bLength :type uint8_t :param t)
+		    (bDescriptorType :type "const  uint8_t" :initform 2)
+		    (wTotalLength :type uint16_t :param t)
+		    (bNumInterfaces :type uint8_t :param t)
+		    (bConfigurationValue :type uint8_t :param t)
+		    (iConfiguration :type uint8_t :param t)
+		    (bmAttributes :type uint8_t :param t)
+		    (b :type uint8_t :param t)
+		    (bMaxPower :type uint8_t :param t)
+		    
+		    )))
+    (write-class
+     :do-format t
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> ;vector deque string
+				   cstdint)
+			
+			(doc "
+**Configuration Descriptor Summary**
+
+* **Device configurations:** A USB device can have multiple configurations, although most devices only have one.
+* **Configuration details:** The configuration descriptor specifies power consumption, interfaces, and transfer mode.
+* **Configuration selection:** The host selects a configuration using a `SetConfiguration` command.
+
+**Descriptor Fields Explained**
+
+
+| Field               | Description                                                                  |
+|---------------------|------------------------------------------------------------------------------|
+| bLength             | Size of the descriptor in bytes.                                             |
+| bDescriptorType     | Constant value indicating a configuration descriptor (0x02).                 |
+| wTotalLength        | Total length in bytes of data returned, including all following descriptors. |
+| bNumInterfaces      | Number of interfaces included in the configuration.                          |
+| bConfigurationValue | Value used to select this configuration.                                     |
+| iConfiguration      | Index of a string descriptor describing the configuration.                   |
+| bmAttributes        | Bitmap containing power configuration details see below                      |
+| bMaxPower           | Maximum power consumption from the bus in 2mA units (maximum of 500mA).      |
+
+bmAttributes:
+    * D7: Reserved (set to 1 for USB 1.0 bus-powered devices).
+    * D6: Self-powered.
+    * D5: Remote wakeup capable.
+    * D4..0: Reserved (set to 0). 
+
+")
+			)
+     :implementation-preamble
+     `(do0
+       (comments "")
+       #+nil (include<>
+	;stdexcept
+	;format
+	cstdint
+	)
+       
+       )
+     :code `(do0
+	     
+	     (defclass ,name ()
+	       "public:" 
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param (initform 0)) e
+					    (declare (ignorable type initform))
+					    (let (#+nil(nname (intern
+							       (string-upcase
+								(cl-change-case:snake-case (format nil "~a" name)))))
+						  (nname_ (intern
+							   (string-upcase
+							    (format nil "~a_"
+								    (cl-change-case:snake-case (format nil "~a" name)))))))
+					      (when param
+						nname_))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param (initform 0)) e
+				       (declare (ignorable initform))
+				       (let (#+nil (nname (intern
+							   (string-upcase
+							    (cl-change-case:snake-case (format nil "~a" name)))))
+					     (nname_ (intern (string-upcase
+							      (format nil "~a_"
+								      (cl-change-case:snake-case (format nil "~a" name)))))))
+					 (when param
+					   
+					   `(type ,(cond
+						     ((and (stringp type)
+							   (or (str:starts-with-p "std::vector<" type)
+							       (str:starts-with-p "std::deque<" type)
+							       (str:starts-with-p "std::array<" type)
+							       (str:starts-with-p "std::string" type)))
+						      (format nil "const ~a&" type))
+						     (t type))
+						  ,nname_))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param (initform 0)) e
+					(declare (ignorable type initform))
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname ,nname_)) 
+					    #+nil (initform
+						   `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor)
+		  )
+		 )
+	       
 	       (defmethod isValid ()
 		 (declare (const)
 			  (values bool))

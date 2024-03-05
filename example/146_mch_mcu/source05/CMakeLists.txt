@@ -82,6 +82,8 @@ add_library(mine
         src/Ch592UsbRegisters.h
         src/UsbDeviceDescriptor.cpp
         src/UsbDeviceDescriptor.h
+        src/UsbConfigurationDescriptor.cpp
+        src/UsbConfigurationDescriptor.h
 )
 
 

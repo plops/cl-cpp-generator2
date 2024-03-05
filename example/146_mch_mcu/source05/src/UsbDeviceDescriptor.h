@@ -44,6 +44,9 @@ scenario, these checks ensure that the hardcoded values haven't been
 tampered with or incorrectly modified due to a programming error or
 memory corruption.
 
+This method shall be used if you cast an arbitrary uint8_t array to
+UsbDeviceDescriptor.
+
 
 */
   bool isValid() const;

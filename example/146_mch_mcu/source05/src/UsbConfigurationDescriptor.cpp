@@ -11,9 +11,7 @@ UsbConfigurationDescriptor::UsbConfigurationDescriptor(
       b_num_interfaces{b_num_interfaces_},
       b_configuration_value{b_configuration_value_},
       i_configuration{i_configuration_}, bm_attributes{bm_attributes_}, b{b_},
-      b_max_power{b_max_power_} {
-  static_assert(18 == sizeof(UsbDeviceDescriptor));
-}
+      b_max_power{b_max_power_} {}
 bool UsbConfigurationDescriptor::isValid() const {
   if (2 != b_descriptor_type) {
     return false;
