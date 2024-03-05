@@ -759,3 +759,20 @@ This article provides a comprehensive guide to the schematic and PCB
 design of the CH57x/CH58x chips. By following the guidelines in this
 article, you can ensure that your design is correct and that your
 device will function properly.
+
+
+# Intro to CH5xx chips on hackaday:
+
+https://hackaday.io/project/194904-getting-started-with-the-weact-studio-ch5xx-risc-v
+
+# Serial Port and other pins
+
+- rxd0 PB4
+- txd0 PB7 (i have to trigger on txd)
+
+- source06 writes to uart1, txd is pin9 in software 
+- txd1 PA9 (trigger here)
+- rxd1 PA8
+
+- B23 stays high when on
+- B22 is high for 40ms upon start
