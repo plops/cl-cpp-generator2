@@ -79,7 +79,10 @@ ${HAL_PATH}/Startup/*.S
 add_library(mine 
         src/main.cpp
         src/Ch592UsbRegisters.cpp   
-        src/Ch592UsbRegisters.h)
+        src/Ch592UsbRegisters.h
+        src/UsbDeviceDescriptor.cpp
+        src/UsbDeviceDescriptor.h
+)
 
 
 target_compile_options(

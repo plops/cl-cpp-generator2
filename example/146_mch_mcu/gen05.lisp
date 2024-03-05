@@ -461,7 +461,7 @@ registers.
 						  (const))
 					 (return ,nname))))))
 	       
-	       "protected:"
+	       "private:"
 	       
 	       
 	       ,@(remove-if #'null
@@ -484,7 +484,23 @@ registers.
 
   
   (let* ((name `UsbDeviceDescriptor)
-	 (members `(		      ;(max-cores :type int :param t)
+	 (members `((bLength :type "const uint8_t" :initform 18)
+		    (bDescriptorType :type "const  uint8_t" :initform 1)
+		    (bcdUSB :type "const uint16_t" :initform (hex #x0200))
+		    (bDeviceClass :type uint8_t :param t)
+		    (bDeviceSubClass :type uint8_t :param t)
+		    (bDeviceProtocol :type uint8_t :param t)
+		    (bMaxPacketSize :type "const  uint8_t" :initform 64)
+		    (idVendor :type uint16_t :param t)
+		    (idProduct :type uint16_t :param t)
+		    (bcdDevice :type uint16_t :param t)
+		    (iManufacturer :type "const  uint8_t" :initform 0)
+		    (iProduct :type "const uint8_t" :initform 0)
+		    (iSerialNumber :type "const  uint8_t" :initform 0)
+		    (bNumConfigurations :type uint8_t :param t)
+		    
+		    
+					;(max-cores :type int :param t)
 					;(max-points :type int :param t)
 		    #+nil(diagrams :type "std::vector<DiagramData>")
 					;(x :type "std::vector<float>")
@@ -500,12 +516,9 @@ registers.
      :name name
      :headers `()
      :header-preamble `(do0
-			(include<> vector deque string cstdint)
-			(space struct DiagramData (progn
-						    "std::string name;"
-						    "std::deque<float> values;"
-						    )
-			       )
+			(include<> ;vector deque string
+				   cstdint)
+			
 			(doc "
 **Device Descriptor**
 
@@ -528,11 +541,13 @@ registers.
 			)
      :implementation-preamble
      `(do0
-       
-       (include<>
-	stdexcept
-	format
+       (comments "")
+       #+nil (include<>
+	;stdexcept
+	;format
+	cstdint
 	)
+       
        )
      :code `(do0
 	     
@@ -593,6 +608,36 @@ registers.
 		  (explicit)	    
 		  (values :constructor)
 		  )
+		 (static_assert (== 18
+				    (sizeof UsbDeviceDescriptor)
+				    ))
+		 )
+	       (doc "
+@brief isValid() checks if the const members b_length,
+b_descriptor_type, bcd_usb, and b_max_packet_size have the expected
+values. These values are defined based on the USB specification that
+the UsbDeviceDescriptor is designed to represent. In a real-world
+scenario, these checks ensure that the hardcoded values haven't been
+tampered with or incorrectly modified due to a programming error or
+memory corruption.
+")
+	       (defmethod isValid ()
+		 (declare (const)
+			  (values bool))
+		 (when (logior
+			,@(remove-if #'null
+				     (loop for e in members
+					   collect
+					   (destructuring-bind (name &key type param (initform 0)) e
+					     (let (#+nil(nname (cl-change-case:snake-case (format nil "~a" name)))
+						   (nname (format nil "~a" (cl-change-case:snake-case (format nil "~a" name)))))
+					       (cond
+						 ((and (stringp type)
+						       (str:starts-with-p "const" type)
+						       )
+						  `(!= ,initform ,nname))))))))
+		   (return false))
+		 (return true)
 		 )
 
 	       ,@(remove-if #'null
@@ -615,7 +660,7 @@ registers.
 						  (const))
 					 (return ,nname))))))
 	       
-	       "protected:"
+	       "private:"
 	       
 	       
 	       ,@(remove-if #'null
@@ -623,16 +668,16 @@ registers.
 				  collect
 				  (destructuring-bind (name &key type param (initform 0)) e
 				    (let (#+nil(nname (cl-change-case:snake-case (format nil "~a" name)))
-					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+					  (nname (format nil "~a" (cl-change-case:snake-case (format nil "~a" name)))))
 				      (cond
-					(param `(space ,type ,nname_))
+					(param `(space ,type ,nname))
 					((and (stringp type)
 					      (or (str:starts-with-p "std::vector<" type)
 						  (str:starts-with-p "std::deque<" type)
 						  (str:starts-with-p "std::array<" type)
 						  (str:starts-with-p "std::string" type)))
-					 `(space ,type ,nname_ (curly)))
-					(t `(space ,type ,nname_ (curly ,initform)))))))))))
+					 `(space ,type ,nname (curly)))
+					(t `(space ,type ,nname (curly ,initform)))))))))))
 
     )
 

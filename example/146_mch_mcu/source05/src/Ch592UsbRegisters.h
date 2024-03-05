@@ -406,7 +406,7 @@ public:
 public:
   explicit Ch592UsbRegisters();
 
-protected:
+private:
 };
 
 #endif /* !CH592USBREGISTERS_H */

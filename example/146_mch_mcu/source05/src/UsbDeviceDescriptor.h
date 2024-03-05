@@ -30,41 +30,53 @@ setups.
 */
 class UsbDeviceDescriptor {
 public:
-  explicit UsbDeviceDescriptor(uint8_t b_length_, uint8_t b_device_class_,
+  explicit UsbDeviceDescriptor(uint8_t b_device_class_,
                                uint8_t b_device_sub_class_,
                                uint8_t b_device_protocol_, uint16_t id_vendor_,
                                uint16_t id_product_, uint16_t bcd_device_,
                                uint8_t b_num_configurations_);
-  uint8_t GetBLength() const;
-  uint8_t GetBDescriptorType() const;
-  uint16_t GetBcdUsb() const;
+  /**
+@brief isValid() checks if the const members b_length,
+b_descriptor_type, bcd_usb, and b_max_packet_size have the expected
+values. These values are defined based on the USB specification that
+the UsbDeviceDescriptor is designed to represent. In a real-world
+scenario, these checks ensure that the hardcoded values haven't been
+tampered with or incorrectly modified due to a programming error or
+memory corruption.
+
+
+*/
+  bool isValid() const;
+  const uint8_t GetBLength() const;
+  const uint8_t GetBDescriptorType() const;
+  const uint16_t GetBcdUsb() const;
   uint8_t GetBDeviceClass() const;
   uint8_t GetBDeviceSubClass() const;
   uint8_t GetBDeviceProtocol() const;
-  uint8_t GetBMaxPacketSize() const;
+  const uint8_t GetBMaxPacketSize() const;
   uint16_t GetIdVendor() const;
   uint16_t GetIdProduct() const;
   uint16_t GetBcdDevice() const;
-  uint8_t GetIManufacturer() const;
-  uint8_t GetIProduct() const;
-  uint8_t GetISerialNumber() const;
+  const uint8_t GetIManufacturer() const;
+  const uint8_t GetIProduct() const;
+  const uint8_t GetISerialNumber() const;
   uint8_t GetBNumConfigurations() const;
 
 private:
-  uint8_t b_length_;
-  uint8_t b_descriptor_type_{1};
-  uint16_t bcd_usb_{0x200};
-  uint8_t b_device_class_;
-  uint8_t b_device_sub_class_;
-  uint8_t b_device_protocol_;
-  uint8_t b_max_packet_size_{64};
-  uint16_t id_vendor_;
-  uint16_t id_product_;
-  uint16_t bcd_device_;
-  uint8_t i_manufacturer_{0};
-  uint8_t i_product_{0};
-  uint8_t i_serial_number_{0};
-  uint8_t b_num_configurations_;
+  const uint8_t b_length{18};
+  const uint8_t b_descriptor_type{1};
+  const uint16_t bcd_usb{0x200};
+  uint8_t b_device_class;
+  uint8_t b_device_sub_class;
+  uint8_t b_device_protocol;
+  const uint8_t b_max_packet_size{64};
+  uint16_t id_vendor;
+  uint16_t id_product;
+  uint16_t bcd_device;
+  const uint8_t i_manufacturer{0};
+  const uint8_t i_product{0};
+  const uint8_t i_serial_number{0};
+  uint8_t b_num_configurations;
 };
 
 #endif /* !USBDEVICEDESCRIPTOR_H */
