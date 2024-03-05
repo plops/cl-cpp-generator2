@@ -50,11 +50,7 @@
 					;cmath
      
 		      )
-     ,(let ((msg-string "This s a tx test\\r\\n"))
-	`(let ((TxBuf (,(format nil "std::array<uint8_t,~a>" (length msg-string))
-			(string ,msg-string)))
-	       (RxBuf ("std::array<uint8_t,100>"))
-	       (trigB (uint8_t 0)))))
+     
 
      (defun main ()
        (declare (values int))
@@ -66,13 +62,21 @@
        (comments  "This will configure UART to send and receive at 115200 baud:")
        (UART1_DefInit)
 
+       ,(let ((msg-string "This s a tx test\\r\\n"))
+	`(let ((TxBuf (,(format nil "std::array<uint8_t,~a>" (length msg-string))
+			(string ,msg-string)))
+	      
+	       ;(trigB (uint8_t 0))
+	       )))
+
        (when 1
 	 (UART1_SendString (TxBuf.data) (TxBuf.size)))
 
        (when 1
-	 (let ((len (uint8_t 0))) 
+	 (let (
+	        (RxBuf ("std::array<uint8_t,100>"))) 
 	  (while true
-		 (setf len (UART1_RecvString (RxBuf.data)))
+		 (let ((len (UART1_RecvString (RxBuf.data)))))
 		 (when len
 		   (UART1_SendString (RxBuf.data)
 				     len)))))

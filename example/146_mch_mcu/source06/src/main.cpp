@@ -7,9 +7,6 @@
 extern "C" {
 #include <CH59x_common.h>
 };
-auto TxBuf{std::array<uint8_t, 20>("This s a tx test\r\n")};
-auto RxBuf{std::array<uint8_t, 100>()};
-auto trigB{uint8_t(0)};
 
 int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
@@ -19,13 +16,14 @@ int main() {
   // This will configure UART to send and receive at 115200 baud:
 
   UART1_DefInit();
+  auto TxBuf{std::array<uint8_t, 20>("This s a tx test\r\n")};
   if (1) {
     UART1_SendString(TxBuf.data(), TxBuf.size());
   }
   if (1) {
-    auto len{uint8_t(0)};
+    auto RxBuf{std::array<uint8_t, 100>()};
     while (true) {
-      len = UART1_RecvString(RxBuf.data());
+      auto len{UART1_RecvString(RxBuf.data())};
       if (len) {
         UART1_SendString(RxBuf.data(), len);
       }
