@@ -34,24 +34,28 @@ bmAttributes:
     * D5: Remote wakeup capable.
     * D4..0: Reserved (set to 0).
 
+I think string descriptors are optional, so for now I will always keep string
+indices 0.
+
 
 
 */
 class UsbConfigurationDescriptor {
 public:
-  explicit UsbConfigurationDescriptor(
-      uint8_t b_length_, uint16_t w_total_length_, uint8_t b_num_interfaces_,
-      uint8_t b_configuration_value_, uint8_t i_configuration_,
-      uint8_t bm_attributes_, uint8_t b_, uint8_t b_max_power_);
+  explicit UsbConfigurationDescriptor(uint8_t b_length_,
+                                      uint16_t w_total_length_,
+                                      uint8_t b_num_interfaces_,
+                                      uint8_t b_configuration_value_,
+                                      uint8_t bm_attributes_,
+                                      uint8_t b_max_power_);
   bool isValid() const;
   uint8_t GetBLength() const;
   const uint8_t GetBDescriptorType() const;
   uint16_t GetWTotalLength() const;
   uint8_t GetBNumInterfaces() const;
   uint8_t GetBConfigurationValue() const;
-  uint8_t GetIConfiguration() const;
+  const uint8_t GetIConfiguration() const;
   uint8_t GetBmAttributes() const;
-  uint8_t GetB() const;
   uint8_t GetBMaxPower() const;
 
 private:
@@ -60,9 +64,8 @@ private:
   uint16_t w_total_length;
   uint8_t b_num_interfaces;
   uint8_t b_configuration_value;
-  uint8_t i_configuration;
+  const uint8_t i_configuration{0};
   uint8_t bm_attributes;
-  uint8_t b;
   uint8_t b_max_power;
 };
 

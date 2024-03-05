@@ -675,16 +675,15 @@ UsbDeviceDescriptor.
 					(t `(space ,type ,nname (curly ,initform)))))))))))
 
     )
-
+  
   (let* ((name `UsbConfigurationDescriptor)
 	 (members `((bLength :type uint8_t :param t)
 		    (bDescriptorType :type "const  uint8_t" :initform 2)
 		    (wTotalLength :type uint16_t :param t)
 		    (bNumInterfaces :type uint8_t :param t)
 		    (bConfigurationValue :type uint8_t :param t)
-		    (iConfiguration :type uint8_t :param t)
+		    (iConfiguration :type "const uint8_t" :initform 0)
 		    (bmAttributes :type uint8_t :param t)
-		    (b :type uint8_t :param t)
 		    (bMaxPower :type uint8_t :param t)
 		    
 		    )))
@@ -725,6 +724,8 @@ bmAttributes:
     * D6: Self-powered.
     * D5: Remote wakeup capable.
     * D4..0: Reserved (set to 0). 
+
+I think string descriptors are optional, so for now I will always keep string indices 0.
 
 ")
 			)
@@ -858,6 +859,7 @@ bmAttributes:
 					(t `(space ,type ,nname (curly ,initform)))))))))))
 
     )
+  
 
   (write-source 
    (asdf:system-relative-pathname
@@ -877,7 +879,9 @@ bmAttributes:
       cassert
 
       )
-     (include Ch592UsbRegisters.h )
+     (include Ch592UsbRegisters.h
+	      UsbDeviceDescriptor.h
+	      UsbConfigurationDescriptor.h)
      (space extern "\"C\""
 	    (progn
 	      
@@ -1267,6 +1271,11 @@ bmAttributes:
        (declare (values int))
        (SetSysClock CLK_SOURCE_PLL_60MHz)
        (setf pEP0_RAM_Addr (EP0_Databuf.data))
+
+       (let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))
+	     (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
+       (dev.isValid)
+       (cfg.isValid)
        (USB_DeviceInit)
        (comments "Enable the interrupt associated with the USB peripheral.")
        (PFIC_EnableIRQ USB_IRQn)
