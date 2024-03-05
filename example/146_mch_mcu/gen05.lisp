@@ -1264,9 +1264,87 @@ I think string descriptors are optional, so for now I will always keep string in
        (GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
        (GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
        (UART1_DefInit))
+
+
+     (doc
+      "
+Here's a bullet list summary of the essential concepts regarding USB Protocols:
+
+**Understanding USB Protocols**
+
+* **Layered Structure:** USB protocols operate in layers, simplifying design. Higher layers are more relevant for users, with lower layers handled by USB controllers.
+* **Transactions:** USB data exchange occurs in transactions with the following components:
+    * Token Packet (header)
+    * Optional Data Packet (payload)
+    * Status Packet (acknowledgment/error correction)
+
+**Key Packet Fields:**
+
+* **Sync:** Synchronizes transmitter and receiver clocks.
+* **PID (Packet ID):**  Identifies the packet type (token, data, handshake, etc.).
+* **ADDR:** Specifies the destination device address.
+* **ENDP:** Identifies the specific endpoint on the device.
+* **CRC:** Error detection mechanism.
+* **EOP:** Marks the end of a packet.
+
+**Packet Types**
+
+* **Token:** Indicates transaction type (IN, OUT, SETUP)
+* **Data:** Carries the actual data payload (DATA0, DATA 1, etc.).
+* **Handshake:** Acknowledges transactions or signals errors (ACK, NAK, STALL)
+* **Start of Frame (SOF):** Sent periodically to mark time intervals.
+
+**USB Functions and Devices**
+
+* **USB Function:** A USB device with a specific capability (printer, scanner, etc.). Note that this can include host controllers or hubs as well. 
+* **Endpoints:** Points on a USB function where data is sent or received. Endpoint 0 is mandatory for control/status.
+* **Pipes:** Logical connections between the host software and device endpoints, defining transfer parameters.
+
+**Key Points**
+
+* USB is host-centric; the host initiates all transactions.
+* Most USB controllers handle low-level protocol implementation.
+* Understanding endpoints and pipes is crucial for USB device design. 
+
+
+")
      
-     
-     
+     (doc
+      "
+**Control Transfers: Purpose and Characteristics**
+
+* **Function:** Used for device setup (enumeration), command & status operations
+* **Initiation:** Always started by the host computer
+* **Nature:** Bursty, random packets 
+* **Error Handling:** Utilize a best-effort delivery approach
+* **Packet Sizes:**
+    * Low-speed: 8 bytes
+    * Full-speed: 64 bytes
+    * High-speed: 8, 16, 32, or 64 bytes
+
+**Stages of a Control Transfer**
+
+1. **Setup Stage:**
+   * Host sends a setup token (address, endpoint)
+   * Host sends a data packet (DATA0) containing the setup details
+   * Device acknowledges (ACK) if data is received successfully
+
+2. **Optional Data Stage:**
+   * One or more IN/OUT transactions depending on data direction
+   * Data is sent in chunks matching the maximum packet size
+   * Device can signal readiness (ACK), temporary unavailability (NAK), or an error (STALL)
+
+3. **Status Stage:**
+    *  Direction dictates the status reporting procedure:
+       * IN Transfer: Host acknowledges data, device reports status
+       * OUT Transfer: Device acknowledges data, host checks status
+
+**Big Picture Example: Requesting a Device Descriptor**
+
+1. **Setup:** Host sends a setup token, then a DATA0 packet with the descriptor request. Device acknowledges.
+2. **Data:** Host sends IN tokens. Device sends the descriptor in chunks, with the host acknowledging each chunk.
+3. **Status:** Host sends a zero-length OUT packet to signal success, the device responds to confirm its own status.
+")
      (defun main ()
        (declare (values int))
        (SetSysClock CLK_SOURCE_PLL_60MHz)
