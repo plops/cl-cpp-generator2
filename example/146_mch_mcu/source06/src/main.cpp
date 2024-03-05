@@ -18,15 +18,8 @@ int main() {
   UART1_DefInit();
   auto TxBuf{std::array<uint8_t, 20>("This s a tx test\r\n")};
   if (1) {
-    UART1_SendString(TxBuf.data(), TxBuf.size());
-  }
-  if (1) {
-    auto RxBuf{std::array<uint8_t, 100>()};
     while (true) {
-      auto len{UART1_RecvString(RxBuf.data())};
-      if (len) {
-        UART1_SendString(RxBuf.data(), len);
-      }
+      UART1_SendString(TxBuf.data(), TxBuf.size());
     }
   }
 }

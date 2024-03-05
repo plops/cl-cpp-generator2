@@ -774,7 +774,7 @@ https://hackaday.io/project/194904-getting-started-with-the-weact-studio-ch5xx-r
 
 - source06 writes to uart1, txd is pin9 in software 
 - txd1 PA9 (trigger here)
-- rxd1 PA8
+- rxd1 PA8 (this is also connected to LED)
 
 
 - B23 stays high when on (high 16ms after bus on)

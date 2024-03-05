@@ -70,16 +70,18 @@
 	       )))
 
        (when 1
-	 (UART1_SendString (TxBuf.data) (TxBuf.size)))
+	 (while true
+	  (UART1_SendString (TxBuf.data) (TxBuf.size))))
 
+       #+nil 
        (when 1
 	 (let (
-	        (RxBuf ("std::array<uint8_t,100>"))) 
-	  (while true
-		 (let ((len (UART1_RecvString (RxBuf.data)))))
-		 (when len
-		   (UART1_SendString (RxBuf.data)
-				     len)))))
+	       (RxBuf ("std::array<uint8_t,100>"))) 
+	   (while true
+		  (let ((len (UART1_RecvString (RxBuf.data)))))
+		  (when len
+		    (UART1_SendString (RxBuf.data)
+				      len)))))
        
        )
 
