@@ -28,4 +28,4 @@ if [ ! -f /etc/udev/rules.d/50-wchisp.rules ]; then
 fi
 
 
-./wchisp  flash risc_usb_test
+./wchisp  flash risc_test

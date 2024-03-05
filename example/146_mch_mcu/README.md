@@ -774,5 +774,10 @@ https://hackaday.io/project/194904-getting-started-with-the-weact-studio-ch5xx-r
 - txd1 PA9 (trigger here)
 - rxd1 PA8
 
-- B23 stays high when on
-- B22 is high for 40ms upon start
+
+- B23 stays high when on (high 16ms after bus on)
+- B22 is high for 40ms upon start (high 19.7ms after 5v bus on)
+
+- B10 carries data during programming (pulses with period 1ms when sampled at 4MS/s)
+
+- blue led is pin8 (PCB label says ~A8), source01 toggles it and drives with 5mA 
