@@ -61,7 +61,7 @@ ${HAL_PATH}/StdPeriphDriver/*_uart*.c
 #${HAL_PATH}/StdPeriphDriver/*_clk.c
 #${HAL_PATH}/StdPeriphDriver/*_adc.c
 #${HAL_PATH}/StdPeriphDriver/*_pwr.c
-#${HAL_PATH}/StdPeriphDriver/*_gpio.c
+${HAL_PATH}/StdPeriphDriver/*_gpio.c
 #${HAL_PATH}/StdPeriphDriver/*_usbdev.c
 #${HAL_PATH}/RVMSIS/*.c
 ${HAL_PATH}/Startup/*.S
