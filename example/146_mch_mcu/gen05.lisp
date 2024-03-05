@@ -268,12 +268,9 @@
      :name name
      :headers `()
      :header-preamble `(do0
-			(include<> vector deque string cstdint)
-			(space struct DiagramData (progn
-						    "std::string name;"
-						    "std::deque<float> values;"
-						    )
-			       )
+			(include<> ;vector deque string
+				   cstdint)
+			
 			(doc "@brief The DiagramBase class represents a base class for diagrams.
 			    
 # Description of Interrupt status register
@@ -335,8 +332,8 @@ registers.
 			)
      :implementation-preamble
      `(do0
-       
-       (include<>
+       (comments "")
+       #+nil (include<>
 	stdexcept
 	format
 	)
@@ -382,24 +379,164 @@ registers.
 										 (uint8_t 8)
 										 (uint16_t 16))))))
 						   
-						   )
-					     )
-					  )
-					;bit
-					)
-				 #+nil ,@(loop for field in (reverse fields)
-						  collect
-						  (destructuring-bind (&key fname bit access help) field
-						    (let ((aname  (cl-change-case:snake-case (format nil "access_~a" fname)))
-							  (sname  (cl-change-case:snake-case (format nil "~a" fname))))
-						     `(defun+ ,aname ()
-							(declare (values "uint8_t&"))
-							(return (reinterpret_cast<uint8_t&> (dot bit ,sname))))))))
-			       ,(cl-change-case:snake-case (format nil "~a" name))
-			       )
+						   )))))
+			       ,(cl-change-case:snake-case (format nil "~a" name)))
 			     `(space ,type ,(cl-change-case:snake-case (format nil "~a" name)))
-			     
 			     )))
+	       "public:" 
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param (initform 0)) e
+					    (declare (ignorable type initform))
+					    (let (#+nil(nname (intern
+							       (string-upcase
+								(cl-change-case:snake-case (format nil "~a" name)))))
+						  (nname_ (intern
+							   (string-upcase
+							    (format nil "~a_"
+								    (cl-change-case:snake-case (format nil "~a" name)))))))
+					      (when param
+						nname_))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param (initform 0)) e
+				       (declare (ignorable initform))
+				       (let (#+nil (nname (intern
+							   (string-upcase
+							    (cl-change-case:snake-case (format nil "~a" name)))))
+					     (nname_ (intern (string-upcase
+							      (format nil "~a_"
+								      (cl-change-case:snake-case (format nil "~a" name)))))))
+					 (when param
+					   
+					   `(type ,(cond
+						     ((and (stringp type)
+							   (or (str:starts-with-p "std::vector<" type)
+							       (str:starts-with-p "std::deque<" type)
+							       (str:starts-with-p "std::array<" type)
+							       (str:starts-with-p "std::string" type)))
+						      (format nil "const ~a&" type))
+						     (t type))
+						  ,nname_))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param (initform 0)) e
+					(declare (ignorable type initform))
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname ,nname_)) 
+					    #+nil (initform
+						   `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor)
+		  )
+		 )
+
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (declare (ignorable initform param))
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (get (cl-change-case:pascal-case (format nil "get-~a" name)))
+					  #+nil (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      `(defmethod ,get ()
+					 (declare (values ,(cond
+							     ((and (stringp type)
+								   (or (str:starts-with-p "std::vector<" type)
+								       (str:starts-with-p "std::deque<" type)
+								       (str:starts-with-p "std::array<" type)
+								       (str:starts-with-p "std::string" type)))
+							      (format nil "const ~a&" type))
+							     (t type)))
+						  (const))
+					 (return ,nname))))))
+	       
+	       "protected:"
+	       
+	       
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (let (#+nil(nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      (cond
+					(param `(space ,type ,nname_))
+					((and (stringp type)
+					      (or (str:starts-with-p "std::vector<" type)
+						  (str:starts-with-p "std::deque<" type)
+						  (str:starts-with-p "std::array<" type)
+						  (str:starts-with-p "std::string" type)))
+					 `(space ,type ,nname_ (curly)))
+					(t `(space ,type ,nname_ (curly ,initform)))))))))))
+
+    )
+
+  
+  (let* ((name `UsbDeviceDescriptor)
+	 (members `(		      ;(max-cores :type int :param t)
+					;(max-points :type int :param t)
+		    #+nil(diagrams :type "std::vector<DiagramData>")
+					;(x :type "std::vector<float>")
+					;(y :type "std::vector<float>")
+					;(name-y :type "std::string" :param t)
+					;(time-points :type "std::deque<float>")
+		    )))
+    (write-class
+     :do-format t
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> vector deque string cstdint)
+			(space struct DiagramData (progn
+						    "std::string name;"
+						    "std::deque<float> values;"
+						    )
+			       )
+			(doc "
+**Device Descriptor**
+
+* **Represents the entire USB device:**  One device = one descriptor.
+* **Key Device Information:**
+    * **USB Version Supported:**  Device's USB spec compliance (e.g., 2.0, 1.1)
+    * **Maximum Packet Size (Endpoint 0):**  Largest data unit for default endpoint.
+    * **Vendor ID:**  USB-IF assigned ID for the device's manufacturer.
+    * **Product ID:** Manufacturer-assigned ID for the specific device. 
+    * **Number of Configurations:** How many ways the device can be configured.
+
+**Understanding Fields**
+
+* **bcdUSB:** Binary-coded decimal for USB version (e.g., 0x0200 = USB 2.0)
+* **bDeviceClass, bDeviceSubClass, bDeviceProtocol:**  Codes used to find the appropriate device driver. Often more specific codes are defined at the interface level.
+* **bcdDevice:** Device version number set by the developer.
+* **iManufacturer, iProduct, iSerialNumber:**  Indexes pointing to optional string descriptors for additional human-readable information.
+* **bNumConfigurations:**  Indicates the total number of potential device setups. 
+")
+			)
+     :implementation-preamble
+     `(do0
+       
+       (include<>
+	stdexcept
+	format
+	)
+       )
+     :code `(do0
+	     
+	     (defclass ,name ()
 	       "public:" 
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
@@ -626,7 +763,8 @@ registers.
 	(when usb.int_flag.transfer
 	  (when (or usb.int_status.token
 		    usb.int_status.endp)
-	    (case ))
+	    (comments "handle requests")
+	    )
 	  (comments "clear interrupt by writing to flag")
 	  (setf usb.int_flag.transfer 1)))
       

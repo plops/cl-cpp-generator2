@@ -2,13 +2,6 @@
 #define CH592USBREGISTERS_H
 
 #include <cstdint>
-#include <deque>
-#include <string>
-#include <vector>
-struct DiagramData {
-  std::string name;
-  std::deque<float> values;
-};
 /** @brief The DiagramBase class represents a base class for diagrams.
 
 # Description of Interrupt status register
