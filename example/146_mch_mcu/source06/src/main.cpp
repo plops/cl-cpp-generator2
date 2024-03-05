@@ -7,7 +7,7 @@
 extern "C" {
 #include <CH59x_common.h>
 };
-auto TxBuf{std::array<uint8_t, 20>("THis s a tx test\r\n")};
+auto TxBuf{std::array<uint8_t, 20>("This s a tx test\r\n")};
 auto RxBuf{std::array<uint8_t, 100>()};
 auto trigB{uint8_t(0)};
 
@@ -16,6 +16,8 @@ int main() {
   GPIOA_SetBits(GPIO_Pin_9);
   GPIOA_ModeCfg(GPIO_Pin_8, GPIO_ModeIN_PU);
   GPIOA_ModeCfg(GPIO_Pin_9, GPIO_ModeOut_PP_5mA);
+  // This will configure UART to send and receive at 115200 baud:
+
   UART1_DefInit();
   if (1) {
     UART1_SendString(TxBuf.data(), TxBuf.size());

@@ -50,7 +50,7 @@
 					;cmath
      
 		      )
-     ,(let ((msg-string "THis s a tx test\\r\\n"))
+     ,(let ((msg-string "This s a tx test\\r\\n"))
 	`(let ((TxBuf (,(format nil "std::array<uint8_t,~a>" (length msg-string))
 			(string ,msg-string)))
 	       (RxBuf ("std::array<uint8_t,100>"))
@@ -63,6 +63,7 @@
        (GPIOA_SetBits GPIO_Pin_9)
        (GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
        (GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
+       (comments  "This will configure UART to send and receive at 115200 baud:")
        (UART1_DefInit)
 
        (when 1
