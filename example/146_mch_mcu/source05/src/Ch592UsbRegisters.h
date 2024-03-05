@@ -289,7 +289,7 @@ public:
     uint8_t reg; // 40008022;
     struct {
       uint8_t t_res : 2; // rw  bitmask for of handshake response type for usb
-                         // endpoint X, transmittal (in);
+                         // endpoint X, transmittal (in) (see datasheet p. 134);
       uint8_t r_res : 2; // rw  bitmask for of handshake response type for usb
                          // endpoint X, receiving (out);
       uint8_t auto_tog : 1;  // rw  automatic toggle after successful transfer
@@ -314,7 +314,7 @@ public:
     uint8_t reg; // 40008026;
     struct {
       uint8_t t_res : 2; // rw  bitmask for of handshake response type for usb
-                         // endpoint X, transmittal (in);
+                         // endpoint X, transmittal (in) (see datasheet p. 134);
       uint8_t r_res : 2; // rw  bitmask for of handshake response type for usb
                          // endpoint X, receiving (out);
       uint8_t auto_tog : 1;  // rw  automatic toggle after successful transfer
@@ -339,7 +339,7 @@ public:
     uint8_t reg; // 4000802A;
     struct {
       uint8_t t_res : 2; // rw  bitmask for of handshake response type for usb
-                         // endpoint X, transmittal (in);
+                         // endpoint X, transmittal (in) (see datasheet p. 134);
       uint8_t r_res : 2; // rw  bitmask for of handshake response type for usb
                          // endpoint X, receiving (out);
       uint8_t auto_tog : 1;  // rw  automatic toggle after successful transfer
@@ -364,7 +364,7 @@ public:
     uint8_t reg; // 4000802E;
     struct {
       uint8_t t_res : 2; // rw  bitmask for of handshake response type for usb
-                         // endpoint X, transmittal (in);
+                         // endpoint X, transmittal (in) (see datasheet p. 134);
       uint8_t r_res : 2; // rw  bitmask for of handshake response type for usb
                          // endpoint X, receiving (out);
       uint8_t auto_tog : 1;  // rw  automatic toggle after successful transfer
@@ -389,7 +389,7 @@ public:
     uint8_t reg; // 40008032;
     struct {
       uint8_t t_res : 2; // rw  bitmask for of handshake response type for usb
-                         // endpoint X, transmittal (in);
+                         // endpoint X, transmittal (in) (see datasheet p. 134);
       uint8_t r_res : 2; // rw  bitmask for of handshake response type for usb
                          // endpoint X, receiving (out);
       uint8_t auto_tog : 1;  // rw  automatic toggle after successful transfer
@@ -405,6 +405,7 @@ public:
 
 public:
   explicit Ch592UsbRegisters();
+  void device_init(uint16_t ep0_data);
 
 private:
 };

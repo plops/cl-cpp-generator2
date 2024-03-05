@@ -153,62 +153,30 @@ responds to confirm its own status.
 
 int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
-  pEP0_RAM_Addr = EP0_Databuf.data();
+  // This will configure UART1 to send and receive at 115200 baud:
+
+  /** up to 6Mbps is possible. fifo can store 8 bytes
+
+*/
+  GPIOA_SetBits(GPIO_Pin_9);
+  GPIOA_ModeCfg(GPIO_Pin_8, GPIO_ModeIN_PU);
+  GPIOA_ModeCfg(GPIO_Pin_9, GPIO_ModeOut_PP_5mA);
+  UART1_DefInit();
+  auto TxBuf{std::array<uint8_t, 10>("ALPHA1\r\n")};
+  UART1_SendString(TxBuf.data(), TxBuf.size());
+  usb.device_init(
+      static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
   auto &dev{*reinterpret_cast<const UsbDeviceDescriptor *>(DevDescr.data())};
   auto &cfg{
       *reinterpret_cast<const UsbConfigurationDescriptor *>(CfgDescr.data())};
   dev.isValid();
   cfg.isValid();
-  USB_DeviceInit();
   // Enable the interrupt associated with the USB peripheral.
 
   PFIC_EnableIRQ(USB_IRQn);
   while (1) {
     // inifinite loop
+
+    UART1_SendString(TxBuf.data(), TxBuf.size());
   }
-}
-
-/**
-
-__INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))).
-This likely indicates a specialized, 'fast' interrupt mechanism specific to your
-compiler or microcontroller (WCH).
-
-
-The compiler attribute __attribute__((section('.highcode'))) will be assigned to
-the __HIGH_CODE macro. This attribute likely instructs the compiler to place
-functions or code blocks marked with __HIGH_CODE into a special memory section
-named '.highcode' (possibly a faster memory region).
-
-
-
-
-*/
-__INTERRUPT __HIGH_CODE void USB_IRQHandler() {
-  // Handle interrupts coming from the USB Peripheral
-
-  USB_DevTransProcess2();
-}
-
-void DevEP1_OUT_Deal(uint8_t l) {
-  /** Endpoint 1 data reception
-
-1. l Parameter: The argument l represents the length (in bytes) of the received
-data packet.
-
-2. Data Inversion: The core of the function is a loop that iterates through each
-received byte:
-
-pEP1_IN_DataBuf[i] = ~pEP1_OUT_DataBuf[i]; : This line inverts each byte of data
-(~ is the bitwise NOT operator) and stores the result in pEP1_IN_DataBuf.
-3. Response Preparation:  The function calls DevEP1_IN_Deal(l).  This other
-function is likely responsible for sending the modified data (now in
-pEP1_IN_DataBuf) back to the host.
-
-
-*/
-  for (auto i = 0; i < l; i += 1) {
-    pEP1_IN_DataBuf[i] = ~(pEP1_OUT_DataBuf[i]);
-  }
-  DevEP1_IN_Deal(l);
 }

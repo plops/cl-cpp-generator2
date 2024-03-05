@@ -222,7 +222,7 @@
 					 (:fname reserved2 :bit 2 :access ro )
 					 (:fname auto-tog :bit 3 :access rw :help "automatic toggle after successful transfer completion of on of endpoints 1, 2 or 3")
 					 (:fname r-res :bit (5 4) :access rw :help "bitmask for of handshake response type for usb endpoint X, receiving (out)" )
-					 (:fname t-res :bit (7 6) :access rw :help "bitmask for of handshake response type for usb endpoint X, transmittal (in)" )
+					 (:fname t-res :bit (7 6) :access rw :help "bitmask for of handshake response type for usb endpoint X, transmittal (in) (see datasheet p. 134)" )
 					 
 					 ))
 			       (:name ,(format nil "reserved~8,'0x" (+ offset (+ 3 (* e 4))))
@@ -460,6 +460,20 @@ registers.
 							     (t type)))
 						  (const))
 					 (return ,nname))))))
+
+	       (defmethod device_init (ep0_data)
+		 (declare (type "uint16_t" ep0_data))
+		 (setf ctrl.reg 0)
+		 (setf ep4_1_mod.ep4_rx_en 0
+		       ep4_1_mod.ep4_tx_en 0
+		       ep4_1_mod.ep1_rx_en 0
+		       ep4_1_mod.ep1_tx_en 0)
+		 (setf ep2_3_mod.ep2_rx_en 0
+		       ep2_3_mod.ep2_tx_en 0
+		       ep2_3_mod.ep3_rx_en 0
+		       ep2_3_mod.ep3_tx_en 0)
+		 (setf ep0_dma.dma ep0_data)
+		 (setf ep0_ctrl.t_res "0b11"))
 	       
 	       "private:"
 	       
@@ -1348,20 +1362,42 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
      (defun main ()
        (declare (values int))
        (SetSysClock CLK_SOURCE_PLL_60MHz)
-       (setf pEP0_RAM_Addr (EP0_Databuf.data))
+
+       (do0
+	(comments  "This will configure UART1 to send and receive at 115200 baud:")
+	(doc "up to 6Mbps is possible. fifo can store 8 bytes")
+	(GPIOA_SetBits GPIO_Pin_9)
+	(GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
+	(GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
+	(UART1_DefInit)
+
+	,(let ((msg-string "ALPHA1\\r\\n"))
+	   `(let ((TxBuf (,(format nil "std::array<uint8_t,~a>" (length msg-string))
+			  (string ,msg-string)))
+		  
+					;(trigB (uint8_t 0))
+		  )))
+
+	(UART1_SendString (TxBuf.data) (TxBuf.size)))
+       
+      #+nil  (setf pEP0_RAM_Addr (EP0_Databuf.data))
+
+       (usb.device_init (static_cast<uint16_t>
+			 (reinterpret_cast<uint32_t> (EP0_Databuf.data))))
 
        (let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))
 	     (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
        (dev.isValid)
        (cfg.isValid)
-       (USB_DeviceInit)
+       #+nil(USB_DeviceInit)
        (comments "Enable the interrupt associated with the USB peripheral.")
        (PFIC_EnableIRQ USB_IRQn)
        (while 1
-	      (comments "inifinite loop")))
+	      (comments "inifinite loop")
+	      (UART1_SendString (TxBuf.data) (TxBuf.size))))
 
 
-     (do0
+     #+nil(do0
       (doc "
 
 __INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))). This likely indicates a specialized, 'fast' interrupt mechanism specific to your compiler or microcontroller (WCH).
@@ -1377,7 +1413,7 @@ The compiler attribute __attribute__((section('.highcode'))) will be assigned to
 	       (comments "Handle interrupts coming from the USB Peripheral")
 	       (USB_DevTransProcess2))))
 
-     (defun DevEP1_OUT_Deal (l)
+     #+nil(defun DevEP1_OUT_Deal (l)
        (declare (type uint8_t l))
        (doc "Endpoint 1 data reception
 

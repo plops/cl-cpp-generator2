@@ -57,11 +57,11 @@ set(HAL_PATH  ${CMAKE_SOURCE_DIR}/../hal)
 
 file(GLOB_RECURSE HAL_SOURCES
 ${HAL_PATH}/StdPeriphDriver/*_sys.c
-#${HAL_PATH}/StdPeriphDriver/*_uart*.c
+${HAL_PATH}/StdPeriphDriver/*_uart*.c
 #${HAL_PATH}/StdPeriphDriver/*_clk.c
 #${HAL_PATH}/StdPeriphDriver/*_adc.c
 #${HAL_PATH}/StdPeriphDriver/*_pwr.c
-#${HAL_PATH}/StdPeriphDriver/*_gpio.c
+${HAL_PATH}/StdPeriphDriver/*_gpio.c
 #${HAL_PATH}/StdPeriphDriver/*_usbdev.c
 #${HAL_PATH}/RVMSIS/*.c
 ${HAL_PATH}/Startup/*.S
