@@ -9,6 +9,7 @@
 | gen03 | USB device                               |   |   |
 | gen05 | try do define my own USB registers       |   |   |
 | gen06 | uart                                     |   |   |
+| gen07 | try union with bitfield                  |   |   |
 
 ## Other documentation in this folder
 
