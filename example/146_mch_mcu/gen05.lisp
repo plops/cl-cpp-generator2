@@ -386,7 +386,7 @@ registers.
 										     (uint16_t 16))))))
 						   
 						       )))))
-				   )
+				   ) 
 				  (defun+ operator= (value)
 				    (declare (type ,type value)
 					     (values ,(format nil "~a&" struct-name)))
