@@ -269,7 +269,8 @@
      :headers `()
      :header-preamble `(do0
 			(include<> ;vector deque string
-				   cstdint)
+			 ostream
+			 cstdint)
 			
 			(doc "@brief The DiagramBase class represents a base class for diagrams.
 			    
@@ -347,42 +348,66 @@ registers.
 		       (destructuring-bind (&key name addr (reg-access 'rw) ;(size 1)
 					      (type 'uint8_t) fields ) e
 			 (declare (ignorable addr reg-access))
-			 (if fields
-			     `(space
-			       union
-			       (progn
-				 (space ,type reg ,(format nil "; // ~8,'0x" addr))
-				 (space struct
+			 (let ((struct-name (cl-change-case:pascal-case (format nil "~a" name)))
+			       (member-name (cl-change-case:snake-case (format nil "~a" name))))
+			  (if fields
+			      `(space
+				struct ,struct-name
+				(progn
+				  (space
+				   union
+				   (progn
+				     (space ,type reg ,(format nil "; // ~8,'0x" addr))
+				     (space struct
 					;,(cl-change-case:snake-case (format nil "~a-t" name))
-					(progn
-					  ,(let ((count-bits 0))
-					     `(do0 ,@(loop for field in (reverse fields)
-							   collect
-							   (destructuring-bind (&key fname bit access help) field
-							     (let ((bit-len (if (listp bit)
-										(+ 1
-										   (- (first bit)
-										      (second bit)))
-										1)))
-							       (incf count-bits bit-len)
-							       `(space ,type ,(format nil "~a:~a; // ~a ~@[ ~a~]"
-										      (cl-change-case:snake-case (format nil "~a" fname))
-										      bit-len
-										      access
-										      help)))))
+					    (progn
+					      ,(let ((count-bits 0))
+						 `(do0 ,@(loop for field in (reverse fields)
+							       collect
+							       (destructuring-bind (&key fname bit access help) field
+								 (let ((bit-len (if (listp bit)
+										    (+ 1
+										       (- (first bit)
+											  (second bit)))
+										    1)))
+								   (incf count-bits bit-len)
+								   `(space ,type ,(format nil "~a:~a; // ~a ~@[ ~a~]"
+											  (cl-change-case:snake-case (format nil "~a" fname))
+											  bit-len
+											  access
+											  help)))))
 						   
 						   
-						   ,(prog1
-							" " ;`(comments ,(format nil "sum of bits = ~a" count-bits))
-						      (when fields
-							(assert (eq count-bits (ecase type
-										 (uint8_t 8)
-										 (uint16_t 16))))))
+						       ,(prog1
+							    " " ;`(comments ,(format nil "sum of bits = ~a" count-bits))
+							  (when fields
+							    (assert (eq count-bits (ecase type
+										     (uint8_t 8)
+										     (uint16_t 16))))))
 						   
-						   )))))
-			       ,(cl-change-case:snake-case (format nil "~a" name)))
-			     `(space ,type ,(cl-change-case:snake-case (format nil "~a" name)))
-			     )))
+						       )))))
+				   )
+				  (defun+ operator= (value)
+				    (declare (type ,type value)
+					     (values ,(format nil "~a&" struct-name)))
+				    (setf reg value)
+				    (return *this))
+				  (defun+ print (os)
+				    (declare (type "std::ostream&" os)
+					     (const)
+					     (values "std::ostream&"))
+				    ,@(remove-if #'null
+						 (loop for field in (reverse fields)
+						       collect
+						       (destructuring-bind (&key fname bit access help) field
+							 (unless (str:starts-with-p "reserved" (format nil "~a" fname))
+							  `(<< os (string ,(format nil "~a~@[ (~a)~]: " fname (when (eq 'ro access)
+														access)))
+							       (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname))))))))
+				    (return os)))
+				,member-name)
+			      `(space ,type ,(cl-change-case:snake-case (format nil "~a" name)))
+			      ))))
 	       "public:" 
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
