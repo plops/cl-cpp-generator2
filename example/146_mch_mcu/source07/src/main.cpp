@@ -46,7 +46,7 @@ public:
                 uint8_t enabled : 1;
                 uint8_t bit_align_running : 1;
                 uint8_t bit_align_error : 1;
-                uint8_t reserved : 5;
+                uint8_t reserved : 5; // read-only
             };
         };
         Status &operator=(uint8_t val)
@@ -73,6 +73,10 @@ int main(int argc, char **argv)
 
     a.ctl.print(std::cout) << std::endl;
     a.status.print(std::cout) << std::endl;
+
+    // i want this assignment to a read-only member 
+    // be forbidden and generate a compile error:
+    a.status.reserved = 3;
 
     /*
     source07/src $ ./a.out
