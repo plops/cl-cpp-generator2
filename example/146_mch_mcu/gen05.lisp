@@ -384,15 +384,13 @@ registers.
 							    (assert (eq count-bits (ecase type
 										     (uint8_t 8)
 										     (uint16_t 16))))))
-						   
-						       )))))
-				   ) 
+						       )))))) 
 				  (defun+ operator= (value)
 				    (declare (type ,type value)
 					     (values ,(format nil "~a&" struct-name)))
 				    (setf reg value)
 				    (return *this))
-				  (defun+ print (os)
+				  (defun+ operator<< (os)
 				    (declare (type "std::ostream&" os)
 					     (const)
 					     (values "std::ostream&"))
@@ -405,8 +403,9 @@ registers.
 														access)))
 							       (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname))))))))
 				    (return os)))
-				,member-name)
-			      `(space ,type ,(cl-change-case:snake-case (format nil "~a" name)))
+				,member-name (curly 0))
+			      `(space ,type ,(cl-change-case:snake-case (format nil "~a" name))
+				      (curly 0))
 			      ))))
 	       "public:" 
 	       (defmethod ,name (,@(remove-if #'null
@@ -1027,10 +1026,38 @@ I think string descriptors are optional, so for now I will always keep string in
       (comments "overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml")
       (defun USB_DevTransProcess2 ()
 	(when usb.int_flag.transfer
-	  (when (or usb.int_status.token
-		    usb.int_status.endp)
-	    (comments "handle requests")
-	    )
+	  (when (!= (hex #b11) usb.int_status.token )
+	    (cond
+	      ((== (hex #b01 ) usb.int_status.token)
+	       (comments "usb token in")
+	       (case usb.int_status.endp
+		 (0
+		  (comments "usb token in EP0")
+		  (case SetupReqCode
+		    (USB_GET_DESCRIPTOR
+		     (comments "get descriptor"))
+		    (USB_SET_ADDRESS
+		     (comments "set address"))
+		    (t
+		     (comments default))))
+		 (1 (comments "usb token in EP1"))
+		 (2 (comments "usb token in EP2"))
+		 (3 (comments "usb token in EP3"))
+		 (4 (comments "usb token in EP4"))))
+	      ((== (hex #b00) usb.int_status.token)
+	       (comments "usb token out")
+	       (case usb.int_status.endp
+		 (0 
+		  (comments "token out EP0"))
+		 (1
+		  (comments "token out EP1"))
+		 (2
+		  (comments "token out EP2"))
+		 (3
+		  (comments "token out EP3"))
+		 (4
+		  (comments "token out EP4")))
+	       )))
 	  (comments "clear interrupt by writing to flag")
 	  (setf usb.int_flag.transfer 1)))
       

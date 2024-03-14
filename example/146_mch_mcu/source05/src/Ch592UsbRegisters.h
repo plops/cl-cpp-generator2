@@ -95,11 +95,11 @@ public:
         uint8_t int_busy : 1;  // rw  Auto pause;
         uint8_t sys_ctlr : 2;  // rw  host-mode==0: 00..disable usb device
                                // function and disable internal pull-up (can be
-                              // overridden by dev-pullup-en), 01..enable device
-                              // fucntion, disable internal pull-up, external
-                              // pull-up-needed, 1x..enable usb device fucntion
-                              // and internal 1.5k pull-up, pull-up has priority
-                              // over pull-down resistor;
+        // overridden by dev-pullup-en), 01..enable device
+        // fucntion, disable internal pull-up, external
+        // pull-up-needed, 1x..enable usb device fucntion
+        // and internal 1.5k pull-up, pull-up has priority
+        // over pull-down resistor;
         uint8_t low_speed : 1; // rw ;
         uint8_t host_mode : 1; // rw ;
       };
@@ -110,7 +110,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("dma-en: ") << (static_cast<int>(dma_en));
       (os) << ("clr-all: ") << (static_cast<int>(clr_all));
       (os) << ("reset-sie: ") << (static_cast<int>(reset_sie));
@@ -121,7 +121,7 @@ public:
       return os;
     }
 
-  } ctrl;
+  } ctrl{0};
   struct PortCtrl {
     union {
       uint8_t reg; // 40008001;
@@ -144,7 +144,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("port-en: ") << (static_cast<int>(port_en));
       (os) << ("hub0-reset: ") << (static_cast<int>(hub0_reset));
       (os) << ("low-speed: ") << (static_cast<int>(low_speed));
@@ -154,7 +154,7 @@ public:
       return os;
     }
 
-  } port_ctrl;
+  } port_ctrl{0};
   struct IntEn {
     union {
       uint8_t reg; // 40008002;
@@ -177,7 +177,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("bus-reset: ") << (static_cast<int>(bus_reset));
       (os) << ("transfer: ") << (static_cast<int>(transfer));
       (os) << ("suspend: ") << (static_cast<int>(suspend));
@@ -189,7 +189,7 @@ public:
       return os;
     }
 
-  } int_en;
+  } int_en{0};
   struct DevAd {
     union {
       uint8_t reg; // 40008003;
@@ -204,13 +204,13 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("usb-addr: ") << (static_cast<int>(usb_addr));
       (os) << ("gp-bit: ") << (static_cast<int>(gp_bit));
       return os;
     }
 
-  } dev_ad;
+  } dev_ad{0};
   struct MiscStatus {
     union {
       uint8_t reg; // 40008005;
@@ -238,7 +238,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("dev-attach (ro): ") << (static_cast<int>(dev_attach));
       (os) << ("dm-level (ro): ") << (static_cast<int>(dm_level));
       (os) << ("bus-suspend (ro): ") << (static_cast<int>(bus_suspend));
@@ -250,7 +250,7 @@ public:
       return os;
     }
 
-  } misc_status;
+  } misc_status{0};
   struct IntFlag {
     union {
       uint8_t reg; // 40008006;
@@ -278,7 +278,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("bus-reset: ") << (static_cast<int>(bus_reset));
       (os) << ("transfer: ") << (static_cast<int>(transfer));
       (os) << ("suspend: ") << (static_cast<int>(suspend));
@@ -290,7 +290,7 @@ public:
       return os;
     }
 
-  } int_flag;
+  } int_flag{0};
   struct IntStatus {
     union {
       uint8_t reg; // 40008007;
@@ -312,7 +312,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("endp (ro): ") << (static_cast<int>(endp));
       (os) << ("token (ro): ") << (static_cast<int>(token));
       (os) << ("tog-ok (ro): ") << (static_cast<int>(tog_ok));
@@ -320,7 +320,7 @@ public:
       return os;
     }
 
-  } int_status;
+  } int_status{0};
   struct RxLen {
     union {
       uint8_t reg; // 40008008;
@@ -336,15 +336,15 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("len (ro): ") << (static_cast<int>(len));
       return os;
     }
 
-  } rx_len;
-  uint8_t reserved8009;
-  uint8_t reserved800a;
-  uint8_t reserved800b;
+  } rx_len{0};
+  uint8_t reserved8009{0};
+  uint8_t reserved800a{0};
+  uint8_t reserved800b{0};
   struct Ep4_1Mod {
     union {
       uint8_t reg; // 4000800C;
@@ -364,7 +364,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("ep4-tx-en: ") << (static_cast<int>(ep4_tx_en));
       (os) << ("ep4-rx-en: ") << (static_cast<int>(ep4_rx_en));
       (os) << ("ep1-buf-mod: ") << (static_cast<int>(ep1_buf_mod));
@@ -373,7 +373,7 @@ public:
       return os;
     }
 
-  } ep4_1_mod;
+  } ep4_1_mod{0};
   struct Ep2_3Mod {
     union {
       uint8_t reg; // 4000800D;
@@ -394,7 +394,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("ep2-buf-mod: ") << (static_cast<int>(ep2_buf_mod));
       (os) << ("ep2-tx-en: ") << (static_cast<int>(ep2_tx_en));
       (os) << ("ep2-rx-en: ") << (static_cast<int>(ep2_rx_en));
@@ -404,7 +404,7 @@ public:
       return os;
     }
 
-  } ep2_3_mod;
+  } ep2_3_mod{0};
   struct Ep567Mod {
     union {
       uint8_t reg; // 4000800E;
@@ -424,7 +424,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("ep5-tx-en: ") << (static_cast<int>(ep5_tx_en));
       (os) << ("ep5-rx-en: ") << (static_cast<int>(ep5_rx_en));
       (os) << ("ep6-tx-en: ") << (static_cast<int>(ep6_tx_en));
@@ -434,8 +434,8 @@ public:
       return os;
     }
 
-  } ep567_mod;
-  uint8_t reserved800f;
+  } ep567_mod{0};
+  uint8_t reserved800f{0};
   struct Ep0Dma {
     union {
       uint16_t reg; // 40008010;
@@ -451,13 +451,13 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("dma: ") << (static_cast<int>(dma));
       return os;
     }
 
-  } ep0_dma;
-  uint16_t reserved40008012;
+  } ep0_dma{0};
+  uint16_t reserved40008012{0};
   struct Ep1Dma {
     union {
       uint16_t reg; // 40008014;
@@ -473,13 +473,13 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("dma: ") << (static_cast<int>(dma));
       return os;
     }
 
-  } ep1_dma;
-  uint16_t reserved40008016;
+  } ep1_dma{0};
+  uint16_t reserved40008016{0};
   struct Ep2Dma {
     union {
       uint16_t reg; // 40008018;
@@ -495,13 +495,13 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("dma: ") << (static_cast<int>(dma));
       return os;
     }
 
-  } ep2_dma;
-  uint16_t reserved4000801_a;
+  } ep2_dma{0};
+  uint16_t reserved4000801_a{0};
   struct Ep3Dma {
     union {
       uint16_t reg; // 4000801C;
@@ -517,13 +517,13 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("dma: ") << (static_cast<int>(dma));
       return os;
     }
 
-  } ep3_dma;
-  uint16_t reserved4000801_e;
+  } ep3_dma{0};
+  uint16_t reserved4000801_e{0};
   struct Ep0TLen {
     union {
       uint8_t reg; // 40008020;
@@ -538,13 +538,13 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("t-len: ") << (static_cast<int>(t_len));
       return os;
     }
 
-  } ep0_t_len;
-  uint8_t reserved40008021;
+  } ep0_t_len{0};
+  uint8_t reserved40008021{0};
   struct Ep0Ctrl {
     union {
       uint8_t reg; // 40008022;
@@ -569,7 +569,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("t-res: ") << (static_cast<int>(t_res));
       (os) << ("r-res: ") << (static_cast<int>(r_res));
       (os) << ("auto-tog: ") << (static_cast<int>(auto_tog));
@@ -578,8 +578,8 @@ public:
       return os;
     }
 
-  } ep0_ctrl;
-  uint8_t reserved40008023;
+  } ep0_ctrl{0};
+  uint8_t reserved40008023{0};
   struct Ep1TLen {
     union {
       uint8_t reg; // 40008024;
@@ -594,13 +594,13 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("t-len: ") << (static_cast<int>(t_len));
       return os;
     }
 
-  } ep1_t_len;
-  uint8_t reserved40008025;
+  } ep1_t_len{0};
+  uint8_t reserved40008025{0};
   struct Ep1Ctrl {
     union {
       uint8_t reg; // 40008026;
@@ -625,7 +625,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("t-res: ") << (static_cast<int>(t_res));
       (os) << ("r-res: ") << (static_cast<int>(r_res));
       (os) << ("auto-tog: ") << (static_cast<int>(auto_tog));
@@ -634,8 +634,8 @@ public:
       return os;
     }
 
-  } ep1_ctrl;
-  uint8_t reserved40008027;
+  } ep1_ctrl{0};
+  uint8_t reserved40008027{0};
   struct Ep2TLen {
     union {
       uint8_t reg; // 40008028;
@@ -650,13 +650,13 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("t-len: ") << (static_cast<int>(t_len));
       return os;
     }
 
-  } ep2_t_len;
-  uint8_t reserved40008029;
+  } ep2_t_len{0};
+  uint8_t reserved40008029{0};
   struct Ep2Ctrl {
     union {
       uint8_t reg; // 4000802A;
@@ -681,7 +681,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("t-res: ") << (static_cast<int>(t_res));
       (os) << ("r-res: ") << (static_cast<int>(r_res));
       (os) << ("auto-tog: ") << (static_cast<int>(auto_tog));
@@ -690,8 +690,8 @@ public:
       return os;
     }
 
-  } ep2_ctrl;
-  uint8_t reserved4000802_b;
+  } ep2_ctrl{0};
+  uint8_t reserved4000802_b{0};
   struct Ep3TLen {
     union {
       uint8_t reg; // 4000802C;
@@ -706,13 +706,13 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("t-len: ") << (static_cast<int>(t_len));
       return os;
     }
 
-  } ep3_t_len;
-  uint8_t reserved4000802_d;
+  } ep3_t_len{0};
+  uint8_t reserved4000802_d{0};
   struct Ep3Ctrl {
     union {
       uint8_t reg; // 4000802E;
@@ -737,7 +737,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("t-res: ") << (static_cast<int>(t_res));
       (os) << ("r-res: ") << (static_cast<int>(r_res));
       (os) << ("auto-tog: ") << (static_cast<int>(auto_tog));
@@ -746,8 +746,8 @@ public:
       return os;
     }
 
-  } ep3_ctrl;
-  uint8_t reserved4000802_f;
+  } ep3_ctrl{0};
+  uint8_t reserved4000802_f{0};
   struct Ep4TLen {
     union {
       uint8_t reg; // 40008030;
@@ -762,13 +762,13 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("t-len: ") << (static_cast<int>(t_len));
       return os;
     }
 
-  } ep4_t_len;
-  uint8_t reserved40008031;
+  } ep4_t_len{0};
+  uint8_t reserved40008031{0};
   struct Ep4Ctrl {
     union {
       uint8_t reg; // 40008032;
@@ -793,7 +793,7 @@ public:
       return *this;
     }
 
-    std::ostream &print(std::ostream &os) const {
+    std::ostream &operator<<(std::ostream &os) const {
       (os) << ("t-res: ") << (static_cast<int>(t_res));
       (os) << ("r-res: ") << (static_cast<int>(r_res));
       (os) << ("auto-tog: ") << (static_cast<int>(auto_tog));
@@ -802,8 +802,8 @@ public:
       return os;
     }
 
-  } ep4_ctrl;
-  uint8_t reserved40008033;
+  } ep4_ctrl{0};
+  uint8_t reserved40008033{0};
 
 public:
   explicit Ch592UsbRegisters();
