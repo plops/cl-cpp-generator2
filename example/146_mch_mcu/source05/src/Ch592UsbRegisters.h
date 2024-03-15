@@ -2,7 +2,7 @@
 #define CH592USBREGISTERS_H
 
 #include <cstdint>
-#include <ostream>
+#include <string>
 /** @brief The DiagramBase class represents a base class for diagrams.
 
 # Description of Interrupt status register
@@ -95,11 +95,11 @@ public:
         uint8_t int_busy : 1;  // rw  Auto pause;
         uint8_t sys_ctlr : 2;  // rw  host-mode==0: 00..disable usb device
                                // function and disable internal pull-up (can be
-        // overridden by dev-pullup-en), 01..enable device
-        // fucntion, disable internal pull-up, external
-        // pull-up-needed, 1x..enable usb device fucntion
-        // and internal 1.5k pull-up, pull-up has priority
-        // over pull-down resistor;
+                              // overridden by dev-pullup-en), 01..enable device
+                              // fucntion, disable internal pull-up, external
+                              // pull-up-needed, 1x..enable usb device fucntion
+                              // and internal 1.5k pull-up, pull-up has priority
+                              // over pull-down resistor;
         uint8_t low_speed : 1; // rw ;
         uint8_t host_mode : 1; // rw ;
       };
@@ -110,15 +110,23 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("dma-en: ") << (static_cast<int>(dma_en));
-      (os) << ("clr-all: ") << (static_cast<int>(clr_all));
-      (os) << ("reset-sie: ") << (static_cast<int>(reset_sie));
-      (os) << ("int-busy: ") << (static_cast<int>(int_busy));
-      (os) << ("sys-ctlr: ") << (static_cast<int>(sys_ctlr));
-      (os) << ("low-speed: ") << (static_cast<int>(low_speed));
-      (os) << ("host-mode: ") << (static_cast<int>(host_mode));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("dma-en: ") << (std::dec) << (static_cast<int>(dma_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(dma_en))
+           << ("clr-all: ") << (std::dec) << (static_cast<int>(clr_all))
+           << (" = 0x") << (std::hex) << (static_cast<int>(clr_all))
+           << ("reset-sie: ") << (std::dec) << (static_cast<int>(reset_sie))
+           << (" = 0x") << (std::hex) << (static_cast<int>(reset_sie))
+           << ("int-busy: ") << (std::dec) << (static_cast<int>(int_busy))
+           << (" = 0x") << (std::hex) << (static_cast<int>(int_busy))
+           << ("sys-ctlr: ") << (std::dec) << (static_cast<int>(sys_ctlr))
+           << (" = 0x") << (std::hex) << (static_cast<int>(sys_ctlr))
+           << ("low-speed: ") << (std::dec) << (static_cast<int>(low_speed))
+           << (" = 0x") << (std::hex) << (static_cast<int>(low_speed))
+           << ("host-mode: ") << (std::dec) << (static_cast<int>(host_mode))
+           << (" = 0x") << (std::hex) << (static_cast<int>(host_mode));
+      return ss.str();
     }
 
   } ctrl{0};
@@ -144,14 +152,21 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("port-en: ") << (static_cast<int>(port_en));
-      (os) << ("hub0-reset: ") << (static_cast<int>(hub0_reset));
-      (os) << ("low-speed: ") << (static_cast<int>(low_speed));
-      (os) << ("dm-pin (ro): ") << (static_cast<int>(dm_pin));
-      (os) << ("dp-pin (ro): ") << (static_cast<int>(dp_pin));
-      (os) << ("pd-dis: ") << (static_cast<int>(pd_dis));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("port-en: ") << (std::dec) << (static_cast<int>(port_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(port_en))
+           << ("hub0-reset: ") << (std::dec) << (static_cast<int>(hub0_reset))
+           << (" = 0x") << (std::hex) << (static_cast<int>(hub0_reset))
+           << ("low-speed: ") << (std::dec) << (static_cast<int>(low_speed))
+           << (" = 0x") << (std::hex) << (static_cast<int>(low_speed))
+           << ("dm-pin (ro): ") << (std::dec) << (static_cast<int>(dm_pin))
+           << (" = 0x") << (std::hex) << (static_cast<int>(dm_pin))
+           << ("dp-pin (ro): ") << (std::dec) << (static_cast<int>(dp_pin))
+           << (" = 0x") << (std::hex) << (static_cast<int>(dp_pin))
+           << ("pd-dis: ") << (std::dec) << (static_cast<int>(pd_dis))
+           << (" = 0x") << (std::hex) << (static_cast<int>(pd_dis));
+      return ss.str();
     }
 
   } port_ctrl{0};
@@ -177,16 +192,26 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("bus-reset: ") << (static_cast<int>(bus_reset));
-      (os) << ("transfer: ") << (static_cast<int>(transfer));
-      (os) << ("suspend: ") << (static_cast<int>(suspend));
-      (os) << ("host-sof: ") << (static_cast<int>(host_sof));
-      (os) << ("fifo-overflow: ") << (static_cast<int>(fifo_overflow));
-      (os) << ("mod-1-wire-en: ") << (static_cast<int>(mod_1_wire_en));
-      (os) << ("dev-nak: ") << (static_cast<int>(dev_nak));
-      (os) << ("dev-sof: ") << (static_cast<int>(dev_sof));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("bus-reset: ") << (std::dec) << (static_cast<int>(bus_reset))
+           << (" = 0x") << (std::hex) << (static_cast<int>(bus_reset))
+           << ("transfer: ") << (std::dec) << (static_cast<int>(transfer))
+           << (" = 0x") << (std::hex) << (static_cast<int>(transfer))
+           << ("suspend: ") << (std::dec) << (static_cast<int>(suspend))
+           << (" = 0x") << (std::hex) << (static_cast<int>(suspend))
+           << ("host-sof: ") << (std::dec) << (static_cast<int>(host_sof))
+           << (" = 0x") << (std::hex) << (static_cast<int>(host_sof))
+           << ("fifo-overflow: ") << (std::dec)
+           << (static_cast<int>(fifo_overflow)) << (" = 0x") << (std::hex)
+           << (static_cast<int>(fifo_overflow)) << ("mod-1-wire-en: ")
+           << (std::dec) << (static_cast<int>(mod_1_wire_en)) << (" = 0x")
+           << (std::hex) << (static_cast<int>(mod_1_wire_en)) << ("dev-nak: ")
+           << (std::dec) << (static_cast<int>(dev_nak)) << (" = 0x")
+           << (std::hex) << (static_cast<int>(dev_nak)) << ("dev-sof: ")
+           << (std::dec) << (static_cast<int>(dev_sof)) << (" = 0x")
+           << (std::hex) << (static_cast<int>(dev_sof));
+      return ss.str();
     }
 
   } int_en{0};
@@ -204,10 +229,13 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("usb-addr: ") << (static_cast<int>(usb_addr));
-      (os) << ("gp-bit: ") << (static_cast<int>(gp_bit));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("usb-addr: ") << (std::dec) << (static_cast<int>(usb_addr))
+           << (" = 0x") << (std::hex) << (static_cast<int>(usb_addr))
+           << ("gp-bit: ") << (std::dec) << (static_cast<int>(gp_bit))
+           << (" = 0x") << (std::hex) << (static_cast<int>(gp_bit));
+      return ss.str();
     }
 
   } dev_ad{0};
@@ -238,16 +266,28 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("dev-attach (ro): ") << (static_cast<int>(dev_attach));
-      (os) << ("dm-level (ro): ") << (static_cast<int>(dm_level));
-      (os) << ("bus-suspend (ro): ") << (static_cast<int>(bus_suspend));
-      (os) << ("bus-reset (ro): ") << (static_cast<int>(bus_reset));
-      (os) << ("r-fifo-rdy (ro): ") << (static_cast<int>(r_fifo_rdy));
-      (os) << ("sie-free (ro): ") << (static_cast<int>(sie_free));
-      (os) << ("sof-act (ro): ") << (static_cast<int>(sof_act));
-      (os) << ("sof-pre (ro): ") << (static_cast<int>(sof_pre));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("dev-attach (ro): ") << (std::dec)
+           << (static_cast<int>(dev_attach)) << (" = 0x") << (std::hex)
+           << (static_cast<int>(dev_attach)) << ("dm-level (ro): ")
+           << (std::dec) << (static_cast<int>(dm_level)) << (" = 0x")
+           << (std::hex) << (static_cast<int>(dm_level))
+           << ("bus-suspend (ro): ") << (std::dec)
+           << (static_cast<int>(bus_suspend)) << (" = 0x") << (std::hex)
+           << (static_cast<int>(bus_suspend)) << ("bus-reset (ro): ")
+           << (std::dec) << (static_cast<int>(bus_reset)) << (" = 0x")
+           << (std::hex) << (static_cast<int>(bus_reset))
+           << ("r-fifo-rdy (ro): ") << (std::dec)
+           << (static_cast<int>(r_fifo_rdy)) << (" = 0x") << (std::hex)
+           << (static_cast<int>(r_fifo_rdy)) << ("sie-free (ro): ")
+           << (std::dec) << (static_cast<int>(sie_free)) << (" = 0x")
+           << (std::hex) << (static_cast<int>(sie_free)) << ("sof-act (ro): ")
+           << (std::dec) << (static_cast<int>(sof_act)) << (" = 0x")
+           << (std::hex) << (static_cast<int>(sof_act)) << ("sof-pre (ro): ")
+           << (std::dec) << (static_cast<int>(sof_pre)) << (" = 0x")
+           << (std::hex) << (static_cast<int>(sof_pre));
+      return ss.str();
     }
 
   } misc_status{0};
@@ -278,16 +318,25 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("bus-reset: ") << (static_cast<int>(bus_reset));
-      (os) << ("transfer: ") << (static_cast<int>(transfer));
-      (os) << ("suspend: ") << (static_cast<int>(suspend));
-      (os) << ("hst-sof: ") << (static_cast<int>(hst_sof));
-      (os) << ("fifo-ov: ") << (static_cast<int>(fifo_ov));
-      (os) << ("sie-free (ro): ") << (static_cast<int>(sie_free));
-      (os) << ("tog-ok (ro): ") << (static_cast<int>(tog_ok));
-      (os) << ("is-nak (ro): ") << (static_cast<int>(is_nak));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("bus-reset: ") << (std::dec) << (static_cast<int>(bus_reset))
+           << (" = 0x") << (std::hex) << (static_cast<int>(bus_reset))
+           << ("transfer: ") << (std::dec) << (static_cast<int>(transfer))
+           << (" = 0x") << (std::hex) << (static_cast<int>(transfer))
+           << ("suspend: ") << (std::dec) << (static_cast<int>(suspend))
+           << (" = 0x") << (std::hex) << (static_cast<int>(suspend))
+           << ("hst-sof: ") << (std::dec) << (static_cast<int>(hst_sof))
+           << (" = 0x") << (std::hex) << (static_cast<int>(hst_sof))
+           << ("fifo-ov: ") << (std::dec) << (static_cast<int>(fifo_ov))
+           << (" = 0x") << (std::hex) << (static_cast<int>(fifo_ov))
+           << ("sie-free (ro): ") << (std::dec) << (static_cast<int>(sie_free))
+           << (" = 0x") << (std::hex) << (static_cast<int>(sie_free))
+           << ("tog-ok (ro): ") << (std::dec) << (static_cast<int>(tog_ok))
+           << (" = 0x") << (std::hex) << (static_cast<int>(tog_ok))
+           << ("is-nak (ro): ") << (std::dec) << (static_cast<int>(is_nak))
+           << (" = 0x") << (std::hex) << (static_cast<int>(is_nak));
+      return ss.str();
     }
 
   } int_flag{0};
@@ -312,12 +361,18 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("endp (ro): ") << (static_cast<int>(endp));
-      (os) << ("token (ro): ") << (static_cast<int>(token));
-      (os) << ("tog-ok (ro): ") << (static_cast<int>(tog_ok));
-      (os) << ("setup-act (ro): ") << (static_cast<int>(setup_act));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("endp (ro): ") << (std::dec) << (static_cast<int>(endp))
+           << (" = 0x") << (std::hex) << (static_cast<int>(endp))
+           << ("token (ro): ") << (std::dec) << (static_cast<int>(token))
+           << (" = 0x") << (std::hex) << (static_cast<int>(token))
+           << ("tog-ok (ro): ") << (std::dec) << (static_cast<int>(tog_ok))
+           << (" = 0x") << (std::hex) << (static_cast<int>(tog_ok))
+           << ("setup-act (ro): ") << (std::dec)
+           << (static_cast<int>(setup_act)) << (" = 0x") << (std::hex)
+           << (static_cast<int>(setup_act));
+      return ss.str();
     }
 
   } int_status{0};
@@ -336,9 +391,11 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("len (ro): ") << (static_cast<int>(len));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("len (ro): ") << (std::dec) << (static_cast<int>(len))
+           << (" = 0x") << (std::hex) << (static_cast<int>(len));
+      return ss.str();
     }
 
   } rx_len{0};
@@ -364,13 +421,19 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("ep4-tx-en: ") << (static_cast<int>(ep4_tx_en));
-      (os) << ("ep4-rx-en: ") << (static_cast<int>(ep4_rx_en));
-      (os) << ("ep1-buf-mod: ") << (static_cast<int>(ep1_buf_mod));
-      (os) << ("ep1-tx-en: ") << (static_cast<int>(ep1_tx_en));
-      (os) << ("ep1-rx-en: ") << (static_cast<int>(ep1_rx_en));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("ep4-tx-en: ") << (std::dec) << (static_cast<int>(ep4_tx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep4_tx_en))
+           << ("ep4-rx-en: ") << (std::dec) << (static_cast<int>(ep4_rx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep4_rx_en))
+           << ("ep1-buf-mod: ") << (std::dec) << (static_cast<int>(ep1_buf_mod))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep1_buf_mod))
+           << ("ep1-tx-en: ") << (std::dec) << (static_cast<int>(ep1_tx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep1_tx_en))
+           << ("ep1-rx-en: ") << (std::dec) << (static_cast<int>(ep1_rx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep1_rx_en));
+      return ss.str();
     }
 
   } ep4_1_mod{0};
@@ -394,14 +457,21 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("ep2-buf-mod: ") << (static_cast<int>(ep2_buf_mod));
-      (os) << ("ep2-tx-en: ") << (static_cast<int>(ep2_tx_en));
-      (os) << ("ep2-rx-en: ") << (static_cast<int>(ep2_rx_en));
-      (os) << ("ep3-buf-mod: ") << (static_cast<int>(ep3_buf_mod));
-      (os) << ("ep3-tx-en: ") << (static_cast<int>(ep3_tx_en));
-      (os) << ("ep3-rx-en: ") << (static_cast<int>(ep3_rx_en));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("ep2-buf-mod: ") << (std::dec) << (static_cast<int>(ep2_buf_mod))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep2_buf_mod))
+           << ("ep2-tx-en: ") << (std::dec) << (static_cast<int>(ep2_tx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep2_tx_en))
+           << ("ep2-rx-en: ") << (std::dec) << (static_cast<int>(ep2_rx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep2_rx_en))
+           << ("ep3-buf-mod: ") << (std::dec) << (static_cast<int>(ep3_buf_mod))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep3_buf_mod))
+           << ("ep3-tx-en: ") << (std::dec) << (static_cast<int>(ep3_tx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep3_tx_en))
+           << ("ep3-rx-en: ") << (std::dec) << (static_cast<int>(ep3_rx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep3_rx_en));
+      return ss.str();
     }
 
   } ep2_3_mod{0};
@@ -424,14 +494,21 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("ep5-tx-en: ") << (static_cast<int>(ep5_tx_en));
-      (os) << ("ep5-rx-en: ") << (static_cast<int>(ep5_rx_en));
-      (os) << ("ep6-tx-en: ") << (static_cast<int>(ep6_tx_en));
-      (os) << ("ep6-rx-en: ") << (static_cast<int>(ep6_rx_en));
-      (os) << ("ep7-tx-en: ") << (static_cast<int>(ep7_tx_en));
-      (os) << ("ep7-rx-en: ") << (static_cast<int>(ep7_rx_en));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("ep5-tx-en: ") << (std::dec) << (static_cast<int>(ep5_tx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep5_tx_en))
+           << ("ep5-rx-en: ") << (std::dec) << (static_cast<int>(ep5_rx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep5_rx_en))
+           << ("ep6-tx-en: ") << (std::dec) << (static_cast<int>(ep6_tx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep6_tx_en))
+           << ("ep6-rx-en: ") << (std::dec) << (static_cast<int>(ep6_rx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep6_rx_en))
+           << ("ep7-tx-en: ") << (std::dec) << (static_cast<int>(ep7_tx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep7_tx_en))
+           << ("ep7-rx-en: ") << (std::dec) << (static_cast<int>(ep7_rx_en))
+           << (" = 0x") << (std::hex) << (static_cast<int>(ep7_rx_en));
+      return ss.str();
     }
 
   } ep567_mod{0};
@@ -451,9 +528,11 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("dma: ") << (static_cast<int>(dma));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("dma: ") << (std::dec) << (static_cast<int>(dma)) << (" = 0x")
+           << (std::hex) << (static_cast<int>(dma));
+      return ss.str();
     }
 
   } ep0_dma{0};
@@ -473,9 +552,11 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("dma: ") << (static_cast<int>(dma));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("dma: ") << (std::dec) << (static_cast<int>(dma)) << (" = 0x")
+           << (std::hex) << (static_cast<int>(dma));
+      return ss.str();
     }
 
   } ep1_dma{0};
@@ -495,9 +576,11 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("dma: ") << (static_cast<int>(dma));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("dma: ") << (std::dec) << (static_cast<int>(dma)) << (" = 0x")
+           << (std::hex) << (static_cast<int>(dma));
+      return ss.str();
     }
 
   } ep2_dma{0};
@@ -517,9 +600,11 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("dma: ") << (static_cast<int>(dma));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("dma: ") << (std::dec) << (static_cast<int>(dma)) << (" = 0x")
+           << (std::hex) << (static_cast<int>(dma));
+      return ss.str();
     }
 
   } ep3_dma{0};
@@ -538,9 +623,11 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("t-len: ") << (static_cast<int>(t_len));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("t-len: ") << (std::dec) << (static_cast<int>(t_len))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_len));
+      return ss.str();
     }
 
   } ep0_t_len{0};
@@ -569,13 +656,19 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("t-res: ") << (static_cast<int>(t_res));
-      (os) << ("r-res: ") << (static_cast<int>(r_res));
-      (os) << ("auto-tog: ") << (static_cast<int>(auto_tog));
-      (os) << ("t-tog: ") << (static_cast<int>(t_tog));
-      (os) << ("r-tog: ") << (static_cast<int>(r_tog));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("t-res: ") << (std::dec) << (static_cast<int>(t_res))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_res))
+           << ("r-res: ") << (std::dec) << (static_cast<int>(r_res))
+           << (" = 0x") << (std::hex) << (static_cast<int>(r_res))
+           << ("auto-tog: ") << (std::dec) << (static_cast<int>(auto_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(auto_tog))
+           << ("t-tog: ") << (std::dec) << (static_cast<int>(t_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_tog))
+           << ("r-tog: ") << (std::dec) << (static_cast<int>(r_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(r_tog));
+      return ss.str();
     }
 
   } ep0_ctrl{0};
@@ -594,9 +687,11 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("t-len: ") << (static_cast<int>(t_len));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("t-len: ") << (std::dec) << (static_cast<int>(t_len))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_len));
+      return ss.str();
     }
 
   } ep1_t_len{0};
@@ -625,13 +720,19 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("t-res: ") << (static_cast<int>(t_res));
-      (os) << ("r-res: ") << (static_cast<int>(r_res));
-      (os) << ("auto-tog: ") << (static_cast<int>(auto_tog));
-      (os) << ("t-tog: ") << (static_cast<int>(t_tog));
-      (os) << ("r-tog: ") << (static_cast<int>(r_tog));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("t-res: ") << (std::dec) << (static_cast<int>(t_res))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_res))
+           << ("r-res: ") << (std::dec) << (static_cast<int>(r_res))
+           << (" = 0x") << (std::hex) << (static_cast<int>(r_res))
+           << ("auto-tog: ") << (std::dec) << (static_cast<int>(auto_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(auto_tog))
+           << ("t-tog: ") << (std::dec) << (static_cast<int>(t_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_tog))
+           << ("r-tog: ") << (std::dec) << (static_cast<int>(r_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(r_tog));
+      return ss.str();
     }
 
   } ep1_ctrl{0};
@@ -650,9 +751,11 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("t-len: ") << (static_cast<int>(t_len));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("t-len: ") << (std::dec) << (static_cast<int>(t_len))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_len));
+      return ss.str();
     }
 
   } ep2_t_len{0};
@@ -681,13 +784,19 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("t-res: ") << (static_cast<int>(t_res));
-      (os) << ("r-res: ") << (static_cast<int>(r_res));
-      (os) << ("auto-tog: ") << (static_cast<int>(auto_tog));
-      (os) << ("t-tog: ") << (static_cast<int>(t_tog));
-      (os) << ("r-tog: ") << (static_cast<int>(r_tog));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("t-res: ") << (std::dec) << (static_cast<int>(t_res))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_res))
+           << ("r-res: ") << (std::dec) << (static_cast<int>(r_res))
+           << (" = 0x") << (std::hex) << (static_cast<int>(r_res))
+           << ("auto-tog: ") << (std::dec) << (static_cast<int>(auto_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(auto_tog))
+           << ("t-tog: ") << (std::dec) << (static_cast<int>(t_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_tog))
+           << ("r-tog: ") << (std::dec) << (static_cast<int>(r_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(r_tog));
+      return ss.str();
     }
 
   } ep2_ctrl{0};
@@ -706,9 +815,11 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("t-len: ") << (static_cast<int>(t_len));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("t-len: ") << (std::dec) << (static_cast<int>(t_len))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_len));
+      return ss.str();
     }
 
   } ep3_t_len{0};
@@ -737,13 +848,19 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("t-res: ") << (static_cast<int>(t_res));
-      (os) << ("r-res: ") << (static_cast<int>(r_res));
-      (os) << ("auto-tog: ") << (static_cast<int>(auto_tog));
-      (os) << ("t-tog: ") << (static_cast<int>(t_tog));
-      (os) << ("r-tog: ") << (static_cast<int>(r_tog));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("t-res: ") << (std::dec) << (static_cast<int>(t_res))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_res))
+           << ("r-res: ") << (std::dec) << (static_cast<int>(r_res))
+           << (" = 0x") << (std::hex) << (static_cast<int>(r_res))
+           << ("auto-tog: ") << (std::dec) << (static_cast<int>(auto_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(auto_tog))
+           << ("t-tog: ") << (std::dec) << (static_cast<int>(t_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_tog))
+           << ("r-tog: ") << (std::dec) << (static_cast<int>(r_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(r_tog));
+      return ss.str();
     }
 
   } ep3_ctrl{0};
@@ -762,9 +879,11 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("t-len: ") << (static_cast<int>(t_len));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("t-len: ") << (std::dec) << (static_cast<int>(t_len))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_len));
+      return ss.str();
     }
 
   } ep4_t_len{0};
@@ -793,13 +912,19 @@ public:
       return *this;
     }
 
-    std::ostream &operator<<(std::ostream &os) const {
-      (os) << ("t-res: ") << (static_cast<int>(t_res));
-      (os) << ("r-res: ") << (static_cast<int>(r_res));
-      (os) << ("auto-tog: ") << (static_cast<int>(auto_tog));
-      (os) << ("t-tog: ") << (static_cast<int>(t_tog));
-      (os) << ("r-tog: ") << (static_cast<int>(r_tog));
-      return os;
+    std::string toString() const {
+      auto ss{std::ostringstream()};
+      (ss) << ("t-res: ") << (std::dec) << (static_cast<int>(t_res))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_res))
+           << ("r-res: ") << (std::dec) << (static_cast<int>(r_res))
+           << (" = 0x") << (std::hex) << (static_cast<int>(r_res))
+           << ("auto-tog: ") << (std::dec) << (static_cast<int>(auto_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(auto_tog))
+           << ("t-tog: ") << (std::dec) << (static_cast<int>(t_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(t_tog))
+           << ("r-tog: ") << (std::dec) << (static_cast<int>(r_tog))
+           << (" = 0x") << (std::hex) << (static_cast<int>(r_tog));
+      return ss.str();
     }
 
   } ep4_ctrl{0};
@@ -807,7 +932,6 @@ public:
 
 public:
   explicit Ch592UsbRegisters();
-  std::string toString() const;
   void device_init(uint16_t ep0_data);
 
 private:

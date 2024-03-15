@@ -268,8 +268,9 @@
      :name name
      :headers `()
      :header-preamble `(do0
-			(include<> ;vector deque string
-			 ostream
+			(include<> ;vector deque
+			 string
+			 ;ostream
 			 
 			 cstdint)
 			
@@ -390,19 +391,24 @@ registers.
 					     (values ,(format nil "~a&" struct-name)))
 				    (setf reg value)
 				    (return *this))
-				  (defun+ operator<< (os)
-				    (declare (type "std::ostream&" os)
-					     (const)
-					     (values "std::ostream&"))
-				    ,@(remove-if #'null
-						 (loop for field in (reverse fields)
-						       collect
-						       (destructuring-bind (&key fname bit access help) field
-							 (unless (str:starts-with-p "reserved" (format nil "~a" fname))
-							  `(<< os (string ,(format nil "~a~@[ (~a)~]: " fname (when (eq 'ro access)
-														access)))
-							       (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname))))))))
-				    (return os)))
+				  (defun+ toString ()
+				    (declare (const)
+					     (values "std::string"))
+				    (let ((ss (std--ostringstream))))
+				    (<< ss
+				     ,@(remove-if #'null
+						  (loop for field in (reverse fields)
+							appending
+							(destructuring-bind (&key fname bit access help) field
+							  (unless (str:starts-with-p "reserved" (format nil "~a" fname))
+							    `((string ,(format nil "~a~@[ (~a)~]: " fname (when (eq 'ro access)
+														  access)))
+							      std--dec
+							      (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
+							      (string " = 0x")
+							      std--hex
+							      (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))))))))
+				    (return (ss.str))))
 				,member-name (curly 0))
 			      `(space ,type ,(cl-change-case:snake-case (format nil "~a" name))
 				      (curly 0))
@@ -486,22 +492,7 @@ registers.
 					 (return ,nname))))))
 
 
-	       (defmethod toString ()
-		 (declare (const)
-			  (values "std::string"))
-		 (let ((ss (std--ostringstream))))
-		 (<< ss
-		     ,@(loop for e in members
-			     appending
-			     (destructuring-bind (name &key type param (initform 0)) e
-			       `((string ,(format nil "~a: " name))
-				 std--dec
-				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
-				 (string " = 0x")
-				 std--hex
-				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
-				 (string "\\n")))))
-		 (return (ss.str)))
+	       
 	       
 	       (defmethod device_init (ep0_data)
 		 (declare (type "uint16_t" ep0_data))
