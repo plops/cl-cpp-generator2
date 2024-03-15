@@ -2,8 +2,7 @@
 #define CH592USBREGISTERS_H
 
 #include <cstdint>
-#include <ios>
-#include <sstream>
+#include <format>
 #include <string>
 /** @brief The DiagramBase class represents a base class for diagrams.
 
@@ -97,11 +96,11 @@ public:
         uint8_t int_busy : 1;  // rw  Auto pause;
         uint8_t sys_ctlr : 2;  // rw  host-mode==0: 00..disable usb device
                                // function and disable internal pull-up (can be
-        // overridden by dev-pullup-en), 01..enable device
-        // fucntion, disable internal pull-up, external
-        // pull-up-needed, 1x..enable usb device fucntion
-        // and internal 1.5k pull-up, pull-up has priority
-        // over pull-down resistor;
+                              // overridden by dev-pullup-en), 01..enable device
+                              // fucntion, disable internal pull-up, external
+                              // pull-up-needed, 1x..enable usb device fucntion
+                              // and internal 1.5k pull-up, pull-up has priority
+                              // over pull-down resistor;
         uint8_t low_speed : 1; // rw ;
         uint8_t host_mode : 1; // rw ;
       };
@@ -113,22 +112,17 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "dma-en: " << std::dec << static_cast<int>(dma_en) << " = 0x"
-         << std::hex << static_cast<int>(dma_en) << "clr-all: " << std::dec
-         << static_cast<int>(clr_all) << " = 0x" << std::hex
-         << static_cast<int>(clr_all) << "reset-sie: " << std::dec
-         << static_cast<int>(reset_sie) << " = 0x" << std::hex
-         << static_cast<int>(reset_sie) << "int-busy: " << std::dec
-         << static_cast<int>(int_busy) << " = 0x" << std::hex
-         << static_cast<int>(int_busy) << "sys-ctlr: " << std::dec
-         << static_cast<int>(sys_ctlr) << " = 0x" << std::hex
-         << static_cast<int>(sys_ctlr) << "low-speed: " << std::dec
-         << static_cast<int>(low_speed) << " = 0x" << std::hex
-         << static_cast<int>(low_speed) << "host-mode: " << std::dec
-         << static_cast<int>(host_mode) << " = 0x" << std::hex
-         << static_cast<int>(host_mode);
-      return ss.str();
+      return std::format(
+          "dma-en: {} = 0x{:X},\nclr-all: {} = 0x{:X},\nreset-sie: {} = "
+          "0x{:X},\nint-busy: {} = 0x{:X},\nsys-ctlr: {} = 0x{:X},\nlow-speed: "
+          "{} = 0x{:X},\nhost-mode: {} = 0x{:X}",
+          static_cast<int>(dma_en), static_cast<int>(dma_en),
+          static_cast<int>(clr_all), static_cast<int>(clr_all),
+          static_cast<int>(reset_sie), static_cast<int>(reset_sie),
+          static_cast<int>(int_busy), static_cast<int>(int_busy),
+          static_cast<int>(sys_ctlr), static_cast<int>(sys_ctlr),
+          static_cast<int>(low_speed), static_cast<int>(low_speed),
+          static_cast<int>(host_mode), static_cast<int>(host_mode));
     }
 
   } ctrl{0};
@@ -155,20 +149,16 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "port-en: " << std::dec << static_cast<int>(port_en) << " = 0x"
-         << std::hex << static_cast<int>(port_en) << "hub0-reset: " << std::dec
-         << static_cast<int>(hub0_reset) << " = 0x" << std::hex
-         << static_cast<int>(hub0_reset) << "low-speed: " << std::dec
-         << static_cast<int>(low_speed) << " = 0x" << std::hex
-         << static_cast<int>(low_speed) << "dm-pin (ro): " << std::dec
-         << static_cast<int>(dm_pin) << " = 0x" << std::hex
-         << static_cast<int>(dm_pin) << "dp-pin (ro): " << std::dec
-         << static_cast<int>(dp_pin) << " = 0x" << std::hex
-         << static_cast<int>(dp_pin) << "pd-dis: " << std::dec
-         << static_cast<int>(pd_dis) << " = 0x" << std::hex
-         << static_cast<int>(pd_dis);
-      return ss.str();
+      return std::format(
+          "port-en: {} = 0x{:X},\nhub0-reset: {} = 0x{:X},\nlow-speed: {} = "
+          "0x{:X},\ndm-pin (ro): {} = 0x{:X},\ndp-pin (ro): {} = "
+          "0x{:X},\npd-dis: {} = 0x{:X}",
+          static_cast<int>(port_en), static_cast<int>(port_en),
+          static_cast<int>(hub0_reset), static_cast<int>(hub0_reset),
+          static_cast<int>(low_speed), static_cast<int>(low_speed),
+          static_cast<int>(dm_pin), static_cast<int>(dm_pin),
+          static_cast<int>(dp_pin), static_cast<int>(dp_pin),
+          static_cast<int>(pd_dis), static_cast<int>(pd_dis));
     }
 
   } port_ctrl{0};
@@ -195,24 +185,19 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "bus-reset: " << std::dec << static_cast<int>(bus_reset) << " = 0x"
-         << std::hex << static_cast<int>(bus_reset) << "transfer: " << std::dec
-         << static_cast<int>(transfer) << " = 0x" << std::hex
-         << static_cast<int>(transfer) << "suspend: " << std::dec
-         << static_cast<int>(suspend) << " = 0x" << std::hex
-         << static_cast<int>(suspend) << "host-sof: " << std::dec
-         << static_cast<int>(host_sof) << " = 0x" << std::hex
-         << static_cast<int>(host_sof) << "fifo-overflow: " << std::dec
-         << static_cast<int>(fifo_overflow) << " = 0x" << std::hex
-         << static_cast<int>(fifo_overflow) << "mod-1-wire-en: " << std::dec
-         << static_cast<int>(mod_1_wire_en) << " = 0x" << std::hex
-         << static_cast<int>(mod_1_wire_en) << "dev-nak: " << std::dec
-         << static_cast<int>(dev_nak) << " = 0x" << std::hex
-         << static_cast<int>(dev_nak) << "dev-sof: " << std::dec
-         << static_cast<int>(dev_sof) << " = 0x" << std::hex
-         << static_cast<int>(dev_sof);
-      return ss.str();
+      return std::format(
+          "bus-reset: {} = 0x{:X},\ntransfer: {} = 0x{:X},\nsuspend: {} = "
+          "0x{:X},\nhost-sof: {} = 0x{:X},\nfifo-overflow: {} = "
+          "0x{:X},\nmod-1-wire-en: {} = 0x{:X},\ndev-nak: {} = "
+          "0x{:X},\ndev-sof: {} = 0x{:X}",
+          static_cast<int>(bus_reset), static_cast<int>(bus_reset),
+          static_cast<int>(transfer), static_cast<int>(transfer),
+          static_cast<int>(suspend), static_cast<int>(suspend),
+          static_cast<int>(host_sof), static_cast<int>(host_sof),
+          static_cast<int>(fifo_overflow), static_cast<int>(fifo_overflow),
+          static_cast<int>(mod_1_wire_en), static_cast<int>(mod_1_wire_en),
+          static_cast<int>(dev_nak), static_cast<int>(dev_nak),
+          static_cast<int>(dev_sof), static_cast<int>(dev_sof));
     }
 
   } int_en{0};
@@ -231,12 +216,9 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "usb-addr: " << std::dec << static_cast<int>(usb_addr) << " = 0x"
-         << std::hex << static_cast<int>(usb_addr) << "gp-bit: " << std::dec
-         << static_cast<int>(gp_bit) << " = 0x" << std::hex
-         << static_cast<int>(gp_bit);
-      return ss.str();
+      return std::format("usb-addr: {} = 0x{:X},\ngp-bit: {} = 0x{:X}",
+                         static_cast<int>(usb_addr), static_cast<int>(usb_addr),
+                         static_cast<int>(gp_bit), static_cast<int>(gp_bit));
     }
 
   } dev_ad{0};
@@ -268,24 +250,19 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "dev-attach (ro): " << std::dec << static_cast<int>(dev_attach)
-         << " = 0x" << std::hex << static_cast<int>(dev_attach)
-         << "dm-level (ro): " << std::dec << static_cast<int>(dm_level)
-         << " = 0x" << std::hex << static_cast<int>(dm_level)
-         << "bus-suspend (ro): " << std::dec << static_cast<int>(bus_suspend)
-         << " = 0x" << std::hex << static_cast<int>(bus_suspend)
-         << "bus-reset (ro): " << std::dec << static_cast<int>(bus_reset)
-         << " = 0x" << std::hex << static_cast<int>(bus_reset)
-         << "r-fifo-rdy (ro): " << std::dec << static_cast<int>(r_fifo_rdy)
-         << " = 0x" << std::hex << static_cast<int>(r_fifo_rdy)
-         << "sie-free (ro): " << std::dec << static_cast<int>(sie_free)
-         << " = 0x" << std::hex << static_cast<int>(sie_free)
-         << "sof-act (ro): " << std::dec << static_cast<int>(sof_act) << " = 0x"
-         << std::hex << static_cast<int>(sof_act)
-         << "sof-pre (ro): " << std::dec << static_cast<int>(sof_pre) << " = 0x"
-         << std::hex << static_cast<int>(sof_pre);
-      return ss.str();
+      return std::format(
+          "dev-attach (ro): {} = 0x{:X},\ndm-level (ro): {} = "
+          "0x{:X},\nbus-suspend (ro): {} = 0x{:X},\nbus-reset (ro): {} = "
+          "0x{:X},\nr-fifo-rdy (ro): {} = 0x{:X},\nsie-free (ro): {} = "
+          "0x{:X},\nsof-act (ro): {} = 0x{:X},\nsof-pre (ro): {} = 0x{:X}",
+          static_cast<int>(dev_attach), static_cast<int>(dev_attach),
+          static_cast<int>(dm_level), static_cast<int>(dm_level),
+          static_cast<int>(bus_suspend), static_cast<int>(bus_suspend),
+          static_cast<int>(bus_reset), static_cast<int>(bus_reset),
+          static_cast<int>(r_fifo_rdy), static_cast<int>(r_fifo_rdy),
+          static_cast<int>(sie_free), static_cast<int>(sie_free),
+          static_cast<int>(sof_act), static_cast<int>(sof_act),
+          static_cast<int>(sof_pre), static_cast<int>(sof_pre));
     }
 
   } misc_status{0};
@@ -317,24 +294,19 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "bus-reset: " << std::dec << static_cast<int>(bus_reset) << " = 0x"
-         << std::hex << static_cast<int>(bus_reset) << "transfer: " << std::dec
-         << static_cast<int>(transfer) << " = 0x" << std::hex
-         << static_cast<int>(transfer) << "suspend: " << std::dec
-         << static_cast<int>(suspend) << " = 0x" << std::hex
-         << static_cast<int>(suspend) << "hst-sof: " << std::dec
-         << static_cast<int>(hst_sof) << " = 0x" << std::hex
-         << static_cast<int>(hst_sof) << "fifo-ov: " << std::dec
-         << static_cast<int>(fifo_ov) << " = 0x" << std::hex
-         << static_cast<int>(fifo_ov) << "sie-free (ro): " << std::dec
-         << static_cast<int>(sie_free) << " = 0x" << std::hex
-         << static_cast<int>(sie_free) << "tog-ok (ro): " << std::dec
-         << static_cast<int>(tog_ok) << " = 0x" << std::hex
-         << static_cast<int>(tog_ok) << "is-nak (ro): " << std::dec
-         << static_cast<int>(is_nak) << " = 0x" << std::hex
-         << static_cast<int>(is_nak);
-      return ss.str();
+      return std::format(
+          "bus-reset: {} = 0x{:X},\ntransfer: {} = 0x{:X},\nsuspend: {} = "
+          "0x{:X},\nhst-sof: {} = 0x{:X},\nfifo-ov: {} = 0x{:X},\nsie-free "
+          "(ro): {} = 0x{:X},\ntog-ok (ro): {} = 0x{:X},\nis-nak (ro): {} = "
+          "0x{:X}",
+          static_cast<int>(bus_reset), static_cast<int>(bus_reset),
+          static_cast<int>(transfer), static_cast<int>(transfer),
+          static_cast<int>(suspend), static_cast<int>(suspend),
+          static_cast<int>(hst_sof), static_cast<int>(hst_sof),
+          static_cast<int>(fifo_ov), static_cast<int>(fifo_ov),
+          static_cast<int>(sie_free), static_cast<int>(sie_free),
+          static_cast<int>(tog_ok), static_cast<int>(tog_ok),
+          static_cast<int>(is_nak), static_cast<int>(is_nak));
     }
 
   } int_flag{0};
@@ -360,16 +332,13 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "endp (ro): " << std::dec << static_cast<int>(endp) << " = 0x"
-         << std::hex << static_cast<int>(endp) << "token (ro): " << std::dec
-         << static_cast<int>(token) << " = 0x" << std::hex
-         << static_cast<int>(token) << "tog-ok (ro): " << std::dec
-         << static_cast<int>(tog_ok) << " = 0x" << std::hex
-         << static_cast<int>(tog_ok) << "setup-act (ro): " << std::dec
-         << static_cast<int>(setup_act) << " = 0x" << std::hex
-         << static_cast<int>(setup_act);
-      return ss.str();
+      return std::format(
+          "endp (ro): {} = 0x{:X},\ntoken (ro): {} = 0x{:X},\ntog-ok (ro): {} "
+          "= 0x{:X},\nsetup-act (ro): {} = 0x{:X}",
+          static_cast<int>(endp), static_cast<int>(endp),
+          static_cast<int>(token), static_cast<int>(token),
+          static_cast<int>(tog_ok), static_cast<int>(tog_ok),
+          static_cast<int>(setup_act), static_cast<int>(setup_act));
     }
 
   } int_status{0};
@@ -389,10 +358,8 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "len (ro): " << std::dec << static_cast<int>(len) << " = 0x"
-         << std::hex << static_cast<int>(len);
-      return ss.str();
+      return std::format("len (ro): {} = 0x{:X}", static_cast<int>(len),
+                         static_cast<int>(len));
     }
 
   } rx_len{0};
@@ -419,18 +386,14 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "ep4-tx-en: " << std::dec << static_cast<int>(ep4_tx_en) << " = 0x"
-         << std::hex << static_cast<int>(ep4_tx_en) << "ep4-rx-en: " << std::dec
-         << static_cast<int>(ep4_rx_en) << " = 0x" << std::hex
-         << static_cast<int>(ep4_rx_en) << "ep1-buf-mod: " << std::dec
-         << static_cast<int>(ep1_buf_mod) << " = 0x" << std::hex
-         << static_cast<int>(ep1_buf_mod) << "ep1-tx-en: " << std::dec
-         << static_cast<int>(ep1_tx_en) << " = 0x" << std::hex
-         << static_cast<int>(ep1_tx_en) << "ep1-rx-en: " << std::dec
-         << static_cast<int>(ep1_rx_en) << " = 0x" << std::hex
-         << static_cast<int>(ep1_rx_en);
-      return ss.str();
+      return std::format(
+          "ep4-tx-en: {} = 0x{:X},\nep4-rx-en: {} = 0x{:X},\nep1-buf-mod: {} = "
+          "0x{:X},\nep1-tx-en: {} = 0x{:X},\nep1-rx-en: {} = 0x{:X}",
+          static_cast<int>(ep4_tx_en), static_cast<int>(ep4_tx_en),
+          static_cast<int>(ep4_rx_en), static_cast<int>(ep4_rx_en),
+          static_cast<int>(ep1_buf_mod), static_cast<int>(ep1_buf_mod),
+          static_cast<int>(ep1_tx_en), static_cast<int>(ep1_tx_en),
+          static_cast<int>(ep1_rx_en), static_cast<int>(ep1_rx_en));
     }
 
   } ep4_1_mod{0};
@@ -455,20 +418,16 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "ep2-buf-mod: " << std::dec << static_cast<int>(ep2_buf_mod)
-         << " = 0x" << std::hex << static_cast<int>(ep2_buf_mod)
-         << "ep2-tx-en: " << std::dec << static_cast<int>(ep2_tx_en) << " = 0x"
-         << std::hex << static_cast<int>(ep2_tx_en) << "ep2-rx-en: " << std::dec
-         << static_cast<int>(ep2_rx_en) << " = 0x" << std::hex
-         << static_cast<int>(ep2_rx_en) << "ep3-buf-mod: " << std::dec
-         << static_cast<int>(ep3_buf_mod) << " = 0x" << std::hex
-         << static_cast<int>(ep3_buf_mod) << "ep3-tx-en: " << std::dec
-         << static_cast<int>(ep3_tx_en) << " = 0x" << std::hex
-         << static_cast<int>(ep3_tx_en) << "ep3-rx-en: " << std::dec
-         << static_cast<int>(ep3_rx_en) << " = 0x" << std::hex
-         << static_cast<int>(ep3_rx_en);
-      return ss.str();
+      return std::format(
+          "ep2-buf-mod: {} = 0x{:X},\nep2-tx-en: {} = 0x{:X},\nep2-rx-en: {} = "
+          "0x{:X},\nep3-buf-mod: {} = 0x{:X},\nep3-tx-en: {} = "
+          "0x{:X},\nep3-rx-en: {} = 0x{:X}",
+          static_cast<int>(ep2_buf_mod), static_cast<int>(ep2_buf_mod),
+          static_cast<int>(ep2_tx_en), static_cast<int>(ep2_tx_en),
+          static_cast<int>(ep2_rx_en), static_cast<int>(ep2_rx_en),
+          static_cast<int>(ep3_buf_mod), static_cast<int>(ep3_buf_mod),
+          static_cast<int>(ep3_tx_en), static_cast<int>(ep3_tx_en),
+          static_cast<int>(ep3_rx_en), static_cast<int>(ep3_rx_en));
     }
 
   } ep2_3_mod{0};
@@ -492,20 +451,16 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "ep5-tx-en: " << std::dec << static_cast<int>(ep5_tx_en) << " = 0x"
-         << std::hex << static_cast<int>(ep5_tx_en) << "ep5-rx-en: " << std::dec
-         << static_cast<int>(ep5_rx_en) << " = 0x" << std::hex
-         << static_cast<int>(ep5_rx_en) << "ep6-tx-en: " << std::dec
-         << static_cast<int>(ep6_tx_en) << " = 0x" << std::hex
-         << static_cast<int>(ep6_tx_en) << "ep6-rx-en: " << std::dec
-         << static_cast<int>(ep6_rx_en) << " = 0x" << std::hex
-         << static_cast<int>(ep6_rx_en) << "ep7-tx-en: " << std::dec
-         << static_cast<int>(ep7_tx_en) << " = 0x" << std::hex
-         << static_cast<int>(ep7_tx_en) << "ep7-rx-en: " << std::dec
-         << static_cast<int>(ep7_rx_en) << " = 0x" << std::hex
-         << static_cast<int>(ep7_rx_en);
-      return ss.str();
+      return std::format(
+          "ep5-tx-en: {} = 0x{:X},\nep5-rx-en: {} = 0x{:X},\nep6-tx-en: {} = "
+          "0x{:X},\nep6-rx-en: {} = 0x{:X},\nep7-tx-en: {} = "
+          "0x{:X},\nep7-rx-en: {} = 0x{:X}",
+          static_cast<int>(ep5_tx_en), static_cast<int>(ep5_tx_en),
+          static_cast<int>(ep5_rx_en), static_cast<int>(ep5_rx_en),
+          static_cast<int>(ep6_tx_en), static_cast<int>(ep6_tx_en),
+          static_cast<int>(ep6_rx_en), static_cast<int>(ep6_rx_en),
+          static_cast<int>(ep7_tx_en), static_cast<int>(ep7_tx_en),
+          static_cast<int>(ep7_rx_en), static_cast<int>(ep7_rx_en));
     }
 
   } ep567_mod{0};
@@ -526,10 +481,8 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "dma: " << std::dec << static_cast<int>(dma) << " = 0x" << std::hex
-         << static_cast<int>(dma);
-      return ss.str();
+      return std::format("dma: {} = 0x{:X}", static_cast<int>(dma),
+                         static_cast<int>(dma));
     }
 
   } ep0_dma{0};
@@ -550,10 +503,8 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "dma: " << std::dec << static_cast<int>(dma) << " = 0x" << std::hex
-         << static_cast<int>(dma);
-      return ss.str();
+      return std::format("dma: {} = 0x{:X}", static_cast<int>(dma),
+                         static_cast<int>(dma));
     }
 
   } ep1_dma{0};
@@ -574,10 +525,8 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "dma: " << std::dec << static_cast<int>(dma) << " = 0x" << std::hex
-         << static_cast<int>(dma);
-      return ss.str();
+      return std::format("dma: {} = 0x{:X}", static_cast<int>(dma),
+                         static_cast<int>(dma));
     }
 
   } ep2_dma{0};
@@ -598,10 +547,8 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "dma: " << std::dec << static_cast<int>(dma) << " = 0x" << std::hex
-         << static_cast<int>(dma);
-      return ss.str();
+      return std::format("dma: {} = 0x{:X}", static_cast<int>(dma),
+                         static_cast<int>(dma));
     }
 
   } ep3_dma{0};
@@ -621,10 +568,8 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "t-len: " << std::dec << static_cast<int>(t_len) << " = 0x"
-         << std::hex << static_cast<int>(t_len);
-      return ss.str();
+      return std::format("t-len: {} = 0x{:X}", static_cast<int>(t_len),
+                         static_cast<int>(t_len));
     }
 
   } ep0_t_len{0};
@@ -654,18 +599,14 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "t-res: " << std::dec << static_cast<int>(t_res) << " = 0x"
-         << std::hex << static_cast<int>(t_res) << "r-res: " << std::dec
-         << static_cast<int>(r_res) << " = 0x" << std::hex
-         << static_cast<int>(r_res) << "auto-tog: " << std::dec
-         << static_cast<int>(auto_tog) << " = 0x" << std::hex
-         << static_cast<int>(auto_tog) << "t-tog: " << std::dec
-         << static_cast<int>(t_tog) << " = 0x" << std::hex
-         << static_cast<int>(t_tog) << "r-tog: " << std::dec
-         << static_cast<int>(r_tog) << " = 0x" << std::hex
-         << static_cast<int>(r_tog);
-      return ss.str();
+      return std::format(
+          "t-res: {} = 0x{:X},\nr-res: {} = 0x{:X},\nauto-tog: {} = "
+          "0x{:X},\nt-tog: {} = 0x{:X},\nr-tog: {} = 0x{:X}",
+          static_cast<int>(t_res), static_cast<int>(t_res),
+          static_cast<int>(r_res), static_cast<int>(r_res),
+          static_cast<int>(auto_tog), static_cast<int>(auto_tog),
+          static_cast<int>(t_tog), static_cast<int>(t_tog),
+          static_cast<int>(r_tog), static_cast<int>(r_tog));
     }
 
   } ep0_ctrl{0};
@@ -685,10 +626,8 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "t-len: " << std::dec << static_cast<int>(t_len) << " = 0x"
-         << std::hex << static_cast<int>(t_len);
-      return ss.str();
+      return std::format("t-len: {} = 0x{:X}", static_cast<int>(t_len),
+                         static_cast<int>(t_len));
     }
 
   } ep1_t_len{0};
@@ -718,18 +657,14 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "t-res: " << std::dec << static_cast<int>(t_res) << " = 0x"
-         << std::hex << static_cast<int>(t_res) << "r-res: " << std::dec
-         << static_cast<int>(r_res) << " = 0x" << std::hex
-         << static_cast<int>(r_res) << "auto-tog: " << std::dec
-         << static_cast<int>(auto_tog) << " = 0x" << std::hex
-         << static_cast<int>(auto_tog) << "t-tog: " << std::dec
-         << static_cast<int>(t_tog) << " = 0x" << std::hex
-         << static_cast<int>(t_tog) << "r-tog: " << std::dec
-         << static_cast<int>(r_tog) << " = 0x" << std::hex
-         << static_cast<int>(r_tog);
-      return ss.str();
+      return std::format(
+          "t-res: {} = 0x{:X},\nr-res: {} = 0x{:X},\nauto-tog: {} = "
+          "0x{:X},\nt-tog: {} = 0x{:X},\nr-tog: {} = 0x{:X}",
+          static_cast<int>(t_res), static_cast<int>(t_res),
+          static_cast<int>(r_res), static_cast<int>(r_res),
+          static_cast<int>(auto_tog), static_cast<int>(auto_tog),
+          static_cast<int>(t_tog), static_cast<int>(t_tog),
+          static_cast<int>(r_tog), static_cast<int>(r_tog));
     }
 
   } ep1_ctrl{0};
@@ -749,10 +684,8 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "t-len: " << std::dec << static_cast<int>(t_len) << " = 0x"
-         << std::hex << static_cast<int>(t_len);
-      return ss.str();
+      return std::format("t-len: {} = 0x{:X}", static_cast<int>(t_len),
+                         static_cast<int>(t_len));
     }
 
   } ep2_t_len{0};
@@ -782,18 +715,14 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "t-res: " << std::dec << static_cast<int>(t_res) << " = 0x"
-         << std::hex << static_cast<int>(t_res) << "r-res: " << std::dec
-         << static_cast<int>(r_res) << " = 0x" << std::hex
-         << static_cast<int>(r_res) << "auto-tog: " << std::dec
-         << static_cast<int>(auto_tog) << " = 0x" << std::hex
-         << static_cast<int>(auto_tog) << "t-tog: " << std::dec
-         << static_cast<int>(t_tog) << " = 0x" << std::hex
-         << static_cast<int>(t_tog) << "r-tog: " << std::dec
-         << static_cast<int>(r_tog) << " = 0x" << std::hex
-         << static_cast<int>(r_tog);
-      return ss.str();
+      return std::format(
+          "t-res: {} = 0x{:X},\nr-res: {} = 0x{:X},\nauto-tog: {} = "
+          "0x{:X},\nt-tog: {} = 0x{:X},\nr-tog: {} = 0x{:X}",
+          static_cast<int>(t_res), static_cast<int>(t_res),
+          static_cast<int>(r_res), static_cast<int>(r_res),
+          static_cast<int>(auto_tog), static_cast<int>(auto_tog),
+          static_cast<int>(t_tog), static_cast<int>(t_tog),
+          static_cast<int>(r_tog), static_cast<int>(r_tog));
     }
 
   } ep2_ctrl{0};
@@ -813,10 +742,8 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "t-len: " << std::dec << static_cast<int>(t_len) << " = 0x"
-         << std::hex << static_cast<int>(t_len);
-      return ss.str();
+      return std::format("t-len: {} = 0x{:X}", static_cast<int>(t_len),
+                         static_cast<int>(t_len));
     }
 
   } ep3_t_len{0};
@@ -846,18 +773,14 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "t-res: " << std::dec << static_cast<int>(t_res) << " = 0x"
-         << std::hex << static_cast<int>(t_res) << "r-res: " << std::dec
-         << static_cast<int>(r_res) << " = 0x" << std::hex
-         << static_cast<int>(r_res) << "auto-tog: " << std::dec
-         << static_cast<int>(auto_tog) << " = 0x" << std::hex
-         << static_cast<int>(auto_tog) << "t-tog: " << std::dec
-         << static_cast<int>(t_tog) << " = 0x" << std::hex
-         << static_cast<int>(t_tog) << "r-tog: " << std::dec
-         << static_cast<int>(r_tog) << " = 0x" << std::hex
-         << static_cast<int>(r_tog);
-      return ss.str();
+      return std::format(
+          "t-res: {} = 0x{:X},\nr-res: {} = 0x{:X},\nauto-tog: {} = "
+          "0x{:X},\nt-tog: {} = 0x{:X},\nr-tog: {} = 0x{:X}",
+          static_cast<int>(t_res), static_cast<int>(t_res),
+          static_cast<int>(r_res), static_cast<int>(r_res),
+          static_cast<int>(auto_tog), static_cast<int>(auto_tog),
+          static_cast<int>(t_tog), static_cast<int>(t_tog),
+          static_cast<int>(r_tog), static_cast<int>(r_tog));
     }
 
   } ep3_ctrl{0};
@@ -877,10 +800,8 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "t-len: " << std::dec << static_cast<int>(t_len) << " = 0x"
-         << std::hex << static_cast<int>(t_len);
-      return ss.str();
+      return std::format("t-len: {} = 0x{:X}", static_cast<int>(t_len),
+                         static_cast<int>(t_len));
     }
 
   } ep4_t_len{0};
@@ -910,18 +831,14 @@ public:
     }
 
     std::string toString() const {
-      auto ss{std::ostringstream()};
-      ss << "t-res: " << std::dec << static_cast<int>(t_res) << " = 0x"
-         << std::hex << static_cast<int>(t_res) << "r-res: " << std::dec
-         << static_cast<int>(r_res) << " = 0x" << std::hex
-         << static_cast<int>(r_res) << "auto-tog: " << std::dec
-         << static_cast<int>(auto_tog) << " = 0x" << std::hex
-         << static_cast<int>(auto_tog) << "t-tog: " << std::dec
-         << static_cast<int>(t_tog) << " = 0x" << std::hex
-         << static_cast<int>(t_tog) << "r-tog: " << std::dec
-         << static_cast<int>(r_tog) << " = 0x" << std::hex
-         << static_cast<int>(r_tog);
-      return ss.str();
+      return std::format(
+          "t-res: {} = 0x{:X},\nr-res: {} = 0x{:X},\nauto-tog: {} = "
+          "0x{:X},\nt-tog: {} = 0x{:X},\nr-tog: {} = 0x{:X}",
+          static_cast<int>(t_res), static_cast<int>(t_res),
+          static_cast<int>(r_res), static_cast<int>(r_res),
+          static_cast<int>(auto_tog), static_cast<int>(auto_tog),
+          static_cast<int>(t_tog), static_cast<int>(t_tog),
+          static_cast<int>(r_tog), static_cast<int>(r_tog));
     }
 
   } ep4_ctrl{0};

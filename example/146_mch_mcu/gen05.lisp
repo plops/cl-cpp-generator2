@@ -272,7 +272,9 @@
 			 string
 			 ;ostream
 			 
-			 cstdint sstream ios)
+			 cstdint ;sstream ios
+			 format
+			 )
 			
 			(doc "@brief The DiagramBase class represents a base class for diagrams.
 			    
@@ -395,21 +397,48 @@ registers.
 				  (defun+ toString ()
 				    (declare (const)
 					     (values "std::string"))
-				    (let ((ss (std--ostringstream))))
-				    (<< ss
-				     ,@(remove-if #'null
-						  (loop for field in (reverse fields)
-							appending
-							(destructuring-bind (&key fname bit access help) field
-							  (unless (str:starts-with-p "reserved" (format nil "~a" fname))
-							    `((string ,(format nil "~a~@[ (~a)~]: " fname (when (eq 'ro access)
-														  access)))
-							      std--dec
-							      (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
-							      (string " = 0x")
-							      std--hex
-							      (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))))))))
-				    (return (ss.str))))
+				    (return
+				      ,(let ((vars-fmt
+					       (remove-if #'null
+							  (loop for field in (reverse fields)
+								appending
+								(destructuring-bind (&key fname bit access help) field
+								  (unless (str:starts-with-p "reserved" (format nil "~a" fname))
+								    `(,(format nil "~a~@[ (~a)~]: {} = 0x{:X}" fname (when (eq 'ro access)
+														       access))
+					; (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
+								      ))))))
+					     (vars-values
+					       (remove-if #'null
+							  (loop for field in (reverse fields)
+								appending
+								(destructuring-bind (&key fname bit access help) field
+								  (unless (str:starts-with-p "reserved" (format nil "~a" fname))
+								    `(
+								      (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
+								      (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
+								      )))))))
+					`(std--format
+					  (string ,(format nil "~{~a~^,\\n~}"
+							   vars-fmt))
+					  ,@vars-values)))
+
+				    #+nil
+				    (let ((ss (std--ostringstream)))
+				      (<< ss
+					  ,@(remove-if #'null
+						       (loop for field in (reverse fields)
+							     appending
+							     (destructuring-bind (&key fname bit access help) field
+							       (unless (str:starts-with-p "reserved" (format nil "~a" fname))
+								 `((string ,(format nil "~a~@[ (~a)~]: " fname (when (eq 'ro access)
+														 access)))
+								   std--dec
+								   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
+								   (string " = 0x")
+								   std--hex
+								   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))))))))
+				      (return (ss.str)))))
 				,member-name (curly 0))
 			      `(space ,type ,(cl-change-case:snake-case (format nil "~a" name))
 				      (curly 0))
@@ -816,11 +845,11 @@ I think string descriptors are optional, so for now I will always keep string in
      `(do0
        
         (include<>
-	;stdexcept
-	;format
-	 ;cstdint
-	 sstream
-	)
+					;stdexcept
+	 format
+					;cstdint
+					;sstream
+	 )
        
        )
      :code `(do0
@@ -886,20 +915,19 @@ I think string descriptors are optional, so for now I will always keep string in
 	       (defmethod toString ()
 		 (declare (const)
 			  (values "std::string"))
-		 (let ((ss (std--ostringstream))))
-		 (<< ss
-		     ,@(loop for e in members
-			     appending
-			     (destructuring-bind (name &key type param (initform 0)) e
-			       `((string ,(format nil "~a: " name))
-				 std--dec
-				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
-				 (string " = 0x")
-				 std--hex
-				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
-				 
-				 (string "\\n")))))
-		 (return (ss.str)))
+		 (return
+		  (std--format
+		   (string ,(format nil "~{~a~^,\\n~}"
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param (initform 0)) e
+					    (format nil "~a: {} = 0x{:X}" name)))))
+		   ,@(loop for e in members
+			       appending
+			       (destructuring-bind (name &key type param (initform 0)) e
+				 `((static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				   ))))))
 	       (defmethod isValid ()
 		 (declare (const)
 			  (values bool))
