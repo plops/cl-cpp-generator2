@@ -275,9 +275,7 @@ int main() {
   auto &cfg{
       *reinterpret_cast<const UsbConfigurationDescriptor *>(CfgDescr.data())};
   dev.isValid();
-  std::cout << std::format(" dev.toString()='{}'\n", dev.toString());
   cfg.isValid();
-  std::cout << std::format(" cfg.toString()='{}'\n", cfg.toString());
 }
 
 #endif

@@ -7,7 +7,10 @@ export CXX=~/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-g++
 
 mkdir b
 cd b
-cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake .. \
+  -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_FOR_TARGET=ON 
 time ninja
 
 

@@ -10,22 +10,6 @@ UsbConfigurationDescriptor::UsbConfigurationDescriptor(
       b_num_interfaces{b_num_interfaces_},
       b_configuration_value{b_configuration_value_},
       bm_attributes{bm_attributes_}, b_max_power{b_max_power_} {}
-std::string UsbConfigurationDescriptor::toString() const {
-  return std::format(
-      "bLength: {} = 0x{:X},\nbDescriptorType: {} = 0x{:X},\nwTotalLength: {} "
-      "= 0x{:X},\nbNumInterfaces: {} = 0x{:X},\nbConfigurationValue: {} = "
-      "0x{:X},\niConfiguration: {} = 0x{:X},\nbmAttributes: {} = "
-      "0x{:X},\nbMaxPower: {} = 0x{:X}",
-      static_cast<int>(b_length), static_cast<int>(b_length),
-      static_cast<int>(b_descriptor_type), static_cast<int>(b_descriptor_type),
-      static_cast<int>(w_total_length), static_cast<int>(w_total_length),
-      static_cast<int>(b_num_interfaces), static_cast<int>(b_num_interfaces),
-      static_cast<int>(b_configuration_value),
-      static_cast<int>(b_configuration_value),
-      static_cast<int>(i_configuration), static_cast<int>(i_configuration),
-      static_cast<int>(bm_attributes), static_cast<int>(bm_attributes),
-      static_cast<int>(b_max_power), static_cast<int>(b_max_power));
-}
 bool UsbConfigurationDescriptor::isValid() const {
   if (2 != b_descriptor_type || 0 != i_configuration) {
     return false;

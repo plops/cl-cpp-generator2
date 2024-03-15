@@ -124,19 +124,20 @@ include_directories(
 # Use the custom linker script to link the firmware
 set(LINKER_SCRIPT ${HAL_PATH}/Ld/Link.ld)
 
-target_link_options(${PROJECT_NAME} PRIVATE -T ${LINKER_SCRIPT})
 
 add_executable(${PROJECT_NAME}
 src/main.cpp
 ${HAL_SOURCES}
 )
-
-endif()
-
+target_link_options(${PROJECT_NAME} PRIVATE -T ${LINKER_SCRIPT})
+else()
 
 add_executable(${PROJECT_NAME}
 src/main.cpp
 )
+endif()
+
+
 
 target_link_libraries(${PROJECT_NAME}
 mine

@@ -14,30 +14,6 @@ UsbDeviceDescriptor::UsbDeviceDescriptor(
       b_num_configurations{b_num_configurations_} {
   static_assert(18 == sizeof(UsbDeviceDescriptor));
 }
-std::string UsbDeviceDescriptor::toString() const {
-  return std::format(
-      "bLength: {} = 0x{:X},\nbDescriptorType: {} = 0x{:X},\nbcdUSB: {} = "
-      "0x{:X},\nbDeviceClass: {} = 0x{:X},\nbDeviceSubClass: {} = "
-      "0x{:X},\nbDeviceProtocol: {} = 0x{:X},\nbMaxPacketSize: {} = "
-      "0x{:X},\nidVendor: {} = 0x{:X},\nidProduct: {} = 0x{:X},\nbcdDevice: {} "
-      "= 0x{:X},\niManufacturer: {} = 0x{:X},\niProduct: {} = "
-      "0x{:X},\niSerialNumber: {} = 0x{:X},\nbNumConfigurations: {} = 0x{:X}",
-      static_cast<int>(b_length), static_cast<int>(b_length),
-      static_cast<int>(b_descriptor_type), static_cast<int>(b_descriptor_type),
-      static_cast<int>(bcd_usb), static_cast<int>(bcd_usb),
-      static_cast<int>(b_device_class), static_cast<int>(b_device_class),
-      static_cast<int>(b_device_sub_class),
-      static_cast<int>(b_device_sub_class), static_cast<int>(b_device_protocol),
-      static_cast<int>(b_device_protocol), static_cast<int>(b_max_packet_size),
-      static_cast<int>(b_max_packet_size), static_cast<int>(id_vendor),
-      static_cast<int>(id_vendor), static_cast<int>(id_product),
-      static_cast<int>(id_product), static_cast<int>(bcd_device),
-      static_cast<int>(bcd_device), static_cast<int>(i_manufacturer),
-      static_cast<int>(i_manufacturer), static_cast<int>(i_product),
-      static_cast<int>(i_product), static_cast<int>(i_serial_number),
-      static_cast<int>(i_serial_number), static_cast<int>(b_num_configurations),
-      static_cast<int>(b_num_configurations));
-}
 bool UsbDeviceDescriptor::isValid() const {
   if (18 != b_length || 1 != b_descriptor_type || 0x200 != bcd_usb ||
       64 != b_max_packet_size || 0 != i_manufacturer || 0 != i_product ||

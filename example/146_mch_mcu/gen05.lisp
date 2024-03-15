@@ -394,7 +394,7 @@ registers.
 					     (values ,(format nil "~a&" struct-name)))
 				    (setf reg value)
 				    (return *this))
-				  (defun+ toString ()
+				 #+more (defun+ toString ()
 				    (declare (const)
 					     (values "std::string"))
 				    (return
@@ -684,7 +684,7 @@ registers.
 				    (sizeof UsbDeviceDescriptor)
 				    ))
 		 )
-	       (defmethod toString ()
+	       #+more (defmethod toString ()
 		 (declare (const)
 			  (values "std::string"))
 		 (return
@@ -912,7 +912,7 @@ I think string descriptors are optional, so for now I will always keep string in
 		  (values :constructor)
 		  )
 		 )
-	       (defmethod toString ()
+	       #+more (defmethod toString ()
 		 (declare (const)
 			  (values "std::string"))
 		 (return
@@ -1569,9 +1569,9 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
        (let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))
 	     (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
        (dev.isValid)
-	,(lprint :vars `((dev.toString)))
+	#+more ,(lprint :vars `((dev.toString)))
 	(cfg.isValid)
-	,(lprint :vars `((cfg.toString))))
+	#+more ,(lprint :vars `((cfg.toString))))
       "#endif")
      
 
