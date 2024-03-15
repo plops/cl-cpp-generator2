@@ -36,6 +36,7 @@ public:
                                uint8_t b_device_protocol_, uint16_t id_vendor_,
                                uint16_t id_product_, uint16_t bcd_device_,
                                uint8_t b_num_configurations_);
+  std::string toString() const;
   /**
 @brief isValid() checks if the const members b_length,
 b_descriptor_type, bcd_usb, and b_max_packet_size have the expected

@@ -8,8 +8,10 @@
 
 (progn
   (setf *features* (set-difference *features* (list :more
+						    :format ;; use format (otherwise sstream)
 						    )))
-  (setf *features* (set-exclusive-or *features* (list ;:more
+  (setf *features* (set-exclusive-or *features* (list :more
+						      ;:format
 						      ))))
 
 (let ((module-name "main"))
@@ -272,8 +274,9 @@
 			 string
 			 ;ostream
 			 
-			 cstdint ;sstream ios
-			 format
+			 cstdint
+			 #-format sstream #-format ios
+			 #+format format
 			 )
 			
 			(doc "@brief The DiagramBase class represents a base class for diagrams.
@@ -397,7 +400,7 @@ registers.
 				 #+more (defun+ toString ()
 				    (declare (const)
 					     (values "std::string"))
-				    (return
+				    #+format (return
 				      ,(let ((vars-fmt
 					       (remove-if #'null
 							  (loop for field in (reverse fields)
@@ -423,7 +426,7 @@ registers.
 							   vars-fmt))
 					  ,@vars-values)))
 
-				    #+nil
+				    #-format
 				    (let ((ss (std--ostringstream)))
 				      (<< ss
 					  ,@(remove-if #'null
@@ -616,8 +619,8 @@ registers.
 	;stdexcept
 	;format
 	;cstdint
-	;sstream
-	format
+	#-format sstream
+	#+format format
 	)
        
        )
@@ -687,7 +690,7 @@ registers.
 	       #+more (defmethod toString ()
 		 (declare (const)
 			  (values "std::string"))
-		 (return
+		 #+format (return
 		  (std--format
 		   (string ,(format nil "~{~a~^,\\n~}"
 				    (loop for e in members
@@ -701,8 +704,8 @@ registers.
 				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
 				   )))))
 		 
-		 #+nil
-		 (let ((ss (std--ostringstream)))
+		 #-format
+			(let ((ss (std--ostringstream)))
 		   (<< ss
 		       ,@(loop for e in members
 			       appending
@@ -846,9 +849,9 @@ I think string descriptors are optional, so for now I will always keep string in
        
         (include<>
 					;stdexcept
-	 format
+	 #+format format
 					;cstdint
-					;sstream
+					#-format sstream
 	 )
        
        )
@@ -915,7 +918,7 @@ I think string descriptors are optional, so for now I will always keep string in
 	       #+more (defmethod toString ()
 		 (declare (const)
 			  (values "std::string"))
-		 (return
+			#+format (return
 		  (std--format
 		   (string ,(format nil "~{~a~^,\\n~}"
 				    (loop for e in members
@@ -927,7 +930,21 @@ I think string descriptors are optional, so for now I will always keep string in
 			       (destructuring-bind (name &key type param (initform 0)) e
 				 `((static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
 				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
-				   ))))))
+				   )))))
+			#-format
+			(let ((ss (std--ostringstream)))
+		   (<< ss
+		       ,@(loop for e in members
+			       appending
+			       (destructuring-bind (name &key type param (initform 0)) e
+				 `((string ,(format nil "~a: " name))
+				   std--dec
+				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				   (string " = 0x")
+				   std--hex
+				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				   (string "\\n")))))
+		   (return (ss.str))))
 	       (defmethod isValid ()
 		 (declare (const)
 			  (values bool))

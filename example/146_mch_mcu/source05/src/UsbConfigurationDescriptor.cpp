@@ -1,7 +1,7 @@
 // no preamble
 
 #include "UsbConfigurationDescriptor.h"
-#include <format>
+#include <sstream>
 UsbConfigurationDescriptor::UsbConfigurationDescriptor(
     uint8_t b_length_, uint16_t w_total_length_, uint8_t b_num_interfaces_,
     uint8_t b_configuration_value_, uint8_t bm_attributes_,
@@ -10,6 +10,27 @@ UsbConfigurationDescriptor::UsbConfigurationDescriptor(
       b_num_interfaces{b_num_interfaces_},
       b_configuration_value{b_configuration_value_},
       bm_attributes{bm_attributes_}, b_max_power{b_max_power_} {}
+std::string UsbConfigurationDescriptor::toString() const {
+  auto ss{std::ostringstream()};
+  ss << "bLength: " << std::dec << static_cast<int>(b_length) << " = 0x"
+     << std::hex << static_cast<int>(b_length) << "\n"
+     << "bDescriptorType: " << std::dec << static_cast<int>(b_descriptor_type)
+     << " = 0x" << std::hex << static_cast<int>(b_descriptor_type) << "\n"
+     << "wTotalLength: " << std::dec << static_cast<int>(w_total_length)
+     << " = 0x" << std::hex << static_cast<int>(w_total_length) << "\n"
+     << "bNumInterfaces: " << std::dec << static_cast<int>(b_num_interfaces)
+     << " = 0x" << std::hex << static_cast<int>(b_num_interfaces) << "\n"
+     << "bConfigurationValue: " << std::dec
+     << static_cast<int>(b_configuration_value) << " = 0x" << std::hex
+     << static_cast<int>(b_configuration_value) << "\n"
+     << "iConfiguration: " << std::dec << static_cast<int>(i_configuration)
+     << " = 0x" << std::hex << static_cast<int>(i_configuration) << "\n"
+     << "bmAttributes: " << std::dec << static_cast<int>(bm_attributes)
+     << " = 0x" << std::hex << static_cast<int>(bm_attributes) << "\n"
+     << "bMaxPower: " << std::dec << static_cast<int>(b_max_power) << " = 0x"
+     << std::hex << static_cast<int>(b_max_power) << "\n";
+  return ss.str();
+}
 bool UsbConfigurationDescriptor::isValid() const {
   if (2 != b_descriptor_type || 0 != i_configuration) {
     return false;
