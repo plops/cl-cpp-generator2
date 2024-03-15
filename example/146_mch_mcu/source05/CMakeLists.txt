@@ -6,8 +6,14 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_compile_options(-nostartfiles -static)
-add_link_options(-nostartfiles -static)
+# create a cmake option to indicate the build is for the target
+option(BUILD_FOR_TARGET "Build for target" OFF)
+
+# if the build is for the target, we need these flags
+if (BUILD_FOR_TARGET)
+        add_compile_options(-nostartfiles -static)
+        add_link_options(-nostartfiles -static)
+
 
 # gcc --target-help
 # shows possible options
@@ -28,6 +34,8 @@ add_link_options(-march=rv32imac_zicsr_zifencei -mabi=ilp32)
 add_link_options(-Xlinker --gc-sections)
 #add_link_options("-Wl,-Map,${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map" -Wl,--cref)
 add_link_options(--specs=nano.specs --specs=nosys.specs)
+
+endif()
 
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -77,7 +85,7 @@ ${HAL_PATH}/Startup/*.S
 
 # Source Files
 add_library(mine 
-        src/main.cpp
+        
         src/Ch592UsbRegisters.cpp   
         src/Ch592UsbRegisters.h
         src/UsbDeviceDescriptor.cpp
@@ -99,12 +107,10 @@ target_compile_options(
         #-Wpadded
 )
 
-
-
-
-add_executable(${PROJECT_NAME}
-${HAL_SOURCES}
-)
+# if we build for target set make sure the pre-processor
+# define BUILD_FOR_TARGET is specified
+if (BUILD_FOR_TARGET)
+        target_compile_definitions(mine PRIVATE BUILD_FOR_TARGET)
 
 # Include Directories
 include_directories(
@@ -120,14 +126,31 @@ set(LINKER_SCRIPT ${HAL_PATH}/Ld/Link.ld)
 
 target_link_options(${PROJECT_NAME} PRIVATE -T ${LINKER_SCRIPT})
 
+add_executable(${PROJECT_NAME}
+src/main.cpp
+${HAL_SOURCES}
+)
+
+endif()
+
+
+add_executable(${PROJECT_NAME}
+src/main.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+mine
+)
+
+if (BUILD_FOR_TARGET)
+
 # Libraries
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_link_libraries(${PROJECT_NAME}
                 ${HAL_PATH}/StdPeriphDriver/libISP592.a
                 mine
         )
-else ()
-        target_link_libraries(${PROJECT_NAME}
-                mine
-        )
+
+
 endif ()
+endif()

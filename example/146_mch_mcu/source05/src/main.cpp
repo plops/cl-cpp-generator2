@@ -11,9 +11,11 @@
 #include "UsbDeviceDescriptor.h"
 #include <array>
 #include <cassert>
+#ifdef BUILD_FOR_TARGET
 extern "C" {
 #include <CH59x_common.h>
 };
+#endif
 constexpr uint16_t DevEP0Size = 0x40;
 static_assert(DevEP0Size < 256, "DevEP0Size must fit into one byte.");
 // vendor id and product id:
@@ -39,9 +41,13 @@ uint16_t SetupReqLen;
 const uint8_t *pDescr;
 __attribute((aligned(4))) std::array<uint8_t, 192> EP0_Databuf;
 __attribute((aligned(4))) std::array<uint8_t, 128> EP1_Databuf;
+#ifdef BUILD_FOR_TARGET
 constexpr uintptr_t c_USB_BASE_ADDR = 0x40008000;
 Ch592UsbRegisters &usb =
     *new (reinterpret_cast<void *>(c_USB_BASE_ADDR)) Ch592UsbRegisters;
+#else
+Ch592UsbRegisters &usb = *new Ch592UsbRegisters;
+#endif
 // overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml
 
 void USB_DevTransProcess2() {
@@ -227,6 +233,7 @@ responds to confirm its own status.
 
 
 */
+#ifdef BUILD_FOR_TARGET
 
 int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
@@ -257,3 +264,17 @@ int main() {
     UART1_SendString(TxBuf.data(), TxBuf.size());
   }
 }
+
+#else
+
+int main() {
+  usb.device_init(
+      static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
+  auto &dev{*reinterpret_cast<const UsbDeviceDescriptor *>(DevDescr.data())};
+  auto &cfg{
+      *reinterpret_cast<const UsbConfigurationDescriptor *>(CfgDescr.data())};
+  dev.isValid();
+  cfg.isValid();
+}
+
+#endif

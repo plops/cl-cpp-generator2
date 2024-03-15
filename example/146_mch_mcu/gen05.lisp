@@ -920,11 +920,14 @@ I think string descriptors are optional, so for now I will always keep string in
      (include Ch592UsbRegisters.h
 	      UsbDeviceDescriptor.h
 	      UsbConfigurationDescriptor.h)
-     (space extern "\"C\""
-	    (progn
-	      
-	      (include<> 
-	       CH59x_common.h)))
+     (do0
+      "#ifdef BUILD_FOR_TARGET"
+      (space extern "\"C\""
+	     (progn
+	       
+	       (include<> 
+		CH59x_common.h)))
+      "#endif")
      
      #+nil (include<> stdio.h
 					;format
@@ -1016,10 +1019,19 @@ I think string descriptors are optional, so for now I will always keep string in
 		     ,e))
 
      (do0
+      "#ifdef BUILD_FOR_TARGET"
+      (do0
       (space constexpr uintptr_t (= c_USB_BASE_ADDR (hex #x40008000)))
       (space Ch592UsbRegisters& (= usb (deref (new (paren (reinterpret_cast<void*> c_USB_BASE_ADDR)))
 					      ))
 	     Ch592UsbRegisters))
+      "#else"
+      (do0
+      (space Ch592UsbRegisters& (= usb (deref (new )
+					      ))
+	     Ch592UsbRegisters))
+      "#endif")
+     
      
      (do0
 
@@ -1411,7 +1423,10 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 2. **Data:** Host sends IN tokens. Device sends the descriptor in chunks, with the host acknowledging each chunk.
 3. **Status:** Host sends a zero-length OUT packet to signal success, the device responds to confirm its own status.
 ")
-     (defun main ()
+
+     (do0
+      "#ifdef BUILD_FOR_TARGET"
+      (defun main ()
        (declare (values int))
        (SetSysClock CLK_SOURCE_PLL_60MHz)
 
@@ -1432,7 +1447,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 
 	(UART1_SendString (TxBuf.data) (TxBuf.size)))
        
-      #+nil  (setf pEP0_RAM_Addr (EP0_Databuf.data))
+       #+nil  (setf pEP0_RAM_Addr (EP0_Databuf.data))
 
        (usb.device_init (static_cast<uint16_t>
 			 (reinterpret_cast<uint32_t> (EP0_Databuf.data))))
@@ -1447,6 +1462,23 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
        (while 1
 	      (comments "inifinite loop")
 	      (UART1_SendString (TxBuf.data) (TxBuf.size))))
+      "#else"
+      (defun main ()
+       (declare (values int))
+	
+
+       
+
+       (usb.device_init (static_cast<uint16_t>
+			 (reinterpret_cast<uint32_t> (EP0_Databuf.data))))
+
+       (let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))
+	     (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
+       (dev.isValid)
+       (cfg.isValid)
+       )
+      "#endif")
+     
 
 
      #+nil(do0
