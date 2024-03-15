@@ -11,11 +11,16 @@ option(BUILD_FOR_TARGET "Build for target" OFF)
 
 # if the build is for the target, we need these flags
 if (BUILD_FOR_TARGET)
+# https://github.com/fmtlib/fmt/issues/1617
         set(EMBED_OPTIONS 
          -nostartfiles
          -static
          -fno-exceptions
          -fno-rtti
+         -DFMT_USE_FLOAT=0
+         -DFMT_USE_DOUBLE=0
+         -DFMT_USE_LONG_DOUBLE=0
+         -DFMT_STATIC_THOUSANDS_SEPARATOR
         )
         add_compile_options(
                ${EMBED_OPTIONS}

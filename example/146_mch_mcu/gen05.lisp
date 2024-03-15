@@ -1027,6 +1027,7 @@ I think string descriptors are optional, so for now I will always keep string in
      (include Ch592UsbRegisters.h
 	      UsbDeviceDescriptor.h
 	      UsbConfigurationDescriptor.h)
+     (include<> format)
      (do0
       "#ifdef BUILD_FOR_TARGET"
       (space extern "\"C\""
@@ -1539,7 +1540,10 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
       "#ifdef BUILD_FOR_TARGET"
       (defun main ()
        (declare (values int))
-       (SetSysClock CLK_SOURCE_PLL_60MHz)
+
+	
+	
+	(SetSysClock CLK_SOURCE_PLL_60MHz)
 
        (do0
 	(comments  "This will configure UART1 to send and receive at 115200 baud:")
@@ -1557,8 +1561,15 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 		  )))
 
 	(UART1_SendString (TxBuf.data) (TxBuf.size)))
+
+	(let ((ostr (std--vector<char>)))
+	  (fmt--format_to (std--back_inserter ostr)
+			  (string {})
+			  43)
+	  (UART1_SendString (ostr.data)
+			    (ostr.size)))
        
-       #+nil  (setf pEP0_RAM_Addr (EP0_Databuf.data))
+	#+nil  (setf pEP0_RAM_Addr (EP0_Databuf.data))
 
        (usb.device_init (static_cast<uint16_t>
 			 (reinterpret_cast<uint32_t> (EP0_Databuf.data))))

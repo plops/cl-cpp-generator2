@@ -11,6 +11,7 @@
 #include "UsbDeviceDescriptor.h"
 #include <array>
 #include <cassert>
+#include <format>
 #ifdef BUILD_FOR_TARGET
 extern "C" {
 #include <CH59x_common.h>
@@ -251,6 +252,9 @@ int main() {
   UART1_DefInit();
   auto TxBuf{std::array<uint8_t, 10>("ALPHA1\r\n")};
   UART1_SendString(TxBuf.data(), TxBuf.size());
+  auto ostr{std::vector<char>()};
+  fmt::format_to(std::back_inserter(ostr), "{}", 43);
+  UART1_SendString(ostr.data(), ostr.size());
   usb.device_init(
       static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
   auto &dev{*reinterpret_cast<const UsbDeviceDescriptor *>(DevDescr.data())};
