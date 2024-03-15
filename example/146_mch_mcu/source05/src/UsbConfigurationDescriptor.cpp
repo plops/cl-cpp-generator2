@@ -1,5 +1,8 @@
 // no preamble
 
+#ifdef BUILD_FOR_TARGET
+#define FMT_THROW panic
+#endif
 #include "UsbConfigurationDescriptor.h"
 #include <sstream>
 UsbConfigurationDescriptor::UsbConfigurationDescriptor(

@@ -123,6 +123,7 @@ target_compile_options(
         -fvisibility=hidden
         -fno-strict-overflow -Wno-strict-overflow
         #-Wpadded
+        -fdiagnostics-color=always
 )
 
 # if we build for target set make sure the pre-processor

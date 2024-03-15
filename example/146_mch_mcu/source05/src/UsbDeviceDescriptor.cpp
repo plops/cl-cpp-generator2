@@ -2,6 +2,9 @@
 
 //
 
+#ifdef BUILD_FOR_TARGET
+#define FMT_THROW panic
+#endif
 #include "UsbDeviceDescriptor.h"
 #include <sstream>
 UsbDeviceDescriptor::UsbDeviceDescriptor(

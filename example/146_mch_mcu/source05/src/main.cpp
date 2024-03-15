@@ -11,7 +11,14 @@
 #include "UsbDeviceDescriptor.h"
 #include <array>
 #include <cassert>
-#include <format>
+//
+
+#ifdef BUILD_FOR_TARGET
+#define FMT_THROW panic
+#endif
+#include <format.h>
+//
+
 #ifdef BUILD_FOR_TARGET
 extern "C" {
 #include <CH59x_common.h>

@@ -270,13 +270,19 @@
      :name name
      :headers `()
      :header-preamble `(do0
-			(include<> ;vector deque
+			#+nil (do0
+      "#ifdef BUILD_FOR_TARGET"
+      "#define FMT_THROW panic"
+      "#endif")
+			
+			(include<>	;vector deque
 			 string
-			 ;ostream
+					;ostream
 			 
 			 cstdint
-			 #-format sstream #-format ios
-			 #+format format
+			 ;#-format sstream #-format ios
+			 ;#+format format
+			 format.h
 			 )
 			
 			(doc "@brief The DiagramBase class represents a base class for diagrams.
@@ -345,6 +351,7 @@ registers.
 	 ;sstream
 	 ;ios
 	)
+	
        )
      :code `(do0
 	     
@@ -397,51 +404,82 @@ registers.
 					     (values ,(format nil "~a&" struct-name)))
 				    (setf reg value)
 				    (return *this))
-				 #+more (defun+ toString ()
-				    (declare (const)
-					     (values "std::string"))
-				    #+format (return
-				      ,(let ((vars-fmt
-					       (remove-if #'null
-							  (loop for field in (reverse fields)
-								appending
-								(destructuring-bind (&key fname bit access help) field
-								  (unless (str:starts-with-p "reserved" (format nil "~a" fname))
-								    `(,(format nil "~a~@[ (~a)~]: {} = 0x{:X}" fname (when (eq 'ro access)
-														       access))
+				 ;#+more
+				 (defun+ toString ()
+				   (declare (const)
+					    (values "std::string"))
+				   #+format
+				   (return
+				     ,(let ((vars-fmt
+					      (remove-if #'null
+							 (loop for field in (reverse fields)
+							       appending
+							       (destructuring-bind (&key fname bit access help) field
+								 (unless (str:starts-with-p "reserved" (format nil "~a" fname))
+								   `(,(format nil "~a~@[ (~a)~]: {} = 0x{:X}" fname (when (eq 'ro access)
+														      access))
 					; (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
-								      ))))))
-					     (vars-values
-					       (remove-if #'null
-							  (loop for field in (reverse fields)
-								appending
-								(destructuring-bind (&key fname bit access help) field
-								  (unless (str:starts-with-p "reserved" (format nil "~a" fname))
-								    `(
-								      (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
-								      (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
-								      )))))))
+								     ))))))
+					    (vars-values
+					      (remove-if #'null
+							 (loop for field in (reverse fields)
+							       appending
+							       (destructuring-bind (&key fname bit access help) field
+								 (unless (str:starts-with-p "reserved" (format nil "~a" fname))
+								   `(
+								     (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
+								     (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
+								     )))))))
 					`(std--format
 					  (string ,(format nil "~{~a~^,\\n~}"
 							   vars-fmt))
 					  ,@vars-values)))
 
-				    #-format
-				    (let ((ss (std--ostringstream)))
-				      (<< ss
-					  ,@(remove-if #'null
-						       (loop for field in (reverse fields)
-							     appending
-							     (destructuring-bind (&key fname bit access help) field
-							       (unless (str:starts-with-p "reserved" (format nil "~a" fname))
-								 `((string ,(format nil "~a~@[ (~a)~]: " fname (when (eq 'ro access)
-														 access)))
-								   std--dec
-								   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
-								   (string " = 0x")
-								   std--hex
-								   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))))))))
-				      (return (ss.str)))))
+				   (do0
+				    (let ((out (std--string))))
+				    ,(let ((vars-fmt
+					     (remove-if #'null
+							(loop for field in (reverse fields)
+							      appending
+							      (destructuring-bind (&key fname bit access help) field
+								(unless (str:starts-with-p "reserved" (format nil "~a" fname))
+								  `(,(format nil "~a~@[ (~a)~]: {} = 0x{:X}" fname (when (eq 'ro access)
+														     access))
+					; (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
+								    ))))))
+					   (vars-values
+					     (remove-if #'null
+							(loop for field in (reverse fields)
+							      appending
+							      (destructuring-bind (&key fname bit access help) field
+								(unless (str:starts-with-p "reserved" (format nil "~a" fname))
+								  `(
+								    (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
+								    (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
+								    )))))))
+				       `(fmt--format_to
+					 (std--back_inserter out)
+					 (string ,(format nil "~{~a~^,\\n~}"
+							  vars-fmt))
+					 ,@vars-values))
+				    (return out))
+
+				   #+nil ;#-format
+				   (let ((ss (std--ostringstream)))
+				     (<< ss
+					 ,@(remove-if #'null
+						      (loop for field in (reverse fields)
+							    appending
+							    (destructuring-bind (&key fname bit access help) field
+							      (unless (str:starts-with-p "reserved" (format nil "~a" fname))
+								`((string ,(format nil "~a~@[ (~a)~]: " fname (when (eq 'ro access)
+														access)))
+								  std--dec
+								  (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))
+								  (string " = 0x")
+								  std--hex
+								  (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" fname)))))))))
+				     (return (ss.str)))))
 				,member-name (curly 0))
 			      `(space ,type ,(cl-change-case:snake-case (format nil "~a" name))
 				      (curly 0))
@@ -615,10 +653,16 @@ registers.
      :implementation-preamble
      `(do0
        (comments "")
+
+       (do0
+      "#ifdef BUILD_FOR_TARGET"
+      "#define FMT_THROW panic"
+      "#endif")
+       
        (include<>
-	;stdexcept
-	;format
-	;cstdint
+					;stdexcept
+					;format
+					;cstdint
 	#-format sstream
 	#+format format
 	)
@@ -846,13 +890,18 @@ I think string descriptors are optional, so for now I will always keep string in
 			)
      :implementation-preamble
      `(do0
+
+       (do0
+      "#ifdef BUILD_FOR_TARGET"
+      "#define FMT_THROW panic"
+      "#endif")
        
-        (include<>
+       (include<>
 					;stdexcept
-	 #+format format
+	#+format format
 					;cstdint
-					#-format sstream
-	 )
+	#-format sstream
+	)
        
        )
      :code `(do0
@@ -1024,10 +1073,21 @@ I think string descriptors are optional, so for now I will always keep string in
       cassert
 
       )
+
+     
      (include Ch592UsbRegisters.h
 	      UsbDeviceDescriptor.h
 	      UsbConfigurationDescriptor.h)
-     (include<> format)
+     (comments "")
+
+     (do0
+      "#ifdef BUILD_FOR_TARGET"
+      "#define FMT_THROW panic"
+      "#endif")
+     
+     (include<> format.h)
+
+     (comments " ")
      (do0
       "#ifdef BUILD_FOR_TARGET"
       (space extern "\"C\""
