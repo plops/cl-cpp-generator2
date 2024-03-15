@@ -587,7 +587,8 @@ registers.
 	;stdexcept
 	;format
 	;cstdint
-	sstream
+	;sstream
+	format
 	)
        
        )
@@ -657,19 +658,34 @@ registers.
 	       (defmethod toString ()
 		 (declare (const)
 			  (values "std::string"))
-		 (let ((ss (std--ostringstream))))
-		 (<< ss
-		     ,@(loop for e in members
-			     appending
-			     (destructuring-bind (name &key type param (initform 0)) e
-			       `((string ,(format nil "~a: " name))
-				 std--dec
-				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
-				 (string " = 0x")
-				 std--hex
-				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
-				 (string "\\n")))))
-		 (return (ss.str)))
+		 (return
+		  (std--format
+		   (string ,(format nil "~{~a~^,\\n~}"
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param (initform 0)) e
+					    (format nil "~a: {} = 0x{:X}" name)))))
+		   ,@(loop for e in members
+			       appending
+			       (destructuring-bind (name &key type param (initform 0)) e
+				 `((static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				   )))))
+		 
+		 #+nil
+		 (let ((ss (std--ostringstream)))
+		   (<< ss
+		       ,@(loop for e in members
+			       appending
+			       (destructuring-bind (name &key type param (initform 0)) e
+				 `((string ,(format nil "~a: " name))
+				   std--dec
+				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				   (string " = 0x")
+				   std--hex
+				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				   (string "\\n")))))
+		   (return (ss.str))))
 	       (doc "
 @brief isValid() checks if the const members b_length,
 b_descriptor_type, bcd_usb, and b_max_packet_size have the expected
