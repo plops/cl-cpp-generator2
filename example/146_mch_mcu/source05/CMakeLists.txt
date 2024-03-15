@@ -11,8 +11,18 @@ option(BUILD_FOR_TARGET "Build for target" OFF)
 
 # if the build is for the target, we need these flags
 if (BUILD_FOR_TARGET)
-        add_compile_options(-nostartfiles -static)
-        add_link_options(-nostartfiles -static)
+        set(EMBED_OPTIONS 
+         -nostartfiles
+         -static
+         -fno-exceptions
+         -fno-rtti
+        )
+        add_compile_options(
+               ${EMBED_OPTIONS}
+                )
+        add_link_options(
+               ${EMBED_OPTIONS}
+        )
 
 
 # gcc --target-help
@@ -33,7 +43,10 @@ add_link_options(-march=rv32imac_zicsr_zifencei -mabi=ilp32)
 #add_link_options(-T?${LINKER_SCRIPT})
 add_link_options(-Xlinker --gc-sections)
 #add_link_options("-Wl,-Map,${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map" -Wl,--cref)
-add_link_options(--specs=nano.specs --specs=nosys.specs)
+add_link_options(
+        --specs=nano.specs 
+        --specs=nosys.specs
+        )
 
 endif()
 
@@ -47,7 +60,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 else ()
     add_compile_options(
             #-O0
-            -O3 #-ffunction-sections -fdata-sections # don't use together with flto
+            -Os #-ffunction-sections -fdata-sections # don't use together with flto
     )
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
     add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
@@ -116,6 +129,7 @@ if (BUILD_FOR_TARGET)
 include_directories(
     ${HAL_PATH}/RVMSIS/
     ${HAL_PATH}/StdPeriphDriver/inc
+    /home/martin/src/fmt/include/fmt
  #   ${HAL_PATH}/User/
  #   ${HAL_PATH}/../BLE/HAL/include
  #   ${HAL_PATH}/../BLE/LIB

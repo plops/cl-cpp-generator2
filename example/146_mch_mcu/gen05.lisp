@@ -10,7 +10,7 @@
   (setf *features* (set-difference *features* (list :more
 						    :format ;; use format (otherwise sstream)
 						    )))
-  (setf *features* (set-exclusive-or *features* (list :more
+  (setf *features* (set-exclusive-or *features* (list ;:more
 						      ;:format
 						      ))))
 

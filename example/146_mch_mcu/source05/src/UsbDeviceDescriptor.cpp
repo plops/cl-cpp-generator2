@@ -14,39 +14,6 @@ UsbDeviceDescriptor::UsbDeviceDescriptor(
       b_num_configurations{b_num_configurations_} {
   static_assert(18 == sizeof(UsbDeviceDescriptor));
 }
-std::string UsbDeviceDescriptor::toString() const {
-  auto ss{std::ostringstream()};
-  ss << "bLength: " << std::dec << static_cast<int>(b_length) << " = 0x"
-     << std::hex << static_cast<int>(b_length) << "\n"
-     << "bDescriptorType: " << std::dec << static_cast<int>(b_descriptor_type)
-     << " = 0x" << std::hex << static_cast<int>(b_descriptor_type) << "\n"
-     << "bcdUSB: " << std::dec << static_cast<int>(bcd_usb) << " = 0x"
-     << std::hex << static_cast<int>(bcd_usb) << "\n"
-     << "bDeviceClass: " << std::dec << static_cast<int>(b_device_class)
-     << " = 0x" << std::hex << static_cast<int>(b_device_class) << "\n"
-     << "bDeviceSubClass: " << std::dec << static_cast<int>(b_device_sub_class)
-     << " = 0x" << std::hex << static_cast<int>(b_device_sub_class) << "\n"
-     << "bDeviceProtocol: " << std::dec << static_cast<int>(b_device_protocol)
-     << " = 0x" << std::hex << static_cast<int>(b_device_protocol) << "\n"
-     << "bMaxPacketSize: " << std::dec << static_cast<int>(b_max_packet_size)
-     << " = 0x" << std::hex << static_cast<int>(b_max_packet_size) << "\n"
-     << "idVendor: " << std::dec << static_cast<int>(id_vendor) << " = 0x"
-     << std::hex << static_cast<int>(id_vendor) << "\n"
-     << "idProduct: " << std::dec << static_cast<int>(id_product) << " = 0x"
-     << std::hex << static_cast<int>(id_product) << "\n"
-     << "bcdDevice: " << std::dec << static_cast<int>(bcd_device) << " = 0x"
-     << std::hex << static_cast<int>(bcd_device) << "\n"
-     << "iManufacturer: " << std::dec << static_cast<int>(i_manufacturer)
-     << " = 0x" << std::hex << static_cast<int>(i_manufacturer) << "\n"
-     << "iProduct: " << std::dec << static_cast<int>(i_product) << " = 0x"
-     << std::hex << static_cast<int>(i_product) << "\n"
-     << "iSerialNumber: " << std::dec << static_cast<int>(i_serial_number)
-     << " = 0x" << std::hex << static_cast<int>(i_serial_number) << "\n"
-     << "bNumConfigurations: " << std::dec
-     << static_cast<int>(b_num_configurations) << " = 0x" << std::hex
-     << static_cast<int>(b_num_configurations) << "\n";
-  return ss.str();
-}
 bool UsbDeviceDescriptor::isValid() const {
   if (18 != b_length || 1 != b_descriptor_type || 0x200 != bcd_usb ||
       64 != b_max_packet_size || 0 != i_manufacturer || 0 != i_product ||
