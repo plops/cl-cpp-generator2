@@ -12,15 +12,23 @@ UsbConfigurationDescriptor::UsbConfigurationDescriptor(
       bm_attributes{bm_attributes_}, b_max_power{b_max_power_} {}
 std::string UsbConfigurationDescriptor::toString() const {
   auto ss{std::ostringstream()};
-  ss << "bLength: " << static_cast<int>(b_length) << "\n"
-     << "bDescriptorType: " << static_cast<int>(b_descriptor_type) << "\n"
-     << "wTotalLength: " << static_cast<int>(w_total_length) << "\n"
-     << "bNumInterfaces: " << static_cast<int>(b_num_interfaces) << "\n"
-     << "bConfigurationValue: " << static_cast<int>(b_configuration_value)
-     << "\n"
-     << "iConfiguration: " << static_cast<int>(i_configuration) << "\n"
-     << "bmAttributes: " << static_cast<int>(bm_attributes) << "\n"
-     << "bMaxPower: " << static_cast<int>(b_max_power) << "\n";
+  ss << "bLength: " << std::dec << static_cast<int>(b_length) << " = 0x"
+     << std::hex << static_cast<int>(b_length) << "\n"
+     << "bDescriptorType: " << std::dec << static_cast<int>(b_descriptor_type)
+     << " = 0x" << std::hex << static_cast<int>(b_descriptor_type) << "\n"
+     << "wTotalLength: " << std::dec << static_cast<int>(w_total_length)
+     << " = 0x" << std::hex << static_cast<int>(w_total_length) << "\n"
+     << "bNumInterfaces: " << std::dec << static_cast<int>(b_num_interfaces)
+     << " = 0x" << std::hex << static_cast<int>(b_num_interfaces) << "\n"
+     << "bConfigurationValue: " << std::dec
+     << static_cast<int>(b_configuration_value) << " = 0x" << std::hex
+     << static_cast<int>(b_configuration_value) << "\n"
+     << "iConfiguration: " << std::dec << static_cast<int>(i_configuration)
+     << " = 0x" << std::hex << static_cast<int>(i_configuration) << "\n"
+     << "bmAttributes: " << std::dec << static_cast<int>(bm_attributes)
+     << " = 0x" << std::hex << static_cast<int>(bm_attributes) << "\n"
+     << "bMaxPower: " << std::dec << static_cast<int>(b_max_power) << " = 0x"
+     << std::hex << static_cast<int>(b_max_power) << "\n";
   return ss.str();
 }
 bool UsbConfigurationDescriptor::isValid() const {

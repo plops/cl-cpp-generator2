@@ -495,6 +495,10 @@ registers.
 			     appending
 			     (destructuring-bind (name &key type param (initform 0)) e
 			       `((string ,(format nil "~a: " name))
+				 std--dec
+				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				 (string " = 0x")
+				 std--hex
 				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
 				 (string "\\n")))))
 		 (return (ss.str)))
@@ -557,7 +561,7 @@ registers.
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
 	   *source-dir*)
-     :name name
+     :name name 
      :headers `()
      :header-preamble `(do0
 			(include<> ;vector deque
@@ -667,6 +671,10 @@ registers.
 			     appending
 			     (destructuring-bind (name &key type param (initform 0)) e
 			       `((string ,(format nil "~a: " name))
+				 std--dec
+				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				 (string " = 0x")
+				 std--hex
 				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
 				 (string "\\n")))))
 		 (return (ss.str)))
@@ -876,7 +884,12 @@ I think string descriptors are optional, so for now I will always keep string in
 			     appending
 			     (destructuring-bind (name &key type param (initform 0)) e
 			       `((string ,(format nil "~a: " name))
+				 std--dec
 				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				 (string " = 0x")
+				 std--hex
+				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				 
 				 (string "\\n")))))
 		 (return (ss.str)))
 	       (defmethod isValid ()
