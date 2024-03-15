@@ -1,4 +1,4 @@
-(eval-when (:compile-toplevel :execute :load-toplevel)
+ (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2")
   (ql:quickload "alexandria")
   (ql:quickload "cl-change-case")
@@ -270,6 +270,7 @@
      :header-preamble `(do0
 			(include<> ;vector deque string
 			 ostream
+			 
 			 cstdint)
 			
 			(doc "@brief The DiagramBase class represents a base class for diagrams.
@@ -334,9 +335,8 @@ registers.
      :implementation-preamble
      `(do0
        (comments "")
-       #+nil (include<>
-	stdexcept
-	format
+        (include<>
+	 sstream
 	)
        )
      :code `(do0
@@ -485,6 +485,20 @@ registers.
 						  (const))
 					 (return ,nname))))))
 
+
+	       (defmethod toString ()
+		 (declare (const)
+			  (values "std::string"))
+		 (let ((ss (std--ostringstream))))
+		 (<< ss
+		     ,@(loop for e in members
+			     appending
+			     (destructuring-bind (name &key type param (initform 0)) e
+			       `((string ,(format nil "~a: " name))
+				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				 (string "\\n")))))
+		 (return (ss.str)))
+	       
 	       (defmethod device_init (ep0_data)
 		 (declare (type "uint16_t" ep0_data))
 		 (setf ctrl.reg 0)
@@ -546,7 +560,8 @@ registers.
      :name name
      :headers `()
      :header-preamble `(do0
-			(include<> ;vector deque string
+			(include<> ;vector deque
+			 string
 				   cstdint)
 			
 			(doc "
@@ -572,10 +587,11 @@ registers.
      :implementation-preamble
      `(do0
        (comments "")
-       #+nil (include<>
+       (include<>
 	;stdexcept
 	;format
-	cstdint
+	;cstdint
+	sstream
 	)
        
        )
@@ -642,6 +658,18 @@ registers.
 				    (sizeof UsbDeviceDescriptor)
 				    ))
 		 )
+	       (defmethod toString ()
+		 (declare (const)
+			  (values "std::string"))
+		 (let ((ss (std--ostringstream))))
+		 (<< ss
+		     ,@(loop for e in members
+			     appending
+			     (destructuring-bind (name &key type param (initform 0)) e
+			       `((string ,(format nil "~a: " name))
+				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				 (string "\\n")))))
+		 (return (ss.str)))
 	       (doc "
 @brief isValid() checks if the const members b_length,
 b_descriptor_type, bcd_usb, and b_max_packet_size have the expected
@@ -734,7 +762,8 @@ UsbDeviceDescriptor.
      :headers `()
      :header-preamble `(do0
 			(include<> ;vector deque string
-				   cstdint)
+				   cstdint
+				   ostream)
 			
 			(doc "
 **Configuration Descriptor Summary**
@@ -769,11 +798,12 @@ I think string descriptors are optional, so for now I will always keep string in
 			)
      :implementation-preamble
      `(do0
-       (comments "")
-       #+nil (include<>
+       
+        (include<>
 	;stdexcept
 	;format
-	cstdint
+	 ;cstdint
+	 sstream
 	)
        
        )
@@ -837,7 +867,18 @@ I think string descriptors are optional, so for now I will always keep string in
 		  (values :constructor)
 		  )
 		 )
-	       
+	       (defmethod toString ()
+		 (declare (const)
+			  (values "std::string"))
+		 (let ((ss (std--ostringstream))))
+		 (<< ss
+		     ,@(loop for e in members
+			     appending
+			     (destructuring-bind (name &key type param (initform 0)) e
+			       `((string ,(format nil "~a: " name))
+				 (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				 (string "\\n")))))
+		 (return (ss.str)))
 	       (defmethod isValid ()
 		 (declare (const)
 			  (values bool))
@@ -927,6 +968,9 @@ I think string descriptors are optional, so for now I will always keep string in
 	       
 	       (include<> 
 		CH59x_common.h)))
+      "#else"
+      (include<> format
+		 iostream)
       "#endif")
      
      #+nil (include<> stdio.h
@@ -1476,8 +1520,9 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
        (let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))
 	     (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
        (dev.isValid)
-       (cfg.isValid)
-       )
+	,(lprint :vars `((dev.toString)))
+	(cfg.isValid)
+	,(lprint :vars `((cfg.toString))))
       "#endif")
      
 

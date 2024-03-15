@@ -2,6 +2,7 @@
 #define USBCONFIGURATIONDESCRIPTOR_H
 
 #include <cstdint>
+#include <ostream>
 /**
 **Configuration Descriptor Summary**
 
@@ -48,6 +49,7 @@ public:
                                       uint8_t b_configuration_value_,
                                       uint8_t bm_attributes_,
                                       uint8_t b_max_power_);
+  std::string toString() const;
   bool isValid() const;
   uint8_t GetBLength() const;
   const uint8_t GetBDescriptorType() const;

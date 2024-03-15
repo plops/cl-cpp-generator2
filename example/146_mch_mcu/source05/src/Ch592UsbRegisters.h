@@ -807,6 +807,7 @@ public:
 
 public:
   explicit Ch592UsbRegisters();
+  std::string toString() const;
   void device_init(uint16_t ep0_data);
 
 private:

@@ -3,6 +3,7 @@
 //
 
 #include "UsbDeviceDescriptor.h"
+#include <sstream>
 UsbDeviceDescriptor::UsbDeviceDescriptor(
     uint8_t b_device_class_, uint8_t b_device_sub_class_,
     uint8_t b_device_protocol_, uint16_t id_vendor_, uint16_t id_product_,
@@ -12,6 +13,25 @@ UsbDeviceDescriptor::UsbDeviceDescriptor(
       id_product{id_product_}, bcd_device{bcd_device_},
       b_num_configurations{b_num_configurations_} {
   static_assert(18 == sizeof(UsbDeviceDescriptor));
+}
+std::string UsbDeviceDescriptor::toString() const {
+  auto ss{std::ostringstream()};
+  ss << "bLength: " << static_cast<int>(b_length) << "\n"
+     << "bDescriptorType: " << static_cast<int>(b_descriptor_type) << "\n"
+     << "bcdUSB: " << static_cast<int>(bcd_usb) << "\n"
+     << "bDeviceClass: " << static_cast<int>(b_device_class) << "\n"
+     << "bDeviceSubClass: " << static_cast<int>(b_device_sub_class) << "\n"
+     << "bDeviceProtocol: " << static_cast<int>(b_device_protocol) << "\n"
+     << "bMaxPacketSize: " << static_cast<int>(b_max_packet_size) << "\n"
+     << "idVendor: " << static_cast<int>(id_vendor) << "\n"
+     << "idProduct: " << static_cast<int>(id_product) << "\n"
+     << "bcdDevice: " << static_cast<int>(bcd_device) << "\n"
+     << "iManufacturer: " << static_cast<int>(i_manufacturer) << "\n"
+     << "iProduct: " << static_cast<int>(i_product) << "\n"
+     << "iSerialNumber: " << static_cast<int>(i_serial_number) << "\n"
+     << "bNumConfigurations: " << static_cast<int>(b_num_configurations)
+     << "\n";
+  return ss.str();
 }
 bool UsbDeviceDescriptor::isValid() const {
   if (18 != b_length || 1 != b_descriptor_type || 0x200 != bcd_usb ||

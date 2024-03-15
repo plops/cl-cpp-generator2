@@ -3,7 +3,13 @@
 //
 
 #include "Ch592UsbRegisters.h"
+#include <sstream>
 Ch592UsbRegisters::Ch592UsbRegisters() {}
+std::string Ch592UsbRegisters::toString() const {
+  auto ss{std::ostringstream()};
+  ss;
+  return ss.str();
+}
 void Ch592UsbRegisters::device_init(uint16_t ep0_data) {
   ctrl.reg = 0;
   ep4_1_mod.ep4_rx_en = 0;

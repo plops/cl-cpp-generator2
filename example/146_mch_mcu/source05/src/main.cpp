@@ -15,6 +15,9 @@
 extern "C" {
 #include <CH59x_common.h>
 };
+#else
+#include <format>
+#include <iostream>
 #endif
 constexpr uint16_t DevEP0Size = 0x40;
 static_assert(DevEP0Size < 256, "DevEP0Size must fit into one byte.");
@@ -272,7 +275,9 @@ int main() {
   auto &cfg{
       *reinterpret_cast<const UsbConfigurationDescriptor *>(CfgDescr.data())};
   dev.isValid();
+  std::cout << std::format(" dev.toString()='{}'\n", dev.toString());
   cfg.isValid();
+  std::cout << std::format(" cfg.toString()='{}'\n", cfg.toString());
 }
 
 #endif
