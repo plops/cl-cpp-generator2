@@ -1025,15 +1025,7 @@ I think string descriptors are optional, so for now I will always keep string in
       (space Ch592UsbRegisters& (= usb (deref (new (paren (reinterpret_cast<void*> c_USB_BASE_ADDR)))
 					      ))
 	     Ch592UsbRegisters))
-      "#else"
-      (do0
-      (space Ch592UsbRegisters& (= usb (deref (new )
-					      ))
-	     Ch592UsbRegisters))
-      "#endif")
-     
-     
-     (do0
+       (do0
 
       (comments "overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml")
       (defun USB_DevTransProcess2 ()
@@ -1323,6 +1315,15 @@ I think string descriptors are optional, so for now I will always keep string in
 		   (comments "Catch any other unhandled interrupt flags and simply clears them.")
 		   (setf R8_USB_INT_FG intflag))
 		  ))))
+      "#else"
+      (do0
+      (space Ch592UsbRegisters& (= usb (deref (new )
+					      ))
+	     Ch592UsbRegisters))
+      "#endif")
+     
+     
+    
 
      #+nil
      (defun DebugInit ()
@@ -1469,7 +1470,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 
        
 
-       (usb.device_init (static_cast<uint16_t>
+       #+nil(usb.device_init (static_cast<uint16_t>
 			 (reinterpret_cast<uint32_t> (EP0_Databuf.data))))
 
        (let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))

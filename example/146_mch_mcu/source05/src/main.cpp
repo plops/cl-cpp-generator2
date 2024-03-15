@@ -45,9 +45,6 @@ __attribute((aligned(4))) std::array<uint8_t, 128> EP1_Databuf;
 constexpr uintptr_t c_USB_BASE_ADDR = 0x40008000;
 Ch592UsbRegisters &usb =
     *new (reinterpret_cast<void *>(c_USB_BASE_ADDR)) Ch592UsbRegisters;
-#else
-Ch592UsbRegisters &usb = *new Ch592UsbRegisters;
-#endif
 // overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml
 
 void USB_DevTransProcess2() {
@@ -142,6 +139,9 @@ void USB_DevTransProcess2() {
    Get Descriptor, Set Address). Manage data transfers on endpoints.
 
 */
+#else
+Ch592UsbRegisters &usb = *new Ch592UsbRegisters;
+#endif
 /**
 Here's a bullet list summary of the essential concepts regarding USB Protocols:
 
@@ -268,8 +268,6 @@ int main() {
 #else
 
 int main() {
-  usb.device_init(
-      static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
   auto &dev{*reinterpret_cast<const UsbDeviceDescriptor *>(DevDescr.data())};
   auto &cfg{
       *reinterpret_cast<const UsbConfigurationDescriptor *>(CfgDescr.data())};
