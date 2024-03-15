@@ -272,7 +272,7 @@
 			 string
 			 ;ostream
 			 
-			 cstdint)
+			 cstdint sstream ios)
 			
 			(doc "@brief The DiagramBase class represents a base class for diagrams.
 			    
@@ -336,8 +336,9 @@ registers.
      :implementation-preamble
      `(do0
        (comments "")
-        (include<>
-	 sstream
+        #+nil(include<>
+	 ;sstream
+	 ;ios
 	)
        )
      :code `(do0

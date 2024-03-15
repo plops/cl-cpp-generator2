@@ -95,6 +95,7 @@
 			 :hook-defclass #'(lambda (str)
 					    (format sh "~a;~%" str))
 			 :header-only t
+			 :omit-redundant-parentheses t
 			 ))
 	       (format sh "~%#endif /* !~a */" once-guard))))
        (only-write-when-hash-changed

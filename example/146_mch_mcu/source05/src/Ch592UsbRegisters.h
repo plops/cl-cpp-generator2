@@ -2,6 +2,8 @@
 #define CH592USBREGISTERS_H
 
 #include <cstdint>
+#include <ios>
+#include <sstream>
 #include <string>
 /** @brief The DiagramBase class represents a base class for diagrams.
 
@@ -95,37 +97,37 @@ public:
         uint8_t int_busy : 1;  // rw  Auto pause;
         uint8_t sys_ctlr : 2;  // rw  host-mode==0: 00..disable usb device
                                // function and disable internal pull-up (can be
-                              // overridden by dev-pullup-en), 01..enable device
-                              // fucntion, disable internal pull-up, external
-                              // pull-up-needed, 1x..enable usb device fucntion
-                              // and internal 1.5k pull-up, pull-up has priority
-                              // over pull-down resistor;
+        // overridden by dev-pullup-en), 01..enable device
+        // fucntion, disable internal pull-up, external
+        // pull-up-needed, 1x..enable usb device fucntion
+        // and internal 1.5k pull-up, pull-up has priority
+        // over pull-down resistor;
         uint8_t low_speed : 1; // rw ;
         uint8_t host_mode : 1; // rw ;
       };
     };
 
     Ctrl &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("dma-en: ") << (std::dec) << (static_cast<int>(dma_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(dma_en))
-           << ("clr-all: ") << (std::dec) << (static_cast<int>(clr_all))
-           << (" = 0x") << (std::hex) << (static_cast<int>(clr_all))
-           << ("reset-sie: ") << (std::dec) << (static_cast<int>(reset_sie))
-           << (" = 0x") << (std::hex) << (static_cast<int>(reset_sie))
-           << ("int-busy: ") << (std::dec) << (static_cast<int>(int_busy))
-           << (" = 0x") << (std::hex) << (static_cast<int>(int_busy))
-           << ("sys-ctlr: ") << (std::dec) << (static_cast<int>(sys_ctlr))
-           << (" = 0x") << (std::hex) << (static_cast<int>(sys_ctlr))
-           << ("low-speed: ") << (std::dec) << (static_cast<int>(low_speed))
-           << (" = 0x") << (std::hex) << (static_cast<int>(low_speed))
-           << ("host-mode: ") << (std::dec) << (static_cast<int>(host_mode))
-           << (" = 0x") << (std::hex) << (static_cast<int>(host_mode));
+      ss << "dma-en: " << std::dec << static_cast<int>(dma_en) << " = 0x"
+         << std::hex << static_cast<int>(dma_en) << "clr-all: " << std::dec
+         << static_cast<int>(clr_all) << " = 0x" << std::hex
+         << static_cast<int>(clr_all) << "reset-sie: " << std::dec
+         << static_cast<int>(reset_sie) << " = 0x" << std::hex
+         << static_cast<int>(reset_sie) << "int-busy: " << std::dec
+         << static_cast<int>(int_busy) << " = 0x" << std::hex
+         << static_cast<int>(int_busy) << "sys-ctlr: " << std::dec
+         << static_cast<int>(sys_ctlr) << " = 0x" << std::hex
+         << static_cast<int>(sys_ctlr) << "low-speed: " << std::dec
+         << static_cast<int>(low_speed) << " = 0x" << std::hex
+         << static_cast<int>(low_speed) << "host-mode: " << std::dec
+         << static_cast<int>(host_mode) << " = 0x" << std::hex
+         << static_cast<int>(host_mode);
       return ss.str();
     }
 
@@ -148,24 +150,24 @@ public:
     };
 
     PortCtrl &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("port-en: ") << (std::dec) << (static_cast<int>(port_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(port_en))
-           << ("hub0-reset: ") << (std::dec) << (static_cast<int>(hub0_reset))
-           << (" = 0x") << (std::hex) << (static_cast<int>(hub0_reset))
-           << ("low-speed: ") << (std::dec) << (static_cast<int>(low_speed))
-           << (" = 0x") << (std::hex) << (static_cast<int>(low_speed))
-           << ("dm-pin (ro): ") << (std::dec) << (static_cast<int>(dm_pin))
-           << (" = 0x") << (std::hex) << (static_cast<int>(dm_pin))
-           << ("dp-pin (ro): ") << (std::dec) << (static_cast<int>(dp_pin))
-           << (" = 0x") << (std::hex) << (static_cast<int>(dp_pin))
-           << ("pd-dis: ") << (std::dec) << (static_cast<int>(pd_dis))
-           << (" = 0x") << (std::hex) << (static_cast<int>(pd_dis));
+      ss << "port-en: " << std::dec << static_cast<int>(port_en) << " = 0x"
+         << std::hex << static_cast<int>(port_en) << "hub0-reset: " << std::dec
+         << static_cast<int>(hub0_reset) << " = 0x" << std::hex
+         << static_cast<int>(hub0_reset) << "low-speed: " << std::dec
+         << static_cast<int>(low_speed) << " = 0x" << std::hex
+         << static_cast<int>(low_speed) << "dm-pin (ro): " << std::dec
+         << static_cast<int>(dm_pin) << " = 0x" << std::hex
+         << static_cast<int>(dm_pin) << "dp-pin (ro): " << std::dec
+         << static_cast<int>(dp_pin) << " = 0x" << std::hex
+         << static_cast<int>(dp_pin) << "pd-dis: " << std::dec
+         << static_cast<int>(pd_dis) << " = 0x" << std::hex
+         << static_cast<int>(pd_dis);
       return ss.str();
     }
 
@@ -188,29 +190,28 @@ public:
     };
 
     IntEn &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("bus-reset: ") << (std::dec) << (static_cast<int>(bus_reset))
-           << (" = 0x") << (std::hex) << (static_cast<int>(bus_reset))
-           << ("transfer: ") << (std::dec) << (static_cast<int>(transfer))
-           << (" = 0x") << (std::hex) << (static_cast<int>(transfer))
-           << ("suspend: ") << (std::dec) << (static_cast<int>(suspend))
-           << (" = 0x") << (std::hex) << (static_cast<int>(suspend))
-           << ("host-sof: ") << (std::dec) << (static_cast<int>(host_sof))
-           << (" = 0x") << (std::hex) << (static_cast<int>(host_sof))
-           << ("fifo-overflow: ") << (std::dec)
-           << (static_cast<int>(fifo_overflow)) << (" = 0x") << (std::hex)
-           << (static_cast<int>(fifo_overflow)) << ("mod-1-wire-en: ")
-           << (std::dec) << (static_cast<int>(mod_1_wire_en)) << (" = 0x")
-           << (std::hex) << (static_cast<int>(mod_1_wire_en)) << ("dev-nak: ")
-           << (std::dec) << (static_cast<int>(dev_nak)) << (" = 0x")
-           << (std::hex) << (static_cast<int>(dev_nak)) << ("dev-sof: ")
-           << (std::dec) << (static_cast<int>(dev_sof)) << (" = 0x")
-           << (std::hex) << (static_cast<int>(dev_sof));
+      ss << "bus-reset: " << std::dec << static_cast<int>(bus_reset) << " = 0x"
+         << std::hex << static_cast<int>(bus_reset) << "transfer: " << std::dec
+         << static_cast<int>(transfer) << " = 0x" << std::hex
+         << static_cast<int>(transfer) << "suspend: " << std::dec
+         << static_cast<int>(suspend) << " = 0x" << std::hex
+         << static_cast<int>(suspend) << "host-sof: " << std::dec
+         << static_cast<int>(host_sof) << " = 0x" << std::hex
+         << static_cast<int>(host_sof) << "fifo-overflow: " << std::dec
+         << static_cast<int>(fifo_overflow) << " = 0x" << std::hex
+         << static_cast<int>(fifo_overflow) << "mod-1-wire-en: " << std::dec
+         << static_cast<int>(mod_1_wire_en) << " = 0x" << std::hex
+         << static_cast<int>(mod_1_wire_en) << "dev-nak: " << std::dec
+         << static_cast<int>(dev_nak) << " = 0x" << std::hex
+         << static_cast<int>(dev_nak) << "dev-sof: " << std::dec
+         << static_cast<int>(dev_sof) << " = 0x" << std::hex
+         << static_cast<int>(dev_sof);
       return ss.str();
     }
 
@@ -225,16 +226,16 @@ public:
     };
 
     DevAd &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("usb-addr: ") << (std::dec) << (static_cast<int>(usb_addr))
-           << (" = 0x") << (std::hex) << (static_cast<int>(usb_addr))
-           << ("gp-bit: ") << (std::dec) << (static_cast<int>(gp_bit))
-           << (" = 0x") << (std::hex) << (static_cast<int>(gp_bit));
+      ss << "usb-addr: " << std::dec << static_cast<int>(usb_addr) << " = 0x"
+         << std::hex << static_cast<int>(usb_addr) << "gp-bit: " << std::dec
+         << static_cast<int>(gp_bit) << " = 0x" << std::hex
+         << static_cast<int>(gp_bit);
       return ss.str();
     }
 
@@ -262,31 +263,28 @@ public:
     };
 
     MiscStatus &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("dev-attach (ro): ") << (std::dec)
-           << (static_cast<int>(dev_attach)) << (" = 0x") << (std::hex)
-           << (static_cast<int>(dev_attach)) << ("dm-level (ro): ")
-           << (std::dec) << (static_cast<int>(dm_level)) << (" = 0x")
-           << (std::hex) << (static_cast<int>(dm_level))
-           << ("bus-suspend (ro): ") << (std::dec)
-           << (static_cast<int>(bus_suspend)) << (" = 0x") << (std::hex)
-           << (static_cast<int>(bus_suspend)) << ("bus-reset (ro): ")
-           << (std::dec) << (static_cast<int>(bus_reset)) << (" = 0x")
-           << (std::hex) << (static_cast<int>(bus_reset))
-           << ("r-fifo-rdy (ro): ") << (std::dec)
-           << (static_cast<int>(r_fifo_rdy)) << (" = 0x") << (std::hex)
-           << (static_cast<int>(r_fifo_rdy)) << ("sie-free (ro): ")
-           << (std::dec) << (static_cast<int>(sie_free)) << (" = 0x")
-           << (std::hex) << (static_cast<int>(sie_free)) << ("sof-act (ro): ")
-           << (std::dec) << (static_cast<int>(sof_act)) << (" = 0x")
-           << (std::hex) << (static_cast<int>(sof_act)) << ("sof-pre (ro): ")
-           << (std::dec) << (static_cast<int>(sof_pre)) << (" = 0x")
-           << (std::hex) << (static_cast<int>(sof_pre));
+      ss << "dev-attach (ro): " << std::dec << static_cast<int>(dev_attach)
+         << " = 0x" << std::hex << static_cast<int>(dev_attach)
+         << "dm-level (ro): " << std::dec << static_cast<int>(dm_level)
+         << " = 0x" << std::hex << static_cast<int>(dm_level)
+         << "bus-suspend (ro): " << std::dec << static_cast<int>(bus_suspend)
+         << " = 0x" << std::hex << static_cast<int>(bus_suspend)
+         << "bus-reset (ro): " << std::dec << static_cast<int>(bus_reset)
+         << " = 0x" << std::hex << static_cast<int>(bus_reset)
+         << "r-fifo-rdy (ro): " << std::dec << static_cast<int>(r_fifo_rdy)
+         << " = 0x" << std::hex << static_cast<int>(r_fifo_rdy)
+         << "sie-free (ro): " << std::dec << static_cast<int>(sie_free)
+         << " = 0x" << std::hex << static_cast<int>(sie_free)
+         << "sof-act (ro): " << std::dec << static_cast<int>(sof_act) << " = 0x"
+         << std::hex << static_cast<int>(sof_act)
+         << "sof-pre (ro): " << std::dec << static_cast<int>(sof_pre) << " = 0x"
+         << std::hex << static_cast<int>(sof_pre);
       return ss.str();
     }
 
@@ -314,28 +312,28 @@ public:
     };
 
     IntFlag &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("bus-reset: ") << (std::dec) << (static_cast<int>(bus_reset))
-           << (" = 0x") << (std::hex) << (static_cast<int>(bus_reset))
-           << ("transfer: ") << (std::dec) << (static_cast<int>(transfer))
-           << (" = 0x") << (std::hex) << (static_cast<int>(transfer))
-           << ("suspend: ") << (std::dec) << (static_cast<int>(suspend))
-           << (" = 0x") << (std::hex) << (static_cast<int>(suspend))
-           << ("hst-sof: ") << (std::dec) << (static_cast<int>(hst_sof))
-           << (" = 0x") << (std::hex) << (static_cast<int>(hst_sof))
-           << ("fifo-ov: ") << (std::dec) << (static_cast<int>(fifo_ov))
-           << (" = 0x") << (std::hex) << (static_cast<int>(fifo_ov))
-           << ("sie-free (ro): ") << (std::dec) << (static_cast<int>(sie_free))
-           << (" = 0x") << (std::hex) << (static_cast<int>(sie_free))
-           << ("tog-ok (ro): ") << (std::dec) << (static_cast<int>(tog_ok))
-           << (" = 0x") << (std::hex) << (static_cast<int>(tog_ok))
-           << ("is-nak (ro): ") << (std::dec) << (static_cast<int>(is_nak))
-           << (" = 0x") << (std::hex) << (static_cast<int>(is_nak));
+      ss << "bus-reset: " << std::dec << static_cast<int>(bus_reset) << " = 0x"
+         << std::hex << static_cast<int>(bus_reset) << "transfer: " << std::dec
+         << static_cast<int>(transfer) << " = 0x" << std::hex
+         << static_cast<int>(transfer) << "suspend: " << std::dec
+         << static_cast<int>(suspend) << " = 0x" << std::hex
+         << static_cast<int>(suspend) << "hst-sof: " << std::dec
+         << static_cast<int>(hst_sof) << " = 0x" << std::hex
+         << static_cast<int>(hst_sof) << "fifo-ov: " << std::dec
+         << static_cast<int>(fifo_ov) << " = 0x" << std::hex
+         << static_cast<int>(fifo_ov) << "sie-free (ro): " << std::dec
+         << static_cast<int>(sie_free) << " = 0x" << std::hex
+         << static_cast<int>(sie_free) << "tog-ok (ro): " << std::dec
+         << static_cast<int>(tog_ok) << " = 0x" << std::hex
+         << static_cast<int>(tog_ok) << "is-nak (ro): " << std::dec
+         << static_cast<int>(is_nak) << " = 0x" << std::hex
+         << static_cast<int>(is_nak);
       return ss.str();
     }
 
@@ -357,21 +355,20 @@ public:
     };
 
     IntStatus &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("endp (ro): ") << (std::dec) << (static_cast<int>(endp))
-           << (" = 0x") << (std::hex) << (static_cast<int>(endp))
-           << ("token (ro): ") << (std::dec) << (static_cast<int>(token))
-           << (" = 0x") << (std::hex) << (static_cast<int>(token))
-           << ("tog-ok (ro): ") << (std::dec) << (static_cast<int>(tog_ok))
-           << (" = 0x") << (std::hex) << (static_cast<int>(tog_ok))
-           << ("setup-act (ro): ") << (std::dec)
-           << (static_cast<int>(setup_act)) << (" = 0x") << (std::hex)
-           << (static_cast<int>(setup_act));
+      ss << "endp (ro): " << std::dec << static_cast<int>(endp) << " = 0x"
+         << std::hex << static_cast<int>(endp) << "token (ro): " << std::dec
+         << static_cast<int>(token) << " = 0x" << std::hex
+         << static_cast<int>(token) << "tog-ok (ro): " << std::dec
+         << static_cast<int>(tog_ok) << " = 0x" << std::hex
+         << static_cast<int>(tog_ok) << "setup-act (ro): " << std::dec
+         << static_cast<int>(setup_act) << " = 0x" << std::hex
+         << static_cast<int>(setup_act);
       return ss.str();
     }
 
@@ -387,14 +384,14 @@ public:
     };
 
     RxLen &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("len (ro): ") << (std::dec) << (static_cast<int>(len))
-           << (" = 0x") << (std::hex) << (static_cast<int>(len));
+      ss << "len (ro): " << std::dec << static_cast<int>(len) << " = 0x"
+         << std::hex << static_cast<int>(len);
       return ss.str();
     }
 
@@ -417,22 +414,22 @@ public:
     };
 
     Ep4_1Mod &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("ep4-tx-en: ") << (std::dec) << (static_cast<int>(ep4_tx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep4_tx_en))
-           << ("ep4-rx-en: ") << (std::dec) << (static_cast<int>(ep4_rx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep4_rx_en))
-           << ("ep1-buf-mod: ") << (std::dec) << (static_cast<int>(ep1_buf_mod))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep1_buf_mod))
-           << ("ep1-tx-en: ") << (std::dec) << (static_cast<int>(ep1_tx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep1_tx_en))
-           << ("ep1-rx-en: ") << (std::dec) << (static_cast<int>(ep1_rx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep1_rx_en));
+      ss << "ep4-tx-en: " << std::dec << static_cast<int>(ep4_tx_en) << " = 0x"
+         << std::hex << static_cast<int>(ep4_tx_en) << "ep4-rx-en: " << std::dec
+         << static_cast<int>(ep4_rx_en) << " = 0x" << std::hex
+         << static_cast<int>(ep4_rx_en) << "ep1-buf-mod: " << std::dec
+         << static_cast<int>(ep1_buf_mod) << " = 0x" << std::hex
+         << static_cast<int>(ep1_buf_mod) << "ep1-tx-en: " << std::dec
+         << static_cast<int>(ep1_tx_en) << " = 0x" << std::hex
+         << static_cast<int>(ep1_tx_en) << "ep1-rx-en: " << std::dec
+         << static_cast<int>(ep1_rx_en) << " = 0x" << std::hex
+         << static_cast<int>(ep1_rx_en);
       return ss.str();
     }
 
@@ -453,24 +450,24 @@ public:
     };
 
     Ep2_3Mod &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("ep2-buf-mod: ") << (std::dec) << (static_cast<int>(ep2_buf_mod))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep2_buf_mod))
-           << ("ep2-tx-en: ") << (std::dec) << (static_cast<int>(ep2_tx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep2_tx_en))
-           << ("ep2-rx-en: ") << (std::dec) << (static_cast<int>(ep2_rx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep2_rx_en))
-           << ("ep3-buf-mod: ") << (std::dec) << (static_cast<int>(ep3_buf_mod))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep3_buf_mod))
-           << ("ep3-tx-en: ") << (std::dec) << (static_cast<int>(ep3_tx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep3_tx_en))
-           << ("ep3-rx-en: ") << (std::dec) << (static_cast<int>(ep3_rx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep3_rx_en));
+      ss << "ep2-buf-mod: " << std::dec << static_cast<int>(ep2_buf_mod)
+         << " = 0x" << std::hex << static_cast<int>(ep2_buf_mod)
+         << "ep2-tx-en: " << std::dec << static_cast<int>(ep2_tx_en) << " = 0x"
+         << std::hex << static_cast<int>(ep2_tx_en) << "ep2-rx-en: " << std::dec
+         << static_cast<int>(ep2_rx_en) << " = 0x" << std::hex
+         << static_cast<int>(ep2_rx_en) << "ep3-buf-mod: " << std::dec
+         << static_cast<int>(ep3_buf_mod) << " = 0x" << std::hex
+         << static_cast<int>(ep3_buf_mod) << "ep3-tx-en: " << std::dec
+         << static_cast<int>(ep3_tx_en) << " = 0x" << std::hex
+         << static_cast<int>(ep3_tx_en) << "ep3-rx-en: " << std::dec
+         << static_cast<int>(ep3_rx_en) << " = 0x" << std::hex
+         << static_cast<int>(ep3_rx_en);
       return ss.str();
     }
 
@@ -490,24 +487,24 @@ public:
     };
 
     Ep567Mod &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("ep5-tx-en: ") << (std::dec) << (static_cast<int>(ep5_tx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep5_tx_en))
-           << ("ep5-rx-en: ") << (std::dec) << (static_cast<int>(ep5_rx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep5_rx_en))
-           << ("ep6-tx-en: ") << (std::dec) << (static_cast<int>(ep6_tx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep6_tx_en))
-           << ("ep6-rx-en: ") << (std::dec) << (static_cast<int>(ep6_rx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep6_rx_en))
-           << ("ep7-tx-en: ") << (std::dec) << (static_cast<int>(ep7_tx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep7_tx_en))
-           << ("ep7-rx-en: ") << (std::dec) << (static_cast<int>(ep7_rx_en))
-           << (" = 0x") << (std::hex) << (static_cast<int>(ep7_rx_en));
+      ss << "ep5-tx-en: " << std::dec << static_cast<int>(ep5_tx_en) << " = 0x"
+         << std::hex << static_cast<int>(ep5_tx_en) << "ep5-rx-en: " << std::dec
+         << static_cast<int>(ep5_rx_en) << " = 0x" << std::hex
+         << static_cast<int>(ep5_rx_en) << "ep6-tx-en: " << std::dec
+         << static_cast<int>(ep6_tx_en) << " = 0x" << std::hex
+         << static_cast<int>(ep6_tx_en) << "ep6-rx-en: " << std::dec
+         << static_cast<int>(ep6_rx_en) << " = 0x" << std::hex
+         << static_cast<int>(ep6_rx_en) << "ep7-tx-en: " << std::dec
+         << static_cast<int>(ep7_tx_en) << " = 0x" << std::hex
+         << static_cast<int>(ep7_tx_en) << "ep7-rx-en: " << std::dec
+         << static_cast<int>(ep7_rx_en) << " = 0x" << std::hex
+         << static_cast<int>(ep7_rx_en);
       return ss.str();
     }
 
@@ -524,14 +521,14 @@ public:
     };
 
     Ep0Dma &operator=(uint16_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("dma: ") << (std::dec) << (static_cast<int>(dma)) << (" = 0x")
-           << (std::hex) << (static_cast<int>(dma));
+      ss << "dma: " << std::dec << static_cast<int>(dma) << " = 0x" << std::hex
+         << static_cast<int>(dma);
       return ss.str();
     }
 
@@ -548,14 +545,14 @@ public:
     };
 
     Ep1Dma &operator=(uint16_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("dma: ") << (std::dec) << (static_cast<int>(dma)) << (" = 0x")
-           << (std::hex) << (static_cast<int>(dma));
+      ss << "dma: " << std::dec << static_cast<int>(dma) << " = 0x" << std::hex
+         << static_cast<int>(dma);
       return ss.str();
     }
 
@@ -572,14 +569,14 @@ public:
     };
 
     Ep2Dma &operator=(uint16_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("dma: ") << (std::dec) << (static_cast<int>(dma)) << (" = 0x")
-           << (std::hex) << (static_cast<int>(dma));
+      ss << "dma: " << std::dec << static_cast<int>(dma) << " = 0x" << std::hex
+         << static_cast<int>(dma);
       return ss.str();
     }
 
@@ -596,14 +593,14 @@ public:
     };
 
     Ep3Dma &operator=(uint16_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("dma: ") << (std::dec) << (static_cast<int>(dma)) << (" = 0x")
-           << (std::hex) << (static_cast<int>(dma));
+      ss << "dma: " << std::dec << static_cast<int>(dma) << " = 0x" << std::hex
+         << static_cast<int>(dma);
       return ss.str();
     }
 
@@ -619,14 +616,14 @@ public:
     };
 
     Ep0TLen &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("t-len: ") << (std::dec) << (static_cast<int>(t_len))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_len));
+      ss << "t-len: " << std::dec << static_cast<int>(t_len) << " = 0x"
+         << std::hex << static_cast<int>(t_len);
       return ss.str();
     }
 
@@ -652,22 +649,22 @@ public:
     };
 
     Ep0Ctrl &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("t-res: ") << (std::dec) << (static_cast<int>(t_res))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_res))
-           << ("r-res: ") << (std::dec) << (static_cast<int>(r_res))
-           << (" = 0x") << (std::hex) << (static_cast<int>(r_res))
-           << ("auto-tog: ") << (std::dec) << (static_cast<int>(auto_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(auto_tog))
-           << ("t-tog: ") << (std::dec) << (static_cast<int>(t_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_tog))
-           << ("r-tog: ") << (std::dec) << (static_cast<int>(r_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(r_tog));
+      ss << "t-res: " << std::dec << static_cast<int>(t_res) << " = 0x"
+         << std::hex << static_cast<int>(t_res) << "r-res: " << std::dec
+         << static_cast<int>(r_res) << " = 0x" << std::hex
+         << static_cast<int>(r_res) << "auto-tog: " << std::dec
+         << static_cast<int>(auto_tog) << " = 0x" << std::hex
+         << static_cast<int>(auto_tog) << "t-tog: " << std::dec
+         << static_cast<int>(t_tog) << " = 0x" << std::hex
+         << static_cast<int>(t_tog) << "r-tog: " << std::dec
+         << static_cast<int>(r_tog) << " = 0x" << std::hex
+         << static_cast<int>(r_tog);
       return ss.str();
     }
 
@@ -683,14 +680,14 @@ public:
     };
 
     Ep1TLen &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("t-len: ") << (std::dec) << (static_cast<int>(t_len))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_len));
+      ss << "t-len: " << std::dec << static_cast<int>(t_len) << " = 0x"
+         << std::hex << static_cast<int>(t_len);
       return ss.str();
     }
 
@@ -716,22 +713,22 @@ public:
     };
 
     Ep1Ctrl &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("t-res: ") << (std::dec) << (static_cast<int>(t_res))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_res))
-           << ("r-res: ") << (std::dec) << (static_cast<int>(r_res))
-           << (" = 0x") << (std::hex) << (static_cast<int>(r_res))
-           << ("auto-tog: ") << (std::dec) << (static_cast<int>(auto_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(auto_tog))
-           << ("t-tog: ") << (std::dec) << (static_cast<int>(t_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_tog))
-           << ("r-tog: ") << (std::dec) << (static_cast<int>(r_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(r_tog));
+      ss << "t-res: " << std::dec << static_cast<int>(t_res) << " = 0x"
+         << std::hex << static_cast<int>(t_res) << "r-res: " << std::dec
+         << static_cast<int>(r_res) << " = 0x" << std::hex
+         << static_cast<int>(r_res) << "auto-tog: " << std::dec
+         << static_cast<int>(auto_tog) << " = 0x" << std::hex
+         << static_cast<int>(auto_tog) << "t-tog: " << std::dec
+         << static_cast<int>(t_tog) << " = 0x" << std::hex
+         << static_cast<int>(t_tog) << "r-tog: " << std::dec
+         << static_cast<int>(r_tog) << " = 0x" << std::hex
+         << static_cast<int>(r_tog);
       return ss.str();
     }
 
@@ -747,14 +744,14 @@ public:
     };
 
     Ep2TLen &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("t-len: ") << (std::dec) << (static_cast<int>(t_len))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_len));
+      ss << "t-len: " << std::dec << static_cast<int>(t_len) << " = 0x"
+         << std::hex << static_cast<int>(t_len);
       return ss.str();
     }
 
@@ -780,22 +777,22 @@ public:
     };
 
     Ep2Ctrl &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("t-res: ") << (std::dec) << (static_cast<int>(t_res))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_res))
-           << ("r-res: ") << (std::dec) << (static_cast<int>(r_res))
-           << (" = 0x") << (std::hex) << (static_cast<int>(r_res))
-           << ("auto-tog: ") << (std::dec) << (static_cast<int>(auto_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(auto_tog))
-           << ("t-tog: ") << (std::dec) << (static_cast<int>(t_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_tog))
-           << ("r-tog: ") << (std::dec) << (static_cast<int>(r_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(r_tog));
+      ss << "t-res: " << std::dec << static_cast<int>(t_res) << " = 0x"
+         << std::hex << static_cast<int>(t_res) << "r-res: " << std::dec
+         << static_cast<int>(r_res) << " = 0x" << std::hex
+         << static_cast<int>(r_res) << "auto-tog: " << std::dec
+         << static_cast<int>(auto_tog) << " = 0x" << std::hex
+         << static_cast<int>(auto_tog) << "t-tog: " << std::dec
+         << static_cast<int>(t_tog) << " = 0x" << std::hex
+         << static_cast<int>(t_tog) << "r-tog: " << std::dec
+         << static_cast<int>(r_tog) << " = 0x" << std::hex
+         << static_cast<int>(r_tog);
       return ss.str();
     }
 
@@ -811,14 +808,14 @@ public:
     };
 
     Ep3TLen &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("t-len: ") << (std::dec) << (static_cast<int>(t_len))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_len));
+      ss << "t-len: " << std::dec << static_cast<int>(t_len) << " = 0x"
+         << std::hex << static_cast<int>(t_len);
       return ss.str();
     }
 
@@ -844,22 +841,22 @@ public:
     };
 
     Ep3Ctrl &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("t-res: ") << (std::dec) << (static_cast<int>(t_res))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_res))
-           << ("r-res: ") << (std::dec) << (static_cast<int>(r_res))
-           << (" = 0x") << (std::hex) << (static_cast<int>(r_res))
-           << ("auto-tog: ") << (std::dec) << (static_cast<int>(auto_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(auto_tog))
-           << ("t-tog: ") << (std::dec) << (static_cast<int>(t_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_tog))
-           << ("r-tog: ") << (std::dec) << (static_cast<int>(r_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(r_tog));
+      ss << "t-res: " << std::dec << static_cast<int>(t_res) << " = 0x"
+         << std::hex << static_cast<int>(t_res) << "r-res: " << std::dec
+         << static_cast<int>(r_res) << " = 0x" << std::hex
+         << static_cast<int>(r_res) << "auto-tog: " << std::dec
+         << static_cast<int>(auto_tog) << " = 0x" << std::hex
+         << static_cast<int>(auto_tog) << "t-tog: " << std::dec
+         << static_cast<int>(t_tog) << " = 0x" << std::hex
+         << static_cast<int>(t_tog) << "r-tog: " << std::dec
+         << static_cast<int>(r_tog) << " = 0x" << std::hex
+         << static_cast<int>(r_tog);
       return ss.str();
     }
 
@@ -875,14 +872,14 @@ public:
     };
 
     Ep4TLen &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("t-len: ") << (std::dec) << (static_cast<int>(t_len))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_len));
+      ss << "t-len: " << std::dec << static_cast<int>(t_len) << " = 0x"
+         << std::hex << static_cast<int>(t_len);
       return ss.str();
     }
 
@@ -908,22 +905,22 @@ public:
     };
 
     Ep4Ctrl &operator=(uint8_t value) {
-      (reg) = (value);
+      reg = value;
       return *this;
     }
 
     std::string toString() const {
       auto ss{std::ostringstream()};
-      (ss) << ("t-res: ") << (std::dec) << (static_cast<int>(t_res))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_res))
-           << ("r-res: ") << (std::dec) << (static_cast<int>(r_res))
-           << (" = 0x") << (std::hex) << (static_cast<int>(r_res))
-           << ("auto-tog: ") << (std::dec) << (static_cast<int>(auto_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(auto_tog))
-           << ("t-tog: ") << (std::dec) << (static_cast<int>(t_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(t_tog))
-           << ("r-tog: ") << (std::dec) << (static_cast<int>(r_tog))
-           << (" = 0x") << (std::hex) << (static_cast<int>(r_tog));
+      ss << "t-res: " << std::dec << static_cast<int>(t_res) << " = 0x"
+         << std::hex << static_cast<int>(t_res) << "r-res: " << std::dec
+         << static_cast<int>(r_res) << " = 0x" << std::hex
+         << static_cast<int>(r_res) << "auto-tog: " << std::dec
+         << static_cast<int>(auto_tog) << " = 0x" << std::hex
+         << static_cast<int>(auto_tog) << "t-tog: " << std::dec
+         << static_cast<int>(t_tog) << " = 0x" << std::hex
+         << static_cast<int>(t_tog) << "r-tog: " << std::dec
+         << static_cast<int>(r_tog) << " = 0x" << std::hex
+         << static_cast<int>(r_tog);
       return ss.str();
     }
 

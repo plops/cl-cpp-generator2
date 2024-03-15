@@ -3,7 +3,6 @@
 //
 
 #include "Ch592UsbRegisters.h"
-#include <sstream>
 Ch592UsbRegisters::Ch592UsbRegisters() {}
 void Ch592UsbRegisters::device_init(uint16_t ep0_data) {
   ctrl.reg = 0;
