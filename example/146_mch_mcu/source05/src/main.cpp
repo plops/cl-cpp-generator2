@@ -248,20 +248,8 @@ responds to confirm its own status.
 
 int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
-  // This will configure UART1 to send and receive at 115200 baud:
-
-  /** up to 6Mbps is possible. fifo can store 8 bytes
-
-*/
-  GPIOA_SetBits(GPIO_Pin_9);
-  GPIOA_ModeCfg(GPIO_Pin_8, GPIO_ModeIN_PU);
-  GPIOA_ModeCfg(GPIO_Pin_9, GPIO_ModeOut_PP_5mA);
-  UART1_DefInit();
-  auto TxBuf{std::array<uint8_t, 10>("ALPHA1\r\n")};
-  UART1_SendString(TxBuf.data(), TxBuf.size());
-  auto ostr{std::vector<char>()};
-  fmt::format_to(std::back_inserter(ostr), "{}", 43);
-  UART1_SendString(ostr.data(), ostr.size());
+  auto uart{Uart()};
+  uart.print("{}", 42);
   usb.device_init(
       static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
   auto &dev{*reinterpret_cast<const UsbDeviceDescriptor *>(DevDescr.data())};

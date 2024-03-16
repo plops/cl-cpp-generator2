@@ -1833,7 +1833,10 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	
 	
 	(SetSysClock CLK_SOURCE_PLL_60MHz)
-	
+
+	(let ((uart (Uart))))
+
+	#+nil
 	(do0
 	 (comments  "This will configure UART1 to send and receive at 115200 baud:")
 	 (doc "up to 6Mbps is possible. fifo can store 8 bytes")
@@ -1851,8 +1854,9 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 
 	 (UART1_SendString (TxBuf.data) (TxBuf.size)))
 
-	
 
+	(uart.print (string "{}") 42)
+	#+nil
 	(let ((ostr (std--vector<char>)))
 	  (fmt--format_to (std--back_inserter ostr)
 			  (string {})
