@@ -1429,6 +1429,7 @@ I think string descriptors are optional, so for now I will always keep string in
 
        (comments "overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml")
        (defun USB_DevTransProcess2 ()
+	 (let ((u (Uart))))
 	 (when usb.int_flag.transfer
 	   (when (!= (hex #b11) usb.int_status.token )
 	     (cond
@@ -1436,33 +1437,33 @@ I think string descriptors are optional, so for now I will always keep string in
 		(comments "usb token in")
 		(case usb.int_status.endp
 		  (0
-		   (comments "usb token in EP0")
+		   (u.print (string "usb token in EP0"))
 		   (case SetupReqCode
 		     (USB_GET_DESCRIPTOR
-		      (comments "get descriptor"))
+		      (u.print (string "get descriptor")))
 		     (USB_SET_ADDRESS
-		      (comments "set address"))
+		      (u.print (string "set address")))
 		     (t
 		      (comments default))))
-		  (1 (comments "usb token in EP1"))
-		  (2 (comments "usb token in EP2"))
-		  (3 (comments "usb token in EP3"))
-		  (4 (comments "usb token in EP4"))))
+		  (1 (u.print (string "usb token in EP1")))
+		  (2 (u.print (string "usb token in EP2")))
+		  (3 (u.print (string "usb token in EP3")))
+		  (4 (u.print (string "usb token in EP4")))))
 	       ((== (hex #b00) usb.int_status.token)
-		(comments "usb token out")
+		(u.print (string "usb token out"))
 		(case usb.int_status.endp
 		  (0 
-		   (comments "token out EP0"))
+		   (u.print (string "token out EP0")))
 		  (1
-		   (comments "token out EP1"))
+		   (u.print (string "token out EP1")))
 		  (2
-		   (comments "token out EP2"))
+		   (u.print (string "token out EP2")))
 		  (3
-		   (comments "token out EP3"))
+		   (u.print (string "token out EP3")))
 		  (4
-		   (comments "token out EP4")))
+		   (u.print (string "token out EP4"))))
 		)))
-	   (comments "clear interrupt by writing to flag")
+	   (u.print (string "clear interrupt by writing to flag"))
 	   (setf usb.int_flag.transfer 1)))
       
        (doc "Handle USB transaction processing. Respond to standard USB requests (e.g. Get Descriptor, Set Address). Manage data transfers on endpoints.")

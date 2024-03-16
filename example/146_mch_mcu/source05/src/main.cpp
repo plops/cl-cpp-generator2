@@ -59,6 +59,7 @@ Ch592UsbRegisters &usb =
 // overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml
 
 void USB_DevTransProcess2() {
+  auto u{Uart()};
   if (usb.int_flag.transfer) {
     if (0x3 != usb.int_status.token) {
       if (0x1 == usb.int_status.token) {
@@ -66,17 +67,14 @@ void USB_DevTransProcess2() {
 
         switch (usb.int_status.endp) {
         case 0: {
-          // usb token in EP0
-
+          u.print("usb token in EP0");
           switch (SetupReqCode) {
           case USB_GET_DESCRIPTOR: {
-            // get descriptor
-
+            u.print("get descriptor");
             break;
           };
           case USB_SET_ADDRESS: {
-            // set address
-
+            u.print("set address");
             break;
           };
           default: {
@@ -88,60 +86,49 @@ void USB_DevTransProcess2() {
           break;
         };
         case 1: {
-          // usb token in EP1
-
+          u.print("usb token in EP1");
           break;
         };
         case 2: {
-          // usb token in EP2
-
+          u.print("usb token in EP2");
           break;
         };
         case 3: {
-          // usb token in EP3
-
+          u.print("usb token in EP3");
           break;
         };
         case 4: {
-          // usb token in EP4
-
+          u.print("usb token in EP4");
           break;
         };
         }
       } else if (0x0 == usb.int_status.token) {
-        // usb token out
-
+        u.print("usb token out");
         switch (usb.int_status.endp) {
         case 0: {
-          // token out EP0
-
+          u.print("token out EP0");
           break;
         };
         case 1: {
-          // token out EP1
-
+          u.print("token out EP1");
           break;
         };
         case 2: {
-          // token out EP2
-
+          u.print("token out EP2");
           break;
         };
         case 3: {
-          // token out EP3
-
+          u.print("token out EP3");
           break;
         };
         case 4: {
-          // token out EP4
-
+          u.print("token out EP4");
           break;
         };
         }
       }
     }
-    // clear interrupt by writing to flag
-
+    u.print("clear interrupt by writing to flag");
     usb.int_flag.transfer = 1;
   }
 }
