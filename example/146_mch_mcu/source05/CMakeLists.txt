@@ -37,6 +37,7 @@ if (BUILD_FOR_TARGET)
     -DFMT_USE_DOUBLE=0
     -DFMT_USE_LONG_DOUBLE=0
     -DFMT_STATIC_THOUSANDS_SEPARATOR
+    -DFMT_HEADER_ONLY
   )
   add_compile_options(
     ${EMBED_OPTIONS}
@@ -155,6 +156,11 @@ add_library(mine
   src/Uart.h
 )
 
+# add_library(fmt
+#   /home/martin/src/fmt/src/format.cc
+#   /home/martin/src/fmt/src/os.cc
+#   /home/martin/src/fmt/src/fmt.cc
+#   )
 
 
 # -Wall: Enables a set of warning messages for potential issues in the code.
@@ -195,7 +201,7 @@ if (BUILD_FOR_TARGET)
     ${HAL_PATH}/RVMSIS/
     ${HAL_PATH}/StdPeriphDriver/inc
     # git clone https://github.com/fmtlib/fmt
-    /home/martin/src/fmt/include/fmt
+    /home/martin/src/fmt/include/
     #   ${HAL_PATH}/User/
     #   ${HAL_PATH}/../BLE/HAL/include
     #   ${HAL_PATH}/../BLE/LIB
@@ -225,7 +231,7 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME}
-  mine
+  mine 
 )
 
 if (BUILD_FOR_TARGET)

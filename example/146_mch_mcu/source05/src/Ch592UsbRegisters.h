@@ -2,7 +2,6 @@
 #define CH592USBREGISTERS_H
 
 #include <cstdint>
-#include <format.h>
 #include <string>
 /** @brief The DiagramBase class represents a base class for diagrams.
 
@@ -96,11 +95,11 @@ public:
         uint8_t int_busy : 1;  // rw  Auto pause;
         uint8_t sys_ctlr : 2;  // rw  host-mode==0: 00..disable usb device
                                // function and disable internal pull-up (can be
-        // overridden by dev-pullup-en), 01..enable device
-        // fucntion, disable internal pull-up, external
-        // pull-up-needed, 1x..enable usb device fucntion
-        // and internal 1.5k pull-up, pull-up has priority
-        // over pull-down resistor;
+                              // overridden by dev-pullup-en), 01..enable device
+                              // fucntion, disable internal pull-up, external
+                              // pull-up-needed, 1x..enable usb device fucntion
+                              // and internal 1.5k pull-up, pull-up has priority
+                              // over pull-down resistor;
         uint8_t low_speed : 1; // rw ;
         uint8_t host_mode : 1; // rw ;
       };
@@ -109,22 +108,6 @@ public:
     Ctrl &operator=(uint8_t value) {
       reg = value;
       return *this;
-    }
-
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out),
-                     "dma-en: {} = 0x{:X},\nclr-all: {} = 0x{:X},\nreset-sie: "
-                     "{} = 0x{:X},\nint-busy: {} = 0x{:X},\nsys-ctlr: {} = "
-                     "0x{:X},\nlow-speed: {} = 0x{:X},\nhost-mode: {} = 0x{:X}",
-                     static_cast<int>(dma_en), static_cast<int>(dma_en),
-                     static_cast<int>(clr_all), static_cast<int>(clr_all),
-                     static_cast<int>(reset_sie), static_cast<int>(reset_sie),
-                     static_cast<int>(int_busy), static_cast<int>(int_busy),
-                     static_cast<int>(sys_ctlr), static_cast<int>(sys_ctlr),
-                     static_cast<int>(low_speed), static_cast<int>(low_speed),
-                     static_cast<int>(host_mode), static_cast<int>(host_mode));
-      return out;
     }
 
   } ctrl{0};
@@ -150,21 +133,6 @@ public:
       return *this;
     }
 
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out),
-                     "port-en: {} = 0x{:X},\nhub0-reset: {} = "
-                     "0x{:X},\nlow-speed: {} = 0x{:X},\ndm-pin (ro): {} = "
-                     "0x{:X},\ndp-pin (ro): {} = 0x{:X},\npd-dis: {} = 0x{:X}",
-                     static_cast<int>(port_en), static_cast<int>(port_en),
-                     static_cast<int>(hub0_reset), static_cast<int>(hub0_reset),
-                     static_cast<int>(low_speed), static_cast<int>(low_speed),
-                     static_cast<int>(dm_pin), static_cast<int>(dm_pin),
-                     static_cast<int>(dp_pin), static_cast<int>(dp_pin),
-                     static_cast<int>(pd_dis), static_cast<int>(pd_dis));
-      return out;
-    }
-
   } port_ctrl{0};
   struct IntEn {
     union {
@@ -188,25 +156,6 @@ public:
       return *this;
     }
 
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(
-          std::back_inserter(out),
-          "bus-reset: {} = 0x{:X},\ntransfer: {} = 0x{:X},\nsuspend: {} = "
-          "0x{:X},\nhost-sof: {} = 0x{:X},\nfifo-overflow: {} = "
-          "0x{:X},\nmod-1-wire-en: {} = 0x{:X},\ndev-nak: {} = "
-          "0x{:X},\ndev-sof: {} = 0x{:X}",
-          static_cast<int>(bus_reset), static_cast<int>(bus_reset),
-          static_cast<int>(transfer), static_cast<int>(transfer),
-          static_cast<int>(suspend), static_cast<int>(suspend),
-          static_cast<int>(host_sof), static_cast<int>(host_sof),
-          static_cast<int>(fifo_overflow), static_cast<int>(fifo_overflow),
-          static_cast<int>(mod_1_wire_en), static_cast<int>(mod_1_wire_en),
-          static_cast<int>(dev_nak), static_cast<int>(dev_nak),
-          static_cast<int>(dev_sof), static_cast<int>(dev_sof));
-      return out;
-    }
-
   } int_en{0};
   struct DevAd {
     union {
@@ -220,15 +169,6 @@ public:
     DevAd &operator=(uint8_t value) {
       reg = value;
       return *this;
-    }
-
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out),
-                     "usb-addr: {} = 0x{:X},\ngp-bit: {} = 0x{:X}",
-                     static_cast<int>(usb_addr), static_cast<int>(usb_addr),
-                     static_cast<int>(gp_bit), static_cast<int>(gp_bit));
-      return out;
     }
 
   } dev_ad{0};
@@ -259,25 +199,6 @@ public:
       return *this;
     }
 
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(
-          std::back_inserter(out),
-          "dev-attach (ro): {} = 0x{:X},\ndm-level (ro): {} = "
-          "0x{:X},\nbus-suspend (ro): {} = 0x{:X},\nbus-reset (ro): {} = "
-          "0x{:X},\nr-fifo-rdy (ro): {} = 0x{:X},\nsie-free (ro): {} = "
-          "0x{:X},\nsof-act (ro): {} = 0x{:X},\nsof-pre (ro): {} = 0x{:X}",
-          static_cast<int>(dev_attach), static_cast<int>(dev_attach),
-          static_cast<int>(dm_level), static_cast<int>(dm_level),
-          static_cast<int>(bus_suspend), static_cast<int>(bus_suspend),
-          static_cast<int>(bus_reset), static_cast<int>(bus_reset),
-          static_cast<int>(r_fifo_rdy), static_cast<int>(r_fifo_rdy),
-          static_cast<int>(sie_free), static_cast<int>(sie_free),
-          static_cast<int>(sof_act), static_cast<int>(sof_act),
-          static_cast<int>(sof_pre), static_cast<int>(sof_pre));
-      return out;
-    }
-
   } misc_status{0};
   struct IntFlag {
     union {
@@ -306,25 +227,6 @@ public:
       return *this;
     }
 
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(
-          std::back_inserter(out),
-          "bus-reset: {} = 0x{:X},\ntransfer: {} = 0x{:X},\nsuspend: {} = "
-          "0x{:X},\nhst-sof: {} = 0x{:X},\nfifo-ov: {} = 0x{:X},\nsie-free "
-          "(ro): {} = 0x{:X},\ntog-ok (ro): {} = 0x{:X},\nis-nak (ro): {} = "
-          "0x{:X}",
-          static_cast<int>(bus_reset), static_cast<int>(bus_reset),
-          static_cast<int>(transfer), static_cast<int>(transfer),
-          static_cast<int>(suspend), static_cast<int>(suspend),
-          static_cast<int>(hst_sof), static_cast<int>(hst_sof),
-          static_cast<int>(fifo_ov), static_cast<int>(fifo_ov),
-          static_cast<int>(sie_free), static_cast<int>(sie_free),
-          static_cast<int>(tog_ok), static_cast<int>(tog_ok),
-          static_cast<int>(is_nak), static_cast<int>(is_nak));
-      return out;
-    }
-
   } int_flag{0};
   struct IntStatus {
     union {
@@ -347,19 +249,6 @@ public:
       return *this;
     }
 
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(
-          std::back_inserter(out),
-          "endp (ro): {} = 0x{:X},\ntoken (ro): {} = 0x{:X},\ntog-ok (ro): {} "
-          "= 0x{:X},\nsetup-act (ro): {} = 0x{:X}",
-          static_cast<int>(endp), static_cast<int>(endp),
-          static_cast<int>(token), static_cast<int>(token),
-          static_cast<int>(tog_ok), static_cast<int>(tog_ok),
-          static_cast<int>(setup_act), static_cast<int>(setup_act));
-      return out;
-    }
-
   } int_status{0};
   struct RxLen {
     union {
@@ -374,13 +263,6 @@ public:
     RxLen &operator=(uint8_t value) {
       reg = value;
       return *this;
-    }
-
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out), "len (ro): {} = 0x{:X}",
-                     static_cast<int>(len), static_cast<int>(len));
-      return out;
     }
 
   } rx_len{0};
@@ -406,20 +288,6 @@ public:
       return *this;
     }
 
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(
-          std::back_inserter(out),
-          "ep4-tx-en: {} = 0x{:X},\nep4-rx-en: {} = 0x{:X},\nep1-buf-mod: {} = "
-          "0x{:X},\nep1-tx-en: {} = 0x{:X},\nep1-rx-en: {} = 0x{:X}",
-          static_cast<int>(ep4_tx_en), static_cast<int>(ep4_tx_en),
-          static_cast<int>(ep4_rx_en), static_cast<int>(ep4_rx_en),
-          static_cast<int>(ep1_buf_mod), static_cast<int>(ep1_buf_mod),
-          static_cast<int>(ep1_tx_en), static_cast<int>(ep1_tx_en),
-          static_cast<int>(ep1_rx_en), static_cast<int>(ep1_rx_en));
-      return out;
-    }
-
   } ep4_1_mod{0};
   struct Ep2_3Mod {
     union {
@@ -439,22 +307,6 @@ public:
     Ep2_3Mod &operator=(uint8_t value) {
       reg = value;
       return *this;
-    }
-
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out),
-                     "ep2-buf-mod: {} = 0x{:X},\nep2-tx-en: {} = "
-                     "0x{:X},\nep2-rx-en: {} = 0x{:X},\nep3-buf-mod: {} = "
-                     "0x{:X},\nep3-tx-en: {} = 0x{:X},\nep3-rx-en: {} = 0x{:X}",
-                     static_cast<int>(ep2_buf_mod),
-                     static_cast<int>(ep2_buf_mod), static_cast<int>(ep2_tx_en),
-                     static_cast<int>(ep2_tx_en), static_cast<int>(ep2_rx_en),
-                     static_cast<int>(ep2_rx_en), static_cast<int>(ep3_buf_mod),
-                     static_cast<int>(ep3_buf_mod), static_cast<int>(ep3_tx_en),
-                     static_cast<int>(ep3_tx_en), static_cast<int>(ep3_rx_en),
-                     static_cast<int>(ep3_rx_en));
-      return out;
     }
 
   } ep2_3_mod{0};
@@ -477,21 +329,6 @@ public:
       return *this;
     }
 
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out),
-                     "ep5-tx-en: {} = 0x{:X},\nep5-rx-en: {} = "
-                     "0x{:X},\nep6-tx-en: {} = 0x{:X},\nep6-rx-en: {} = "
-                     "0x{:X},\nep7-tx-en: {} = 0x{:X},\nep7-rx-en: {} = 0x{:X}",
-                     static_cast<int>(ep5_tx_en), static_cast<int>(ep5_tx_en),
-                     static_cast<int>(ep5_rx_en), static_cast<int>(ep5_rx_en),
-                     static_cast<int>(ep6_tx_en), static_cast<int>(ep6_tx_en),
-                     static_cast<int>(ep6_rx_en), static_cast<int>(ep6_rx_en),
-                     static_cast<int>(ep7_tx_en), static_cast<int>(ep7_tx_en),
-                     static_cast<int>(ep7_rx_en), static_cast<int>(ep7_rx_en));
-      return out;
-    }
-
   } ep567_mod{0};
   uint8_t reserved800f{0};
   struct Ep0Dma {
@@ -507,13 +344,6 @@ public:
     Ep0Dma &operator=(uint16_t value) {
       reg = value;
       return *this;
-    }
-
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out), "dma: {} = 0x{:X}",
-                     static_cast<int>(dma), static_cast<int>(dma));
-      return out;
     }
 
   } ep0_dma{0};
@@ -533,13 +363,6 @@ public:
       return *this;
     }
 
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out), "dma: {} = 0x{:X}",
-                     static_cast<int>(dma), static_cast<int>(dma));
-      return out;
-    }
-
   } ep1_dma{0};
   uint16_t reserved40008016{0};
   struct Ep2Dma {
@@ -555,13 +378,6 @@ public:
     Ep2Dma &operator=(uint16_t value) {
       reg = value;
       return *this;
-    }
-
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out), "dma: {} = 0x{:X}",
-                     static_cast<int>(dma), static_cast<int>(dma));
-      return out;
     }
 
   } ep2_dma{0};
@@ -581,13 +397,6 @@ public:
       return *this;
     }
 
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out), "dma: {} = 0x{:X}",
-                     static_cast<int>(dma), static_cast<int>(dma));
-      return out;
-    }
-
   } ep3_dma{0};
   uint16_t reserved4000801_e{0};
   struct Ep0TLen {
@@ -602,13 +411,6 @@ public:
     Ep0TLen &operator=(uint8_t value) {
       reg = value;
       return *this;
-    }
-
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out), "t-len: {} = 0x{:X}",
-                     static_cast<int>(t_len), static_cast<int>(t_len));
-      return out;
     }
 
   } ep0_t_len{0};
@@ -637,19 +439,6 @@ public:
       return *this;
     }
 
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out),
-                     "t-res: {} = 0x{:X},\nr-res: {} = 0x{:X},\nauto-tog: {} = "
-                     "0x{:X},\nt-tog: {} = 0x{:X},\nr-tog: {} = 0x{:X}",
-                     static_cast<int>(t_res), static_cast<int>(t_res),
-                     static_cast<int>(r_res), static_cast<int>(r_res),
-                     static_cast<int>(auto_tog), static_cast<int>(auto_tog),
-                     static_cast<int>(t_tog), static_cast<int>(t_tog),
-                     static_cast<int>(r_tog), static_cast<int>(r_tog));
-      return out;
-    }
-
   } ep0_ctrl{0};
   uint8_t reserved40008023{0};
   struct Ep1TLen {
@@ -664,13 +453,6 @@ public:
     Ep1TLen &operator=(uint8_t value) {
       reg = value;
       return *this;
-    }
-
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out), "t-len: {} = 0x{:X}",
-                     static_cast<int>(t_len), static_cast<int>(t_len));
-      return out;
     }
 
   } ep1_t_len{0};
@@ -699,19 +481,6 @@ public:
       return *this;
     }
 
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out),
-                     "t-res: {} = 0x{:X},\nr-res: {} = 0x{:X},\nauto-tog: {} = "
-                     "0x{:X},\nt-tog: {} = 0x{:X},\nr-tog: {} = 0x{:X}",
-                     static_cast<int>(t_res), static_cast<int>(t_res),
-                     static_cast<int>(r_res), static_cast<int>(r_res),
-                     static_cast<int>(auto_tog), static_cast<int>(auto_tog),
-                     static_cast<int>(t_tog), static_cast<int>(t_tog),
-                     static_cast<int>(r_tog), static_cast<int>(r_tog));
-      return out;
-    }
-
   } ep1_ctrl{0};
   uint8_t reserved40008027{0};
   struct Ep2TLen {
@@ -726,13 +495,6 @@ public:
     Ep2TLen &operator=(uint8_t value) {
       reg = value;
       return *this;
-    }
-
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out), "t-len: {} = 0x{:X}",
-                     static_cast<int>(t_len), static_cast<int>(t_len));
-      return out;
     }
 
   } ep2_t_len{0};
@@ -761,19 +523,6 @@ public:
       return *this;
     }
 
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out),
-                     "t-res: {} = 0x{:X},\nr-res: {} = 0x{:X},\nauto-tog: {} = "
-                     "0x{:X},\nt-tog: {} = 0x{:X},\nr-tog: {} = 0x{:X}",
-                     static_cast<int>(t_res), static_cast<int>(t_res),
-                     static_cast<int>(r_res), static_cast<int>(r_res),
-                     static_cast<int>(auto_tog), static_cast<int>(auto_tog),
-                     static_cast<int>(t_tog), static_cast<int>(t_tog),
-                     static_cast<int>(r_tog), static_cast<int>(r_tog));
-      return out;
-    }
-
   } ep2_ctrl{0};
   uint8_t reserved4000802_b{0};
   struct Ep3TLen {
@@ -788,13 +537,6 @@ public:
     Ep3TLen &operator=(uint8_t value) {
       reg = value;
       return *this;
-    }
-
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out), "t-len: {} = 0x{:X}",
-                     static_cast<int>(t_len), static_cast<int>(t_len));
-      return out;
     }
 
   } ep3_t_len{0};
@@ -823,19 +565,6 @@ public:
       return *this;
     }
 
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out),
-                     "t-res: {} = 0x{:X},\nr-res: {} = 0x{:X},\nauto-tog: {} = "
-                     "0x{:X},\nt-tog: {} = 0x{:X},\nr-tog: {} = 0x{:X}",
-                     static_cast<int>(t_res), static_cast<int>(t_res),
-                     static_cast<int>(r_res), static_cast<int>(r_res),
-                     static_cast<int>(auto_tog), static_cast<int>(auto_tog),
-                     static_cast<int>(t_tog), static_cast<int>(t_tog),
-                     static_cast<int>(r_tog), static_cast<int>(r_tog));
-      return out;
-    }
-
   } ep3_ctrl{0};
   uint8_t reserved4000802_f{0};
   struct Ep4TLen {
@@ -850,13 +579,6 @@ public:
     Ep4TLen &operator=(uint8_t value) {
       reg = value;
       return *this;
-    }
-
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out), "t-len: {} = 0x{:X}",
-                     static_cast<int>(t_len), static_cast<int>(t_len));
-      return out;
     }
 
   } ep4_t_len{0};
@@ -883,19 +605,6 @@ public:
     Ep4Ctrl &operator=(uint8_t value) {
       reg = value;
       return *this;
-    }
-
-    std::string toString() const {
-      auto out{std::string()};
-      fmt::format_to(std::back_inserter(out),
-                     "t-res: {} = 0x{:X},\nr-res: {} = 0x{:X},\nauto-tog: {} = "
-                     "0x{:X},\nt-tog: {} = 0x{:X},\nr-tog: {} = 0x{:X}",
-                     static_cast<int>(t_res), static_cast<int>(t_res),
-                     static_cast<int>(r_res), static_cast<int>(r_res),
-                     static_cast<int>(auto_tog), static_cast<int>(auto_tog),
-                     static_cast<int>(t_tog), static_cast<int>(t_tog),
-                     static_cast<int>(r_tog), static_cast<int>(r_tog));
-      return out;
     }
 
   } ep4_ctrl{0};

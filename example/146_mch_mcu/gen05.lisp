@@ -282,7 +282,7 @@
 			 cstdint
 			 ;#-format sstream #-format ios
 			 ;#+format format
-			 format.h
+			 ;fmt/format.h
 			 )
 			
 			(doc "@brief The DiagramBase class represents a base class for diagrams.
@@ -404,7 +404,7 @@ registers.
 					     (values ,(format nil "~a&" struct-name)))
 				    (setf reg value)
 				    (return *this))
-				 ;#+more
+				 #+more
 				 (defun+ toString ()
 				   (declare (const)
 					    (values "std::string"))
@@ -1081,7 +1081,7 @@ I think string descriptors are optional, so for now I will always keep string in
 			  "#ifdef BUILD_FOR_TARGET"
 			  "#define FMT_THROW panic"
 			  "#endif")
-			 (include<> format.h))
+			 (include<> fmt/format.h))
 			)
      :implementation-preamble
      `(do0
@@ -1422,8 +1422,8 @@ I think string descriptors are optional, so for now I will always keep string in
 
        (comments "overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml")
        (defun USB_DevTransProcess2 ()
-	 (let ((&u (Uart--getInstance))))
-	 (when usb.int_flag.transfer
+	#+nil (let ((&u (Uart--getInstance))))
+	 #+nil(when usb.int_flag.transfer
 	   (when (!= (hex #b11) usb.int_status.token )
 	     (cond
 	       ((== (hex #b01 ) usb.int_status.token)
