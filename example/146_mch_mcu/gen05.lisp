@@ -1417,7 +1417,7 @@ I think string descriptors are optional, so for now I will always keep string in
        (space constexpr uintptr_t (= c_USB_BASE_ADDR (hex #x40008000)))
        (space Ch592UsbRegisters& (= usb (deref (new (paren (reinterpret_cast<void*> c_USB_BASE_ADDR)))
 					       ))
-	      Ch592UsbRegisters))
+	      Ch592UsbRegisters)) 
       (do0
 
        (comments "overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml")
