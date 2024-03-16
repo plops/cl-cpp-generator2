@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)  # Adjust if you need a different minimum version
 
-project(risc_usb_test CXX C ASM)  # Name your project
+project(risc_usb_test CXX C ASM)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -14,19 +14,19 @@ option(BUILD_FOR_TARGET "Build for target" OFF)
 # if the build is for the target, we need these flags
 if (BUILD_FOR_TARGET)
 
-# Compilation/Linking Flags
+  # Compilation/Linking Flags
 
-# -static: Create a statically linked binary (all dependencies included).
-# -nostartfiles: Skip default system startup files for full control.
-# -fno-exceptions: Disable C++ exception handling (reduces size).
-# -fno-rtti: Disable C++ Run-Time Type Information (reduces size).
+  # -static: Create a statically linked binary (all dependencies included).
+  # -nostartfiles: Skip default system startup files for full control.
+  # -fno-exceptions: Disable C++ exception handling (reduces size).
+  # -fno-rtti: Disable C++ Run-Time Type Information (reduces size).
 
-# fmt Library Configuration https://github.com/fmtlib/fmt/issues/1617
+  # fmt Library Configuration https://github.com/fmtlib/fmt/issues/1617
 
-# -DFMT_USE_FLOAT=0: Disable float formatting support.
-# -DFMT_USE_DOUBLE=0: Disable double formatting support.
-# -DFMT_USE_LONG_DOUBLE=0: Disable long double formatting support.
-# -DFMT_STATIC_THOUSANDS_SEPARATOR: Enforce a fixed thousands separator character.
+  # -DFMT_USE_FLOAT=0: Disable float formatting support.
+  # -DFMT_USE_DOUBLE=0: Disable double formatting support.
+  # -DFMT_USE_LONG_DOUBLE=0: Disable long double formatting support.
+  # -DFMT_STATIC_THOUSANDS_SEPARATOR: Enforce a fixed thousands separator character.
 
   set(EMBED_OPTIONS
     -static 
@@ -54,15 +54,34 @@ if (BUILD_FOR_TARGET)
   #add_compile_options( -march=rv32imac -mabi=ilp32 -msmall-data-limit=8 -mno-save-restore ) 
   #add_link_options(-march=rv32imac -mabi=ilp32)
 
+
+  #   -march=rv32imac_zicsr_zifencei: Targets the RISC-V 32-bit architecture with the following extensions:
+  #   IMAC: Integer multiply-accumulate, atomic, and compressed instructions
+  #   Zicsr: Control and Status Register (CSR) instructions
+  #   Zifencei: Fence instructions for memory ordering
+  #   -mabi=ilp32: Specifies the 32-bit Integer, Long, and Pointer Application Binary Interface (ABI). This determines how data is represented and how functions interact in memory.
+  #   -msmall-data-limit=8: Sets a limit of 8 bytes for the small data area in the program. This can optimize memory access for frequently used data.
+  #   -mno-save-restore: Instructs the compiler to avoid automatically saving and restoring registers when calling functions. This can provide a performance increase, but requires careful manual register management if needed.
+  
+  
+  
   add_compile_options( -march=rv32imac_zicsr_zifencei -mabi=ilp32 -msmall-data-limit=8 -mno-save-restore ) 
+
+
+  #   -march=rv32imac_zicsr_zifencei -mabi=ilp32: Enforces consistency with the compilation flags, ensuring the linker generates code for the RISC-V target and ABI.
+
   add_link_options(-march=rv32imac_zicsr_zifencei -mabi=ilp32)
 
+  #   -Xlinker --gc-sections: Enables "garbage collection" at the linker level. This removes any unused code sections from the final executable, reducing size.
 
-  ##add_link_options(-ffunction-sections -fdata-sections -fmessage-length=0 -fstack-usage)
-  #add_link_options(-Wl,-check-sections -Wl,-fatal-warnings -Wl,--gc-sections -Wl,--print-memory-usage)
-  #add_link_options(-T?${LINKER_SCRIPT})
   add_link_options(-Xlinker --gc-sections)
-  #add_link_options("-Wl,-Map,${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map" -Wl,--cref)
+  
+
+  #   --specs=nano.specs --specs=nosys.specs: Uses custom linker scripts.
+
+  #   nano.specs: configuration for extremely small executables, potentially tailored to the Newlib C library.
+  #   nosys.specs: prevents linking against standard system libraries, implying a bare-metal environment.
+
   add_link_options(
     --specs=nano.specs 
     --specs=nosys.specs
@@ -75,6 +94,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_compile_options(
     -g -g3 -ggdb -gdwarf-4
   )
+
+
   add_link_options(-Wl,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 
 else ()
@@ -83,7 +104,15 @@ else ()
     -Os #-ffunction-sections -fdata-sections # don't use together with flto
   )
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
-  add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
+
+
+  #   -gc-sections: Enables "garbage collection" at the linker stage. The linker will analyze your code and discard any unused functions or data sections to reduce the final executable size.
+  #   --print-gc-sections: Instructs the linker to generate a report detailing which sections were removed during the garbage collection process. This can help you pinpoint potential areas for further size optimization. 
+  #   --print-memory-usage: Tells the linker to provide a summary of the memory usage of your executable, broken down into categories like code, data, etc. This helps analyze memory consumption.
+  #   -Map=...: Generates a map file that details the memory layout of your linked executable.
+  #   --cref: Enables the generation of a cross-reference table. This table provides information about how symbols (functions, variables) are defined and used throughout your codebase.
+
+  add_link_options(-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
 endif ()
 
 
@@ -122,6 +151,8 @@ add_library(mine
   src/UsbDeviceDescriptor.h
   src/UsbConfigurationDescriptor.cpp
   src/UsbConfigurationDescriptor.h
+  src/Uart.cpp
+  src/Uart.h
 )
 
 
@@ -163,7 +194,7 @@ if (BUILD_FOR_TARGET)
   include_directories(
     ${HAL_PATH}/RVMSIS/
     ${HAL_PATH}/StdPeriphDriver/inc
-    /home/martin/src/fmt/include/fmtTT
+    /home/martin/src/fmt/include/fmt
     #   ${HAL_PATH}/User/
     #   ${HAL_PATH}/../BLE/HAL/include
     #   ${HAL_PATH}/../BLE/LIB
@@ -177,6 +208,12 @@ if (BUILD_FOR_TARGET)
     ${HAL_SOURCES}
   )
   target_link_options(${PROJECT_NAME} PRIVATE -T ${LINKER_SCRIPT})
+
+  # when the ${PROJECT_NAME} has been build, strip the binary:
+  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND  /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-strip ${PROJECT_NAME}
+  )
+
 else()
 
   add_executable(${PROJECT_NAME}

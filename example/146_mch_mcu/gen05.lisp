@@ -1053,6 +1053,203 @@ I think string descriptors are optional, so for now I will always keep string in
 					(t `(space ,type ,nname (curly ,initform)))))))))))
 
     )
+
+  (let* ((name `Uart)
+	 (members `(
+		    ;(bMaxPower :type uint8_t :param t)
+		    
+		    )))
+    (write-class
+     :do-format t
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> vector
+					;deque
+					;string
+				   cstdint
+				   ;ostream
+				   )
+			(do0
+			 #+nil
+			 (do0
+			  "#ifdef BUILD_FOR_TARGET"
+			  "#define FMT_THROW panic"
+			  "#endif")
+			 (include<> format.h))
+			)
+     :implementation-preamble
+     `(do0
+       (comments "implementation"       )
+       
+       (space extern "\"C\""
+	      (progn
+	       	(include<> CH59x_common.h
+			   ;CH59x_uart.h
+			   ;CH59x_gpio.h
+			   )))
+              
+       )
+     :code `(do0
+	     
+	     (defclass ,name ()
+	       "public:" 
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param (initform 0)) e
+					    (declare (ignorable type initform))
+					    (let (#+nil(nname (intern
+							       (string-upcase
+								(cl-change-case:snake-case (format nil "~a" name)))))
+						  (nname_ (intern
+							   (string-upcase
+							    (format nil "~a_"
+								    (cl-change-case:snake-case (format nil "~a" name)))))))
+					      (when param
+						nname_))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param (initform 0)) e
+				       (declare (ignorable initform))
+				       (let (#+nil (nname (intern
+							   (string-upcase
+							    (cl-change-case:snake-case (format nil "~a" name)))))
+					     (nname_ (intern (string-upcase
+							      (format nil "~a_"
+								      (cl-change-case:snake-case (format nil "~a" name)))))))
+					 (when param
+					   
+					   `(type ,(cond
+						     ((and (stringp type)
+							   (or (str:starts-with-p "std::vector<" type)
+							       (str:starts-with-p "std::deque<" type)
+							       (str:starts-with-p "std::array<" type)
+							       (str:starts-with-p "std::string" type)))
+						      (format nil "const ~a&" type))
+						     (t type))
+						  ,nname_))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param (initform 0)) e
+					(declare (ignorable type initform))
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname ,nname_)) 
+					    #+nil (initform
+						   `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor)
+		  )
+		 (do0
+	 (comments  "This will configure UART1 to send and receive at 115200 baud:")
+	 (doc "up to 6Mbps is possible. fifo can store 8 bytes")
+	 (GPIOA_SetBits GPIO_Pin_9)
+	 (GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
+	 (GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
+	 (UART1_DefInit)
+
+	 )
+		 )
+	       #+more (defmethod toString ()
+		 (declare (const)
+			  (values "std::string"))
+			#+format (return
+		  (std--format
+		   (string ,(format nil "~{~a~^,\\n~}"
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param (initform 0)) e
+					    (format nil "~a: {} = 0x{:X}" name)))))
+		   ,@(loop for e in members
+			       appending
+			       (destructuring-bind (name &key type param (initform 0)) e
+				 `((static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				   )))))
+			#-format
+			(let ((ss (std--ostringstream)))
+		   (<< ss
+		       ,@(loop for e in members
+			       appending
+			       (destructuring-bind (name &key type param (initform 0)) e
+				 `((string ,(format nil "~a: " name))
+				   std--dec
+				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				   (string " = 0x")
+				   std--hex
+				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+				   (string "\\n")))))
+		   (return (ss.str))))
+	       (space "template <typename... Args>"
+		      (defun+ print (fmt args)
+			(declare (type "fmt::format_string<Args...>" fmt)
+				 (type Args&&... args))
+			(let ((ostr (std--vector<uint8_t>)))
+			  (comments "Use format_to with a back_inserter to append formatted output to the vector")
+			  (fmt--format_to (std--back_inserter ostr)
+					  fmt
+					  "std::forward<Args>(args)...")
+			  (SendString (ostr.data)
+				      (ostr.size)))
+			))
+
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (declare (ignorable initform param))
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (get (cl-change-case:pascal-case (format nil "get-~a" name)))
+					  #+nil (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      `(defmethod ,get ()
+					 (declare (values ,(cond
+							     ((and (stringp type)
+								   (or (str:starts-with-p "std::vector<" type)
+								       (str:starts-with-p "std::deque<" type)
+								       (str:starts-with-p "std::array<" type)
+								       (str:starts-with-p "std::string" type)))
+							      (format nil "const ~a&" type))
+							     (t type)))
+						  (const))
+					 (return ,nname))))))
+	       
+	       "private:"
+
+	       (defmethod SendString (buf len)
+		 (declare (type uint8_t* buf)
+			  (type uint16_t len))
+		 (UART1_SendString buf len)
+		 )
+	       
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (let (#+nil(nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname (format nil "~a" (cl-change-case:snake-case (format nil "~a" name)))))
+				      (cond
+					(param `(space ,type ,nname))
+					((and (stringp type)
+					      (or (str:starts-with-p "std::vector<" type)
+						  (str:starts-with-p "std::deque<" type)
+						  (str:starts-with-p "std::array<" type)
+						  (str:starts-with-p "std::string" type)))
+					 `(space ,type ,nname (curly)))
+					(t `(space ,type ,nname (curly ,initform)))))))))))
+
+    )
   
 
   (write-source 
@@ -1192,305 +1389,305 @@ I think string descriptors are optional, so for now I will always keep string in
      (do0
       "#ifdef BUILD_FOR_TARGET"
       (do0
-      (space constexpr uintptr_t (= c_USB_BASE_ADDR (hex #x40008000)))
-      (space Ch592UsbRegisters& (= usb (deref (new (paren (reinterpret_cast<void*> c_USB_BASE_ADDR)))
-					      ))
-	     Ch592UsbRegisters))
-       (do0
+       (space constexpr uintptr_t (= c_USB_BASE_ADDR (hex #x40008000)))
+       (space Ch592UsbRegisters& (= usb (deref (new (paren (reinterpret_cast<void*> c_USB_BASE_ADDR)))
+					       ))
+	      Ch592UsbRegisters))
+      (do0
 
-      (comments "overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml")
-      (defun USB_DevTransProcess2 ()
-	(when usb.int_flag.transfer
-	  (when (!= (hex #b11) usb.int_status.token )
-	    (cond
-	      ((== (hex #b01 ) usb.int_status.token)
-	       (comments "usb token in")
-	       (case usb.int_status.endp
-		 (0
-		  (comments "usb token in EP0")
-		  (case SetupReqCode
-		    (USB_GET_DESCRIPTOR
-		     (comments "get descriptor"))
-		    (USB_SET_ADDRESS
-		     (comments "set address"))
-		    (t
-		     (comments default))))
-		 (1 (comments "usb token in EP1"))
-		 (2 (comments "usb token in EP2"))
-		 (3 (comments "usb token in EP3"))
-		 (4 (comments "usb token in EP4"))))
-	      ((== (hex #b00) usb.int_status.token)
-	       (comments "usb token out")
-	       (case usb.int_status.endp
-		 (0 
-		  (comments "token out EP0"))
-		 (1
-		  (comments "token out EP1"))
-		 (2
-		  (comments "token out EP2"))
-		 (3
-		  (comments "token out EP3"))
-		 (4
-		  (comments "token out EP4")))
-	       )))
-	  (comments "clear interrupt by writing to flag")
-	  (setf usb.int_flag.transfer 1)))
+       (comments "overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml")
+       (defun USB_DevTransProcess2 ()
+	 (when usb.int_flag.transfer
+	   (when (!= (hex #b11) usb.int_status.token )
+	     (cond
+	       ((== (hex #b01 ) usb.int_status.token)
+		(comments "usb token in")
+		(case usb.int_status.endp
+		  (0
+		   (comments "usb token in EP0")
+		   (case SetupReqCode
+		     (USB_GET_DESCRIPTOR
+		      (comments "get descriptor"))
+		     (USB_SET_ADDRESS
+		      (comments "set address"))
+		     (t
+		      (comments default))))
+		  (1 (comments "usb token in EP1"))
+		  (2 (comments "usb token in EP2"))
+		  (3 (comments "usb token in EP3"))
+		  (4 (comments "usb token in EP4"))))
+	       ((== (hex #b00) usb.int_status.token)
+		(comments "usb token out")
+		(case usb.int_status.endp
+		  (0 
+		   (comments "token out EP0"))
+		  (1
+		   (comments "token out EP1"))
+		  (2
+		   (comments "token out EP2"))
+		  (3
+		   (comments "token out EP3"))
+		  (4
+		   (comments "token out EP4")))
+		)))
+	   (comments "clear interrupt by writing to flag")
+	   (setf usb.int_flag.transfer 1)))
       
-      (doc "Handle USB transaction processing. Respond to standard USB requests (e.g. Get Descriptor, Set Address). Manage data transfers on endpoints.")
-      #+nil (defun USB_DevTransProcess ()
-	      (let ((len (uint8_t 0))
-		    (chtype (uint8_t 0))
-		    (errflag (uint8_t 0))))
-	      (let ((intflag (uint8_t R8_USB_INT_FG)))
-		(cond
-		  ((& intflag RB_UIF_TRANSFER)
-		   (do0
-		    (unless (== MASK_UIS_TOKEN
-				(& R8_USB_INT_ST MASK_UIS_TOKEN))
-		      (do0
-		       (comments "The following switch extracts the type of token (in/out) and the endpoint number.")
-		       (case (& R8_USB_INT_ST (or MASK_UIS_TOKEN
-						  MASK_UIS_ENDP))
-			 (UIS_TOKEN_IN
-			  (case SetupReqCode
-			    (USB_GET_DESCRIPTOR
-			     (comments "Handles the standard 'Get Descriptor' request. The device sends the appropriate descriptor data to the host.")
-			     (comments "Calculate length of data to send. Limit to device endpoint size if needed.")
-			     (let ((new_len (std--min DevEP0Size
-						      SetupReqLen)))
-			       (assert (< new_len 256)))
-		      
-			     (setf len (static_cast<uint8_t> new_len)
-				   #+nil(? (<= DevEP0Size SetupReqLen)
-					   DevEP0Size
-					   SetupReqLen))
-			     (comments "Copy the descriptor data to the endpoint buffer for transmission to the host.")
-			     (memcpy pEP0_DataBuf pDescr len )
-			     (decf SetupReqLen len)
-			     (incf pDescr len)
-			     (comments "Update state variables (length of the remaining request, pointer to the next chunk of descriptor data) and prepare for the next stage of the transfer.")
-			     (setf R8_UEP0_T_LEN len
-				   )
-			     (setf R8_UEP0_CTRL (^ R8_UEP0_CTRL RB_UEP_T_TOG)))
-			    (USB_SET_ADDRESS
-			     (comments "Handles the standard 'Set Address' request. The device (we) records the new USB address.")
-			     (assert (< SetupReqLen 256))
-			     (setf R8_USB_DEV_AD (or (& R8_USB_DEV_AD RB_UDA_GP_BIT)
-						     (static_cast<uint8_t> SetupReqLen)))
-			     (setf R8_UEP0_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK)))
-			    (t
-			     (comments "Handles any other control requests. This usually results in a stall condition, as the device didn't recognize the request.")
-			     (setf R8_UEP0_T_LEN 0
-				   R8_UEP0_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK))))
-			  )
-			 (UIS_TOKEN_OUT
-			  (comments "Handles 'OUT' token transactions, meaning the host is sending data to the device.")
-			  (comments "Get length of received data.")
-			  (setf len R8_USB_RX_LEN))
-			 ((or UIS_TOKEN_OUT 1)
-			  (comments "Handle data reception on endpoint 1.")
-			  (when (& R8_USB_INT_ST
-				   RB_UIS_TOG_OK)
-			    (comments "If the data toggle is correct and data is ready.")
-			    (comments "Toggles the receive (IN) data toggle bit for endpoint 1.")
-			    (setf R8_UEP1_CTRL  (^  R8_UEP1_CTRL RB_UEP_R_TOG)
-				  len R8_USB_RX_LEN)
-			    (comments "Get the data length, and call a function (DevEP1_OUT_Deal) to process the received data (on endpoint 1).")
-			    (DevEP1_OUT_Deal len)))
-
-			 ((or UIS_TOKEN_IN 1)
-			  (comments "Prepare an empty (?) response on endpoint 1.")
-			  (comments "Toggle the transmit (OUT) data toggle bit for endpoint 1.")
-			  (setf R8_UEP1_CTRL
-				(^ R8_UEP1_CTRL
-				   RB_UEP_T_TOG))
-			  (comments "Prepares endpoint 1 for a NAK response (indicating no data is ready to send).")
-			  (setf R8_UEP1_CTRL
-				(or (& R8_UEP1_CTRL
-				       ~MASK_UEP_T_RES)
-				    UEP_T_RES_NAK)))
-			 (t ) 
-			 ))
-		      (setf R8_USB_INT_FG RB_UIF_TRANSFER))
-		    (comments "This code handles the initial 'Setup' stage of USB control transfers. When the host sends a setup packet to the device, this code analyzes the request and prepares a response.")
-		    (when (& R8_USB_INT_ST
-			     RB_UIS_SETUP_ACT)
-		      (comments "A setup packet has been received.")
-		      (comments "Prepare the control endpoint for a response.")
-		      (setf R8_UEP0_CTRL (or RB_UEP_R_TOG
-					     RB_UEP_T_TOG
-					     UEP_R_RES_ACK
-					     UEP_T_RES_NAK))
-		      (comments "Extract the length, request code, and type from the setup packet.")
-		      (setf SetupReqLen (-> pSetupReqPak wLength))
-		      (setf SetupReqCode (-> pSetupReqPak bRequest))
-		      (setf chtype (-> pSetupReqPak bRequestType))
-		      (setf len 0
-			    errflag 0)
-		      (if (!= USB_REQ_TYP_STANDARD
-			      (& chtype USB_REQ_TYP_MASK))
-			  (do0 (comments "If the request type is NOT a standard request, set an error flag.")
-			       (setf errflag (hex #xff)))
-			  (do0
-			   (comments "Handle standard request.")
+       (doc "Handle USB transaction processing. Respond to standard USB requests (e.g. Get Descriptor, Set Address). Manage data transfers on endpoints.")
+       #+nil (defun USB_DevTransProcess ()
+	       (let ((len (uint8_t 0))
+		     (chtype (uint8_t 0))
+		     (errflag (uint8_t 0))))
+	       (let ((intflag (uint8_t R8_USB_INT_FG)))
+		 (cond
+		   ((& intflag RB_UIF_TRANSFER)
+		    (do0
+		     (unless (== MASK_UIS_TOKEN
+				 (& R8_USB_INT_ST MASK_UIS_TOKEN))
+		       (do0
+			(comments "The following switch extracts the type of token (in/out) and the endpoint number.")
+			(case (& R8_USB_INT_ST (or MASK_UIS_TOKEN
+						   MASK_UIS_ENDP))
+			  (UIS_TOKEN_IN
 			   (case SetupReqCode
 			     (USB_GET_DESCRIPTOR
-			      (comments "Handle requests for device, configuration, or string descriptors.")
-			      (case (>> pSetupReqPak->wValue 8)
-				(USB_DESCR_TYP_DEVICE
-				 (setf pDescr (dot DevDescr (data))
-				       len (aref DevDescr 0)))
-				(USB_DESCR_TYP_CONFIG
-				 (setf pDescr (dot CfgDescr (data))
-				       len (aref CfgDescr 2)))
-				(USB_DESCR_TYP_STRING
-				 (case (& pSetupReqPak->wValue (hex #xff))
-				   ,@(loop for (e f ) in `((0 LangDescr)
-							   (1 ManuInfo)
-							   (2 ProdInfo)
-							   )
-					   collect
-					   `(,e
-					     (setf pDescr (dot ,f (data))
-						   len (dot ,f (at 0)))))
-				   (t (comments "Unsupported string descriptor type.")
-				    (setf errflag (hex #xff)))))
-				(t (setf errflag (hex #xff)))
-				)
-			
-			      (comments "Limit the actual data sent based on the requested length.")
-			      (setf SetupReqLen (std--min SetupReqLen (static_cast<uint16_t> len)))
-			      (let ((new_len (std--min DevEP0Size SetupReqLen))))
-			      (assert (< new_len 256))
-			      (setf len (static_cast<uint8_t> new_len))
-			      (memcpy pEP0_DataBuf pDescr len)
-			      (incf pDescr len))
+			      (comments "Handles the standard 'Get Descriptor' request. The device sends the appropriate descriptor data to the host.")
+			      (comments "Calculate length of data to send. Limit to device endpoint size if needed.")
+			      (let ((new_len (std--min DevEP0Size
+						       SetupReqLen)))
+				(assert (< new_len 256)))
+		      
+			      (setf len (static_cast<uint8_t> new_len)
+				    #+nil(? (<= DevEP0Size SetupReqLen)
+					    DevEP0Size
+					    SetupReqLen))
+			      (comments "Copy the descriptor data to the endpoint buffer for transmission to the host.")
+			      (memcpy pEP0_DataBuf pDescr len )
+			      (decf SetupReqLen len)
+			      (incf pDescr len)
+			      (comments "Update state variables (length of the remaining request, pointer to the next chunk of descriptor data) and prepare for the next stage of the transfer.")
+			      (setf R8_UEP0_T_LEN len
+				    )
+			      (setf R8_UEP0_CTRL (^ R8_UEP0_CTRL RB_UEP_T_TOG)))
 			     (USB_SET_ADDRESS
-			      (setf SetupReqLen (& pSetupReqPak->wValue (hex #xff))))
-			     (USB_GET_CONFIGURATION
-			      (comments "Handles the 'Get Configuration' request (responds with the current device configuration).")
-			      (comments "Store configuration in the endpoint buffer for transmission.")
-			      (setf (aref pEP0_DataBuf 0) DevConfig)
-			      (comments "Ensure only a single byte is sent (as configuration is one byte).")
-			      (setf SetupReqLen (std--min (static_cast<uint16_t> 1) SetupReqLen)))
-			     (USB_SET_CONFIGURATION
-			      (comments "Update the DevConfig variable with the new configuration value provided by the host.")
-			      (setf DevConfig (static_cast<uint8_t> (& pSetupReqPak->wValue (hex #xff)))))
-			     (USB_CLEAR_FEATURE
-			      (comments "Clear endpoint stalls or other features.")
-			      (if (== USB_REQ_RECIP_ENDP
-				      (& pSetupReqPak->bRequestType
-					 USB_REQ_RECIP_MASK))
-				  (do0
-				   (comments "Request targets an endpoint")
-				   (comments "Clear stall conditions on specific enpoints (number in wIndex).")
-				   (case (& pSetupReqPak->wIndex (hex #xff))
-				     ((hex #x82)
-				      (setf R8_UEP2_CTRL (or (& R8_UEP2_CTRL
-								(~ (or RB_UEP_T_TOG
-								       MASK_UEP_T_RES)))
-							     UEP_T_RES_NAK)))
-				     ((hex #x02)
-				      (setf R8_UEP2_CTRL (or (& R8_UEP2_CTRL
-								(~ (or RB_UEP_R_TOG
-								       MASK_UEP_R_RES)))
-							     UEP_R_RES_ACK)))
-				     ((hex #x81)
-				      (setf R8_UEP1_CTRL (or (& R8_UEP1_CTRL
-								(~ (or RB_UEP_T_TOG
-								       MASK_UEP_T_RES)))
-							     UEP_T_RES_NAK)))
-				     ((hex #x01)
-				      (setf R8_UEP1_CTRL (or (& R8_UEP1_CTRL
-								(~ (or RB_UEP_R_TOG
-								       MASK_UEP_R_RES)))
-							     UEP_R_RES_ACK)))
-				     (t
-				      (comments "Unsupported endpoint number.")
-				      (setf errflag (hex #xff)))
-
-				     )))
-			      )
-			     (USB_GET_INTERFACE
-			      (comments "Retrieve the alternate setting of the current interface. It seems this device likely only has a single setting (always responds with 0).")
-			      (setf (aref pEP0_DataBuf 0) 0
-				    SetupReqLen (std--min (static_cast<uint16_t> 1) SetupReqLen))
-			      )
-			     (USB_GET_STATUS
-			      (comments "Get device or endpoint status. This implementation only supports a basic status response (all zeros).")
-			      (setf (aref pEP0_DataBuf 0) 0
-				    (aref pEP0_DataBuf 1) 0
-				    SetupReqLen (std--min (static_cast<uint16_t> 2) SetupReqLen)))
+			      (comments "Handles the standard 'Set Address' request. The device (we) records the new USB address.")
+			      (assert (< SetupReqLen 256))
+			      (setf R8_USB_DEV_AD (or (& R8_USB_DEV_AD RB_UDA_GP_BIT)
+						      (static_cast<uint8_t> SetupReqLen)))
+			      (setf R8_UEP0_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK)))
 			     (t
-			      (comments "Catch-all for unsupported request codes. Sets an error flag.")
-			      (setf errflag (hex #xff))))))
+			      (comments "Handles any other control requests. This usually results in a stall condition, as the device didn't recognize the request.")
+			      (setf R8_UEP0_T_LEN 0
+				    R8_UEP0_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK))))
+			   )
+			  (UIS_TOKEN_OUT
+			   (comments "Handles 'OUT' token transactions, meaning the host is sending data to the device.")
+			   (comments "Get length of received data.")
+			   (setf len R8_USB_RX_LEN))
+			  ((or UIS_TOKEN_OUT 1)
+			   (comments "Handle data reception on endpoint 1.")
+			   (when (& R8_USB_INT_ST
+				    RB_UIS_TOG_OK)
+			     (comments "If the data toggle is correct and data is ready.")
+			     (comments "Toggles the receive (IN) data toggle bit for endpoint 1.")
+			     (setf R8_UEP1_CTRL  (^  R8_UEP1_CTRL RB_UEP_R_TOG)
+				   len R8_USB_RX_LEN)
+			     (comments "Get the data length, and call a function (DevEP1_OUT_Deal) to process the received data (on endpoint 1).")
+			     (DevEP1_OUT_Deal len)))
 
-		      (if (== (hex #xff)
-			      errflag)
-			  (do0
-			   (comments "If the previously set errflag is 0xff (signaling an unsupported request), this code forces a STALL condition on the control endpoint. This signals to the host that the device doesn't recognize the request.")
-			   (setf R8_UEP0_CTRL (or RB_UEP_R_TOG
-						  RB_UEP_T_TOG
-						  UEP_R_RES_STALL
-						  UEP_T_RES_STALL)))
-			  (do0
-			   (doc "Determines Transfer Direction: Checks chtype. If the 0x80 bit is set, the host expects data from the device (upload/IN direction), otherwise, the host is sending data (download/OUT direction)."
-				"Sets the data transfer 2length (len) for this stage of the control transfer."
+			  ((or UIS_TOKEN_IN 1)
+			   (comments "Prepare an empty (?) response on endpoint 1.")
+			   (comments "Toggle the transmit (OUT) data toggle bit for endpoint 1.")
+			   (setf R8_UEP1_CTRL
+				 (^ R8_UEP1_CTRL
+				    RB_UEP_T_TOG))
+			   (comments "Prepares endpoint 1 for a NAK response (indicating no data is ready to send).")
+			   (setf R8_UEP1_CTRL
+				 (or (& R8_UEP1_CTRL
+					~MASK_UEP_T_RES)
+				     UEP_T_RES_NAK)))
+			  (t ) 
+			  ))
+		       (setf R8_USB_INT_FG RB_UIF_TRANSFER))
+		     (comments "This code handles the initial 'Setup' stage of USB control transfers. When the host sends a setup packet to the device, this code analyzes the request and prepares a response.")
+		     (when (& R8_USB_INT_ST
+			      RB_UIS_SETUP_ACT)
+		       (comments "A setup packet has been received.")
+		       (comments "Prepare the control endpoint for a response.")
+		       (setf R8_UEP0_CTRL (or RB_UEP_R_TOG
+					      RB_UEP_T_TOG
+					      UEP_R_RES_ACK
+					      UEP_T_RES_NAK))
+		       (comments "Extract the length, request code, and type from the setup packet.")
+		       (setf SetupReqLen (-> pSetupReqPak wLength))
+		       (setf SetupReqCode (-> pSetupReqPak bRequest))
+		       (setf chtype (-> pSetupReqPak bRequestType))
+		       (setf len 0
+			     errflag 0)
+		       (if (!= USB_REQ_TYP_STANDARD
+			       (& chtype USB_REQ_TYP_MASK))
+			   (do0 (comments "If the request type is NOT a standard request, set an error flag.")
+				(setf errflag (hex #xff)))
+			   (do0
+			    (comments "Handle standard request.")
+			    (case SetupReqCode
+			      (USB_GET_DESCRIPTOR
+			       (comments "Handle requests for device, configuration, or string descriptors.")
+			       (case (>> pSetupReqPak->wValue 8)
+				 (USB_DESCR_TYP_DEVICE
+				  (setf pDescr (dot DevDescr (data))
+					len (aref DevDescr 0)))
+				 (USB_DESCR_TYP_CONFIG
+				  (setf pDescr (dot CfgDescr (data))
+					len (aref CfgDescr 2)))
+				 (USB_DESCR_TYP_STRING
+				  (case (& pSetupReqPak->wValue (hex #xff))
+				    ,@(loop for (e f ) in `((0 LangDescr)
+							    (1 ManuInfo)
+							    (2 ProdInfo)
+							    )
+					    collect
+					    `(,e
+					      (setf pDescr (dot ,f (data))
+						    len (dot ,f (at 0)))))
+				    (t (comments "Unsupported string descriptor type.")
+				     (setf errflag (hex #xff)))))
+				 (t (setf errflag (hex #xff)))
+				 )
+			
+			       (comments "Limit the actual data sent based on the requested length.")
+			       (setf SetupReqLen (std--min SetupReqLen (static_cast<uint16_t> len)))
+			       (let ((new_len (std--min DevEP0Size SetupReqLen))))
+			       (assert (< new_len 256))
+			       (setf len (static_cast<uint8_t> new_len))
+			       (memcpy pEP0_DataBuf pDescr len)
+			       (incf pDescr len))
+			      (USB_SET_ADDRESS
+			       (setf SetupReqLen (& pSetupReqPak->wValue (hex #xff))))
+			      (USB_GET_CONFIGURATION
+			       (comments "Handles the 'Get Configuration' request (responds with the current device configuration).")
+			       (comments "Store configuration in the endpoint buffer for transmission.")
+			       (setf (aref pEP0_DataBuf 0) DevConfig)
+			       (comments "Ensure only a single byte is sent (as configuration is one byte).")
+			       (setf SetupReqLen (std--min (static_cast<uint16_t> 1) SetupReqLen)))
+			      (USB_SET_CONFIGURATION
+			       (comments "Update the DevConfig variable with the new configuration value provided by the host.")
+			       (setf DevConfig (static_cast<uint8_t> (& pSetupReqPak->wValue (hex #xff)))))
+			      (USB_CLEAR_FEATURE
+			       (comments "Clear endpoint stalls or other features.")
+			       (if (== USB_REQ_RECIP_ENDP
+				       (& pSetupReqPak->bRequestType
+					  USB_REQ_RECIP_MASK))
+				   (do0
+				    (comments "Request targets an endpoint")
+				    (comments "Clear stall conditions on specific enpoints (number in wIndex).")
+				    (case (& pSetupReqPak->wIndex (hex #xff))
+				      ((hex #x82)
+				       (setf R8_UEP2_CTRL (or (& R8_UEP2_CTRL
+								 (~ (or RB_UEP_T_TOG
+									MASK_UEP_T_RES)))
+							      UEP_T_RES_NAK)))
+				      ((hex #x02)
+				       (setf R8_UEP2_CTRL (or (& R8_UEP2_CTRL
+								 (~ (or RB_UEP_R_TOG
+									MASK_UEP_R_RES)))
+							      UEP_R_RES_ACK)))
+				      ((hex #x81)
+				       (setf R8_UEP1_CTRL (or (& R8_UEP1_CTRL
+								 (~ (or RB_UEP_T_TOG
+									MASK_UEP_T_RES)))
+							      UEP_T_RES_NAK)))
+				      ((hex #x01)
+				       (setf R8_UEP1_CTRL (or (& R8_UEP1_CTRL
+								 (~ (or RB_UEP_R_TOG
+									MASK_UEP_R_RES)))
+							      UEP_R_RES_ACK)))
+				      (t
+				       (comments "Unsupported endpoint number.")
+				       (setf errflag (hex #xff)))
+
+				      )))
+			       )
+			      (USB_GET_INTERFACE
+			       (comments "Retrieve the alternate setting of the current interface. It seems this device likely only has a single setting (always responds with 0).")
+			       (setf (aref pEP0_DataBuf 0) 0
+				     SetupReqLen (std--min (static_cast<uint16_t> 1) SetupReqLen))
+			       )
+			      (USB_GET_STATUS
+			       (comments "Get device or endpoint status. This implementation only supports a basic status response (all zeros).")
+			       (setf (aref pEP0_DataBuf 0) 0
+				     (aref pEP0_DataBuf 1) 0
+				     SetupReqLen (std--min (static_cast<uint16_t> 2) SetupReqLen)))
+			      (t
+			       (comments "Catch-all for unsupported request codes. Sets an error flag.")
+			       (setf errflag (hex #xff))))))
+
+		       (if (== (hex #xff)
+			       errflag)
+			   (do0
+			    (comments "If the previously set errflag is 0xff (signaling an unsupported request), this code forces a STALL condition on the control endpoint. This signals to the host that the device doesn't recognize the request.")
+			    (setf R8_UEP0_CTRL (or RB_UEP_R_TOG
+						   RB_UEP_T_TOG
+						   UEP_R_RES_STALL
+						   UEP_T_RES_STALL)))
+			   (do0
+			    (doc "Determines Transfer Direction: Checks chtype. If the 0x80 bit is set, the host expects data from the device (upload/IN direction), otherwise, the host is sending data (download/OUT direction)."
+				 "Sets the data transfer 2length (len) for this stage of the control transfer."
 			  
-				)
-			   (if (& (hex #x80)
-				  chtype)
-			       (do0
-				(comments "Upload")
-				(let ((new_len (std--min DevEP0Size SetupReqLen))))
-				(assert (< new_len 256))
-				(setf len (static_cast<uint8_t> new_len))
-				(decf SetupReqLen len))
-			       (do0
-				(comments "Download")
-				(setf len 0)))
-			   (comments "Configures Endpoint: Prepares the control endpoint register (R8_UEP0_CTRL) for data transmission (likely transitioning to the DATA1 stage of the control transfer).")
-			   (setf R8_UEP0_T_LEN len
-				 R8_UEP0_CTRL (or RB_UEP_R_TOG
-						  RB_UEP_T_TOG
-						  UEP_R_RES_ACK
-						  UEP_T_RES_ACK)))
-			  )
-		      (comments "Signals Completion: Sets an interrupt flag (R8_USB_INT_FG = RB_UIF_TRANSFER;) to indicate the setup process is finished.")
-		      (setf R8_USB_INT_FG RB_UIF_TRANSFER)
-		      )))
-		  ((& intflag RB_UIF_BUS_RST)
-		   (comments "A bus reset interrupt flag is detected...")
-		   (doc "1. Reset Address: Clears the device's address (R8_USB_DEV_AD = 0;), putting it back to the default address state.
+				 )
+			    (if (& (hex #x80)
+				   chtype)
+				(do0
+				 (comments "Upload")
+				 (let ((new_len (std--min DevEP0Size SetupReqLen))))
+				 (assert (< new_len 256))
+				 (setf len (static_cast<uint8_t> new_len))
+				 (decf SetupReqLen len))
+				(do0
+				 (comments "Download")
+				 (setf len 0)))
+			    (comments "Configures Endpoint: Prepares the control endpoint register (R8_UEP0_CTRL) for data transmission (likely transitioning to the DATA1 stage of the control transfer).")
+			    (setf R8_UEP0_T_LEN len
+				  R8_UEP0_CTRL (or RB_UEP_R_TOG
+						   RB_UEP_T_TOG
+						   UEP_R_RES_ACK
+						   UEP_T_RES_ACK)))
+			   )
+		       (comments "Signals Completion: Sets an interrupt flag (R8_USB_INT_FG = RB_UIF_TRANSFER;) to indicate the setup process is finished.")
+		       (setf R8_USB_INT_FG RB_UIF_TRANSFER)
+		       )))
+		   ((& intflag RB_UIF_BUS_RST)
+		    (comments "A bus reset interrupt flag is detected...")
+		    (doc "1. Reset Address: Clears the device's address (R8_USB_DEV_AD = 0;), putting it back to the default address state.
 2. Reset Endpoints: Prepares all endpoints (endpoint 0 through 3) for new transactions.
 3. Clear Interrupt Flag: Acknowledges the bus reset interrupt.")
-		   (setf R8_USB_DEV_AD 0
-			 R8_UEP0_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK)
-			 R8_UEP1_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK)
-			 R8_UEP2_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK)
-			 R8_UEP3_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK)
-			 R8_USB_INT_FG RB_UIF_BUS_RST))
-		  ((& intflag RB_UIF_SUSPEND)
-		   (comments "A suspend interrupt flag is detected...")
-		   (doc "1. Check Suspend State: Reads a status register (R8_USB_MIS_ST & RB_UMS_SUSPEND) to determine if the device is truly suspended.
+		    (setf R8_USB_DEV_AD 0
+			  R8_UEP0_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK)
+			  R8_UEP1_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK)
+			  R8_UEP2_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK)
+			  R8_UEP3_CTRL (or UEP_R_RES_ACK UEP_T_RES_NAK)
+			  R8_USB_INT_FG RB_UIF_BUS_RST))
+		   ((& intflag RB_UIF_SUSPEND)
+		    (comments "A suspend interrupt flag is detected...")
+		    (doc "1. Check Suspend State: Reads a status register (R8_USB_MIS_ST & RB_UMS_SUSPEND) to determine if the device is truly suspended.
 2. Suspend/Wake-up Actions: The commented sections could contain code to handle entering a low-power sleep mode (if suspended) or performing wake-up actions (if resuming from suspend).
 3. Clear Interrupt Flag: Acknowledges the suspend interrupt.")
-		   (if (& RB_UMS_SUSPEND R8_USB_MIS_ST)
-		       (do0
-			(comments "Sleep"))
-		       (do0
-			(comments "Wake up.")))
-		   (setf R8_USB_INT_FG RB_UIF_SUSPEND)
-		   )
-		  (t
-		   (comments "Catch any other unhandled interrupt flags and simply clears them.")
-		   (setf R8_USB_INT_FG intflag))
-		  ))))
+		    (if (& RB_UMS_SUSPEND R8_USB_MIS_ST)
+			(do0
+			 (comments "Sleep"))
+			(do0
+			 (comments "Wake up.")))
+		    (setf R8_USB_INT_FG RB_UIF_SUSPEND)
+		    )
+		   (t
+		    (comments "Catch any other unhandled interrupt flags and simply clears them.")
+		    (setf R8_USB_INT_FG intflag))
+		   ))))
       "#else"
       (do0
-      (space Ch592UsbRegisters& (= usb (deref (new )
-					      ))
-	     Ch592UsbRegisters))
+       (space Ch592UsbRegisters& (= usb (deref (new )
+					       ))
+	      Ch592UsbRegisters))
       "#endif")
      
      
@@ -1599,28 +1796,30 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
      (do0
       "#ifdef BUILD_FOR_TARGET"
       (defun main ()
-       (declare (values int))
+	(declare (values int))
 
 	
 	
 	(SetSysClock CLK_SOURCE_PLL_60MHz)
+	
+	(do0
+	 (comments  "This will configure UART1 to send and receive at 115200 baud:")
+	 (doc "up to 6Mbps is possible. fifo can store 8 bytes")
+	 (GPIOA_SetBits GPIO_Pin_9)
+	 (GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
+	 (GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
+	 (UART1_DefInit)
 
-       (do0
-	(comments  "This will configure UART1 to send and receive at 115200 baud:")
-	(doc "up to 6Mbps is possible. fifo can store 8 bytes")
-	(GPIOA_SetBits GPIO_Pin_9)
-	(GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
-	(GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
-	(UART1_DefInit)
-
-	,(let ((msg-string "ALPHA1\\r\\n"))
-	   `(let ((TxBuf (,(format nil "std::array<uint8_t,~a>" (length msg-string))
-			  (string ,msg-string)))
+	 ,(let ((msg-string "ALPHA1\\r\\n"))
+	    `(let ((TxBuf (,(format nil "std::array<uint8_t,~a>" (length msg-string))
+			   (string ,msg-string)))
 		  
 					;(trigB (uint8_t 0))
-		  )))
+		   )))
 
-	(UART1_SendString (TxBuf.data) (TxBuf.size)))
+	 (UART1_SendString (TxBuf.data) (TxBuf.size)))
+
+	
 
 	(let ((ostr (std--vector<char>)))
 	  (fmt--format_to (std--back_inserter ostr)
@@ -1631,32 +1830,32 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
        
 	#+nil  (setf pEP0_RAM_Addr (EP0_Databuf.data))
 
-       (usb.device_init (static_cast<uint16_t>
-			 (reinterpret_cast<uint32_t> (EP0_Databuf.data))))
+	(usb.device_init (static_cast<uint16_t>
+			  (reinterpret_cast<uint32_t> (EP0_Databuf.data))))
 
-       (let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))
-	     (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
-       (dev.isValid)
-       (cfg.isValid)
-       #+nil(USB_DeviceInit)
-       (comments "Enable the interrupt associated with the USB peripheral.")
-       (PFIC_EnableIRQ USB_IRQn)
-       (while 1
-	      (comments "inifinite loop")
-	      (UART1_SendString (TxBuf.data) (TxBuf.size))))
+	(let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))
+	      (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
+	(dev.isValid)
+	(cfg.isValid)
+	#+nil(USB_DeviceInit)
+	(comments "Enable the interrupt associated with the USB peripheral.")
+	(PFIC_EnableIRQ USB_IRQn)
+	(while 1
+	       (comments "inifinite loop")
+	       (UART1_SendString (TxBuf.data) (TxBuf.size))))
       "#else"
       (defun main ()
-       (declare (values int))
+	(declare (values int))
 	
 
        
 
-       #+nil(usb.device_init (static_cast<uint16_t>
-			 (reinterpret_cast<uint32_t> (EP0_Databuf.data))))
+	#+nil(usb.device_init (static_cast<uint16_t>
+			       (reinterpret_cast<uint32_t> (EP0_Databuf.data))))
 
-       (let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))
-	     (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
-       (dev.isValid)
+	(let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))
+	      (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
+	(dev.isValid)
 	#+more ,(lprint :vars `((dev.toString)))
 	(cfg.isValid)
 	#+more ,(lprint :vars `((cfg.toString))))
@@ -1665,7 +1864,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 
 
      #+nil(do0
-      (doc "
+	   (doc "
 
 __INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))). This likely indicates a specialized, 'fast' interrupt mechanism specific to your compiler or microcontroller (WCH).
 
@@ -1674,15 +1873,15 @@ The compiler attribute __attribute__((section('.highcode'))) will be assigned to
 
 
 ")
-      (space __INTERRUPT
-	     __HIGH_CODE
-	     (defun USB_IRQHandler ()
-	       (comments "Handle interrupts coming from the USB Peripheral")
-	       (USB_DevTransProcess2))))
+	   (space __INTERRUPT
+		  __HIGH_CODE
+		  (defun USB_IRQHandler ()
+		    (comments "Handle interrupts coming from the USB Peripheral")
+		    (USB_DevTransProcess2))))
 
      #+nil(defun DevEP1_OUT_Deal (l)
-       (declare (type uint8_t l))
-       (doc "Endpoint 1 data reception
+	    (declare (type uint8_t l))
+	    (doc "Endpoint 1 data reception
 
 1. l Parameter: The argument l represents the length (in bytes) of the received data packet.
 
@@ -1691,10 +1890,10 @@ The compiler attribute __attribute__((section('.highcode'))) will be assigned to
       pEP1_IN_DataBuf[i] = ~pEP1_OUT_DataBuf[i]; : This line inverts each byte of data (~ is the bitwise NOT operator) and stores the result in pEP1_IN_DataBuf.
 3. Response Preparation:  The function calls DevEP1_IN_Deal(l).  This other function is likely responsible for sending the modified data (now in pEP1_IN_DataBuf) back to the host.
 ")
-       (dotimes (i l)
-	 (setf (aref pEP1_IN_DataBuf i)
-	       (~ (aref pEP1_OUT_DataBuf i))))
-       (DevEP1_IN_Deal l))
+	    (dotimes (i l)
+	      (setf (aref pEP1_IN_DataBuf i)
+		    (~ (aref pEP1_OUT_DataBuf i))))
+	    (DevEP1_IN_Deal l))
      
      )
    :omit-parens t
