@@ -194,6 +194,7 @@ if (BUILD_FOR_TARGET)
   include_directories(
     ${HAL_PATH}/RVMSIS/
     ${HAL_PATH}/StdPeriphDriver/inc
+    # git clone https://github.com/fmtlib/fmt
     /home/martin/src/fmt/include/fmt
     #   ${HAL_PATH}/User/
     #   ${HAL_PATH}/../BLE/HAL/include
