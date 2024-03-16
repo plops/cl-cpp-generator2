@@ -1094,7 +1094,25 @@ I think string descriptors are optional, so for now I will always keep string in
               
        )
      :code `(do0
-	     
+	     (doc "
+- The constructor of Uart is made private to prevent direct
+  instantiation.
+
+- A static method getInstance() is provided to get the singleton
+  instance.
+
+- Copy constructor and copy assignment operator are deleted to prevent copying.
+
+- A std::mutex named mutex is added to protect critical sections
+  within the print method. This mutex is locked using std::lock_guard
+  before accessing shared resources.
+
+- Please note, using a mutex in a high-frequency logging or in
+  interrupt context can lead to performance bottlenecks or deadlocks
+  if not handled carefully. Always consider the specific requirements
+  and constraints of your embedded system when introducing
+  thread-safety mechanisms.
+")
 	     (defclass ,name ()
 	       "public:" 
 	       (defmethod ,name (,@(remove-if #'null
