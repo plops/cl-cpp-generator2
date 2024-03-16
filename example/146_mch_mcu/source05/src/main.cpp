@@ -52,7 +52,7 @@ Ch592UsbRegisters &usb =
 // overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml
 
 void USB_DevTransProcess2() {
-  auto u{Uart::getInstance()};
+  auto &u{Uart::getInstance()};
   if (usb.int_flag.transfer) {
     if (0x3 != usb.int_status.token) {
       if (0x1 == usb.int_status.token) {
@@ -228,8 +228,8 @@ responds to confirm its own status.
 
 int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
-  auto uart{Uart::getInstance()};
-  uart.print("{}", 42);
+  auto &u{Uart::getInstance()};
+  u.print("{}", 42);
   usb.device_init(
       static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
   auto &dev{*reinterpret_cast<const UsbDeviceDescriptor *>(DevDescr.data())};
@@ -243,7 +243,7 @@ int main() {
   while (1) {
     // inifinite loop
 
-    UART1_SendString(TxBuf.data(), TxBuf.size());
+    u.print("hello");
   }
 }
 

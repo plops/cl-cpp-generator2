@@ -1422,7 +1422,7 @@ I think string descriptors are optional, so for now I will always keep string in
 
        (comments "overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml")
        (defun USB_DevTransProcess2 ()
-	 (let ((u (Uart--getInstance))))
+	 (let ((&u (Uart--getInstance))))
 	 (when usb.int_flag.transfer
 	   (when (!= (hex #b11) usb.int_status.token )
 	     (cond
@@ -1828,7 +1828,9 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	
 	(SetSysClock CLK_SOURCE_PLL_60MHz)
 
-	(let ((uart (Uart--getInstance))))
+	(let ((&u (Uart--getInstance)))
+	  ;(declare (type Uart& u))
+	  )
 
 	#+nil
 	(do0
@@ -1849,7 +1851,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	 (UART1_SendString (TxBuf.data) (TxBuf.size)))
 
 
-	(uart.print (string "{}") 42)
+	(u.print (string "{}") 42)
 	#+nil
 	(let ((ostr (std--vector<char>)))
 	  (fmt--format_to (std--back_inserter ostr)
@@ -1872,6 +1874,8 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	(PFIC_EnableIRQ USB_IRQn)
 	(while 1
 	       (comments "inifinite loop")
+	       (u.print (string "hello"))
+	       #+nil
 	       (UART1_SendString (TxBuf.data) (TxBuf.size))))
       "#else"
       (defun main ()
