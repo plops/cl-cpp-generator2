@@ -7,14 +7,30 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # create a cmake option to indicate the build is for the target
+# this is enabled when building for CH592 embedded system
+# without this option we can build code for amd64 (just for testing)
 option(BUILD_FOR_TARGET "Build for target" OFF)
 
 # if the build is for the target, we need these flags
 if (BUILD_FOR_TARGET)
-  # https://github.com/fmtlib/fmt/issues/1617
-  set(EMBED_OPTIONS 
+
+# Compilation/Linking Flags
+
+# -static: Create a statically linked binary (all dependencies included).
+# -nostartfiles: Skip default system startup files for full control.
+# -fno-exceptions: Disable C++ exception handling (reduces size).
+# -fno-rtti: Disable C++ Run-Time Type Information (reduces size).
+
+# fmt Library Configuration https://github.com/fmtlib/fmt/issues/1617
+
+# -DFMT_USE_FLOAT=0: Disable float formatting support.
+# -DFMT_USE_DOUBLE=0: Disable double formatting support.
+# -DFMT_USE_LONG_DOUBLE=0: Disable long double formatting support.
+# -DFMT_STATIC_THOUSANDS_SEPARATOR: Enforce a fixed thousands separator character.
+
+  set(EMBED_OPTIONS
+    -static 
     -nostartfiles
-    -static
     -fno-exceptions
     -fno-rtti
     -DFMT_USE_FLOAT=0
@@ -98,11 +114,8 @@ file(GLOB_RECURSE HAL_SOURCES
 # Separately define my sourcefiles and those of the HAL. I want to
 # emit rigorous warnings for my code.
 
-
-
 # Source Files
 add_library(mine 
-  
   src/Ch592UsbRegisters.cpp   
   src/Ch592UsbRegisters.h
   src/UsbDeviceDescriptor.cpp
@@ -111,6 +124,22 @@ add_library(mine
   src/UsbConfigurationDescriptor.h
 )
 
+
+
+# -Wall: Enables a set of warning messages for potential issues in the code.
+# -Wextra: Enables additional warning messages beyond what -Wall provides.
+# -Wconversion: Warns about implicit type conversions that may result in data loss.
+# -Wdouble-promotion: Warns about implicit promotion of float values to double.
+# -Wno-unused-parameter: Suppresses warnings for unused function parameters.
+# -Wno-unused-function: Suppresses warnings for unused functions.
+# -Wno-sign-conversion: Suppresses warnings for implicit sign conversions.
+# -Wvla: Warns about variable-length arrays, which may have limitations.
+# -Wframe-larger-than=5000: Warns if a function's stack frame size exceeds 5000 bytes.
+# -Wstack-usage=10000: Warns if the stack usage of a function exceeds 10000 bytes.
+# -Wshadow: Warns about variable shadowing, where a local variable hides another variable with the same name.
+# -Wformat=2: Enables additional format string checking for printf-style functions.
+# -fno-common: Disallows the use of tentative definitions and forces each global variable to have a unique definition.
+# -fstack-usage: Generates a report of stack usage for each function.
 
 target_compile_options(
   mine PRIVATE
