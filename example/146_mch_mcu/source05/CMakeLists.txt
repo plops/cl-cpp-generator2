@@ -218,10 +218,7 @@ if (BUILD_FOR_TARGET)
   target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_FOR_TARGET)
   target_link_options(${PROJECT_NAME} PRIVATE -T ${LINKER_SCRIPT})
 
-  # when the ${PROJECT_NAME} has been build, strip the binary:
-  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND  /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-strip ${PROJECT_NAME}
-  )
+
 
 else()
 
@@ -242,7 +239,10 @@ if (BUILD_FOR_TARGET)
       ${HAL_PATH}/StdPeriphDriver/libISP592.a
       mine
     )
-
-
+  else()
+  # when the ${PROJECT_NAME} has been build, strip the binary:
+  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND  /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-strip ${PROJECT_NAME}
+  )
   endif ()
 endif()
