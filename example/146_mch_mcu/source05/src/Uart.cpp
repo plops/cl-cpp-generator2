@@ -6,6 +6,28 @@ extern "C" {
 #include <CH59x_common.h>
 };
 #include "Uart.h"
+/**
+- The constructor of Uart is made private to prevent direct
+  instantiation.
+
+- A static method getInstance() is provided to get the singleton
+  instance.
+
+- Copy constructor and copy assignment operator are deleted to prevent copying.
+
+- Not working on bare metal risc-v yet: A std::mutex named mutex is
+  added to protect critical sections within the print method. This
+  mutex is locked using std::lock_guard before accessing shared
+  resources.
+
+- Please note, using a mutex in a high-frequency logging or in
+  interrupt context can lead to performance bottlenecks or deadlocks
+  if not handled carefully. Always consider the specific requirements
+  and constraints of your embedded system when introducing
+  thread-safety mechanisms.
+
+
+*/
 Uart::Uart() {
   // This will configure UART1 to send and receive at 115200 baud:
 
@@ -18,5 +40,7 @@ Uart::Uart() {
   UART1_DefInit();
 }
 void Uart::SendString(uint8_t *buf, uint16_t len) {
+  // FIXME: hold mutex here
+
   UART1_SendString(buf, len);
 }

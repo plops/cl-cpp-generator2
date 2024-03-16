@@ -1,12 +1,22 @@
 #ifndef UART_H
 #define UART_H
 
-#include <cstdint>
 #include <format.h>
 #include <vector>
 class Uart {
-public:
+private:
   explicit Uart();
+
+public:
+  static Uart &getInstance() {
+    static Uart instance;
+    return instance;
+  }
+
+  // Delete copy constructor and assignment operator
+
+  Uart(Uart const &) = delete;
+  Uart &operator=(Uart const &) = delete;
   template <typename... Args>
   void print(fmt::format_string<Args...> fmt, Args &&...args) {
     auto ostr{std::vector<uint8_t>()};

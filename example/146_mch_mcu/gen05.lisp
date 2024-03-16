@@ -1056,7 +1056,8 @@ I think string descriptors are optional, so for now I will always keep string in
 
   (let* ((name `Uart)
 	 (members `(
-		    ;(bMaxPower :type uint8_t :param t)
+		    ;; fixme: mutex doesn't compile for bare-metal risc-v
+		    ;(mutex :type "std::mutex" :param nil :internal t)
 		    
 		    )))
     (write-class
@@ -1070,8 +1071,9 @@ I think string descriptors are optional, so for now I will always keep string in
 			(include<> vector
 					;deque
 					;string
-				   cstdint
+				   ;cstdint
 				   ;ostream
+				   ;mutex
 				   )
 			(do0
 			 #+nil
@@ -1084,13 +1086,15 @@ I think string descriptors are optional, so for now I will always keep string in
      :implementation-preamble
      `(do0
        (comments "implementation"       )
-       
+      ; (include<> mutex)
        (space extern "\"C\""
 	      (progn
 	       	(include<> CH59x_common.h
 			   ;CH59x_uart.h
 			   ;CH59x_gpio.h
 			   )))
+
+     
               
        )
      :code `(do0
@@ -1103,9 +1107,10 @@ I think string descriptors are optional, so for now I will always keep string in
 
 - Copy constructor and copy assignment operator are deleted to prevent copying.
 
-- A std::mutex named mutex is added to protect critical sections
-  within the print method. This mutex is locked using std::lock_guard
-  before accessing shared resources.
+- Not working on bare metal risc-v yet: A std::mutex named mutex is
+  added to protect critical sections within the print method. This
+  mutex is locked using std::lock_guard before accessing shared
+  resources.
 
 - Please note, using a mutex in a high-frequency logging or in
   interrupt context can lead to performance bottlenecks or deadlocks
@@ -1114,11 +1119,11 @@ I think string descriptors are optional, so for now I will always keep string in
   thread-safety mechanisms.
 ")
 	     (defclass ,name ()
-	       "public:" 
+	       "private:" 
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
 					  collect
-					  (destructuring-bind (name &key type param (initform 0)) e
+					  (destructuring-bind (name &key type param (initform 0) internal) e
 					    (declare (ignorable type initform))
 					    (let (#+nil(nname (intern
 							       (string-upcase
@@ -1133,7 +1138,7 @@ I think string descriptors are optional, so for now I will always keep string in
 		  ,@(remove-if #'null
 			       (loop for e in members
 				     collect
-				     (destructuring-bind (name &key type param (initform 0)) e
+				     (destructuring-bind (name &key type param (initform 0) internal) e
 				       (declare (ignorable initform))
 				       (let (#+nil (nname (intern
 							   (string-upcase
@@ -1156,7 +1161,7 @@ I think string descriptors are optional, so for now I will always keep string in
 		   ,@(remove-if #'null
 				(loop for e in members
 				      collect
-				      (destructuring-bind (name &key type param (initform 0)) e
+				      (destructuring-bind (name &key type param (initform 0) internal) e
 					(declare (ignorable type initform))
 					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					      (nname_ (format nil "~a_"
@@ -1171,45 +1176,52 @@ I think string descriptors are optional, so for now I will always keep string in
 		  (values :constructor)
 		  )
 		 (do0
-	 (comments  "This will configure UART1 to send and receive at 115200 baud:")
-	 (doc "up to 6Mbps is possible. fifo can store 8 bytes")
-	 (GPIOA_SetBits GPIO_Pin_9)
-	 (GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
-	 (GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
-	 (UART1_DefInit)
-
-	 )
+		  (comments  "This will configure UART1 to send and receive at 115200 baud:")
+		  (doc "up to 6Mbps is possible. fifo can store 8 bytes")
+		  (GPIOA_SetBits GPIO_Pin_9)
+		  (GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
+		  (GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
+		  (UART1_DefInit)
+		  )
 		 )
+	       "public:"
+	       (defun+ getInstance ()
+		 (declare (values "static Uart&"))
+		 (space static Uart instance)
+		 (return instance))
+	       (comments "Delete copy constructor and assignment operator")
+	       (= (Uart "Uart const&") delete)
+	       (= "Uart& operator=(Uart const&)" delete)
 	       #+more (defmethod toString ()
-		 (declare (const)
-			  (values "std::string"))
+			(declare (const)
+				 (values "std::string"))
 			#+format (return
-		  (std--format
-		   (string ,(format nil "~{~a~^,\\n~}"
-				    (loop for e in members
-					  collect
-					  (destructuring-bind (name &key type param (initform 0)) e
-					    (format nil "~a: {} = 0x{:X}" name)))))
-		   ,@(loop for e in members
-			       appending
-			       (destructuring-bind (name &key type param (initform 0)) e
-				 `((static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
-				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
-				   )))))
+				   (std--format
+				    (string ,(format nil "~{~a~^,\\n~}"
+						     (loop for e in members
+							   collect
+							   (destructuring-bind (name &key type param (initform 0)) e
+							     (format nil "~a: {} = 0x{:X}" name)))))
+				    ,@(loop for e in members
+					    appending
+					    (destructuring-bind (name &key type param (initform 0)) e
+					      `((static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+						(static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+						)))))
 			#-format
 			(let ((ss (std--ostringstream)))
-		   (<< ss
-		       ,@(loop for e in members
-			       appending
-			       (destructuring-bind (name &key type param (initform 0)) e
-				 `((string ,(format nil "~a: " name))
-				   std--dec
-				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
-				   (string " = 0x")
-				   std--hex
-				   (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
-				   (string "\\n")))))
-		   (return (ss.str))))
+			  (<< ss
+			      ,@(loop for e in members
+				      appending
+				      (destructuring-bind (name &key type param (initform 0)) e
+					`((string ,(format nil "~a: " name))
+					  std--dec
+					  (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+					  (string " = 0x")
+					  std--hex
+					  (static_cast<int> ,(cl-change-case:snake-case (format nil "~a" name)))
+					  (string "\\n")))))
+			  (return (ss.str))))
 	       (space "template <typename... Args>"
 		      (defun+ print (fmt args)
 			(declare (type "fmt::format_string<Args...>" fmt)
@@ -1226,35 +1238,37 @@ I think string descriptors are optional, so for now I will always keep string in
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
-				  (destructuring-bind (name &key type param (initform 0)) e
+				  (destructuring-bind (name &key type param initform internal) e
 				    (declare (ignorable initform param))
 				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					  (get (cl-change-case:pascal-case (format nil "get-~a" name)))
 					  #+nil (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-				      `(defmethod ,get ()
-					 (declare (values ,(cond
-							     ((and (stringp type)
-								   (or (str:starts-with-p "std::vector<" type)
-								       (str:starts-with-p "std::deque<" type)
-								       (str:starts-with-p "std::array<" type)
-								       (str:starts-with-p "std::string" type)))
-							      (format nil "const ~a&" type))
-							     (t type)))
-						  (const))
-					 (return ,nname))))))
+				      (unless internal
+				       `(defmethod ,get ()
+					  (declare (values ,(cond
+							      ((and (stringp type)
+								    (or (str:starts-with-p "std::vector<" type)
+									(str:starts-with-p "std::deque<" type)
+									(str:starts-with-p "std::array<" type)
+									(str:starts-with-p "std::string" type)))
+							       (format nil "const ~a&" type))
+							      (t type)))
+						   (const))
+					  (return ,nname)))))))
 	       
 	       "private:"
 
 	       (defmethod SendString (buf len)
 		 (declare (type uint8_t* buf)
 			  (type uint16_t len))
+		 (comments "FIXME: hold mutex here")
 		 (UART1_SendString buf len)
 		 )
 	       
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
-				  (destructuring-bind (name &key type param (initform 0)) e
+				  (destructuring-bind (name &key type param (initform 0) internal) e
 				    (let (#+nil(nname (cl-change-case:snake-case (format nil "~a" name)))
 					  (nname (format nil "~a" (cl-change-case:snake-case (format nil "~a" name)))))
 				      (cond
