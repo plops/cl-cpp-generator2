@@ -364,6 +364,7 @@ A string representing the variable declaration."
 			   ,@(loop for decl in decls collect
 						     (if (listp decl) ;; split into name and initform
 							 (destructuring-bind (name &optional value) decl
+							   ;; FIXME: introducing initializer lists is better for C++ but not working with GLSL (and possibly C)
 							   (format nil ;"~a ~@[ = ~a~];"
 								   "~a ~@[{~a}~];"
 								   (variable-declaration :name name :env env :emit emit)
