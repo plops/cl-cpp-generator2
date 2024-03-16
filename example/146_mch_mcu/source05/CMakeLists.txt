@@ -208,6 +208,8 @@ if (BUILD_FOR_TARGET)
     src/main.cpp
     ${HAL_SOURCES}
   )
+
+  target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_FOR_TARGET)
   target_link_options(${PROJECT_NAME} PRIVATE -T ${LINKER_SCRIPT})
 
   # when the ${PROJECT_NAME} has been build, strip the binary:

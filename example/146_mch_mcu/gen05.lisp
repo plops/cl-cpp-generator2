@@ -1306,17 +1306,10 @@ I think string descriptors are optional, so for now I will always keep string in
      
      (include Ch592UsbRegisters.h
 	      UsbDeviceDescriptor.h
-	      UsbConfigurationDescriptor.h)
-     (comments "")
+	      UsbConfigurationDescriptor.h
+	      Uart.h)
 
-     (do0
-      "#ifdef BUILD_FOR_TARGET"
-      "#define FMT_THROW panic"
-      "#endif")
-     
-     (include<> format.h)
 
-     (comments " ")
      (do0
       "#ifdef BUILD_FOR_TARGET"
       (space extern "\"C\""
@@ -1429,7 +1422,7 @@ I think string descriptors are optional, so for now I will always keep string in
 
        (comments "overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml")
        (defun USB_DevTransProcess2 ()
-	 (let ((u (Uart))))
+	 (let ((u (Uart--getInstance))))
 	 (when usb.int_flag.transfer
 	   (when (!= (hex #b11) usb.int_status.token )
 	     (cond
@@ -1835,7 +1828,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	
 	(SetSysClock CLK_SOURCE_PLL_60MHz)
 
-	(let ((uart (Uart))))
+	(let ((uart (Uart--getInstance))))
 
 	#+nil
 	(do0

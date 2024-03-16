@@ -7,18 +7,11 @@
 // https://github.com/plops/cl-cpp-generator2/tree/master/example/146_mch_mcu/doc/examples/usb/device
 
 #include "Ch592UsbRegisters.h"
+#include "Uart.h"
 #include "UsbConfigurationDescriptor.h"
 #include "UsbDeviceDescriptor.h"
 #include <array>
 #include <cassert>
-//
-
-#ifdef BUILD_FOR_TARGET
-#define FMT_THROW panic
-#endif
-#include <format.h>
-//
-
 #ifdef BUILD_FOR_TARGET
 extern "C" {
 #include <CH59x_common.h>
@@ -59,7 +52,7 @@ Ch592UsbRegisters &usb =
 // overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml
 
 void USB_DevTransProcess2() {
-  auto u{Uart()};
+  auto u{Uart::getInstance()};
   if (usb.int_flag.transfer) {
     if (0x3 != usb.int_status.token) {
       if (0x1 == usb.int_status.token) {
@@ -235,7 +228,7 @@ responds to confirm its own status.
 
 int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
-  auto uart{Uart()};
+  auto uart{Uart::getInstance()};
   uart.print("{}", 42);
   usb.device_init(
       static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
