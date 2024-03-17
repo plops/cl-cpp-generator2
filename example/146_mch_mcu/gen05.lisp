@@ -1189,15 +1189,18 @@ I think string descriptors are optional, so for now I will always keep string in
 		  (GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
 		  (GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
 		  ;(UART1_DefInit)
-		  (UART1_BaudRateCfg "1'000'000" ;115200
+		  (UART1_BaudRateCfg ;"1'000'000"
+				     "115'200"
 		   )
 		  (comments "clear and enable fifos")
-		  (setf R8_UART1_FCR (logior (<< 2 6)
+		  (setf R8_UART1_FCR (or (<< 2 6)
 					     RB_FCR_TX_FIFO_CLR
 					     RB_FCR_RX_FIFO_CLR
 					     RB_FCR_FIFO_EN))
-		  (comments "8-bit word size")
-		  (setf R8_UART1_LCR RB_LCR_WORD_SZ)
+		  (comments "8-bit word size, odd parity, 2 stop bits")
+		  (setf R8_UART1_LCR (or RB_LCR_WORD_SZ
+					 RB_LCR_PAR_EN
+					 RB_LCR_STOP_BIT))
 		  (comments "enable tx interrupt")
 		  (setf R8_UART1_IER RB_IER_TXD_EN)
 		  (comments "pre-divisor latch byte (7-bit value), don't change clock, leave 1")

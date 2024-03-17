@@ -37,14 +37,14 @@ Uart::Uart() {
   GPIOA_SetBits(GPIO_Pin_9);
   GPIOA_ModeCfg(GPIO_Pin_8, GPIO_ModeIN_PU);
   GPIOA_ModeCfg(GPIO_Pin_9, GPIO_ModeOut_PP_5mA);
-  UART1_BaudRateCfg(1'000'000);
+  UART1_BaudRateCfg(115'200);
   // clear and enable fifos
 
   R8_UART1_FCR =
-      2 << 6 || RB_FCR_TX_FIFO_CLR || RB_FCR_RX_FIFO_CLR || RB_FCR_FIFO_EN;
-  // 8-bit word size
+      2 << 6 | RB_FCR_TX_FIFO_CLR | RB_FCR_RX_FIFO_CLR | RB_FCR_FIFO_EN;
+  // 8-bit word size, odd parity, 2 stop bits
 
-  R8_UART1_LCR = RB_LCR_WORD_SZ;
+  R8_UART1_LCR = RB_LCR_WORD_SZ | RB_LCR_PAR_EN | RB_LCR_STOP_BIT;
   // enable tx interrupt
 
   R8_UART1_IER = RB_IER_TXD_EN;
