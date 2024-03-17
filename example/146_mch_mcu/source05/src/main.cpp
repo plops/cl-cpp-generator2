@@ -136,6 +136,31 @@ void USB_DevTransProcess2() {
 Ch592UsbRegisters &usb = *new Ch592UsbRegisters;
 #endif
 /**
+
+__INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))).
+This likely indicates a specialized, 'fast' interrupt mechanism specific to your
+compiler or microcontroller (WCH).
+
+
+The compiler attribute __attribute__((section('.highcode'))) will be assigned to
+the __HIGH_CODE macro. This attribute likely instructs the compiler to place
+functions or code blocks marked with __HIGH_CODE into a special memory section
+named '.highcode' (possibly a faster memory region).
+
+Here is a post about fast interrupts on WCH
+https://www.reddit.com/r/RISCV/comments/126262j/notes_on_wch_fast_interrupts/
+
+
+*/
+__attribute__((interrupt)) __HIGH_CODE void USB_IRQHandler() {
+  // Handle interrupts coming from the USB Peripheral
+
+  auto &u{Uart::getInstance()};
+  u.print("usb_irq");
+  USB_DevTransProcess2();
+}
+
+/**
 Here's a bullet list summary of the essential concepts regarding USB Protocols:
 
 **Understanding USB Protocols**
@@ -239,6 +264,9 @@ int main() {
       static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
   // Enable the interrupt associated with the USB peripheral.
 
+  // call handler so that -gc-section doesn't remove it
+
+  USB_IRQHandler();
   PFIC_EnableIRQ(USB_IRQn);
   u.print("usb_irq=on");
   while (1) {
@@ -257,26 +285,3 @@ int main() {
 }
 
 #endif
-/**
-
-__INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))).
-This likely indicates a specialized, 'fast' interrupt mechanism specific to your
-compiler or microcontroller (WCH).
-
-
-The compiler attribute __attribute__((section('.highcode'))) will be assigned to
-the __HIGH_CODE macro. This attribute likely instructs the compiler to place
-functions or code blocks marked with __HIGH_CODE into a special memory section
-named '.highcode' (possibly a faster memory region).
-
-
-
-
-*/
-__INTERRUPT __HIGH_CODE void USB_IRQHandler() {
-  // Handle interrupts coming from the USB Peripheral
-
-  auto &u{Uart::getInstance()};
-  u.print("usb_irq");
-  USB_DevTransProcess2();
-}

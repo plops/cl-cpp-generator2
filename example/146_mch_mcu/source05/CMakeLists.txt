@@ -97,7 +97,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   )
 
 
-  add_link_options(-Wl,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
+  add_link_options(-Wl,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 
 else ()
   add_compile_options(
@@ -105,7 +105,7 @@ else ()
     -Os  #-ffunction-sections -fdata-sections # don't use together with flto
     # -g -g3 -ggdb -gdwarf-4   # useful if you want line numbers in *.nm output
   )
-  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
+  #set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
 
 
   #   -gc-sections: Enables "garbage collection" at the linker stage. The linker will analyze your code and discard any unused functions or data sections to reduce the final executable size.
@@ -114,7 +114,7 @@ else ()
   #   -Map=...: Generates a map file that details the memory layout of your linked executable.
   #   --cref: Enables the generation of a cross-reference table. This table provides information about how symbols (functions, variables) are defined and used throughout your codebase.
 
-  add_link_options(-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
+  #add_link_options(-Wl,-gc-sections,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
 endif ()
 
 
@@ -235,12 +235,12 @@ target_link_libraries(${PROJECT_NAME}
 if (BUILD_FOR_TARGET)
 
   # Libraries
-  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  #if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_link_libraries(${PROJECT_NAME}
       ${HAL_PATH}/StdPeriphDriver/libISP592.a
       mine
     )
-  else()
+  #else()
   # when the ${PROJECT_NAME} has been build, strip the binary:
   add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
@@ -255,5 +255,5 @@ if (BUILD_FOR_TARGET)
 # for flashing the binary to the target, press boot button and plug cable in. you have 10 seconds
     COMMAND ./wchisp flash ${PROJECT_NAME}
   )
-  endif ()
+  #endif ()
 endif()

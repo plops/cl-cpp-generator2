@@ -1823,7 +1823,25 @@ I think string descriptors are optional, so for now I will always keep string in
       "#endif")
      
      
-    
+    (do0
+      (doc "
+
+__INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))). This likely indicates a specialized, 'fast' interrupt mechanism specific to your compiler or microcontroller (WCH).
+
+
+The compiler attribute __attribute__((section('.highcode'))) will be assigned to the __HIGH_CODE macro. This attribute likely instructs the compiler to place functions or code blocks marked with __HIGH_CODE into a special memory section named '.highcode' (possibly a faster memory region).
+
+Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comments/126262j/notes_on_wch_fast_interrupts/
+")
+	   (space ;(__attribute__ (paren (interrupt (string "user" ))))
+	    (__attribute__ (paren interrupt))
+					;__INTERRUPT
+	    __HIGH_CODE
+		  (defun USB_IRQHandler ()
+		    (comments "Handle interrupts coming from the USB Peripheral")
+		    (let ((&u (Uart--getInstance)))
+		      (u.print (string "usb_irq")))
+		    (USB_DevTransProcess2))))
 
      #+nil
      (defun DebugInit ()
@@ -1952,6 +1970,8 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	
 	
 	(comments "Enable the interrupt associated with the USB peripheral.")
+	(comments "call handler so that -gc-section doesn't remove it")
+	(USB_IRQHandler)
 	(PFIC_EnableIRQ USB_IRQn)
 	(u.print (string "usb_irq=on"))
 	
@@ -1980,24 +2000,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
      
 
 
-     (do0
-	   (doc "
-
-__INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))). This likely indicates a specialized, 'fast' interrupt mechanism specific to your compiler or microcontroller (WCH).
-
-
-The compiler attribute __attribute__((section('.highcode'))) will be assigned to the __HIGH_CODE macro. This attribute likely instructs the compiler to place functions or code blocks marked with __HIGH_CODE into a special memory section named '.highcode' (possibly a faster memory region).
-
-Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comments/126262j/notes_on_wch_fast_interrupts/
-")
-	   (space ;(__attribute__ (paren (interrupt (string "user" ))))
-		  __INTERRUPT
-		  __HIGH_CODE
-		  (defun USB_IRQHandler ()
-		    (comments "Handle interrupts coming from the USB Peripheral")
-		    (let ((&u (Uart--getInstance)))
-		      (u.print (string "usb_irq")))
-		    (USB_DevTransProcess2))))
+     
 
      #+nil(defun DevEP1_OUT_Deal (l)
 	    (declare (type uint8_t l))
