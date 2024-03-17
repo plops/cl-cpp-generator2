@@ -30,7 +30,16 @@ public:
   /** Overload for const char pointer
 
 */
-  void print(const char *str);
+  /** Overload for string literals (will not call strlen for known strings)
+
+*/
+  template <std::size_t N> void print(const char (&str)[N]) {
+    // N includes the null terminator, so we subtract 1 1t oget the actual
+    // string length
+
+    SendString(reinterpret_cast<uint8_t *>(const_cast<char *>(str)),
+               static_cast<uint16_t>(N - 1));
+  }
 
 private:
   void SendString(uint8_t *buf, uint16_t len);

@@ -1088,7 +1088,9 @@ I think string descriptors are optional, so for now I will always keep string in
      :implementation-preamble
      `(do0
        (comments "implementation"       )
-       ;(include<> cassert)
+       #+nil
+       (include<>			;cassert
+	cstddef)
        (space extern "\"C\""
 	      (progn
 	       	(include<> CH59x_common.h
@@ -1237,6 +1239,7 @@ I think string descriptors are optional, so for now I will always keep string in
 				      (ostr.size)))
 			))
 	       (doc "Overload for const char pointer")
+	       #+nil
 	       (defmethod print (str)
 		 (declare (type "const char*" str))
 		 (let ((n (strlen str)))
@@ -1245,7 +1248,14 @@ I think string descriptors are optional, so for now I will always keep string in
 				   (string "String length exceedds uint16_t range"))))
 		 (SendString (reinterpret_cast<uint8_t*> (const_cast<char*> str))
 			     (static_cast<uint16_t> n)))
-
+	       (doc "Overload for string literals (will not call strlen for known strings)")
+	       (space "template <std::size_t N>"
+		      (defun+ print ([N] )
+			(declare (type "const char (&str)" [N])
+				 )
+			(comments "N includes the null terminator, so we subtract 1 1t oget the actual string length")
+			(SendString (reinterpret_cast<uint8_t*> (const_cast<char*> str))
+				    (static_cast<uint16_t> (- N 1)))))
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
@@ -1433,8 +1443,8 @@ I think string descriptors are optional, so for now I will always keep string in
 
        (comments "overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml")
        (defun USB_DevTransProcess2 ()
-	#+nil (let ((&u (Uart--getInstance))))
-	 #+nil(when usb.int_flag.transfer
+	(let ((&u (Uart--getInstance))))
+	 (when usb.int_flag.transfer
 	   (when (!= (hex #b11) usb.int_status.token )
 	     (cond
 	       ((== (hex #b01 ) usb.int_status.token)
