@@ -37,8 +37,20 @@ Uart::Uart() {
   GPIOA_SetBits(GPIO_Pin_9);
   GPIOA_ModeCfg(GPIO_Pin_8, GPIO_ModeIN_PU);
   GPIOA_ModeCfg(GPIO_Pin_9, GPIO_ModeOut_PP_5mA);
-  UART1_DefInit();
   UART1_BaudRateCfg(1'000'000);
+  // clear and enable fifos
+
+  R8_UART1_FCR =
+      2 << 6 || RB_FCR_TX_FIFO_CLR || RB_FCR_RX_FIFO_CLR || RB_FCR_FIFO_EN;
+  // 8-bit word size
+
+  R8_UART1_LCR = RB_LCR_WORD_SZ;
+  // enable tx interrupt
+
+  R8_UART1_IER = RB_IER_TXD_EN;
+  // pre-divisor latch byte (7-bit value), don't change clock, leave 1
+
+  R8_UART1_DIV = 1;
 }
 void Uart::print(const char *str) {
   auto n{strlen(str)};
