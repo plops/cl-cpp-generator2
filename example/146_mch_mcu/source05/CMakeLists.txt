@@ -242,7 +242,14 @@ if (BUILD_FOR_TARGET)
   else()
   # when the ${PROJECT_NAME} has been build, strip the binary:
   add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-nm -S --size-sort -C -l ${PROJECT_NAME} > ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.nm
+
+# -s: Displays the archive index (if the binary is an archive). This maps symbols to specific object files within the archive.
+# -S: Shows the size of each defined symbol.
+# --size-sort: Sorts the output of symbols based on their size (largest first).
+# -C: Demangles complex symbol names (especially useful for C++).
+# -l: Includes debugging information to display filename and line number associated with each symbol (if available within the binary).
+
+    COMMAND /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-nm -s -S --size-sort -C -l ${PROJECT_NAME} > ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.nm
     COMMAND  /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-strip ${PROJECT_NAME}
   )
   endif ()
