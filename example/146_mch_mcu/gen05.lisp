@@ -569,7 +569,8 @@ registers.
 	       (defmethod device_init (ep0_data)
 		 (declare (type "uint16_t" ep0_data))
 		 (let ((&u (Uart--getInstance))))
-		 (u.print (string "Usb device_init ep0_data={}")
+		 (comments "the following message takes 47us at 6Mbps (actually 7.4Mbps)")
+		 (u.print (string "Usb device_init ep0_data=0x{:X}")
 			  ep0_data)
 		 (setf ctrl.reg 0)
 		 (setf ep4_1_mod.ep4_rx_en 0
