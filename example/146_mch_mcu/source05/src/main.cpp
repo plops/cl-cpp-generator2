@@ -273,7 +273,7 @@ named '.highcode' (possibly a faster memory region).
 
 
 */
-__INTERRUPT __HIGH_CODE void USB_IRQHandler() {
+__attribute__((interrupt("user"))) __HIGH_CODE void USB_IRQHandler() {
   // Handle interrupts coming from the USB Peripheral
 
   auto &u{Uart::getInstance()};

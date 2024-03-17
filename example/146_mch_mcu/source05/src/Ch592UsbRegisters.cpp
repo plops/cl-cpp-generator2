@@ -15,7 +15,7 @@ void Ch592UsbRegisters::device_init(uint16_t ep0_data) {
   auto &u{Uart::getInstance()};
   // the following message takes 47us at 6Mbps (actually 7.4Mbps)
 
-  u.print("Usb device_init ep0_data=0x{:X}", ep0_data);
+  u.print("Usb device_init");
   // Reset control register, clear all settings
 
   ctrl.reg = 0;

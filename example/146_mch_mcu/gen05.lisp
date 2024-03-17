@@ -580,8 +580,9 @@ registers.
 		 (declare (type "uint16_t" ep0_data))
 		 (let ((&u (Uart--getInstance))))
 		 (comments "the following message takes 47us at 6Mbps (actually 7.4Mbps)")
-		 (u.print (string "Usb device_init ep0_data=0x{:X}")
+		 #+nil (u.print (string "Usb device_init ep0_data=0x{:X}")
 			  ep0_data)
+		 (u.print (string "Usb device_init"))
 		 (comments "Reset control register, clear all settings")
 		 (setf ctrl.reg 0)
 		 (comments "Enable Endpoints 4 (OUT+IN) and 1 (OUT+IN)")
@@ -1989,7 +1990,7 @@ The compiler attribute __attribute__((section('.highcode'))) will be assigned to
 
 
 ")
-	   (space __INTERRUPT
+	   (space (__attribute__ (paren (interrupt (string "user" ))))			;__INTERRUPT
 		  __HIGH_CODE
 		  (defun USB_IRQHandler ()
 		    (comments "Handle interrupts coming from the USB Peripheral")
