@@ -347,10 +347,11 @@ registers.
      :implementation-preamble
      `(do0
        (comments "")
-        #+nil(include<>
-	 ;sstream
-	 ;ios
-	)
+       (include "Uart.h")
+       #+nil(include<>
+					;sstream
+					;ios
+	     )
 	
        )
      :code `(do0
@@ -567,6 +568,8 @@ registers.
 	       
 	       (defmethod device_init (ep0_data)
 		 (declare (type "uint16_t" ep0_data))
+		 (let ((&u (Uart--getInstance))))
+		 (u.print (string "Usb device_init"))
 		 (setf ctrl.reg 0)
 		 (setf ep4_1_mod.ep4_rx_en 0
 		       ep4_1_mod.ep4_tx_en 0
@@ -1848,38 +1851,8 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	
 	(SetSysClock CLK_SOURCE_PLL_60MHz)
 
-	(let ((&u (Uart--getInstance)))
-	  ;(declare (type Uart& u))
-	  )
+	(let ((&u (Uart--getInstance))))
 
-	#+nil
-	(do0
-	 (comments  "This will configure UART1 to send and receive at 115200 baud:")
-	 (doc "up to 6Mbps is possible. fifo can store 8 bytes")
-	 (GPIOA_SetBits GPIO_Pin_9)
-	 (GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
-	 (GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
-	 (UART1_DefInit)
-
-	 ,(let ((msg-string "ALPHA1\\r\\n"))
-	    `(let ((TxBuf (,(format nil "std::array<uint8_t,~a>" (length msg-string))
-			   (string ,msg-string)))
-		  
-					;(trigB (uint8_t 0))
-		   )))
-
-	 (UART1_SendString (TxBuf.data) (TxBuf.size)))
-
-
-	;(u.print (string "{}") 42)
-	#+nil
-	(let ((ostr (std--vector<char>)))
-	  (fmt--format_to (std--back_inserter ostr)
-			  (string {})
-			  43)
-	  (UART1_SendString (ostr.data)
-			    (ostr.size)))
-       
 	#+nil  (setf pEP0_RAM_Addr (EP0_Databuf.data))
 
 	(usb.device_init (static_cast<uint16_t>
@@ -1892,11 +1865,11 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	#+nil(USB_DeviceInit)
 	(comments "Enable the interrupt associated with the USB peripheral.")
 	(PFIC_EnableIRQ USB_IRQn)
+	
 	(while 1
 	       (comments "inifinite loop")
-	       (u.print (string "hello"))
-	       #+nil
-	       (UART1_SendString (TxBuf.data) (TxBuf.size))))
+	       ;(u.print (string "hello"))
+	       ))
       "#else"
       (defun main ()
 	(declare (values int))

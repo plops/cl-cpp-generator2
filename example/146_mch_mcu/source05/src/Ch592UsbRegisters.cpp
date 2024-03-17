@@ -3,8 +3,11 @@
 //
 
 #include "Ch592UsbRegisters.h"
+#include "Uart.h"
 Ch592UsbRegisters::Ch592UsbRegisters() {}
 void Ch592UsbRegisters::device_init(uint16_t ep0_data) {
+  auto &u{Uart::getInstance()};
+  u.print("Usb device_init");
   ctrl.reg = 0;
   ep4_1_mod.ep4_rx_en = 0;
   ep4_1_mod.ep4_tx_en = 0;

@@ -241,8 +241,6 @@ int main() {
   PFIC_EnableIRQ(USB_IRQn);
   while (1) {
     // inifinite loop
-
-    u.print("hello");
   }
 }
 
