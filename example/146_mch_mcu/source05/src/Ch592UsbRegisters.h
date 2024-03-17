@@ -95,11 +95,11 @@ public:
         uint8_t int_busy : 1;  // rw  Auto pause;
         uint8_t sys_ctrl : 2;  // rw  host-mode==0: 00..disable usb device
                                // function and disable internal pull-up (can be
-                              // overridden by dev-pullup-en), 01..enable device
-                              // fucntion, disable internal pull-up, external
-                              // pull-up-needed, 1x..enable usb device fucntion
-                              // and internal 1.5k pull-up, pull-up has priority
-                              // over pull-down resistor;
+        // overridden by dev-pullup-en), 01..enable device
+        // fucntion, disable internal pull-up, external
+        // pull-up-needed, 1x..enable usb device fucntion
+        // and internal 1.5k pull-up, pull-up has priority
+        // over pull-down resistor;
         uint8_t low_speed : 1; // rw ;
         uint8_t host_mode : 1; // rw ;
       };

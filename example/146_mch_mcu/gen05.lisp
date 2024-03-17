@@ -630,6 +630,18 @@ registers.
 		       (or R16_PIN_ANALOG_IE
 			   RB_PIN_USB_IE
 			   RB_PIN_USB_DP_PU))
+		 (comments "Clear interrupt flags")
+		 (setf int_flag.reg 0)
+		 (comments "Power on the USB port")
+		 (setf port_ctrl.port_en 1
+		       port_ctrl.pd_dis 1
+		       port_ctrl.low_speed 0
+		       port_ctrl.hub0_reset 0
+		       )
+		 (comments "Enable interrupts for suspend, bus reset, and data transfers")
+		 (setf int_en.suspend 1
+		       int_en.transfer 1
+		       int_en.bus_reset 1)
 		 )
 	       
 	       "private:"
