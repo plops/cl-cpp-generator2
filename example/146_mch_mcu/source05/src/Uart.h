@@ -24,7 +24,7 @@ public:
     // vector
 
     fmt::format_to(std::back_inserter(ostr), fmt, std::forward<Args>(args)...);
-    SendString(ostr.data(), ostr.size());
+    SendString(ostr.data(), static_cast<uint16_t>(ostr.size()));
   }
 
   /** Overload for const char pointer

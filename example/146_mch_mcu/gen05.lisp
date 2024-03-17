@@ -569,7 +569,8 @@ registers.
 	       (defmethod device_init (ep0_data)
 		 (declare (type "uint16_t" ep0_data))
 		 (let ((&u (Uart--getInstance))))
-		 (u.print (string "Usb device_init"))
+		 (u.print (string "Usb device_init ep0_data={}")
+			  ep0_data)
 		 (setf ctrl.reg 0)
 		 (setf ep4_1_mod.ep4_rx_en 0
 		       ep4_1_mod.ep4_tx_en 0
@@ -1257,7 +1258,7 @@ I think string descriptors are optional, so for now I will always keep string in
 					  fmt
 					  "std::forward<Args>(args)...")
 			  (SendString (ostr.data)
-				      (ostr.size)))
+				      (static_cast<uint16_t> (ostr.size))))
 			))
 	       (doc "Overload for const char pointer")
 	       (defmethod print (str)
@@ -1873,14 +1874,18 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 
 	#+nil  (setf pEP0_RAM_Addr (EP0_Databuf.data))
 
+	(do0
+	 (let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))
+	       (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
+	; (dev.isValid)
+	; (cfg.isValid)
+	 )
+	
 	(usb.device_init (static_cast<uint16_t>
 			  (reinterpret_cast<uint32_t> (EP0_Databuf.data))))
 
-	(let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))
-	      (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
-	(dev.isValid)
-	(cfg.isValid)
-	#+nil(USB_DeviceInit)
+	
+	
 	(comments "Enable the interrupt associated with the USB peripheral.")
 	(PFIC_EnableIRQ USB_IRQn)
 	

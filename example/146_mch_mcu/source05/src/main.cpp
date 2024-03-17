@@ -229,13 +229,11 @@ responds to confirm its own status.
 int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
   auto &u{Uart::getInstance()};
-  usb.device_init(
-      static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
   auto &dev{*reinterpret_cast<const UsbDeviceDescriptor *>(DevDescr.data())};
   auto &cfg{
       *reinterpret_cast<const UsbConfigurationDescriptor *>(CfgDescr.data())};
-  dev.isValid();
-  cfg.isValid();
+  usb.device_init(
+      static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
   // Enable the interrupt associated with the USB peripheral.
 
   PFIC_EnableIRQ(USB_IRQn);
