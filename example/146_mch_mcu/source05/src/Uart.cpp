@@ -38,6 +38,7 @@ Uart::Uart() {
   GPIOA_ModeCfg(GPIO_Pin_8, GPIO_ModeIN_PU);
   GPIOA_ModeCfg(GPIO_Pin_9, GPIO_ModeOut_PP_5mA);
   UART1_DefInit();
+  UART1_BaudRateCfg(1'000'000);
 }
 void Uart::print(const char *str) {
   auto n{strlen(str)};
