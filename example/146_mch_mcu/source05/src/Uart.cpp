@@ -37,7 +37,11 @@ Uart::Uart() {
   GPIOA_SetBits(GPIO_Pin_9);
   GPIOA_ModeCfg(GPIO_Pin_8, GPIO_ModeIN_PU);
   GPIOA_ModeCfg(GPIO_Pin_9, GPIO_ModeOut_PP_5mA);
-  UART1_BaudRateCfg(1'000'000);
+  // logic analyzer can decode 1'000'000 setting with 938'000 Hz
+
+  // logic analyzer can decode 6'000'000 setting with 7'400'000 Hz
+
+  UART1_BaudRateCfg(6'000'000);
   // clear and enable fifos
 
   R8_UART1_FCR =
