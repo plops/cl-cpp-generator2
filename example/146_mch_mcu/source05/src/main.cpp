@@ -102,8 +102,11 @@ __attribute__((interrupt)) __HIGH_CODE void TMR0_IRQHandler() {
     // Clear interrupt flag
 
     TMR0_ClearITFlag(TMR0_3_IT_CYC_END);
-    auto &u{Uart::getInstance()};
-    u.print("timer");
+    // Print a T character on the Uart (if FIFO isn't full)
+
+    if (!(R8_UART1_TFC == UART_FIFO_SIZE)) {
+      R8_UART1_THR = 't';
+    }
   }
 }
 };

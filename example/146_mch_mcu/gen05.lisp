@@ -1882,14 +1882,14 @@ Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comme
 	     (comments "Clear interrupt flag")
 	     (TMR0_ClearITFlag TMR0_3_IT_CYC_END)
 
-	     #+nil
+	     ;#+nil
 	     (do0
 	      (comments "Print a T character on the Uart (if FIFO isn't full)")
 	      (unless (== R8_UART1_TFC
 			  UART_FIFO_SIZE)
-		(setf R8_UART1_THR (char "T"))))
+		(setf R8_UART1_THR (char "t"))))
 	     
-	     ;#+nil
+	     #+nil
 	     (let ((&u (Uart--getInstance)))
 	       (u.print (string "timer"))))
 	   ))))
@@ -1910,7 +1910,7 @@ Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comme
 ")
        (GPIOA_SetBits  GPIO_Pin_9)
        (GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
-       (GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
+       (GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA) 
        (UART1_DefInit))
 
 
