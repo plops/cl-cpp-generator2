@@ -282,8 +282,9 @@ int main() {
   while (1) {
     // inifinite loop
 
+    u.print("AAAA");
     mDelaymS(50);
-    u.print("MAIN");
+    u.print("MAIN50");
   }
 }
 

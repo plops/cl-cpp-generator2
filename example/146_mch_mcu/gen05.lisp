@@ -1981,7 +1981,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	       (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
 	; (dev.isValid)
 	; (cfg.isValid)
-	 )
+	 ) 
 	
 	(usb.device_init (static_cast<uint16_t>
 			  (reinterpret_cast<uint32_t> (EP0_Databuf.data))))
@@ -1998,6 +1998,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	
 	(while 1
 	       (comments "inifinite loop")
+	       (u.print (string "AAAA"))
 	       (mDelaymS 50)
 	       (u.print (string "MAIN50"))
 					;(u.print (string "hello"))
