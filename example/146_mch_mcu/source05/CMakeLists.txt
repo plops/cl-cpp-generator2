@@ -104,9 +104,9 @@ else ()
   add_compile_options(
     #-O0
     -Os  #-ffunction-sections -fdata-sections # don't use together with flto
-    -g -g3 -ggdb -gdwarf-4   # useful if you want line numbers in *.nm output
+    #-g -g3 -ggdb -gdwarf-4   # useful if you want line numbers in *.nm output
   )
-  #set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
 
 
   #   -gc-sections: Enables "garbage collection" at the linker stage. The linker will analyze your code and discard any unused functions or data sections to reduce the final executable size.
@@ -254,7 +254,7 @@ if (BUILD_FOR_TARGET)
 
     COMMAND /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-nm -s -S --size-sort -C -l ${PROJECT_NAME} > ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.nm
     COMMAND /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-objdump --all-headers --source --demangle --line-numbers --wide ${PROJECT_NAME} > ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.objdump
-    #COMMAND  /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-strip ${PROJECT_NAME}
+    COMMAND  /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-strip ${PROJECT_NAME}
 # for flashing the binary to the target, press boot button and plug cable in. you have 10 seconds
     COMMAND ./wchisp flash ${PROJECT_NAME}
   )
