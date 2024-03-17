@@ -57,75 +57,14 @@ Ch592UsbRegisters &usb =
 void USB_DevTransProcess2() {
   auto &u{Uart::getInstance()};
   if (usb.int_flag.transfer) {
-    if (0x3 != usb.int_status.token) {
-      if (0x1 == usb.int_status.token) {
-        // usb token in
-
-        switch (usb.int_status.endp) {
-        case 0: {
-          u.print("usb token in EP0");
-          switch (SetupReqCode) {
-          case USB_GET_DESCRIPTOR: {
-            u.print("get descriptor");
-            break;
-          };
-          case USB_SET_ADDRESS: {
-            u.print("set address");
-            break;
-          };
-          default: {
-            // default
-
-            break;
-          };
-          }
-          break;
-        };
-        case 1: {
-          u.print("usb token in EP1");
-          break;
-        };
-        case 2: {
-          u.print("usb token in EP2");
-          break;
-        };
-        case 3: {
-          u.print("usb token in EP3");
-          break;
-        };
-        case 4: {
-          u.print("usb token in EP4");
-          break;
-        };
-        }
-      } else if (0x0 == usb.int_status.token) {
-        u.print("usb token out");
-        switch (usb.int_status.endp) {
-        case 0: {
-          u.print("token out EP0");
-          break;
-        };
-        case 1: {
-          u.print("token out EP1");
-          break;
-        };
-        case 2: {
-          u.print("token out EP2");
-          break;
-        };
-        case 3: {
-          u.print("token out EP3");
-          break;
-        };
-        case 4: {
-          u.print("token out EP4");
-          break;
-        };
-        }
-      }
-    }
-    u.print("clear interrupt by writing to flag");
     usb.int_flag.transfer = 1;
+    u.print("T");
+  } else if (usb.int_flag.bus_reset) {
+    usb.int_flag.bus_reset = 1;
+    u.print("R");
+  } else if (usb.int_flag.suspend) {
+    usb.int_flag.suspend = 1;
+    u.print("S");
   }
 }
 
@@ -153,8 +92,6 @@ https://www.reddit.com/r/RISCV/comments/126262j/notes_on_wch_fast_interrupts/
 __attribute__((interrupt)) __HIGH_CODE void USB_IRQHandler() {
   // Handle interrupts coming from the USB Peripheral
 
-  auto &u{Uart::getInstance()};
-  u.print("usb_irq");
   USB_DevTransProcess2();
 }
 
@@ -278,9 +215,11 @@ int main() {
   usb.device_init(
       static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
   // Enable the interrupt associated with the USB peripheral.
-  USB_DeviceInit();
+
   PFIC_EnableIRQ(USB_IRQn);
   u.print("usb_irq=on");
+  u.print("start USB_DeviceInit\r\n");
+  USB_DeviceInit();
   while (1) {
     // inifinite loop
 

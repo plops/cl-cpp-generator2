@@ -622,7 +622,9 @@ registers.
 		  (setf ep2_ctrl.auto_tog 1
 			ep2_ctrl.t_res "0b10")
 		  (setf ep3_ctrl.auto_tog 1
-			ep3_ctrl.t_res "0b10"))
+			ep3_ctrl.t_res "0b10")
+		  (setf 
+			ep4_ctrl.t_res "0b10"))
 
 		 (comments "clear device address")
 		 (setf dev_ad.reg 0)
@@ -639,17 +641,19 @@ registers.
 			   RB_PIN_USB_IE
 			   RB_PIN_USB_DP_PU))
 		 (comments "Clear interrupt flags")
-		 (setf int_flag.reg 0)
+		 (setf int_flag.reg (hex #xff))
 		 (comments "Power on the USB port")
 		 (setf port_ctrl.port_en 1
 		       port_ctrl.pd_dis 1
-		       port_ctrl.low_speed 0
-		       port_ctrl.hub0_reset 0
+		      ; port_ctrl.low_speed 0
+		      ; port_ctrl.hub0_reset 0
 		       )
 		 (comments "Enable interrupts for suspend, bus reset, and data transfers")
 		 (setf int_en.suspend 1
 		       int_en.transfer 1
 		       int_en.bus_reset 1)
+
+		 
 		 )
 	       
 	       "private:"
@@ -1518,7 +1522,7 @@ I think string descriptors are optional, so for now I will always keep string in
      ,@(loop for (e f) in `((EP0_Databuf ,(+ 64 64 64))
 			    (EP1_Databuf ,(+ 64 64))
 			    (EP2_Databuf ,(+ 64 64))
-			    (EP3_Databuf ,(+ 64 64)))
+			    (EP3_Databuf ,(+ 64 64))) 
 	     collect
 	     `(space (__attribute (paren (aligned 4)))
 		     ,(format nil "std::array<uint8_t, ~a>" f)
@@ -1536,6 +1540,17 @@ I think string descriptors are optional, so for now I will always keep string in
        (comments "overview usb https://www.beyondlogic.org/usbnutshell/usb3.shtml")
        (defun USB_DevTransProcess2 ()
 	(let ((&u (Uart--getInstance))))
+
+	 (cond
+	   ,@(loop for (e f) in `((transfer T)
+				  (bus_reset R)
+				  (suspend S))
+		   collect
+		   `((dot usb int_flag ,e)
+		     (setf (dot usb int_flag ,e) 1
+			   )
+		     (u.print (string ,f)))))
+	 #+nil
 	 (when usb.int_flag.transfer
 	   (when (!= (hex #b11) usb.int_status.token )
 	     (cond
@@ -1852,7 +1867,7 @@ Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comme
 	  __HIGH_CODE
 	  (defun USB_IRQHandler ()
 	    (comments "Handle interrupts coming from the USB Peripheral")
-	    (let ((&u (Uart--getInstance)))
+	    #+nil (let ((&u (Uart--getInstance)))
 	      (u.print (string "usb_irq")))
 	    (USB_DevTransProcess2))))
 
@@ -2022,6 +2037,14 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	  (PFIC_EnableIRQ USB_IRQn)
 	  (u.print (string "usb_irq=on"))))
 	
+	#+nil,@(loop for e in `(int_en.suspend
+			   int_en.transfer
+			   int_en.bus_reset)
+			 collect
+			 `(u.print (string ,(format nil "~a=0x{:X}\\r\\n" e))
+				   (static_cast<int> (dot usb ,e))))
+	(u.print (string "start USB_DeviceInit\\r\\n"))
+	(USB_DeviceInit)
 	
 	(while 1
 	       (comments "inifinite loop")
