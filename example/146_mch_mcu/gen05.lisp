@@ -1234,6 +1234,13 @@ I think string descriptors are optional, so for now I will always keep string in
 			  (SendString (ostr.data)
 				      (ostr.size)))
 			))
+	       (doc "Overload for const char pointer")
+	       (defmethod print (str)
+		 (declare (type "const char*" str))
+		 (let ((n (strlen str)))
+		   (assert (logand (<= n (std--numeric_limits<uint16_t>--max))
+				   (string "String length exceedds uint16_t range"))))
+		 (SendString ()))
 
 	       ,@(remove-if #'null
 			    (loop for e in members
@@ -1244,17 +1251,17 @@ I think string descriptors are optional, so for now I will always keep string in
 					  (get (cl-change-case:pascal-case (format nil "get-~a" name)))
 					  #+nil (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
 				      (unless internal
-				       `(defmethod ,get ()
-					  (declare (values ,(cond
-							      ((and (stringp type)
-								    (or (str:starts-with-p "std::vector<" type)
-									(str:starts-with-p "std::deque<" type)
-									(str:starts-with-p "std::array<" type)
-									(str:starts-with-p "std::string" type)))
-							       (format nil "const ~a&" type))
-							      (t type)))
-						   (const))
-					  (return ,nname)))))))
+					`(defmethod ,get ()
+					   (declare (values ,(cond
+							       ((and (stringp type)
+								     (or (str:starts-with-p "std::vector<" type)
+									 (str:starts-with-p "std::deque<" type)
+									 (str:starts-with-p "std::array<" type)
+									 (str:starts-with-p "std::string" type)))
+								(format nil "const ~a&" type))
+							       (t type)))
+						    (const))
+					   (return ,nname)))))))
 	       
 	       "private:"
 

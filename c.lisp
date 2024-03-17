@@ -887,7 +887,7 @@ of digits.
 			     (:op (and &) :assoc l)
 			     (:op (xor ^) :assoc l) 
 			     (:op (or) :assoc l)
-			     (:op (logand &&) :assoc l)
+			     (:op (logand &&) :assoc l) ;; FIXME: I'm never sure if logand should be && or &. I think it currently is wrong. But I don't want to touch it because that would break existing code.
 			     ;; 15
 			     (:op (logior) :assoc l)
 			     ;; 16
