@@ -1979,7 +1979,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 
 	
 	(do0
-	 (comments "Enable timer with 200ms period")
+	 (comments "Enable timer with 200ms period") 
 	 (TMR0_TimerInit FREQ_SYS/5)
 	 (TMR0_ITCfg ENABLE TMR0_3_IT_CYC_END)
 	 #+nil
