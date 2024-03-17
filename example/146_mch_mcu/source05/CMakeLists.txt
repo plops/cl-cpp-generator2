@@ -103,7 +103,7 @@ else ()
   add_compile_options(
     #-O0
     -Os  #-ffunction-sections -fdata-sections # don't use together with flto
-    # -g -g3 -ggdb -gdwarf-4   # useful if you want line numbers in *.nm output
+    -g -g3 -ggdb -gdwarf-4   # useful if you want line numbers in *.nm output
   )
   #set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
 
@@ -134,6 +134,7 @@ file(GLOB_RECURSE HAL_SOURCES
   #${HAL_PATH}/StdPeriphDriver/*_adc.c
   #${HAL_PATH}/StdPeriphDriver/*_pwr.c
   ${HAL_PATH}/StdPeriphDriver/*_gpio.c
+  ${HAL_PATH}/StdPeriphDriver/*_timer0.c 
   #${HAL_PATH}/StdPeriphDriver/*_usbdev.c
   #${HAL_PATH}/RVMSIS/*.c
   ${HAL_PATH}/Startup/*.S
@@ -251,7 +252,8 @@ if (BUILD_FOR_TARGET)
 # -l: Includes debugging information to display filename and line number associated with each symbol (if available within the binary).
 
     COMMAND /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-nm -s -S --size-sort -C -l ${PROJECT_NAME} > ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.nm
-    COMMAND  /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-strip ${PROJECT_NAME}
+    COMMAND /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-objdump -CD -S ${PROJECT_NAME} > ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.objdump
+    #COMMAND  /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-strip ${PROJECT_NAME}
 # for flashing the binary to the target, press boot button and plug cable in. you have 10 seconds
     COMMAND ./wchisp flash ${PROJECT_NAME}
   )

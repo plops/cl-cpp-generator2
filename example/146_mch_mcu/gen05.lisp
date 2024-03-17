@@ -1833,9 +1833,9 @@ The compiler attribute __attribute__((section('.highcode'))) will be assigned to
 
 Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comments/126262j/notes_on_wch_fast_interrupts/
 ")
-	   (space ;(__attribute__ (paren (interrupt (string "user" ))))
-	    (__attribute__ (paren interrupt))
-					;__INTERRUPT
+      (space ;(__attribute__ (paren (interrupt (string "user" ))))
+	    ;(__attribute__ (paren interrupt))
+	    __INTERRUPT
 	    __HIGH_CODE
 		  (defun USB_IRQHandler ()
 		    (comments "Handle interrupts coming from the USB Peripheral")
@@ -1843,7 +1843,19 @@ Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comme
 		      (u.print (string "usb_irq")))
 		    (USB_DevTransProcess2))))
 
-     #+nil
+    (space 
+	    ;(__attribute__ (paren interrupt))
+	    __INTERRUPT
+	    __HIGH_CODE
+		  (defun TMR0_IRQHandler ()
+		    (when (TMR0_GetITFlag TMR0_3_IT_CYC_END)
+		      (TMR0_ClearITFlag TMR0_3_IT_CYC_END)
+		      
+		      (let ((&u (Uart--getInstance)))
+			(u.print (string "timer"))))
+		    ))
+    
+    #+nil
      (defun DebugInit ()
        (doc "
   Sets a bit on GPIOA, Pin 9. This likely turns on an LED or some indicator 
@@ -1955,6 +1967,13 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	(let ((&u (Uart--getInstance))))
 	(u.print (string "main"))
 
+	(do0
+	 (comments "Enable timer with 100ms period")
+	 (TMR0_TimerInit FREQ_SYS/10)
+	 (TMR0_ITCfg ENABLE TMR0_3_IT_CYC_END)
+	 (PFIC_EnableIRQ TMR0_IRQn))
+	
+
 	#+nil  (setf pEP0_RAM_Addr (EP0_Databuf.data))
 
 	(do0
@@ -1970,14 +1989,17 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	
 	
 	(comments "Enable the interrupt associated with the USB peripheral.")
-	(comments "call handler so that -gc-section doesn't remove it")
-	(USB_IRQHandler)
+	#+nil(do0
+	 (comments "call handler so that -gc-section doesn't remove it")
+	 (USB_IRQHandler))
 	(PFIC_EnableIRQ USB_IRQn)
 	(u.print (string "usb_irq=on"))
 	
 	
 	(while 1
 	       (comments "inifinite loop")
+	       (mDelaymS 50)
+	       (u.print (string "MAIN50"))
 					;(u.print (string "hello"))
 	       ))
       "#else"

@@ -152,12 +152,20 @@ https://www.reddit.com/r/RISCV/comments/126262j/notes_on_wch_fast_interrupts/
 
 
 */
-__attribute__((interrupt)) __HIGH_CODE void USB_IRQHandler() {
+__INTERRUPT __HIGH_CODE void USB_IRQHandler() {
   // Handle interrupts coming from the USB Peripheral
 
   auto &u{Uart::getInstance()};
   u.print("usb_irq");
   USB_DevTransProcess2();
+}
+
+__INTERRUPT __HIGH_CODE void TMR0_IRQHandler() {
+  if (TMR0_GetITFlag(TMR0_3_IT_CYC_END)) {
+    TMR0_ClearITFlag(TMR0_3_IT_CYC_END);
+    auto &u{Uart::getInstance()};
+    u.print("timer");
+  }
 }
 
 /**
@@ -257,6 +265,11 @@ int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
   auto &u{Uart::getInstance()};
   u.print("main");
+  // Enable timer with 100ms period
+
+  TMR0_TimerInit(FREQ_SYS / 10);
+  TMR0_ITCfg(ENABLE, TMR0_3_IT_CYC_END);
+  PFIC_EnableIRQ(TMR0_IRQn);
   auto &dev{*reinterpret_cast<const UsbDeviceDescriptor *>(DevDescr.data())};
   auto &cfg{
       *reinterpret_cast<const UsbConfigurationDescriptor *>(CfgDescr.data())};
@@ -264,13 +277,13 @@ int main() {
       static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
   // Enable the interrupt associated with the USB peripheral.
 
-  // call handler so that -gc-section doesn't remove it
-
-  USB_IRQHandler();
   PFIC_EnableIRQ(USB_IRQn);
   u.print("usb_irq=on");
   while (1) {
     // inifinite loop
+
+    mDelaymS(50);
+    u.print("MAIN");
   }
 }
 
