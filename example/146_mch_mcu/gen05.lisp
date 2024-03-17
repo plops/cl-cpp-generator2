@@ -1848,7 +1848,7 @@ Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comme
 	      (u.print (string "usb_irq")))
 	    (USB_DevTransProcess2))))
 
-	
+	#+nil
 	(space 
 	 (__attribute__ (paren interrupt))
 					;__INTERRUPT
@@ -1983,7 +1983,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	(let ((&u (Uart--getInstance))))
 	(u.print (string "main"))
 
-	
+	#+nil
 	(do0
 	 (comments "Enable timer with 200ms period") 
 	 (TMR0_TimerInit FREQ_SYS/5)
@@ -1999,7 +1999,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 
 	#+nil  (setf pEP0_RAM_Addr (EP0_Databuf.data))
 
-	#+nil
+	
 	(do0
 	 (let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))
 	       (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
@@ -2017,11 +2017,13 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	
 	(while 1
 	       (comments "inifinite loop")
+	       (__nop)
+	       #+nil
 	       ,(let ((main-delay 7))
 		  `(do0
-		   (u.print (string ,(format nil "AAAA~a" main-delay)))
-		   (mDelaymS ,main-delay)
-		   (u.print (string ,(format nil "MAIN~a" main-delay)))))
+		    (u.print (string ,(format nil "AAAA~a" main-delay)))
+		    (mDelaymS ,main-delay)
+		    (u.print (string ,(format nil "MAIN~a" main-delay)))))
 					;(u.print (string "hello"))
 	       ))
       "#else"

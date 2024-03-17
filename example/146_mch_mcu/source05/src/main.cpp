@@ -270,17 +270,19 @@ int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
   auto &u{Uart::getInstance()};
   u.print("main");
-  // Enable timer with 200ms period
+  auto &dev{*reinterpret_cast<const UsbDeviceDescriptor *>(DevDescr.data())};
+  auto &cfg{
+      *reinterpret_cast<const UsbConfigurationDescriptor *>(CfgDescr.data())};
+  usb.device_init(
+      static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
+  // Enable the interrupt associated with the USB peripheral.
 
-  TMR0_TimerInit(FREQ_SYS / 5);
-  TMR0_ITCfg(ENABLE, TMR0_3_IT_CYC_END);
-  PFIC_EnableIRQ(TMR0_IRQn);
+  PFIC_EnableIRQ(USB_IRQn);
+  u.print("usb_irq=on");
   while (1) {
     // inifinite loop
 
-    u.print("AAAA7");
-    mDelaymS(7);
-    u.print("MAIN7");
+    __nop();
   }
 }
 
