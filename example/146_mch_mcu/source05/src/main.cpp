@@ -135,6 +135,7 @@ void USB_DevTransProcess2() {
 #else
 Ch592UsbRegisters &usb = *new Ch592UsbRegisters;
 #endif
+extern "C" {
 /**
 
 __INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))).
@@ -159,10 +160,16 @@ __INTERRUPT __HIGH_CODE void USB_IRQHandler() {
   u.print("usb_irq");
   USB_DevTransProcess2();
 }
+};
+__INTERRUPT __HIGH_CODE void TMR0_IRQHandler() {
+  // Check if the TMR0_3_IT_CYC_END interrupt flag is set
 
-__attribute__((interrupt)) void TMR0_IRQHandler() {
   if (TMR0_GetITFlag(TMR0_3_IT_CYC_END)) {
+    // Clear interrupt flag
+
     TMR0_ClearITFlag(TMR0_3_IT_CYC_END);
+    // Print a T character on the Uart (if FIFO isn't full)
+
     if (!(R8_UART1_TFC == UART_FIFO_SIZE)) {
       R8_UART1_THR = 'T';
     }
@@ -266,20 +273,17 @@ int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
   auto &u{Uart::getInstance()};
   u.print("main");
-  // Enable timer with 100ms period
+  // Enable timer with 200ms period
 
-  TMR0_TimerInit(FREQ_SYS / 10);
+  TMR0_TimerInit(FREQ_SYS / 5);
   TMR0_ITCfg(ENABLE, TMR0_3_IT_CYC_END);
-  auto tmr0_addr{reinterpret_cast<uint32_t *>(0x40)};
-  *tmr0_addr = reinterpret_cast<uint32_t>(TMR0_IRQHandler);
-  u.print("tmr0=0x{:X}", *tmr0_addr);
   PFIC_EnableIRQ(TMR0_IRQn);
   while (1) {
     // inifinite loop
 
-    u.print("AAAA71");
-    mDelaymS(171);
-    u.print("MAIN71");
+    u.print("AAAA7");
+    mDelaymS(7);
+    u.print("MAIN7");
   }
 }
 

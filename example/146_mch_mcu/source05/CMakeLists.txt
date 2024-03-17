@@ -65,8 +65,9 @@ if (BUILD_FOR_TARGET)
   #   -mno-save-restore: Instructs the compiler to avoid automatically saving and restoring registers when calling functions. This can provide a performance increase, but requires careful manual register management if needed.
   
   
-  
-  add_compile_options( -march=rv32imac_zicsr_zifencei -mabi=ilp32 -msmall-data-limit=8 -mno-save-restore ) 
+  # https://github.com/rgoulter/ch592-ble-hid-keyboard-example/blob/master/Makefile
+  # ARCH is rv32imac on older gcc, rv32imac_zicsr on newer gcc
+  add_compile_options( -march=rv32imac_zicsr_zifencei -mabi=ilp32 -msmall-data-limit=8  -mcmodel=medany  -mno-save-restore ) 
 
 
   #   -march=rv32imac_zicsr_zifencei -mabi=ilp32: Enforces consistency with the compilation flags, ensuring the linker generates code for the RISC-V target and ABI.
@@ -252,7 +253,7 @@ if (BUILD_FOR_TARGET)
 # -l: Includes debugging information to display filename and line number associated with each symbol (if available within the binary).
 
     COMMAND /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-nm -s -S --size-sort -C -l ${PROJECT_NAME} > ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.nm
-    COMMAND /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-objdump -CD -S ${PROJECT_NAME} > ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.objdump
+    COMMAND /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-objdump --all-headers --source --demangle --line-numbers --wide ${PROJECT_NAME} > ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.objdump
     #COMMAND  /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-strip ${PROJECT_NAME}
 # for flashing the binary to the target, press boot button and plug cable in. you have 10 seconds
     COMMAND ./wchisp flash ${PROJECT_NAME}
