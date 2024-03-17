@@ -136,7 +136,7 @@ void USB_DevTransProcess2() {
 Ch592UsbRegisters &usb = *new Ch592UsbRegisters;
 #endif
 extern "C" {
-__INTERRUPT __HIGH_CODE void TMR0_IRQHandler() {
+__attribute__((interrupt)) __HIGH_CODE void TMR0_IRQHandler() {
   // Check if the TMR0_3_IT_CYC_END interrupt flag is set
 
   if (TMR0_GetITFlag(TMR0_3_IT_CYC_END)) {

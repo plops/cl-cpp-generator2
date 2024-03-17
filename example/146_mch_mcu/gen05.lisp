@@ -1849,8 +1849,8 @@ Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comme
 	    (USB_DevTransProcess2))))
 
 	(space 
-					;(__attribute__ (paren interrupt))
-	 __INTERRUPT
+	 (__attribute__ (paren interrupt))
+	 ;__INTERRUPT
 	 __HIGH_CODE
 	 (defun TMR0_IRQHandler ()
 	   (comments "Check if the TMR0_3_IT_CYC_END interrupt flag is set")
