@@ -136,7 +136,7 @@ file(GLOB_RECURSE HAL_SOURCES
   #${HAL_PATH}/StdPeriphDriver/*_pwr.c
   ${HAL_PATH}/StdPeriphDriver/*_gpio.c
   ${HAL_PATH}/StdPeriphDriver/*_timer0.c 
-  #${HAL_PATH}/StdPeriphDriver/*_usbdev.c
+  ${HAL_PATH}/StdPeriphDriver/*_usbdev.c
   #${HAL_PATH}/RVMSIS/*.c
   ${HAL_PATH}/Startup/*.S
   #${HAL_PATH}/board.c

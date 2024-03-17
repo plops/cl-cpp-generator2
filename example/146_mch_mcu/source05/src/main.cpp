@@ -10,6 +10,7 @@
 #include "Uart.h"
 #include "UsbConfigurationDescriptor.h"
 #include "UsbDeviceDescriptor.h"
+#include <algorithm>
 #include <array>
 #include <cassert>
 #ifdef BUILD_FOR_TARGET
@@ -128,10 +129,6 @@ void USB_DevTransProcess2() {
   }
 }
 
-/** Handle USB transaction processing. Respond to standard USB requests (e.g.
-   Get Descriptor, Set Address). Manage data transfers on endpoints.
-
-*/
 #else
 Ch592UsbRegisters &usb = *new Ch592UsbRegisters;
 #endif
@@ -270,13 +267,18 @@ int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
   auto &u{Uart::getInstance()};
   u.print("main");
+  // Enable timer with 100ms period
+
+  TMR0_TimerInit(FREQ_SYS / 10);
+  TMR0_ITCfg(ENABLE, TMR0_3_IT_CYC_END);
+  PFIC_EnableIRQ(TMR0_IRQn);
   auto &dev{*reinterpret_cast<const UsbDeviceDescriptor *>(DevDescr.data())};
   auto &cfg{
       *reinterpret_cast<const UsbConfigurationDescriptor *>(CfgDescr.data())};
   usb.device_init(
       static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
   // Enable the interrupt associated with the USB peripheral.
-
+  USB_DeviceInit();
   PFIC_EnableIRQ(USB_IRQn);
   u.print("usb_irq=on");
   while (1) {

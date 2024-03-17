@@ -1,9 +1,11 @@
 // no preamble
 
+extern "C" {
+#include <CH592SFR.h>
+};
 //
 
 #include "Uart.h"
-#include <CH592SFR.h>
 #include <array>
 extern __attribute((aligned(4))) std::array<uint8_t, 192> EP0_Databuf;
 extern __attribute((aligned(4))) std::array<uint8_t, 128> EP1_Databuf;
