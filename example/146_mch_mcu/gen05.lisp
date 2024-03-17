@@ -65,7 +65,7 @@
 		    :fields ((:fname host-mode :bit 7 :access rw)
 			     (:fname low-speed :bit 6 :access rw)
 					;  (:fname dev-pull-up-en :bit 5 :access rw)
-			     (:fname sys-ctlr :bit (5 4) :access rw :help "host-mode==0: 00..disable usb device function and disable internal pull-up (can be overridden by dev-pullup-en), 01..enable device fucntion, disable internal pull-up, external pull-up-needed, 1x..enable usb device fucntion and internal 1.5k pull-up, pull-up has priority over pull-down resistor")
+			     (:fname sys-ctrl :bit (5 4) :access rw :help "host-mode==0: 00..disable usb device function and disable internal pull-up (can be overridden by dev-pullup-en), 01..enable device fucntion, disable internal pull-up, external pull-up-needed, 1x..enable usb device fucntion and internal 1.5k pull-up, pull-up has priority over pull-down resistor")
 			     (:fname int-busy :bit 3 :access rw :help "Auto pause")
 			     (:fname reset-sie :bit 2 :access rw :help "Software reset USB protocol processor")
 			     (:fname clr-all :bit 1 :access rw :help "USB FIFO and interrupt flag clear")
@@ -348,11 +348,21 @@ registers.
      `(do0
        (comments "")
        (include "Uart.h")
+       (include<> CH592SFR.h
+		  array)
        #+nil(include<>
 					;sstream
 					;ios
 	     )
-	
+
+       ,@(loop for (e f) in `((EP0_Databuf ,(+ 64 64 64))
+			      (EP1_Databuf ,(+ 64 64))
+			      (EP2_Databuf ,(+ 64 64))
+			      (EP3_Databuf ,(+ 64 64)))
+	     collect
+	     `(space extern (__attribute (paren (aligned 4)))
+		     ,(format nil "std::array<uint8_t, ~a>" f)
+		     ,e))
        )
      :code `(do0
 	     
@@ -572,17 +582,55 @@ registers.
 		 (comments "the following message takes 47us at 6Mbps (actually 7.4Mbps)")
 		 (u.print (string "Usb device_init ep0_data=0x{:X}")
 			  ep0_data)
+		 (comments "Reset control register, clear all settings")
 		 (setf ctrl.reg 0)
-		 (setf ep4_1_mod.ep4_rx_en 0
-		       ep4_1_mod.ep4_tx_en 0
-		       ep4_1_mod.ep1_rx_en 0
-		       ep4_1_mod.ep1_tx_en 0)
-		 (setf ep2_3_mod.ep2_rx_en 0
-		       ep2_3_mod.ep2_tx_en 0
-		       ep2_3_mod.ep3_rx_en 0
-		       ep2_3_mod.ep3_tx_en 0)
-		 (setf ep0_dma.dma ep0_data)
-		 (setf ep0_ctrl.t_res "0b11"))
+		 (comments "Enable Endpoints 4 (OUT+IN) and 1 (OUT+IN)")
+		 (setf ep4_1_mod.ep4_rx_en 1
+		       ep4_1_mod.ep4_tx_en 1
+		       ep4_1_mod.ep1_rx_en 1
+		       ep4_1_mod.ep1_tx_en 1)
+		 (comments "Enable Endpoints 2 (OUT+IN) and 3 (OUT+IN)")
+		 (setf ep2_3_mod.ep2_rx_en 1
+		       ep2_3_mod.ep2_tx_en 1
+		       ep2_3_mod.ep3_rx_en 1
+		       ep2_3_mod.ep3_tx_en 1)
+		 (comments "Set DMA addresses for Endpoints 0, 1, 2 and 3")
+		 (setf ep0_dma.dma (static_cast<uint16_t>
+				    (reinterpret_cast<uint32_t> (EP0_Databuf.data))) ;ep0_data
+		       ep1_dma.dma (static_cast<uint16_t>
+				    (reinterpret_cast<uint32_t> (EP1_Databuf.data))) 
+		       ep2_dma.dma (static_cast<uint16_t>
+				    (reinterpret_cast<uint32_t> (EP2_Databuf.data))) 
+		       ep3_dma.dma (static_cast<uint16_t>
+				    (reinterpret_cast<uint32_t> (EP3_Databuf.data))))
+
+		 (do0
+		  (comments "Configure endpoints, enable automatic ACK on receiving data, and initial NAK on transmitting data")
+		  (setf 
+		   ep0_ctrl.t_res "0b10" ;; respond to NAK or busy
+		   )
+		  (setf ep1_ctrl.auto_tog 1
+			ep1_ctrl.t_res "0b10")
+		  (setf ep2_ctrl.auto_tog 1
+			ep2_ctrl.t_res "0b10")
+		  (setf ep3_ctrl.auto_tog 1
+			ep3_ctrl.t_res "0b10"))
+
+		 (comments "clear device address")
+		 (setf dev_ad.reg 0)
+
+		 (comments "Enable usb device pull-up resistor, DMA, and interrupts")
+		 (setf ctrl.dma_en 1
+		       ctrl.int_busy 1
+		       ctrl.sys_ctrl "0b10"
+		       ctrl.low_speed 0
+		       ctrl.host_mode 0)
+		 (comments "Disable analog features on USB pins")
+		 (setf R16_PIN_ANALOG_IE
+		       (or R16_PIN_ANALOG_IE
+			   RB_PIN_USB_IE
+			   RB_PIN_USB_DP_PU))
+		 )
 	       
 	       "private:"
 	       
@@ -1448,7 +1496,9 @@ I think string descriptors are optional, so for now I will always keep string in
      (space const uint8_t* pDescr)
 
      ,@(loop for (e f) in `((EP0_Databuf ,(+ 64 64 64))
-			    (EP1_Databuf ,(+ 64 64)))
+			    (EP1_Databuf ,(+ 64 64))
+			    (EP2_Databuf ,(+ 64 64))
+			    (EP3_Databuf ,(+ 64 64)))
 	     collect
 	     `(space (__attribute (paren (aligned 4)))
 		     ,(format nil "std::array<uint8_t, ~a>" f)
@@ -1866,12 +1916,13 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
       "#ifdef BUILD_FOR_TARGET"
       (defun main ()
 	(declare (values int))
-
+	
 	
 	
 	(SetSysClock CLK_SOURCE_PLL_60MHz)
 
 	(let ((&u (Uart--getInstance))))
+	(u.print (string "main"))
 
 	#+nil  (setf pEP0_RAM_Addr (EP0_Databuf.data))
 
@@ -1889,10 +1940,12 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	
 	(comments "Enable the interrupt associated with the USB peripheral.")
 	(PFIC_EnableIRQ USB_IRQn)
+	(u.print (string "usb_irq=on"))
+	
 	
 	(while 1
 	       (comments "inifinite loop")
-	       ;(u.print (string "hello"))
+					;(u.print (string "hello"))
 	       ))
       "#else"
       (defun main ()
@@ -1914,7 +1967,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
      
 
 
-     #+nil(do0
+     (do0
 	   (doc "
 
 __INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))). This likely indicates a specialized, 'fast' interrupt mechanism specific to your compiler or microcontroller (WCH).
@@ -1928,6 +1981,8 @@ The compiler attribute __attribute__((section('.highcode'))) will be assigned to
 		  __HIGH_CODE
 		  (defun USB_IRQHandler ()
 		    (comments "Handle interrupts coming from the USB Peripheral")
+		    (let ((&u (Uart--getInstance)))
+		      (u.print (string "usb_irq")))
 		    (USB_DevTransProcess2))))
 
      #+nil(defun DevEP1_OUT_Deal (l)

@@ -45,6 +45,8 @@ uint16_t SetupReqLen;
 const uint8_t *pDescr;
 __attribute((aligned(4))) std::array<uint8_t, 192> EP0_Databuf;
 __attribute((aligned(4))) std::array<uint8_t, 128> EP1_Databuf;
+__attribute((aligned(4))) std::array<uint8_t, 128> EP2_Databuf;
+__attribute((aligned(4))) std::array<uint8_t, 128> EP3_Databuf;
 #ifdef BUILD_FOR_TARGET
 constexpr uintptr_t c_USB_BASE_ADDR = 0x40008000;
 Ch592UsbRegisters &usb =
@@ -229,6 +231,7 @@ responds to confirm its own status.
 int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
   auto &u{Uart::getInstance()};
+  u.print("main");
   auto &dev{*reinterpret_cast<const UsbDeviceDescriptor *>(DevDescr.data())};
   auto &cfg{
       *reinterpret_cast<const UsbConfigurationDescriptor *>(CfgDescr.data())};
@@ -237,6 +240,7 @@ int main() {
   // Enable the interrupt associated with the USB peripheral.
 
   PFIC_EnableIRQ(USB_IRQn);
+  u.print("usb_irq=on");
   while (1) {
     // inifinite loop
   }
@@ -253,3 +257,26 @@ int main() {
 }
 
 #endif
+/**
+
+__INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))).
+This likely indicates a specialized, 'fast' interrupt mechanism specific to your
+compiler or microcontroller (WCH).
+
+
+The compiler attribute __attribute__((section('.highcode'))) will be assigned to
+the __HIGH_CODE macro. This attribute likely instructs the compiler to place
+functions or code blocks marked with __HIGH_CODE into a special memory section
+named '.highcode' (possibly a faster memory region).
+
+
+
+
+*/
+__INTERRUPT __HIGH_CODE void USB_IRQHandler() {
+  // Handle interrupts coming from the USB Peripheral
+
+  auto &u{Uart::getInstance()};
+  u.print("usb_irq");
+  USB_DevTransProcess2();
+}
