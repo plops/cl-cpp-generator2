@@ -1827,7 +1827,7 @@ I think string descriptors are optional, so for now I will always keep string in
       "extern \"C\""
       (progn
 
-	#+nil
+	
 	(do0
 	 (doc "
 
@@ -1839,8 +1839,8 @@ The compiler attribute __attribute__((section('.highcode'))) will be assigned to
 Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comments/126262j/notes_on_wch_fast_interrupts/
 ")
 	 (space	 ;(__attribute__ (paren (interrupt (string "user" ))))
-					;(__attribute__ (paren interrupt))
-	  __INTERRUPT
+	  (__attribute__ (paren interrupt))
+	  ;__INTERRUPT
 	  __HIGH_CODE
 	  (defun USB_IRQHandler ()
 	    (comments "Handle interrupts coming from the USB Peripheral")
@@ -1848,9 +1848,10 @@ Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comme
 	      (u.print (string "usb_irq")))
 	    (USB_DevTransProcess2))))
 
+	
 	(space 
 	 (__attribute__ (paren interrupt))
-	 ;__INTERRUPT
+					;__INTERRUPT
 	 __HIGH_CODE
 	 (defun TMR0_IRQHandler ()
 	   (comments "Check if the TMR0_3_IT_CYC_END interrupt flag is set")
@@ -1858,13 +1859,16 @@ Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comme
 	     (comments "Clear interrupt flag")
 	     (TMR0_ClearITFlag TMR0_3_IT_CYC_END)
 
-	     (comments "Print a T character on the Uart (if FIFO isn't full)")
-	     (unless (== R8_UART1_TFC
-			 UART_FIFO_SIZE)
-	       (setf R8_UART1_THR (char "T")))
+	     #+nil
+	     (do0
+	      (comments "Print a T character on the Uart (if FIFO isn't full)")
+	      (unless (== R8_UART1_TFC
+			  UART_FIFO_SIZE)
+		(setf R8_UART1_THR (char "T"))))
 	     
-	     #+nil (let ((&u (Uart--getInstance)))
-		     (u.print (string "timer"))))
+	     ;#+nil
+	     (let ((&u (Uart--getInstance)))
+	       (u.print (string "timer"))))
 	   ))))
     
     #+nil

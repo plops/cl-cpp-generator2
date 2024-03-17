@@ -136,6 +136,31 @@ void USB_DevTransProcess2() {
 Ch592UsbRegisters &usb = *new Ch592UsbRegisters;
 #endif
 extern "C" {
+/**
+
+__INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))).
+This likely indicates a specialized, 'fast' interrupt mechanism specific to your
+compiler or microcontroller (WCH).
+
+
+The compiler attribute __attribute__((section('.highcode'))) will be assigned to
+the __HIGH_CODE macro. This attribute likely instructs the compiler to place
+functions or code blocks marked with __HIGH_CODE into a special memory section
+named '.highcode' (possibly a faster memory region).
+
+Here is a post about fast interrupts on WCH
+https://www.reddit.com/r/RISCV/comments/126262j/notes_on_wch_fast_interrupts/
+
+
+*/
+__attribute__((interrupt)) __HIGH_CODE void USB_IRQHandler() {
+  // Handle interrupts coming from the USB Peripheral
+
+  auto &u{Uart::getInstance()};
+  u.print("usb_irq");
+  USB_DevTransProcess2();
+}
+
 __attribute__((interrupt)) __HIGH_CODE void TMR0_IRQHandler() {
   // Check if the TMR0_3_IT_CYC_END interrupt flag is set
 
@@ -143,11 +168,8 @@ __attribute__((interrupt)) __HIGH_CODE void TMR0_IRQHandler() {
     // Clear interrupt flag
 
     TMR0_ClearITFlag(TMR0_3_IT_CYC_END);
-    // Print a T character on the Uart (if FIFO isn't full)
-
-    if (!(R8_UART1_TFC == UART_FIFO_SIZE)) {
-      R8_UART1_THR = 'T';
-    }
+    auto &u{Uart::getInstance()};
+    u.print("timer");
   }
 }
 };
