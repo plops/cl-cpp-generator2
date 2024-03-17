@@ -102,7 +102,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 else ()
   add_compile_options(
     #-O0
-    -Os #-ffunction-sections -fdata-sections # don't use together with flto
+    -Os -g -g3 -ggdb -gdwarf-4 #-ffunction-sections -fdata-sections # don't use together with flto
   )
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
 
