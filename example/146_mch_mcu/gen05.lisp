@@ -1189,9 +1189,10 @@ I think string descriptors are optional, so for now I will always keep string in
 		  (GPIOA_ModeCfg GPIO_Pin_8 GPIO_ModeIN_PU)
 		  (GPIOA_ModeCfg GPIO_Pin_9 GPIO_ModeOut_PP_5mA)
 		  ;(UART1_DefInit)
-		  (UART1_BaudRateCfg ;"1'000'000"
-				     "115'200"
-		   )
+		  (comments "logic analyzer can decode 1'000'000 setting with 938'000 Hz")
+		  (UART1_BaudRateCfg "1'000'000"
+					;"115'200"
+				     )
 		  (comments "clear and enable fifos")
 		  (setf R8_UART1_FCR (or (<< 2 6)
 					     RB_FCR_TX_FIFO_CLR

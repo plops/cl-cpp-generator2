@@ -37,7 +37,7 @@ Uart::Uart() {
   GPIOA_SetBits(GPIO_Pin_9);
   GPIOA_ModeCfg(GPIO_Pin_8, GPIO_ModeIN_PU);
   GPIOA_ModeCfg(GPIO_Pin_9, GPIO_ModeOut_PP_5mA);
-  UART1_BaudRateCfg(115'200);
+  UART1_BaudRateCfg(1'000'000);
   // clear and enable fifos
 
   R8_UART1_FCR =
