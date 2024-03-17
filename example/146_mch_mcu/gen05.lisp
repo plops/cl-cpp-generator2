@@ -1237,10 +1237,10 @@ I think string descriptors are optional, so for now I will always keep string in
 				      (ostr.size)))
 			))
 	       (doc "Overload for const char pointer")
-	       #+nil
 	       (defmethod print (str)
 		 (declare (type "const char*" str))
 		 (let ((n (strlen str)))
+		   #+nil
 		   (assert (logand (<= n std--numeric_limits<uint16_t>--max)
 				   (string "String length exceedds uint16_t range"))))
 		 (SendString (reinterpret_cast<uint8_t*> (const_cast<char*> str))
@@ -1862,7 +1862,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	 (UART1_SendString (TxBuf.data) (TxBuf.size)))
 
 
-	(u.print (string "{}") 42)
+	;(u.print (string "{}") 42)
 	#+nil
 	(let ((ostr (std--vector<char>)))
 	  (fmt--format_to (std--back_inserter ostr)

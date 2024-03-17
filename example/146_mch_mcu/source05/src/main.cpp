@@ -156,7 +156,6 @@ responds to confirm its own status.
 int main() {
   SetSysClock(CLK_SOURCE_PLL_60MHz);
   auto &u{Uart::getInstance()};
-  u.print("{}", 42);
   usb.device_init(
       static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
   auto &dev{*reinterpret_cast<const UsbDeviceDescriptor *>(DevDescr.data())};
