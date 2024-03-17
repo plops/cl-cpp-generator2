@@ -160,11 +160,12 @@ __INTERRUPT __HIGH_CODE void USB_IRQHandler() {
   USB_DevTransProcess2();
 }
 
-__INTERRUPT __HIGH_CODE void TMR0_IRQHandler() {
+__attribute__((interrupt)) void TMR0_IRQHandler() {
   if (TMR0_GetITFlag(TMR0_3_IT_CYC_END)) {
     TMR0_ClearITFlag(TMR0_3_IT_CYC_END);
-    auto &u{Uart::getInstance()};
-    u.print("timer");
+    if (!(R8_UART1_TFC == UART_FIFO_SIZE)) {
+      R8_UART1_THR = 'T';
+    }
   }
 }
 
@@ -269,13 +270,16 @@ int main() {
 
   TMR0_TimerInit(FREQ_SYS / 10);
   TMR0_ITCfg(ENABLE, TMR0_3_IT_CYC_END);
+  auto tmr0_addr{reinterpret_cast<uint32_t *>(0x40)};
+  *tmr0_addr = reinterpret_cast<uint32_t>(TMR0_IRQHandler);
+  u.print("tmr0=0x{:X}", *tmr0_addr);
   PFIC_EnableIRQ(TMR0_IRQn);
   while (1) {
     // inifinite loop
 
-    u.print("AAAA");
-    mDelaymS(71);
-    u.print("MAIN50");
+    u.print("AAAA71");
+    mDelaymS(171);
+    u.print("MAIN71");
   }
 }
 

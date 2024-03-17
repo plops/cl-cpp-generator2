@@ -1844,15 +1844,19 @@ Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comme
 		    (USB_DevTransProcess2))))
 
     (space 
-	    ;(__attribute__ (paren interrupt))
-	    __INTERRUPT
-	    __HIGH_CODE
+	    (__attribute__ (paren interrupt))
+	    ;__INTERRUPT
+	    ;__HIGH_CODE
 		  (defun TMR0_IRQHandler ()
 		    (when (TMR0_GetITFlag TMR0_3_IT_CYC_END)
 		      (TMR0_ClearITFlag TMR0_3_IT_CYC_END)
+
+		      (unless (== R8_UART1_TFC
+				  UART_FIFO_SIZE)
+			(setf R8_UART1_THR (char "T")))
 		      
-		      (let ((&u (Uart--getInstance)))
-			(u.print (string "timer"))))
+		      #+nil (let ((&u (Uart--getInstance)))
+			      (u.print (string "timer"))))
 		    ))
     
     #+nil
@@ -1972,6 +1976,10 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	 (comments "Enable timer with 100ms period")
 	 (TMR0_TimerInit FREQ_SYS/10)
 	 (TMR0_ITCfg ENABLE TMR0_3_IT_CYC_END)
+	 (let ((tmr0_addr (reinterpret_cast<uint32_t*> (hex #x40))))
+	   (setf *tmr0_addr (reinterpret_cast<uint32_t> TMR0_IRQHandler)))
+	 (u.print (string "tmr0=0x{:X}")
+		  *tmr0_addr)
 	 (PFIC_EnableIRQ TMR0_IRQn))
 	
 
@@ -1995,9 +2003,9 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	
 	(while 1
 	       (comments "inifinite loop")
-	       (u.print (string "AAAA"))
-	       (mDelaymS 71)
-	       (u.print (string "MAIN50"))
+	       (u.print (string "AAAA71"))
+	       (mDelaymS 171)
+	       (u.print (string "MAIN71"))
 					;(u.print (string "hello"))
 	       ))
       "#else"
