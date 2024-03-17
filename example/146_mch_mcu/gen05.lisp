@@ -1988,9 +1988,10 @@ __INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))). Th
 
 The compiler attribute __attribute__((section('.highcode'))) will be assigned to the __HIGH_CODE macro. This attribute likely instructs the compiler to place functions or code blocks marked with __HIGH_CODE into a special memory section named '.highcode' (possibly a faster memory region).
 
-
+Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comments/126262j/notes_on_wch_fast_interrupts/
 ")
-	   (space (__attribute__ (paren (interrupt (string "user" ))))			;__INTERRUPT
+	   (space ;(__attribute__ (paren (interrupt (string "user" ))))
+		  __INTERRUPT
 		  __HIGH_CODE
 		  (defun USB_IRQHandler ()
 		    (comments "Handle interrupts coming from the USB Peripheral")
