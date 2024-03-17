@@ -1826,7 +1826,9 @@ I think string descriptors are optional, so for now I will always keep string in
      (space
       "extern \"C\""
       (progn
-	#+nil (do0
+
+	#+nil
+	(do0
 	 (doc "
 
 __INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))). This likely indicates a specialized, 'fast' interrupt mechanism specific to your compiler or microcontroller (WCH).
@@ -1836,7 +1838,7 @@ The compiler attribute __attribute__((section('.highcode'))) will be assigned to
 
 Here is a post about fast interrupts on WCH https://www.reddit.com/r/RISCV/comments/126262j/notes_on_wch_fast_interrupts/
 ")
-	 (space ;(__attribute__ (paren (interrupt (string "user" ))))
+	 (space	 ;(__attribute__ (paren (interrupt (string "user" ))))
 					;(__attribute__ (paren interrupt))
 	  __INTERRUPT
 	  __HIGH_CODE
