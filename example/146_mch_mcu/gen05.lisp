@@ -1074,6 +1074,7 @@ I think string descriptors are optional, so for now I will always keep string in
 				   ;cstdint
 				   ;ostream
 				   ;mutex
+				   
 				   )
 			(do0
 			 #+nil
@@ -1081,12 +1082,13 @@ I think string descriptors are optional, so for now I will always keep string in
 			  "#ifdef BUILD_FOR_TARGET"
 			  "#define FMT_THROW panic"
 			  "#endif")
-			 (include<> fmt/format.h))
+			 (include<> fmt/format.h
+				    ))
 			)
      :implementation-preamble
      `(do0
        (comments "implementation"       )
-      ; (include<> mutex)
+       ;(include<> cassert)
        (space extern "\"C\""
 	      (progn
 	       	(include<> CH59x_common.h
@@ -1235,12 +1237,14 @@ I think string descriptors are optional, so for now I will always keep string in
 				      (ostr.size)))
 			))
 	       (doc "Overload for const char pointer")
+	       #+nil
 	       (defmethod print (str)
 		 (declare (type "const char*" str))
 		 (let ((n (strlen str)))
-		   (assert (logand (<= n (std--numeric_limits<uint16_t>--max))
+		   (assert (logand (<= n std--numeric_limits<uint16_t>--max)
 				   (string "String length exceedds uint16_t range"))))
-		 (SendString ()))
+		 (SendString (reinterpret_cast<uint8_t*> (const_cast<char*> str))
+			     (static_cast<uint16_t> n)))
 
 	       ,@(remove-if #'null
 			    (loop for e in members

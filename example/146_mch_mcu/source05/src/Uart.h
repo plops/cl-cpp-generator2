@@ -27,6 +27,9 @@ public:
     SendString(ostr.data(), ostr.size());
   }
 
+  /** Overload for const char pointer
+
+*/
 private:
   void SendString(uint8_t *buf, uint16_t len);
 };
