@@ -1215,7 +1215,7 @@ I think string descriptors are optional, so for now I will always keep string in
 	       #+more (defmethod toString ()
 			(declare (const)
 				 (values "std::string"))
-			#+format (return
+			#+format (return 
 				   (std--format
 				    (string ,(format nil "~{~a~^,\\n~}"
 						     (loop for e in members
