@@ -1967,6 +1967,7 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 	(let ((&u (Uart--getInstance))))
 	(u.print (string "main"))
 
+	
 	(do0
 	 (comments "Enable timer with 100ms period")
 	 (TMR0_TimerInit FREQ_SYS/10)
@@ -1976,30 +1977,26 @@ Here's a bullet list summary of the essential concepts regarding USB Protocols:
 
 	#+nil  (setf pEP0_RAM_Addr (EP0_Databuf.data))
 
+	#+nil
 	(do0
 	 (let ((&dev (deref ("reinterpret_cast<const UsbDeviceDescriptor*>" (DevDescr.data))))
 	       (&cfg (deref ("reinterpret_cast<const UsbConfigurationDescriptor*>" (CfgDescr.data))))))
-	; (dev.isValid)
-	; (cfg.isValid)
-	 ) 
-	
-	(usb.device_init (static_cast<uint16_t>
-			  (reinterpret_cast<uint32_t> (EP0_Databuf.data))))
+					; (dev.isValid)
+					; (cfg.isValid)
+		 
+	 (do0
 
-	
-	
-	(comments "Enable the interrupt associated with the USB peripheral.")
-	#+nil(do0
-	 (comments "call handler so that -gc-section doesn't remove it")
-	 (USB_IRQHandler))
-	(PFIC_EnableIRQ USB_IRQn)
-	(u.print (string "usb_irq=on"))
+	  (usb.device_init (static_cast<uint16_t>
+			    (reinterpret_cast<uint32_t> (EP0_Databuf.data))))
+	  (comments "Enable the interrupt associated with the USB peripheral.")
+	  (PFIC_EnableIRQ USB_IRQn)
+	  (u.print (string "usb_irq=on"))))
 	
 	
 	(while 1
 	       (comments "inifinite loop")
 	       (u.print (string "AAAA"))
-	       (mDelaymS 50)
+	       (mDelaymS 71)
 	       (u.print (string "MAIN50"))
 					;(u.print (string "hello"))
 	       ))

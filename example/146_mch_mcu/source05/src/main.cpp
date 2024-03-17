@@ -270,20 +270,11 @@ int main() {
   TMR0_TimerInit(FREQ_SYS / 10);
   TMR0_ITCfg(ENABLE, TMR0_3_IT_CYC_END);
   PFIC_EnableIRQ(TMR0_IRQn);
-  auto &dev{*reinterpret_cast<const UsbDeviceDescriptor *>(DevDescr.data())};
-  auto &cfg{
-      *reinterpret_cast<const UsbConfigurationDescriptor *>(CfgDescr.data())};
-  usb.device_init(
-      static_cast<uint16_t>(reinterpret_cast<uint32_t>(EP0_Databuf.data())));
-  // Enable the interrupt associated with the USB peripheral.
-
-  PFIC_EnableIRQ(USB_IRQn);
-  u.print("usb_irq=on");
   while (1) {
     // inifinite loop
 
     u.print("AAAA");
-    mDelaymS(50);
+    mDelaymS(71);
     u.print("MAIN50");
   }
 }
