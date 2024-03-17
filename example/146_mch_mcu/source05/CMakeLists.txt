@@ -242,6 +242,7 @@ if (BUILD_FOR_TARGET)
   else()
   # when the ${PROJECT_NAME} has been build, strip the binary:
   add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-nm -S --size-sort -C -l ${PROJECT_NAME} > ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.nm
     COMMAND  /home/martin/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-strip ${PROJECT_NAME}
   )
   endif ()

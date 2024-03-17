@@ -1,4 +1,4 @@
- (eval-when (:compile-toplevel :execute :load-toplevel)
+(eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2")
   (ql:quickload "alexandria")
   (ql:quickload "cl-change-case")
