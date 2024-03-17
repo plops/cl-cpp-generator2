@@ -39,6 +39,11 @@ Uart::Uart() {
   GPIOA_ModeCfg(GPIO_Pin_9, GPIO_ModeOut_PP_5mA);
   UART1_DefInit();
 }
+void Uart::print(const char *str) {
+  auto n{strlen(str)};
+  SendString(reinterpret_cast<uint8_t *>(const_cast<char *>(str)),
+             static_cast<uint16_t>(n));
+}
 void Uart::SendString(uint8_t *buf, uint16_t len) {
   // FIXME: hold mutex here
 

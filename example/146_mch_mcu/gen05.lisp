@@ -1239,7 +1239,6 @@ I think string descriptors are optional, so for now I will always keep string in
 				      (ostr.size)))
 			))
 	       (doc "Overload for const char pointer")
-	       #+nil
 	       (defmethod print (str)
 		 (declare (type "const char*" str))
 		 (let ((n (strlen str)))

@@ -30,6 +30,7 @@ public:
   /** Overload for const char pointer
 
 */
+  void print(const char *str);
   /** Overload for string literals (will not call strlen for known strings)
 
 */
