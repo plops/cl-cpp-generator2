@@ -785,3 +785,68 @@ https://hackaday.io/project/194904-getting-started-with-the-weact-studio-ch5xx-r
 
 - blue led is pin8 (PCB label says ~A8), source01 toggles it and drives with 5mA 
 
+
+
+# How to debug usb on linux?
+
+https://elinux.org/images/1/17/USB_Debugging_and_Profiling_Techniques.pdf
+
+
+### Abstract
+This presentation by Kishon Vijay Abraham I and Basak Partha explores
+various techniques for USB debugging and profiling within Linux
+environments. It addresses the widespread use of USB in embedded
+systems, detailing both host and device modes and their
+applications. The presentation outlines the generic Linux system
+architecture for USB and delves into the specifics of USB mass storage
+architecture. It highlights the challenges inherent in debugging USB
+systems, such as data encoding on the bus, timing issues, and protocol
+errors. The presenters introduce several debugging techniques and
+tools, including sysfs, usbmon, dynamic debug interface, tracepoint,
+and protocol analyzers. They also discuss the utility of Gadget Zero
+for performance characterization and mention other profiling tools
+like Iozone and dd for mass storage devices. The presentation serves
+as a comprehensive guide for developers looking to understand and
+improve USB debugging and profiling practices.
+ 
+### Summary
+- **Introduction to USB Debugging and Profiling**
+- Emphasizes the ubiquity of USB in embedded systems.
+- Details applications in both host and device modes.
+ 
+- **USB System Architectures**
+- Presents the USB Generic Linux System Architecture.
+- Explains the USB Mass Storage Architecture.
+ 
+- **Debugging Challenges**
+- Identifies common issues such as data encoding, timing, and protocol
+  errors.
+ 
+- **USB Debugging Techniques**
+- Introduces Linux kernel facilities like sysfs, usbmon, and the
+  dynamic debug interface.
+- Discusses the use of debug tools and analyzers like Elisys, Lecroy,
+  and Total Phase.
+ 
+- **Gadget Zero for Performance Characterization**
+- Describes how Gadget Zero can be used to obtain performance
+  characteristics of USB devices.
+ 
+- **Other Profiling Tools**
+- Highlights the use of Iozone for profiling mass-storage devices.
+- Mentions FFSB and dd as additional tools.
+ 
+- **Practical Debugging Examples**
+- Provides examples of debugging using usbmon, dynamic debug
+  interface, and protocol analyzers.
+- Shows how tracepoints can be used for detailed kernel data
+  recording.
+ 
+- **References and Further Reading**
+- Lists key documentation and resources for deeper exploration of USB
+  debugging and profiling.
+ 
+### Contact Information
+- For queries and feedback, the presenters can be reached at
+kishon@ti.com, kishonvijayabraham@gmail.com, and
+partha_basak2000@yahoo.com.
