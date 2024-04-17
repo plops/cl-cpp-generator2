@@ -74,7 +74,7 @@ Ch592UsbRegisters &usb = *new Ch592UsbRegisters;
 extern "C" {
 /**
 
-__INTERRUPT is defined with __attribute__((interrupt('WCH-Interrupt-fast'))).
+__INTERRUPT is defined with __attriqwbute__((interrupt('WCH-Interrupt-fast'))).
 This likely indicates a specialized, 'fast' interrupt mechanism specific to your
 compiler or microcontroller (WCH).
 

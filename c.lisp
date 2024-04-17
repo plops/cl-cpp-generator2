@@ -979,7 +979,7 @@ emit-c into a string. Except lists: Those stay lists."
 		   (current-class nil) (header-only nil) (in-class nil) (diag nil)
 		   (omit-redundant-parentheses nil))
 
-	  "Evaluates s-expressions in CODE and emits a string or STRING-OP class.
+    "Evaluates s-expressions in CODE and emits a string or STRING-OP class.
      If HOOK-DEFUN is not nil, it calls hook-defun with every function definition.
      This functionality is intended to collect function declarations.
      When omit-redundant-parentheses is not nil, the feature to avoid redundant parentheses is active.
@@ -1074,6 +1074,20 @@ emit-c into a string. Except lists: Those stay lists."
 		   ;; paren* parent-op arg
 		   ;; place a pair of parentheses only when needed
 		   ;; if omit-redundant-parentheses=true, act the same as paren
+
+		   ;; The paren* form conditionally adds parentheses
+		   ;; around an expression. It takes two arguments: a
+		   ;; parent operator and an argument. The parent
+		   ;; operator is the operator that is being applied
+		   ;; to the argument. The argument can be any
+		   ;; expression.
+
+		   ;; The paren* form will add parentheses around the
+		   ;; argument if the parent operator has a lower
+		   ;; precedence in Python than the argument. This is
+		   ;; necessary to ensure that the Python expression
+		   ;; is evaluated in the correct order.
+                       
 		   
 		   (if (not omit-redundant-parentheses)
 		       (destructuring-bind (parent-op &rest args) (cdr code)
@@ -1175,20 +1189,20 @@ emit-c into a string. Except lists: Those stay lists."
 					 ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
 					 ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
 					 (if 
-					     (or (< p0 p1)
-						 (and (eq p0 p1)
-						      (not (eq p0assoc p1assoc))
-							  )
-						 (member op0 `(/ % -))
-						 (member op1 `(/ % -)))
-					     (emit `(paren  ,(if diag
-								 `(space ,(format nil "/*(op0='~a' op1='~a' arg=~a ~a)*/" op0 op1 arg (list  p0 p1 p0assoc p1assoc))
-									 (,op1 ,@rest))
-								 `(,op1 ,@rest))))
-					     (emit (if diag
-						       `(space ,(format nil "/*nopar op0='~a' (~a) op1='~a' arg=~a ~a*/" op0 (type-of op0) op1 arg (list  p0 p1 p0assoc p1assoc))
-							       (,op1 ,@rest))
-						       `(,op1 ,@rest)))))
+					  (or (< p0 p1)
+					      (and (eq p0 p1)
+						   (not (eq p0assoc p1assoc))
+						   )
+					      (member op0 `(/ % -))
+					      (member op1 `(/ % -)))
+					  (emit `(paren  ,(if diag
+							      `(space ,(format nil "/*(op0='~a' op1='~a' arg=~a ~a)*/" op0 op1 arg (list  p0 p1 p0assoc p1assoc))
+								      (,op1 ,@rest))
+							      `(,op1 ,@rest))))
+					  (emit (if diag
+						    `(space ,(format nil "/*nopar op0='~a' (~a) op1='~a' arg=~a ~a*/" op0 (type-of op0) op1 arg (list  p0 p1 p0assoc p1assoc))
+							    (,op1 ,@rest))
+						    `(,op1 ,@rest)))))
 				       (progn
 					 ;; (break "unknown operator '~a'" op0)
 					 ;; function call
@@ -1317,7 +1331,7 @@ emit-c into a string. Except lists: Those stay lists."
 						   ;; or if x is an s-expression with a c thing that doesn't end with semicolon
 						   semicolon-maybe)))
 				     (cdr code)))
-			    ; (terpri s)
+					; (terpri s)
 					;(format t "</do0>~%")
 
 			    #+nil
@@ -1664,20 +1678,20 @@ emit-c into a string. Except lists: Those stay lists."
 		    ;;       (condition2 code2)
 		    ;;       (t          coden))
 		    (with-output-to-string (s)
-		     (destructuring-bind (&rest clauses) (cdr code)
-		       (loop for clause in clauses
-			     and i from 0
-			     do
-				(destructuring-bind (condition &rest expressions) clause
-				  (if (equal condition t)
-				      (format s "else ~a"
-					      (emit `(progn ,@expressions)))
-				      (format s "~a ( ~a ) ~a"
-					      (if (eq i 0) 
-						"if"
-						"else if")
-					      (emit condition)
-					      (emit `(progn ,@expressions)))))))))
+		      (destructuring-bind (&rest clauses) (cdr code)
+			(loop for clause in clauses
+			      and i from 0
+			      do
+				 (destructuring-bind (condition &rest expressions) clause
+				   (if (equal condition t)
+				       (format s "else ~a"
+					       (emit `(progn ,@expressions)))
+				       (format s "~a ( ~a ) ~a"
+					       (if (eq i 0) 
+						   "if"
+						   "else if")
+					       (emit condition)
+					       (emit `(progn ,@expressions)))))))))
 
 		  (dot (m 'dot
 			  (let ((args (cdr code)))
