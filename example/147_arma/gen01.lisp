@@ -147,10 +147,13 @@
 		    ))
        (arma_rng--set_seed_random )
        (let ((A (randn 5 5))
-	     (B (inv A))))
-       #+nil (for-range (a B )
-			,(lprint :vars `(a)))
-					;,(lprint :vars `((aref B 0)))
+	     (B (mat (pinv A)))
+	     (C (mat (inv A)))))
+       (for-range (b B )
+		  ,(lprint :vars `(b)))
+       (for-range (c C)
+		  ,(lprint :vars `(c)))
+       
        (return 0)))
    :omit-parens t
    :format t

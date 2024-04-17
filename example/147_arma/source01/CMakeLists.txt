@@ -23,7 +23,7 @@ set(CMAKE_CXX_STANDARD 20)
 # Create a CMake Option to enable adress sanitizer
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
 if(ENABLE_ASAN)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer -march=native -O3")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer -march=native -O1")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
 endif()
 
