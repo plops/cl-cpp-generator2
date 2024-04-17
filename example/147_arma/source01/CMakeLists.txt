@@ -23,7 +23,7 @@ set(CMAKE_CXX_STANDARD 20)
 # Create a CMake Option to enable adress sanitizer
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
 if(ENABLE_ASAN)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer -march=native -O3")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
 endif()
 
@@ -42,7 +42,8 @@ set(sources
 # place them into the same UNITY_GROUP
 set_source_files_properties(${sources} PROPERTIES UNITY_GROUP "Sources")
 
-
+option(ENABLE_POPL "Enable Popl Argument Parser" OFF)
+if(ENABLE_POPL)
 include(FetchContent)
 FetchContent_Declare(
 	popl
@@ -52,6 +53,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(popl)
 
 include_directories(${popl_SOURCE_DIR}/include)
+endif()
 
 add_executable(${PROJECT_NAME}
 		${sources}
