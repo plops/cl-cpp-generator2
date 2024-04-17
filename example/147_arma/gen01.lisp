@@ -12,6 +12,7 @@
 						      ))))
 
 ;; https://conradsanderson.id.au/pdfs/sanderson_curtin_armadillo_pasc_2017.pdf
+;; % is element wise product
 ;; https://www.youtube.com/watch?v=PRy8DmRRr6c
 ;; https://www.youtube.com/watch?v=Ppui7qs9drs
 ;; sci-libs/armadillo arpack blas -doc -examples lapack -mkl superlu -test
@@ -87,7 +88,7 @@
 					;unistd.h
 					;vector deque chrono
 					;cmath
-				#+more	popl.hpp
+      #+more	popl.hpp
       armadillo
       )
      "using namespace arma;"
@@ -99,55 +100,57 @@
 
 
        #+more ,(let ((l `(
-		   (:name maxThreads :default 12 :short t)
-		   (:name maxDataPoints :default 1024 :short n)
-		   )))
-	 `(let ((op (popl--OptionParser (string "allowed options")))
-		,@(loop for e in l collect
-				   (destructuring-bind (&key name default short) e
-				     `(,name (int ,default))))
-		,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
-				   (:long verbose :short v :type Switch :msg "produce verbose output")
-				   ,@(loop for f in l
-					   collect
-					   (destructuring-bind (&key name default short) f
-					     `(:long ,name
-					       :short ,short
-					       :type int :msg "parameter"
-					       :default ,default :out ,(format nil "&~a" name))))
+			  (:name maxThreads :default 12 :short t)
+			  (:name maxDataPoints :default 1024 :short n)
+			  )))
+		 `(let ((op (popl--OptionParser (string "allowed options")))
+			,@(loop for e in l collect
+					   (destructuring-bind (&key name default short) e
+					     `(,name (int ,default))))
+			,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
+					   (:long verbose :short v :type Switch :msg "produce verbose output")
+					   ,@(loop for f in l
+						   collect
+						   (destructuring-bind (&key name default short) f
+						     `(:long ,name
+						       :short ,short
+						       :type int :msg "parameter"
+						       :default ,default :out ,(format nil "&~a" name))))
 
-				   )
-			appending
-			(destructuring-bind (&key long short type msg default out) e
-			  `((,(format nil "~aOption" long)
-			     ,(let ((cmd `(,(format nil "add<~a>"
-						    (if (eq type 'Switch)
-							"popl::Switch"
-							(format nil "popl::Value<~a>" type)))
-					   (string ,short)
-					   (string ,long)
-					   (string ,msg))))
-				(when default
-				  (setf cmd (append cmd `(,default)))
-				  )
-				(when out
-				  (setf cmd (append cmd `(,out)))
-				  )
-				`(dot op ,cmd)
-				))))
-			))
-	    (op.parse argc argv)
-	    (when (helpOption->count)
-	      (<< std--cout
-		  op
-		  std--endl)
-	      (exit 0))
+					   )
+				appending
+				(destructuring-bind (&key long short type msg default out) e
+				  `((,(format nil "~aOption" long)
+				     ,(let ((cmd `(,(format nil "add<~a>"
+							    (if (eq type 'Switch)
+								"popl::Switch"
+								(format nil "popl::Value<~a>" type)))
+						   (string ,short)
+						   (string ,long)
+						   (string ,msg))))
+					(when default
+					  (setf cmd (append cmd `(,default)))
+					  )
+					(when out
+					  (setf cmd (append cmd `(,out)))
+					  )
+					`(dot op ,cmd)
+					))))
+				))
+		    (op.parse argc argv)
+		    (when (helpOption->count)
+		      (<< std--cout
+			  op
+			  std--endl)
+		      (exit 0))
 
-	    ))
+		    ))
        (arma_rng--set_seed_random )
-       (let ((A (randn 5 5))))
-       (for-range (a A )
-	,(lprint :vars `(a)))
+       (let ((A (randn 5 5))
+	     (B (inv A))))
+       #+nil (for-range (a B )
+			,(lprint :vars `(a)))
+					;,(lprint :vars `((aref B 0)))
        (return 0)))
    :omit-parens t
    :format t
