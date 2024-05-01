@@ -11,13 +11,8 @@
   (setf *features* (set-exclusive-or *features* (list ;:more
 						      ))))
 
-;; https://conradsanderson.id.au/pdfs/sanderson_curtin_armadillo_pasc_2017.pdf
-;; % is element wise product
-;; https://www.youtube.com/watch?v=PRy8DmRRr6c
-;; https://www.youtube.com/watch?v=Ppui7qs9drs
-;; sci-libs/armadillo arpack blas -doc -examples lapack -mkl superlu -test
 (let ()
-  (defparameter *source-dir* #P"example/147_arma/source01/src/")
+  (defparameter *source-dir* #P"example/148_opencv_capture/source01/src/")
   (defparameter *full-source-dir* (asdf:system-relative-pathname
 				   'cl-cpp-generator2
 				   *source-dir*))
