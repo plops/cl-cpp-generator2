@@ -1,8 +1,16 @@
 // no preamble
 
 #include "Screenshot.h"
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/extensions/XShm.h>
 #include <format>
+#include <iostream>
+#include <memory>
+#include <opencv4/opencv2/opencv.hpp>
 #include <stdexcept>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 Screenshot::Screenshot(int x, int y, int width, int height)
     : root{0}, window_attributes{0}, screen{0}, shminfo{0}, ximg{0}, x{x}, y{y},
       width{width}, height{height} {

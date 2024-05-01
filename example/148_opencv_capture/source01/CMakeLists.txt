@@ -1,9 +1,14 @@
+cmake_minimum_required(VERSION 3.10)
+project(screen_capture)
+
+# Find OpenCV
+find_package(OpenCV REQUIRED)
 
 # Find X11 libraries
 find_package(X11 REQUIRED)
 
 # Add source files
-add_executable(screen_capture main.cpp)
+add_executable(screen_capture src/Screenshot.h src/Screenshot.cpp src/main.cpp)
 
 # Link libraries
 target_link_libraries(screen_capture ${OpenCV_LIBS} ${X11_LIBRARIES})

@@ -55,7 +55,18 @@
      :implementation-preamble
      `(do0
        (include<> stdexcept
-		  format))
+		  format)
+       (include<>
+      X11/Xlib.h
+      X11/Xutil.h
+      X11/extensions/XShm.h
+      sys/ipc.h
+      sys/shm.h
+      opencv2/opencv.hpp
+      format
+      iostream
+      memory
+      ))
      :code `(do0
 	     
 	     (defclass ,class-name ()
@@ -162,6 +173,8 @@
       iostream
       memory
       )
+
+     (include Screenshot.h)
      
      (defun main (argc argv)
        (declare (type int argc)
@@ -176,11 +189,11 @@
 	       (screen img)
 	       (cv--imshow (string "img") img)
 	       (cv--waitKey 0)
-	      )
+	       )
 	   ("const std::exception&" (e)
 	     ,(lprint :vars `((e.what)))
 	     (return 1)))
-	)
+	 )
        
        (return 0)))
    :omit-parens t
