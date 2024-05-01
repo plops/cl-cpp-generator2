@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 project(screen_capture)
 
+
+# GCC 13, CLANG 14 and MSVC 16.10/VS 2019 all have the {fmt} based std::format 
+
+set(CMAKE_CXX_STANDARD 20)
+
+
 # Find OpenCV
 find_package(OpenCV REQUIRED)
 

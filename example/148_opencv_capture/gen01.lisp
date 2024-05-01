@@ -21,11 +21,11 @@
   
   (let* ((class-name `Screenshot)
 	 (members0 `((:name display :type "std::unique_ptr<Display, decltype(&XCloseDisplay)>"  :initform nil)
-		     (:name root :type Window  :param nil)
-		     (:name window-attributes :type XWindowAttributes)
-		     (:name screen :type Screen*)
-		     (:name shminfo :type XShmSegmentInfo :param nil)
-		     (:name ximg :type "std::unique_ptr<XImage, void (*) (XImage*)>" :param nil)
+		     (:name root :type Window  :param nil  :initform nil)
+		     (:name window-attributes :type XWindowAttributes  :initform nil)
+		     (:name screen :type Screen*  :initform nil)
+		     (:name shminfo :type XShmSegmentInfo :param nil  :initform nil)
+		     (:name ximg :type "std::unique_ptr<XImage, void (*) (XImage*)>" :param nil  :initform nil)
 		     (:name x :type int :param t)
 		     (:name y :type int :param t)
 		     (:name width :type int :param t)
@@ -51,22 +51,21 @@
      :name class-name
      :headers `()
      :header-preamble `(do0
-			)
-     :implementation-preamble
-     `(do0
-       (include<> stdexcept
-		  format)
-       (include<>
+			(include<>
+      opencv2/opencv.hpp
       X11/Xlib.h
       X11/Xutil.h
       X11/extensions/XShm.h
       sys/ipc.h
       sys/shm.h
-      opencv2/opencv.hpp
-      format
-      iostream
-      memory
-      ))
+      
+      )
+			)
+     :implementation-preamble
+     `(do0
+       (include<> stdexcept
+		  format)
+      )
      :code `(do0
 	     
 	     (defclass ,class-name ()
@@ -96,12 +95,13 @@
 					   `(,member-name ,initform)))))))
 		  (explicit)	    
 		  (values :constructor))
-		 (setf display ("std::unique_ptr<Display,decltype(&XCloseDisplay)>"
-				(XOpenDisplay nullptr)
-				XCloseDisplay))
+		 (let ((d (XOpenDisplay nullptr)))
+		  (setf display ("std::unique_ptr<Display,decltype(&XCloseDisplay)>"
+				(std--move d)
+				 XCloseDisplay)))
 		 (unless display
 		   (throw (std--runtime_error (string "Failed to open display"))))
-		 (setf root (DefaultRootWIndow *display))
+		 (setf root (DefaultRootWindow *display))
 		 (XGetWindowAttributes *display root &window_attributes)
 		 (setf screen window_attributes.screen)
 		 (setf ximg ("std::unique_ptr<XImage, void(*)(XImage*)>"
@@ -135,7 +135,8 @@
 		 (declare (type "cv::Mat&" cv_img))
 		 (XShmGetImage *display root (xshm.get) 0 0 "0x00ffffff")
 		 (setf cv_img (cv--Mat height width CV_8UC4 ximg->data)))
-	       
+
+	       #+nil
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
@@ -163,11 +164,6 @@
 		     *source-dir*))
    `(do0
      (include<>
-      X11/Xlib.h
-      X11/Xutil.h
-      X11/extensions/XShm.h
-      sys/ipc.h
-      sys/shm.h
       opencv2/opencv.hpp
       format
       iostream
@@ -183,7 +179,7 @@
        ,(lprint :msg "start")
 
        (let ((img (cv--Mat))
-	     )
+	    )
 	 (handler-case
 	     (let ((screen (Screenshot 0 0 1920 1080)))
 	       (screen img)
