@@ -19,57 +19,131 @@
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
   
-  #+nil
-  (let* ((name `CpuAffinityManagerWithGui)
-	 (members `((selectedCpus :type std--vector<bool> ; std--bitset<12>
-				  :initform nil)
-		    (pid :type pid_t :param t))))
-  
+  (let* ((class-name `Screenshot)
+	 (members0 `((:name display :type "std::unique_ptr<Display, decltype(&XCloseDisplay)>"  :initform nil)
+		     (:name root :type Window  :param nil)
+		     (:name window-attributes :type XWindowAttributes)
+		     (:name screen :type Screen*)
+		     (:name shminfo :type XShmSegmentInfo :param nil)
+		     (:name ximg :type "std::unique_ptr<XImage, void (*) (XImage*)>" :param nil)
+		     (:name x :type int :param t)
+		     (:name y :type int :param t)
+		     (:name width :type int :param t)
+		     (:name height :type int :param t)
+		     ;(:name :type :param)
+		     ))
+	 (members (loop for e in members0
+			collect
+			(destructuring-bind (&key name type param (initform 0)) e
+			  `(:name ,name
+			    :type ,type
+			    :param ,param
+			    :initform ,initform
+			    :member-name ,(cl-change-case:snake-case (format nil "~a" name))
+			    :param-name ,(when param
+					   (intern
+					    (string-upcase
+					     (cl-change-case:snake-case (format nil "~a_" name))))))))))
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
 	   *source-dir*)
-     :name name
+     :name class-name
      :headers `()
      :header-preamble `(do0
-			(include<> sched.h
-				   unistd.h
-				   bitset
-				   cstring
-				   string
-				   )
-			(include CpuAffinityManagerBase.h
-				 DiagramWithGui.h))
+			)
      :implementation-preamble
      `(do0
-       (include imgui.h)
-       (include<>			; sched.h 
-	stdexcept
-		  
-	)
-       )
+       (include<> stdexcept
+		  format))
      :code `(do0
-	     (defclass ,name "public CpuAffinityManagerBase"
+	     
+	     (defclass ,class-name ()
 	       "public:"
-	       "using CpuAffinityManagerBase::CpuAffinityManagerBase;"
-	       (defmethod RenderGui ()
-		 (ImGui--Begin (string "CPU Affinity"))
-		 (ImGui--Text  (string "Select CPUs for process ID: %d") pid_)
-		 (let ((affinityChanged false))
-		   (dotimes (i threads_)
-		     (let ((label (+ (std--string (string "CPU "))
-				     (std--to_string i)))))
-		     (let ((isSelected  (aref selected_cpus_ i)))
-		       (declare (type bool isSelected)))
-		     (when (ImGui--Checkbox (label.c_str)
-					    &isSelected)
-		       (setf (aref selected_cpus_ i) isSelected)
-		       (setf affinityChanged true)))
-		   (when affinityChanged
-		     (ApplyAffinity))
-		   (ImGui--End)
-		   ))
-	       ))))
+	       
+	       (defmethod ,class-name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (&key name type param initform param-name member-name) e
+					    param-name))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (&key name type param initform param-name member-name) e
+				       (when param
+					 `(type ,type ,param-name)))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (&key name type param initform param-name member-name) e
+					(cond
+					  (param
+					   `(,member-name ,param-name)) 
+					  (initform
+					   `(,member-name ,initform)))))))
+		  (explicit)	    
+		  (values :constructor))
+		 (setf display ("std::unique_ptr<Display,decltype(&XCloseDisplay)>"
+				(XOpenDisplay nullptr)
+				XCloseDisplay))
+		 (unless display
+		   (throw (std--runtime_error (string "Failed to open display"))))
+		 (setf root (DefaultRootWIndow *display))
+		 (XGetWindowAttributes *display root &window_attributes)
+		 (setf screen window_attributes.screen)
+		 (setf ximg ("std::unique_ptr<XImage, void(*)(XImage*)>"
+			     (XShmCreateImage
+			      *display
+			      (DefaultVisualOfScreen screen)
+			      (DefaultDepthOfScreen screen)
+			      ZPixmap
+			      nullptr
+			      &shminfo
+			      width
+			      height)
+			     (lambda (img)
+			       (declare (type "XImage*" img)
+					(capture ""))
+			       (XShmDetach *display &shminfo)
+			       (shmdt shminfo.shmaddr)
+			       (XDestroyImage img))))
+		 (setf shminfo.shmid (shmget IPC_PRIVATE (* ximg->bytes_per_line
+							    ximg->height)
+					     (or IPC_CREAT "0777")))
+		 (when (< shminfo.shmid 0)
+		   (throw (std--runtime_error (string "Fatal shminfo error!"))))
+		 (setf ximg->data (reinterpret_cast<char*> (shmat shminfo.shmid 0 0))
+		       shminfo.shmaddr ximg->data
+		       shminfo.readOnly False
+		       )
+		 (unless (XShmAttach *display &shminfo)
+		   (throw (std--runtime_error (string "XShmAttach failed")))))
+	       (defmethod "operator()" (cv_img)
+		 (declare (type "cv::Mat&" cv_img))
+		 (XShmGetImage *display root (xshm.get) 0 0 "0x00ffffff")
+		 (setf cv_img (cv--Mat height width CV_8UC4 ximg->data)))
+	       
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (&key name type param initform param-name member-name) e
+				    (let ((get (cl-change-case:pascal-case (format nil "get-~a" name))))
+				      `(defmethod ,get ()
+					 (declare (values 
+						   ,(format nil "const ~a&" type))
+						  (const))
+					 (return ,param-name))))))
+	       	       
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (&key name type param initform param-name member-name) e
+				    `(space ,type ,member-name))))))))
+
+  
+  
   
   (write-source 
    (asdf:system-relative-pathname
@@ -77,77 +151,36 @@
     (merge-pathnames "main.cpp"
 		     *source-dir*))
    `(do0
-     (include<> 
+     (include<>
+      X11/Xlib.h
+      X11/Xutil.h
+      X11/extensions/XShm.h
+      sys/ipc.h
+      sys/shm.h
+      opencv2/opencv.hpp
       format
       iostream
-					;unistd.h
-					;vector deque chrono
-					;cmath
-      #+more	popl.hpp
-      armadillo
+      memory
       )
-     "using namespace arma;"
+     
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
 		(values int))
        ,(lprint :msg "start")
 
-
-       #+more ,(let ((l `(
-			  (:name maxThreads :default 12 :short t)
-			  (:name maxDataPoints :default 1024 :short n)
-			  )))
-		 `(let ((op (popl--OptionParser (string "allowed options")))
-			,@(loop for e in l collect
-					   (destructuring-bind (&key name default short) e
-					     `(,name (int ,default))))
-			,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
-					   (:long verbose :short v :type Switch :msg "produce verbose output")
-					   ,@(loop for f in l
-						   collect
-						   (destructuring-bind (&key name default short) f
-						     `(:long ,name
-						       :short ,short
-						       :type int :msg "parameter"
-						       :default ,default :out ,(format nil "&~a" name))))
-
-					   )
-				appending
-				(destructuring-bind (&key long short type msg default out) e
-				  `((,(format nil "~aOption" long)
-				     ,(let ((cmd `(,(format nil "add<~a>"
-							    (if (eq type 'Switch)
-								"popl::Switch"
-								(format nil "popl::Value<~a>" type)))
-						   (string ,short)
-						   (string ,long)
-						   (string ,msg))))
-					(when default
-					  (setf cmd (append cmd `(,default)))
-					  )
-					(when out
-					  (setf cmd (append cmd `(,out)))
-					  )
-					`(dot op ,cmd)
-					))))
-				))
-		    (op.parse argc argv)
-		    (when (helpOption->count)
-		      (<< std--cout
-			  op
-			  std--endl)
-		      (exit 0))
-
-		    ))
-       (arma_rng--set_seed_random )
-       (let ((A (randn 5 5))
-	     (B (mat (pinv A)))
-	     (C (mat (inv A)))))
-       (for-range (b B )
-		  ,(lprint :vars `(b)))
-       (for-range (c C)
-		  ,(lprint :vars `(c)))
+       (let ((img (cv--Mat))
+	     )
+	 (handler-case
+	     (let ((screen (Screenshot 0 0 1920 1080)))
+	       (screen img)
+	       (cv--imshow (string "img") img)
+	       (cv--waitKey 0)
+	      )
+	   ("const std::exception&" (e)
+	     ,(lprint :vars `((e.what)))
+	     (return 1)))
+	)
        
        (return 0)))
    :omit-parens t
