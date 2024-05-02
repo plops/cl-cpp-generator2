@@ -12,9 +12,7 @@ int main(int argc, char **argv) {
   auto alpha{0.20F};
   auto w{640};
   auto h{480};
-  cv::namedWindow(win, cv::WINDOW_NORMAL);
-  cv::setWindowProperty(win, cv::WND_PROP_BACKEND, cv::WINDOW_QUIET);
-  cv::setWindowProperty(win, cv::WND_PROP_GUI, cv::WINDOW_GUI_QT);
+  cv::namedWindow(win, cv::WINDOW_GUI_EXPANDED);
   cv::moveWindow(win, w, 100);
   cv::resizeWindow(win, w, h);
   try {
@@ -22,9 +20,7 @@ int main(int argc, char **argv) {
       auto screen{Screenshot(0, 0, w, h)};
       screen(img);
       cv::imshow(win, img);
-      auto currentFrameRate{cv::getTickFrequency() / cv::getTickCount()};
-      frameRate = alpha * currentFrameRate + (1 - alpha) * frameRate;
-      if (27 == cv::waitKey(1000 / static_cast<int>(frameRate))) {
+      if (27 == cv::waitKey(1000 / 60)) {
         // Exit loop if ESC key is pressed
 
         break;
