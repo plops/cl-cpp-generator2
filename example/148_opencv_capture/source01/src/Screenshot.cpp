@@ -1,6 +1,8 @@
 // no preamble
 
 #include "Screenshot.h"
+#include <cerrno>
+#include <cstring>
 #include <format>
 #include <memory>
 #include <stdexcept>
@@ -19,6 +21,8 @@ Screenshot::Screenshot(int x, int y, int width, int height)
   shminfo.shmid = shmget(IPC_PRIVATE, ximg->bytes_per_line * ximg->height,
                          IPC_CREAT | 0777);
   if (shminfo.shmid < 0) {
+    std::cout << std::format(" errno='{}' strerror(errno)='{}'\n", errno,
+                             strerror(errno));
     throw std::runtime_error("Fatal shminfo error!");
   }
   ximg->data = reinterpret_cast<char *>(shmat(shminfo.shmid, 0, 0));

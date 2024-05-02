@@ -69,7 +69,9 @@
      `(do0
        (include<> stdexcept
 		  memory
-		  format)
+		  format
+		  cerrno
+		  cstring)
        )
      :code `(do0
 	     
@@ -120,6 +122,7 @@
 							    ximg->height)
 					     (or IPC_CREAT "0777")))
 		 (when (< shminfo.shmid 0)
+		   ,(lprint :vars `(errno (strerror errno)))
 		   (throw (std--runtime_error (string "Fatal shminfo error!"))))
 		 (setf ximg->data (reinterpret_cast<char*> (shmat shminfo.shmid 0 0))
 		       shminfo.shmaddr ximg->data
@@ -196,22 +199,22 @@
 	     (alpha .2s0)
 	     (w 640)
 	     (h 480))
-	 (cv--namedWindow win cv--WINDOW_GUI_EXPANDED)
+	 (cv--namedWindow win cv--WINDOW_NORMAL ;GUI_EXPANDED
+			  )
 	 
 	 (cv--moveWindow win w 100)
 	 (cv--resizeWindow win w h)
-	 
+	 (let ((screen (Screenshot 0 0 w h))))
 	 (handler-case
 	     (while true
-		    (let ((screen (Screenshot 0 0 w h)))
-		      (screen img)
-		      (cv--imshow win img)
-		      
-		      
-		      (when (== 27 (cv--waitKey (/ 1000 60)))
-			(comments "Exit loop if ESC key is pressed")
-			break)
-		      ))
+		    (screen img)
+		    (cv--imshow win img)
+		    
+		    
+		    (when (== 27 (cv--waitKey (/ 1000 60)))
+		      (comments "Exit loop if ESC key is pressed")
+		      break)
+		    )
 	   ("const std::exception&" (e)
 	     ,(lprint :vars `((e.what)))
 	     (return 1)))

@@ -12,12 +12,12 @@ int main(int argc, char **argv) {
   auto alpha{0.20F};
   auto w{640};
   auto h{480};
-  cv::namedWindow(win, cv::WINDOW_GUI_EXPANDED);
+  cv::namedWindow(win, cv::WINDOW_NORMAL);
   cv::moveWindow(win, w, 100);
   cv::resizeWindow(win, w, h);
+  auto screen{Screenshot(0, 0, w, h)};
   try {
     while (true) {
-      auto screen{Screenshot(0, 0, w, h)};
       screen(img);
       cv::imshow(win, img);
       if (27 == cv::waitKey(1000 / 60)) {
