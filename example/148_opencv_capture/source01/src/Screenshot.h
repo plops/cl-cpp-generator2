@@ -23,6 +23,7 @@ class Screenshot  {
         const int& GetY () const      ;   
         const int& GetWidth () const      ;   
         const int& GetHeight () const      ;   
+        private:
         Display* display;
         bool init;
         Window root;
