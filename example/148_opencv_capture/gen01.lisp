@@ -203,4 +203,3 @@
    :omit-parens t
    :format t
    :tidy t))
-
