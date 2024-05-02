@@ -9,9 +9,9 @@
 #include <sys/shm.h> 
 class Screenshot  {
         public:
-        explicit  Screenshot (int x, int y, int width, int height)       ;   
+        explicit  Screenshot (int x_, int y_, int width_, int height_)       ;   
         void operator() (cv::Mat& cv_img)       ;   
-        std::unique_ptr<Display, decltype(&XCloseDisplay)> display;
+        Display display;
         Window root;
         XWindowAttributes window_attributes;
         Screen* screen;

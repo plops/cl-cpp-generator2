@@ -2,15 +2,15 @@
 
 #include "Screenshot.h"
 #include <format>
+#include <memory>
 #include <stdexcept>
-Screenshot::Screenshot(int x, int y, int width, int height)
-    : x{x}, y{y}, width{width}, height{height} {
+Screenshot::Screenshot(int x_, int y_, int width_, int height_)
+    : x{x_}, y{y_}, width{width_}, height{height_} {
   auto d{XOpenDisplay(nullptr)};
-  display = std::unique_ptr<Display, decltype(&XCloseDisplay)>(std::move(d),
-                                                               XCloseDisplay);
-  if (!display) {
+  if (!d) {
     throw std::runtime_error("Failed to open display");
   }
+  display = d;
   root = DefaultRootWindow(*display);
   XGetWindowAttributes(*display, root, &window_attributes);
   screen = window_attributes.screen;

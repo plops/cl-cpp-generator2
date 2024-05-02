@@ -20,7 +20,10 @@
   (load "util.lisp")
   
   (let* ((class-name `Screenshot)
-	 (members0 `((:name display :type "std::unique_ptr<Display, decltype(&XCloseDisplay)>"  :initform nil)
+	 (members0 `((:name display :type #+nil "std::unique_ptr<Display, decltype(&XCloseDisplay)>"
+					  #+nil "std::unique_ptr<Display>"
+					  Display
+		      :initform nil)
 		     (:name root :type Window  :param nil  :initform nil)
 		     (:name window-attributes :type XWindowAttributes  :initform nil)
 		     (:name screen :type Screen*  :initform nil)
@@ -42,8 +45,9 @@
 			    :member-name ,(cl-change-case:snake-case (format nil "~a" name))
 			    :param-name ,(when param
 					   (intern
-					    (string-upcase
-					     (cl-change-case:snake-case (format nil "~a_" name))))))))))
+					    (format nil "~a_"
+						    (string-upcase
+						     (cl-change-case:snake-case (format nil "~a" name)))))))))))
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -52,30 +56,31 @@
      :headers `()
      :header-preamble `(do0
 			(include<>
-      opencv2/opencv.hpp
-      X11/Xlib.h
-      X11/Xutil.h
-      X11/extensions/XShm.h
-      sys/ipc.h
-      sys/shm.h
+			 opencv2/opencv.hpp
+			 X11/Xlib.h
+			 X11/Xutil.h
+			 X11/extensions/XShm.h
+			 sys/ipc.h
+			 sys/shm.h
       
-      )
+			 )
 			)
      :implementation-preamble
      `(do0
        (include<> stdexcept
+		  memory
 		  format)
-      )
+       )
      :code `(do0
 	     
 	     (defclass ,class-name ()
 	       "public:"
 	       
 	       (defmethod ,class-name (,@(remove-if #'null
-				    (loop for e in members
-					  collect
-					  (destructuring-bind (&key name type param initform param-name member-name) e
-					    param-name))))
+					  (loop for e in members
+						collect
+						(destructuring-bind (&key name type param initform param-name member-name) e
+						  param-name))))
 		 (declare
 		  ,@(remove-if #'null
 			       (loop for e in members
@@ -96,11 +101,12 @@
 		  (explicit)	    
 		  (values :constructor))
 		 (let ((d (XOpenDisplay nullptr)))
-		  (setf display ("std::unique_ptr<Display,decltype(&XCloseDisplay)>"
-				(std--move d)
-				 XCloseDisplay)))
-		 (unless display
-		   (throw (std--runtime_error (string "Failed to open display"))))
+		   (unless d
+		     (throw (std--runtime_error (string "Failed to open display"))))
+		   (setf display d #+nil (std--make_unique d) #+nil ("std::unique_ptr<Display,decltype(&XCloseDisplay)>"
+					    (std--move d)
+					    XCloseDisplay)))
+		 
 		 (setf root (DefaultRootWindow *display))
 		 (XGetWindowAttributes *display root &window_attributes)
 		 (setf screen window_attributes.screen)
@@ -194,5 +200,5 @@
        (return 0)))
    :omit-parens t
    :format t
-   :tidy nil))
+   :tidy t))
 
