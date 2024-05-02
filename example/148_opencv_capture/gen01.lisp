@@ -20,15 +20,13 @@
   (load "util.lisp")
   
   (let* ((class-name `Screenshot)
-	 (members0 `((:name display :type #+nil "std::unique_ptr<Display, decltype(&XCloseDisplay)>"
-					  #+nil "std::unique_ptr<Display>"
-					  Display
-		      :initform nil)
+	 (members0 `((:name display :type Display* :initform nil)
+		     (:name init :type bool :initform nil)
 		     (:name root :type Window  :param nil  :initform nil)
 		     (:name window-attributes :type XWindowAttributes  :initform nil)
 		     (:name screen :type Screen*  :initform nil)
 		     (:name shminfo :type XShmSegmentInfo :param nil  :initform nil)
-		     (:name ximg :type "std::unique_ptr<XImage, void (*) (XImage*)>" :param nil  :initform nil)
+		     (:name ximg :type XImage* :param nil  :initform nil)
 		     (:name x :type int :param t)
 		     (:name y :type int :param t)
 		     (:name width :type int :param t)
@@ -42,12 +40,14 @@
 			    :type ,type
 			    :param ,param
 			    :initform ,initform
-			    :member-name ,(cl-change-case:snake-case (format nil "~a" name))
+			    :member-name ,(intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))
 			    :param-name ,(when param
-					   (intern
-					    (format nil "~a_"
-						    (string-upcase
-						     (cl-change-case:snake-case (format nil "~a" name)))))))))))
+					   (intern (string-upcase (cl-change-case:snake-case (format nil "~a" name)))))
+			    #+nil (when param
+			      (intern
+			       (format nil "~a_"
+				       (string-upcase
+					(cl-change-case:snake-case (format nil "~a" name)))))))))))
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -100,32 +100,22 @@
 					   `(,member-name ,initform)))))))
 		  (explicit)	    
 		  (values :constructor))
-		 (let ((d (XOpenDisplay nullptr)))
-		   (unless d
+		 (setf display (XOpenDisplay nullptr) )
+		 (unless display
 		     (throw (std--runtime_error (string "Failed to open display"))))
-		   (setf display d #+nil (std--make_unique d) #+nil ("std::unique_ptr<Display,decltype(&XCloseDisplay)>"
-					    (std--move d)
-					    XCloseDisplay)))
-		 
-		 (setf root (DefaultRootWindow *display))
-		 (XGetWindowAttributes *display root &window_attributes)
+		 (setf root (DefaultRootWindow display))
+		 (XGetWindowAttributes display root &window_attributes)
 		 (setf screen window_attributes.screen)
-		 (setf ximg ("std::unique_ptr<XImage, void(*)(XImage*)>"
-			     (XShmCreateImage
-			      *display
-			      (DefaultVisualOfScreen screen)
-			      (DefaultDepthOfScreen screen)
-			      ZPixmap
-			      nullptr
-			      &shminfo
-			      width
-			      height)
-			     (lambda (img)
-			       (declare (type "XImage*" img)
-					(capture ""))
-			       (XShmDetach *display &shminfo)
-			       (shmdt shminfo.shmaddr)
-			       (XDestroyImage img))))
+		 (setf ximg (XShmCreateImage
+			     display
+			     (DefaultVisualOfScreen screen)
+			     (DefaultDepthOfScreen screen)
+			     ZPixmap
+			     nullptr
+			     &shminfo
+			     width
+			     height)
+		       )
 		 (setf shminfo.shmid (shmget IPC_PRIVATE (* ximg->bytes_per_line
 							    ximg->height)
 					     (or IPC_CREAT "0777")))
@@ -135,11 +125,23 @@
 		       shminfo.shmaddr ximg->data
 		       shminfo.readOnly False
 		       )
-		 (unless (XShmAttach *display &shminfo)
-		   (throw (std--runtime_error (string "XShmAttach failed")))))
+		 (unless (XShmAttach display &shminfo)
+		   (throw (std--runtime_error (string "XShmAttach failed"))))
+		 (setf init true))
+
+	       (defmethod ~Screenshot ()
+		 (declare (values :constructor))
+		 (unless init
+		   (XDestroyImage ximg))
+		 (XShmDetach display &shminfo)
+		 (shmdt shminfo.shmaddr)
+		 (XCloseDisplay display))
+	       
 	       (defmethod "operator()" (cv_img)
 		 (declare (type "cv::Mat&" cv_img))
-		 (XShmGetImage *display root (xshm.get) 0 0 "0x00ffffff")
+		 (when init
+		   (setf init false))
+		 (XShmGetImage display root ximg 0 0 "0x00ffffff")
 		 (setf cv_img (cv--Mat height width CV_8UC4 ximg->data)))
 
 	       #+nil

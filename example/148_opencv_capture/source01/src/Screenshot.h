@@ -9,14 +9,16 @@
 #include <sys/shm.h> 
 class Screenshot  {
         public:
-        explicit  Screenshot (int x_, int y_, int width_, int height_)       ;   
+        explicit  Screenshot (int x, int y, int width, int height)       ;   
+         ~Screenshot ()       ;   
         void operator() (cv::Mat& cv_img)       ;   
-        Display display;
+        Display* display;
+        bool init;
         Window root;
         XWindowAttributes window_attributes;
         Screen* screen;
         XShmSegmentInfo shminfo;
-        std::unique_ptr<XImage, void (*) (XImage*)> ximg;
+        XImage* ximg;
         int x;
         int y;
         int width;
