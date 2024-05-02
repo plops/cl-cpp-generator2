@@ -208,10 +208,24 @@
 	 (handler-case
 	     (while true
 		    (screen img)
-		    (cv--imshow win img)
 		    
 		    
-		    (when (== 27 (cv--waitKey (/ 1000 60)))
+		    (let ((lab (cv--Mat)))
+		      (cv--cvtColor img lab cv--COLOR_BGR2Lab)
+		      (let ((labChannels (std--vector<cv--Mat>)))
+			(cv--split lab labChannels))
+		      (let ((clahe (cv--createCLAHE)))
+			(declare (type "cv::Ptr<cv::CLAHE>" clahe))
+			(-> clahe (setClipLimit 14s0))
+			(let ((claheImage (cv--Mat)))
+			  (clahe->apply (aref labChannels 0)
+					claheImage)
+			  (claheImage.copyTo (aref labChannels 0)))
+			(let ((processedImage (cv--Mat)))
+			  (cv--merge labChannels lab)
+			  (cv--cvtColor lab processedImage cv--COLOR_Lab2BGR))))
+		    (cv--imshow win processedImage)
+		    (when (== 27 (cv--waitKey (/ 1000 30)))
 		      (comments "Exit loop if ESC key is pressed")
 		      break)
 		    )
