@@ -144,17 +144,22 @@
 		 (XShmGetImage display root ximg 0 0 "0x00ffffff")
 		 (setf cv_img (cv--Mat height width CV_8UC4 ximg->data)))
 
-	       #+nil
+	       
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
 				  (destructuring-bind (&key name type param initform param-name member-name) e
-				    (let ((get (cl-change-case:pascal-case (format nil "get-~a" name))))
+				    (let ((get (cl-change-case:pascal-case (format nil "get-~a" name)))
+					  (const-p (let* ((s  (format nil "~a" type))
+							  (last-char (aref s (- (length s)
+										1))))
+						     (not (eq #\* last-char)))))
 				      `(defmethod ,get ()
-					 (declare (values 
-						   ,(format nil "const ~a&" type))
-						  (const))
-					 (return ,param-name))))))
+					 (declare ,@(if const-p
+							`((const)
+							  (values ,(format nil "const ~a&" type)))
+							`((values ,type))))
+					 (return ,member-name))))))
 	       	       
 	       ,@(remove-if #'null
 			    (loop for e in members

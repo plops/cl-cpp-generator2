@@ -44,3 +44,16 @@ void Screenshot::operator()(cv::Mat &cv_img) {
   XShmGetImage(display, root, ximg, 0, 0, 0x00ffffff);
   cv_img = cv::Mat(height, width, CV_8UC4, ximg->data);
 }
+Display *Screenshot::GetDisplay() { return display; }
+const bool &Screenshot::GetInit() const { return init; }
+const Window &Screenshot::GetRoot() const { return root; }
+const XWindowAttributes &Screenshot::GetWindowAttributes() const {
+  return window_attributes;
+}
+Screen *Screenshot::GetScreen() { return screen; }
+const XShmSegmentInfo &Screenshot::GetShminfo() const { return shminfo; }
+XImage *Screenshot::GetXimg() { return ximg; }
+const int &Screenshot::GetX() const { return x; }
+const int &Screenshot::GetY() const { return y; }
+const int &Screenshot::GetWidth() const { return width; }
+const int &Screenshot::GetHeight() const { return height; }
