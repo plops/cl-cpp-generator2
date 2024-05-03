@@ -18,12 +18,6 @@ option(ENABLE_COMPILE_TIME_PROFILING "Enable compile time profiling of C++ code"
 # create an option for very fast compilation (turns off optimization)
 option(ENABLE_FAST_COMPILE "Enable fast compilation of C++ code" OFF)
 
-# Find OpenCV
-find_package(OpenCV REQUIRED)
-
-# Find X11 libraries
-find_package(X11 REQUIRED)
-
 # Find all the cpp files in src/
 file(GLOB SOURCES "src/*.cpp")
 
@@ -52,10 +46,10 @@ if(ENABLE_FAST_COMPILE)
 endif()
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${X11_LIBRARIES})
+#target_link_libraries(${PROJECT_NAME} )
 
 # Add compile flags for optimization
 #target_compile_options(${PROJECT_NAME} PRIVATE -Ofast -mfpmath=both -march=native -m64 -funroll-loops -mavx2)
 
 # Include directories
-target_include_directories(${PROJECT_NAME} PRIVATE ${OpenCV_INCLUDE_DIRS} ${X11_INCLUDE_DIR})
+#target_include_directories(${PROJECT_NAME} PRIVATE )

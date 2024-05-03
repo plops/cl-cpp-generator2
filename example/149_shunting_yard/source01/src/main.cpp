@@ -1,4 +1,5 @@
 #include "Operator.h"
+#include "Symbol.h"
 #include <deque>
 #include <format>
 #include <iostream>
@@ -13,6 +14,15 @@ int main(int argc, char **argv) {
   mapOps['*'] = {3, 2};
   mapOps['+'] = {2, 2};
   mapOps['-'] = {1, 2};
+  // only single digit numbers supported for now
+
   auto sExpression{std::string("1+2*4-3")};
+  auto stkHolding{std::deque<Symbol>()};
+  auto stkOutput{std::deque<Symbol>()};
+  for (const auto &c : sExpression) {
+    if (std::isdigit(c)) {
+      stkOutput.push_back({std::string(1, c), Type::Literal_Numeric});
+    }
+  }
   return 0;
 }
