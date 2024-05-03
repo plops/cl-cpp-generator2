@@ -106,7 +106,7 @@
   (let* ((class-name `Symbol)
 	 (members0 `((:name symbol :type "std::string" :initform (string "") :param t)
 		     (:name type :type "Type" :initform "Type::Unknown" :param t)
-		     (:name op :type Operator :initform nil :param nil)
+		     (:name op :type Operator :initform (curly) :param t)
 		     
 		     ))
 	 (members (loop for e in members0
@@ -277,11 +277,27 @@
 		    (let ((front (stkHolding.front)))
 		      (when (== Type--Operator
 				front.type)
-			(when (<= new_op.precedence
+			(if (<= new_op.precedence
 				  front.op.precedence)
-			  (stkOutput.push_back front)
-			  (stkHolding.pop_front)))))))
+			    (do0 (stkOutput.push_back front)
+				 (stkHolding.pop_front))
+			    break))))
+	     (comments "push new operator on holding stack")
+	     (stkHolding.push_front (curly (std--string 1 c)
+					   Type--Operator
+					   new_op))))
+	  (t ,(lprint :msg "error"
+		      :vars `(c))
+	     (return 0))
 	  ))
+
+       (while (!stkHolding.empty)
+	      (stkOutput.push_back (stkHolding.front))
+	      (stkHolding.pop_front))
+       ,(lprint :vars `(sExpression))
+       (for-range (s stkOutput)
+		  ,(lprint :vars `(s.symbol)))
+       
        (return 0)))
    :omit-parens t
    :format t

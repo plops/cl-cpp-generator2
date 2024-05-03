@@ -36,10 +36,26 @@ int main(int argc, char **argv) {
           if (new_op.precedence <= front.op.precedence) {
             stkOutput.push_back(front);
             stkHolding.pop_front();
+          } else {
+            break;
           }
         }
       }
+      // push new operator on holding stack
+
+      stkHolding.push_front({std::string(1, c), Type::Operator, new_op});
+    } else {
+      std::cout << std::format("error c='{}'\n", c);
+      return 0;
     }
+  }
+  while (!stkHolding.empty()) {
+    stkOutput.push_back(stkHolding.front());
+    stkHolding.pop_front();
+  }
+  std::cout << std::format(" sExpression='{}'\n", sExpression);
+  for (const auto &s : stkOutput) {
+    std::cout << std::format(" s.symbol='{}'\n", s.symbol);
   }
   return 0;
 }
