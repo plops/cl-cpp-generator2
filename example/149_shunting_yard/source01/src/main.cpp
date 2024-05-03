@@ -21,7 +21,24 @@ int main(int argc, char **argv) {
   auto stkOutput{std::deque<Symbol>()};
   for (const auto &c : sExpression) {
     if (std::isdigit(c)) {
+      // literal straight to output. they are already in order
+
       stkOutput.push_back({std::string(1, c), Type::Literal_Numeric});
+    } else if (mapOps.contains(c)) {
+      // symbol is operator
+
+      auto &new_op{mapOps[c]};
+      while (!stkHolding.empty()) {
+        // ensure holding stack front is an operator
+
+        auto front{stkHolding.front()};
+        if (Type::Operator == front.type) {
+          if (new_op.precedence <= front.op.precedence) {
+            stkOutput.push_back(front);
+            stkHolding.pop_front();
+          }
+        }
+      }
     }
   }
   return 0;

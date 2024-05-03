@@ -265,8 +265,23 @@
 	(c sExpression)
 	(cond
 	  ((std--isdigit c)
+	   (comments "literal straight to output. they are already in order")
 	   (stkOutput.push_back (curly (std--string 1 c)
-				       Type--Literal_Numeric)))))
+				       Type--Literal_Numeric)))
+	  ((mapOps.contains c)
+	   (comments "symbol is operator")
+	   
+	   (let ((&new_op (aref mapOps c)))
+	     (while (!stkHolding.empty)
+		    (comments "ensure holding stack front is an operator")
+		    (let ((front (stkHolding.front)))
+		      (when (== Type--Operator
+				front.type)
+			(when (<= new_op.precedence
+				  front.op.precedence)
+			  (stkOutput.push_back front)
+			  (stkHolding.pop_front)))))))
+	  ))
        (return 0)))
    :omit-parens t
    :format t
