@@ -294,9 +294,27 @@
        (while (!stkHolding.empty)
 	      (stkOutput.push_back (stkHolding.front))
 	      (stkHolding.pop_front))
-       ,(lprint :vars `(sExpression))
-       (for-range (s stkOutput)
-		  ,(lprint :vars `(s.symbol)))
+       (do0
+	,(lprint :vars `(sExpression))
+	(for-range (s stkOutput)
+		   ,(lprint :vars `(s.symbol))))
+
+       (let ((stkSolve (std--deque<float>))))
+
+       (for-range (inst stkOutput)
+		  (case inst.type
+		    (Type--Literal_Numeric
+		     (stkSolve.push_front (std--stod inst.symbol)))
+		    (Type--Operator
+		     (let ((mem (std--vector<double> inst.op.arguments))
+			   )
+		       (dotimes (a inst.op.arguments)
+			 (if (stkSolve.empty)
+			     ,(lprint :msg "error"
+				      :vars `(a inst.op.precedence))
+			     (do0
+			      (setf (aref mem a) (aref stkSolve 0))
+			      (stkSolve.pop_front))))))))
        
        (return 0)))
    :omit-parens t

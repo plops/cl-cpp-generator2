@@ -57,5 +57,27 @@ int main(int argc, char **argv) {
   for (const auto &s : stkOutput) {
     std::cout << std::format(" s.symbol='{}'\n", s.symbol);
   }
+  auto stkSolve{std::deque<float>()};
+  for (const auto &inst : stkOutput) {
+    switch (inst.type) {
+    case Type::Literal_Numeric: {
+      stkSolve.push_front(std::stod(inst.symbol));
+      break;
+    };
+    case Type::Operator: {
+      auto mem{std::vector<double>(inst.op.arguments)};
+      for (auto a = 0; a < inst.op.arguments; a += 1) {
+        if (stkSolve.empty()) {
+          std::cout << std::format("error a='{}' inst.op.precedence='{}'\n", a,
+                                   inst.op.precedence);
+        } else {
+          mem[a] = stkSolve[0];
+          stkSolve.pop_front();
+        }
+      }
+      break;
+    };
+    }
+  }
   return 0;
 }
