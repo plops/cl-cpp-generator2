@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 20)
 option(ENABLE_PROFILING "Enable profiling of C++ code" OFF)
 
 # create an option for compile time profiling (using clang's -ftime-trace)
-# open  CMakeFiles/yard.dir/src/main.cpp.json  in chrome://tracing (using google chrome)
+# TODO: open  CMakeFiles/yard.dir/src/main.cpp.json  in chrome://tracing (using google chrome)
 # https://aras-p.info/blog/2019/01/16/time-trace-timeline-flame-chart-profiler-for-Clang/
 option(ENABLE_COMPILE_TIME_PROFILING "Enable compile time profiling of C++ code" OFF)
 
@@ -21,7 +21,7 @@ option(ENABLE_FAST_COMPILE "Enable fast compilation of C++ code" OFF)
 # Find all the cpp files in src/
 file(GLOB SOURCES "src/*.cpp")
 
-# one can identify the heaviest files using
+# TODO: one can identify the heaviest files using
 # https://github.com/nico/ninjatracing
 # https://www.reddit.com/r/cpp/comments/hj66pd/c_is_too_slow_to_compile_can_you_share_all_your/
 

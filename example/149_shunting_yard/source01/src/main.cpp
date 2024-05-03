@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
   auto stkOutput{std::deque<Symbol>()};
   for (const auto &c : sExpression) {
     if (std::isdigit(c)) {
-      stkOutput.push_back(Symbol(std::string(1, c), Type::Literal_Numeric));
+      stkOutput.push_back({std::string(1, c), Type::Literal_Numeric});
     }
   }
   return 0;

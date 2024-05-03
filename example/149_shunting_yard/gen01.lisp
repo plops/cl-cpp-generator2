@@ -265,7 +265,7 @@
 	(c sExpression)
 	(cond
 	  ((std--isdigit c)
-	   (stkOutput.push_back (Symbol (std--string 1 c)
+	   (stkOutput.push_back (curly (std--string 1 c)
 				       Type--Literal_Numeric)))))
        (return 0)))
    :omit-parens t
