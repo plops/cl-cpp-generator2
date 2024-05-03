@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
   auto alpha{0.20F};
   auto w{1920 / 2};
   auto h{1080 / 2};
-  cv::namedWindow(win, cv::WINDOW_NORMAL);
+  cv::namedWindow(win, cv::WINDOW_AUTOSIZE);
   cv::moveWindow(win, w, 100);
   cv::resizeWindow(win, w, h);
   auto x{20};
@@ -20,20 +20,20 @@ int main(int argc, char **argv) {
   auto clipLimit{13};
   auto screen{Screenshot(static_cast<int>(x), static_cast<int>(y), w, h)};
   cv::createTrackbar(
-      "x", "x", &x, 1920 - w,
+      "x", win, &x, 1920 - w,
       [](int value, void *v) {
         auto screen{reinterpret_cast<Screenshot *>(v)};
         screen->SetX(value);
       },
       reinterpret_cast<void *>(&screen));
   cv::createTrackbar(
-      "y", "y", &y, 1080 - h,
+      "y", win, &y, 1080 - h,
       [](int value, void *v) {
         auto screen{reinterpret_cast<Screenshot *>(v)};
         screen->SetY(value);
       },
       reinterpret_cast<void *>(&screen));
-  cv::createTrackbar("clipLimit", "clipLimit", &clipLimit, 100);
+  cv::createTrackbar("clipLimit", win, &clipLimit, 100);
   try {
     while (true) {
       screen(img);

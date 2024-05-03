@@ -212,7 +212,8 @@
 	     (alpha .2s0)
 	     (w (/ 1920 2))
 	     (h (/ 1080 2)))
-	 (cv--namedWindow win cv--WINDOW_NORMAL
+	 (cv--namedWindow win ;cv--WINDOW_NORMAL
+			  cv--WINDOW_AUTOSIZE
 			  ;cv--WINDOW_GUI_EXPANDED
 			  )
 	 
@@ -233,7 +234,7 @@
 		     (destructuring-bind (&key name start max code param param-type) e
 		       (let ((args `(
 				     (string ,name)
-				     (string ,name)
+				     win
 				     (ref ,name)
 				     ,max
 				     )))
