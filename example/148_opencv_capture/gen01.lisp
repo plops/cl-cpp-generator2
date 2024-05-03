@@ -148,21 +148,27 @@
 		 (setf cv_img (cv--Mat height width CV_8UC4 ximg->data)))
 
 	       
-	       ,@(remove-if #'null
-			    (loop for e in members
-				  collect
-				  (destructuring-bind (&key name type param initform param-name member-name) e
-				    (let ((get (cl-change-case:pascal-case (format nil "get-~a" name)))
-					  (const-p (let* ((s  (format nil "~a" type))
-							  (last-char (aref s (- (length s)
-										1))))
-						     (not (eq #\* last-char)))))
-				      `(defmethod ,get ()
-					 (declare ,@(if const-p
-							`((const)
-							  (values ,(format nil "const ~a&" type)))
-							`((values ,type))))
-					 (return ,member-name))))))
+	       ,@(remove-if
+		  #'null
+	          (loop for e in members
+			appending
+			(destructuring-bind (&key name type param initform param-name member-name) e
+			  (let ((get (cl-change-case:pascal-case (format nil "get-~a" name)))
+				(set (cl-change-case:pascal-case (format nil "set-~a" name)))
+				(const-p (let* ((s  (format nil "~a" type))
+						(last-char (aref s (- (length s)
+								      1))))
+					   (not (eq #\* last-char)))))
+			    `((defmethod ,get ()
+				(declare ,@(if const-p
+					       `((const)
+						 (values ,(format nil "const ~a&" type)))
+					       `((values ,type))))
+				(return ,member-name))
+			      (defmethod ,set (,member-name)
+				(declare (type ,type ,member-name))
+				(setf (-> this ,member-name)
+				      ,member-name)))))))
 	       "private:"
 	       ,@(remove-if #'null
 			    (loop for e in members
@@ -212,37 +218,78 @@
 	 
 	 (cv--moveWindow win w 100)
 	 (cv--resizeWindow win w h)
-	 (let ((screen (Screenshot 20 30 w h))))
-	 (handler-case
-	     (while true
-		    (do0 (screen img)
-			 (cv--imshow win img))
-		    
-		    #+nil (do0
-			   (let ((lab (cv--Mat)))
-			     (cv--cvtColor img lab cv--COLOR_BGR2Lab)
-			     (let ((labChannels (std--vector<cv--Mat>)))
-			       (cv--split lab labChannels))
-			     (let ((clahe (cv--createCLAHE)))
-			       (declare (type "cv::Ptr<cv::CLAHE>" clahe))
-			       (-> clahe (setClipLimit 14s0))
-			       (let ((claheImage (cv--Mat)))
-				 (clahe->apply (aref labChannels 0)
-					       claheImage)
-				 (claheImage.copyTo (aref labChannels 0)))
-			       (let ((processedImage (cv--Mat)))
-				 (cv--merge labChannels lab)
-				 (cv--cvtColor lab processedImage cv--COLOR_Lab2BGR))))
-			   (cv--imshow win processedImage))
-		    
-		    #+nil (captureAndDisplay win screen img)
-		    (when (== 27 (cv--waitKey (/ 1000 60)))
-		      (comments "Exit loop if ESC key is pressed")
-		      break)
-		    )
-	   ("const std::exception&" (e)
-	     ,(lprint :vars `((e.what)))
-	     (return 1)))
+	 ,(let ((l-gui `((:name x :start 20 :max (- 1920 w) :code (screen->SetX value) :param screen :param-type Screenshot)
+			 (:name y :start 270 :max (- 1080 h) :code (screen->SetY value) :param screen :param-type Screenshot)
+			 (:name clipLimit :start 13 :max 100))))
+	   `(do0
+	     ,@(loop for e in l-gui
+		     collect
+		     (destructuring-bind (&key name start max code param param-type) e
+		       `(let ((,name ,start))
+			 )))
+	     (let ((screen (Screenshot (static_cast<int> x) (static_cast<int> y) w h))))
+	     ,@(loop for e in l-gui
+		     collect
+		     (destructuring-bind (&key name start max code param param-type) e
+		       (let ((args `(
+				     (string ,name)
+				     (string ,name)
+				     (ref ,name)
+				     ,max
+				     )))
+			 (when code
+			   (setf args (append args
+						`((lambda (value v)
+						    (declare (type void* v)
+							     (type int value)
+							     (capture ""))
+						    ,(if (and param param-type)
+							 `(let ((,param (,(format nil "reinterpret_cast<~a*>" param-type)
+									 v)))))
+						    ,code))))
+			   (when param
+			     (setf args (append args
+						`(,(format nil "reinterpret_cast<void*>(&~a)" param))))))
+			 `(do0
+			   (cv--createTrackbar ,@args)))))
+	     
+
+	  
+	  
+	     (handler-case
+		 (while true
+			#+nil
+			(do0 (screen img)
+			     (cv--imshow win img))
+
+			
+			
+			#-nil (do0
+			       (screen img)
+			       (let ((lab (cv--Mat)))
+				 (cv--cvtColor img lab cv--COLOR_BGR2Lab)
+				 (let ((labChannels (std--vector<cv--Mat>)))
+				   (cv--split lab labChannels))
+				 (let ((clahe (cv--createCLAHE)))
+				   (declare (type "cv::Ptr<cv::CLAHE>" clahe))
+				   (-> clahe (setClipLimit clipLimit))
+				   (let ((claheImage (cv--Mat)))
+				     (clahe->apply (aref labChannels 0)
+						   claheImage)
+				     (claheImage.copyTo (aref labChannels 0)))
+				   (let ((processedImage (cv--Mat)))
+				     (cv--merge labChannels lab)
+				     (cv--cvtColor lab processedImage cv--COLOR_Lab2BGR))))
+			       (cv--imshow win processedImage))
+		     
+			#+nil (captureAndDisplay win screen img)
+			(when (== 27 (cv--waitKey (/ 1000 60)))
+			  (comments "Exit loop if ESC key is pressed")
+			  break)
+			)
+	       ("const std::exception&" (e)
+		 ,(lprint :vars `((e.what)))
+		 (return 1)))))
 	 )
        
        (return 0)))

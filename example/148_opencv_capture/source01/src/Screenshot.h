@@ -13,16 +13,27 @@ class Screenshot  {
          ~Screenshot ()       ;   
         void operator() (cv::Mat& cv_img)       ;   
         Display* GetDisplay ()       ;   
+        void SetDisplay (Display* display)       ;   
         const bool& GetInit () const      ;   
+        void SetInit (bool init)       ;   
         const Window& GetRoot () const      ;   
+        void SetRoot (Window root)       ;   
         const XWindowAttributes& GetWindowAttributes () const      ;   
+        void SetWindowAttributes (XWindowAttributes window_attributes)       ;   
         Screen* GetScreen ()       ;   
+        void SetScreen (Screen* screen)       ;   
         const XShmSegmentInfo& GetShminfo () const      ;   
+        void SetShminfo (XShmSegmentInfo shminfo)       ;   
         XImage* GetXimg ()       ;   
+        void SetXimg (XImage* ximg)       ;   
         const int& GetX () const      ;   
+        void SetX (int x)       ;   
         const int& GetY () const      ;   
+        void SetY (int y)       ;   
         const int& GetWidth () const      ;   
+        void SetWidth (int width)       ;   
         const int& GetHeight () const      ;   
+        void SetHeight (int height)       ;   
         private:
         Display* display;
         bool init;

@@ -49,15 +49,30 @@ void Screenshot::operator()(cv::Mat &cv_img) {
   cv_img = cv::Mat(height, width, CV_8UC4, ximg->data);
 }
 Display *Screenshot::GetDisplay() { return display; }
+void Screenshot::SetDisplay(Display *display) { this->display = display; }
 const bool &Screenshot::GetInit() const { return init; }
+void Screenshot::SetInit(bool init) { this->init = init; }
 const Window &Screenshot::GetRoot() const { return root; }
+void Screenshot::SetRoot(Window root) { this->root = root; }
 const XWindowAttributes &Screenshot::GetWindowAttributes() const {
   return window_attributes;
 }
+void Screenshot::SetWindowAttributes(XWindowAttributes window_attributes) {
+  this->window_attributes = window_attributes;
+}
 Screen *Screenshot::GetScreen() { return screen; }
+void Screenshot::SetScreen(Screen *screen) { this->screen = screen; }
 const XShmSegmentInfo &Screenshot::GetShminfo() const { return shminfo; }
+void Screenshot::SetShminfo(XShmSegmentInfo shminfo) {
+  this->shminfo = shminfo;
+}
 XImage *Screenshot::GetXimg() { return ximg; }
+void Screenshot::SetXimg(XImage *ximg) { this->ximg = ximg; }
 const int &Screenshot::GetX() const { return x; }
+void Screenshot::SetX(int x) { this->x = x; }
 const int &Screenshot::GetY() const { return y; }
+void Screenshot::SetY(int y) { this->y = y; }
 const int &Screenshot::GetWidth() const { return width; }
+void Screenshot::SetWidth(int width) { this->width = width; }
 const int &Screenshot::GetHeight() const { return height; }
+void Screenshot::SetHeight(int height) { this->height = height; }
