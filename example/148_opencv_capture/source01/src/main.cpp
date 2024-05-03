@@ -37,19 +37,23 @@ int main(int argc, char **argv) {
   try {
     while (true) {
       screen(img);
-      auto lab{cv::Mat()};
-      cv::cvtColor(img, lab, cv::COLOR_BGR2Lab);
-      auto labChannels{std::vector<cv::Mat>()};
-      cv::split(lab, labChannels);
-      cv::Ptr<cv::CLAHE> clahe{cv::createCLAHE()};
-      clahe->setClipLimit(clipLimit);
-      auto claheImage{cv::Mat()};
-      clahe->apply(labChannels[0], claheImage);
-      claheImage.copyTo(labChannels[0]);
-      auto processedImage{cv::Mat()};
-      cv::merge(labChannels, lab);
-      cv::cvtColor(lab, processedImage, cv::COLOR_Lab2BGR);
-      cv::imshow(win, processedImage);
+      if (clipLimit <= 99) {
+        auto lab{cv::Mat()};
+        cv::cvtColor(img, lab, cv::COLOR_BGR2Lab);
+        auto labChannels{std::vector<cv::Mat>()};
+        cv::split(lab, labChannels);
+        cv::Ptr<cv::CLAHE> clahe{cv::createCLAHE()};
+        clahe->setClipLimit(clipLimit);
+        auto claheImage{cv::Mat()};
+        clahe->apply(labChannels[0], claheImage);
+        claheImage.copyTo(labChannels[0]);
+        auto processedImage{cv::Mat()};
+        cv::merge(labChannels, lab);
+        cv::cvtColor(lab, processedImage, cv::COLOR_Lab2BGR);
+        cv::imshow(win, processedImage);
+      } else {
+        cv::imshow(win, img);
+      }
       if (27 == cv::waitKey(1000 / 60)) {
         // Exit loop if ESC key is pressed
 

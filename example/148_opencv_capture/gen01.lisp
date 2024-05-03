@@ -259,29 +259,31 @@
 	  
 	     (handler-case
 		 (while true
-			#+nil
-			(do0 (screen img)
-			     (cv--imshow win img))
+			
+			
 
 			
-			
-			#-nil (do0
-			       (screen img)
-			       (let ((lab (cv--Mat)))
-				 (cv--cvtColor img lab cv--COLOR_BGR2Lab)
-				 (let ((labChannels (std--vector<cv--Mat>)))
-				   (cv--split lab labChannels))
-				 (let ((clahe (cv--createCLAHE)))
-				   (declare (type "cv::Ptr<cv::CLAHE>" clahe))
-				   (-> clahe (setClipLimit clipLimit))
-				   (let ((claheImage (cv--Mat)))
-				     (clahe->apply (aref labChannels 0)
-						   claheImage)
-				     (claheImage.copyTo (aref labChannels 0)))
-				   (let ((processedImage (cv--Mat)))
-				     (cv--merge labChannels lab)
-				     (cv--cvtColor lab processedImage cv--COLOR_Lab2BGR))))
-			       (cv--imshow win processedImage))
+			(screen img)
+			(if (<= clipLimit 99)
+			    (do0
+			     
+			     (let ((lab (cv--Mat)))
+			       (cv--cvtColor img lab cv--COLOR_BGR2Lab)
+			       (let ((labChannels (std--vector<cv--Mat>)))
+				 (cv--split lab labChannels))
+			       (let ((clahe (cv--createCLAHE)))
+				 (declare (type "cv::Ptr<cv::CLAHE>" clahe))
+				 (-> clahe (setClipLimit clipLimit))
+				 (let ((claheImage (cv--Mat)))
+				   (clahe->apply (aref labChannels 0)
+						 claheImage)
+				   (claheImage.copyTo (aref labChannels 0)))
+				 (let ((processedImage (cv--Mat)))
+				   (cv--merge labChannels lab)
+				   (cv--cvtColor lab processedImage cv--COLOR_Lab2BGR))))
+			     (cv--imshow win processedImage))
+			    (do0 
+			     (cv--imshow win img)))
 		     
 			#+nil (captureAndDisplay win screen img)
 			(when (== 27 (cv--waitKey (/ 1000 60)))
