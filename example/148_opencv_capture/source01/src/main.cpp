@@ -10,8 +10,8 @@ int main(int argc, char **argv) {
   auto win{"img"};
   auto frameRate{60.F};
   auto alpha{0.20F};
-  auto w{640};
-  auto h{480};
+  auto w{1920 / 2};
+  auto h{1080 / 2};
   cv::namedWindow(win, cv::WINDOW_NORMAL);
   cv::moveWindow(win, w, 100);
   cv::resizeWindow(win, w, h);
@@ -19,19 +19,7 @@ int main(int argc, char **argv) {
   try {
     while (true) {
       screen(img);
-      auto lab{cv::Mat()};
-      cv::cvtColor(img, lab, cv::COLOR_BGR2Lab);
-      auto labChannels{std::vector<cv::Mat>()};
-      cv::split(lab, labChannels);
-      cv::Ptr<cv::CLAHE> clahe{cv::createCLAHE()};
-      clahe->setClipLimit(14.F);
-      auto claheImage{cv::Mat()};
-      clahe->apply(labChannels[0], claheImage);
-      claheImage.copyTo(labChannels[0]);
-      auto processedImage{cv::Mat()};
-      cv::merge(labChannels, lab);
-      cv::cvtColor(lab, processedImage, cv::COLOR_Lab2BGR);
-      cv::imshow(win, processedImage);
+      cv::imshow(win, img);
       if (27 == cv::waitKey(1000 / 30)) {
         // Exit loop if ESC key is pressed
 

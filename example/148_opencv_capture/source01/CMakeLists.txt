@@ -6,6 +6,9 @@ project(screen_capture)
 
 set(CMAKE_CXX_STANDARD 20)
 
+# Enable profiling
+option(ENABLE_PROFILING "Enable profiling of C++ code" OFF)
+
 
 # Find OpenCV
 find_package(OpenCV REQUIRED)
@@ -15,6 +18,14 @@ find_package(X11 REQUIRED)
 
 # Add source files
 add_executable(screen_capture src/Screenshot.h src/Screenshot.cpp src/main.cpp)
+
+if(ENABLE_PROFILING)
+    # Add compile flags for profiling
+    target_compile_options(screen_capture PRIVATE -pg)
+    # Add link flags for profiling
+    target_link_options(screen_capture PRIVATE -pg)
+endif()
+
 
 # Link libraries
 target_link_libraries(screen_capture ${OpenCV_LIBS} ${X11_LIBRARIES})
