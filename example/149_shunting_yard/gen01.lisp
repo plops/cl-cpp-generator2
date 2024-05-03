@@ -150,6 +150,8 @@
 		      `(setf (aref mapOps (char ,op))
 			     #+nil (Operator ,prec ,n)
 			     (curly ,prec ,n))))))
+
+       (let ((sExpression (std--string (string "1+2*4-3")))))
        (return 0)))
    :omit-parens t
    :format t

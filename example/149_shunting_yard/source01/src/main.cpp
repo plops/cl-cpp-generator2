@@ -13,5 +13,6 @@ int main(int argc, char **argv) {
   mapOps['*'] = {3, 2};
   mapOps['+'] = {2, 2};
   mapOps['-'] = {1, 2};
+  auto sExpression{std::string("1+2*4-3")};
   return 0;
 }

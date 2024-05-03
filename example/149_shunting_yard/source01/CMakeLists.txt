@@ -9,6 +9,11 @@ set(CMAKE_CXX_STANDARD 20)
 # Enable profiling
 option(ENABLE_PROFILING "Enable profiling of C++ code" OFF)
 
+# create an option for compile time profiling (using clang's -ftime-trace)
+# open  CMakeFiles/yard.dir/src/main.cpp.json  in chrome://tracing (using google chrome)
+# https://aras-p.info/blog/2019/01/16/time-trace-timeline-flame-chart-profiler-for-Clang/
+option(ENABLE_COMPILE_TIME_PROFILING "Enable compile time profiling of C++ code" OFF)
+
 
 # Find OpenCV
 find_package(OpenCV REQUIRED)
@@ -29,6 +34,10 @@ if(ENABLE_PROFILING)
     target_link_options(${PROJECT_NAME} PRIVATE -pg)
 endif()
 
+if(ENABLE_COMPILE_TIME_PROFILING)
+    # Add compile flags for compile time profiling
+    target_compile_options(${PROJECT_NAME} PRIVATE -ftime-trace)
+endif()
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${X11_LIBRARIES})
