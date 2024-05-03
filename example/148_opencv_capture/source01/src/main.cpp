@@ -15,12 +15,12 @@ int main(int argc, char **argv) {
   cv::namedWindow(win, cv::WINDOW_NORMAL);
   cv::moveWindow(win, w, 100);
   cv::resizeWindow(win, w, h);
-  auto screen{Screenshot(0, 0, w, h)};
+  auto screen{Screenshot(20, 30, w, h)};
   try {
     while (true) {
       screen(img);
       cv::imshow(win, img);
-      if (27 == cv::waitKey(1000 / 30)) {
+      if (27 == cv::waitKey(1000 / 60)) {
         // Exit loop if ESC key is pressed
 
         break;

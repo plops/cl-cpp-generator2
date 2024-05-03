@@ -45,7 +45,7 @@ void Screenshot::operator()(cv::Mat &cv_img) {
   if (init) {
     init = false;
   }
-  XShmGetImage(display, root, ximg, 0, 0, 0x00ffffff);
+  XShmGetImage(display, root, ximg, x, y, 0x00ffffff);
   cv_img = cv::Mat(height, width, CV_8UC4, ximg->data);
 }
 Display *Screenshot::GetDisplay() { return display; }

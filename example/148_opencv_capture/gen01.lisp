@@ -144,7 +144,7 @@
 		 (declare (type "cv::Mat&" cv_img))
 		 (when init
 		   (setf init false))
-		 (XShmGetImage display root ximg 0 0 "0x00ffffff")
+		 (XShmGetImage display root ximg x y "0x00ffffff")
 		 (setf cv_img (cv--Mat height width CV_8UC4 ximg->data)))
 
 	       
@@ -206,12 +206,13 @@
 	     (alpha .2s0)
 	     (w (/ 1920 2))
 	     (h (/ 1080 2)))
-	 (cv--namedWindow win cv--WINDOW_NORMAL ;GUI_EXPANDED
+	 (cv--namedWindow win cv--WINDOW_NORMAL
+			  ;cv--WINDOW_GUI_EXPANDED
 			  )
 	 
 	 (cv--moveWindow win w 100)
 	 (cv--resizeWindow win w h)
-	 (let ((screen (Screenshot 0 0 w h))))
+	 (let ((screen (Screenshot 20 30 w h))))
 	 (handler-case
 	     (while true
 		    (do0 (screen img)
@@ -235,7 +236,7 @@
 			   (cv--imshow win processedImage))
 		    
 		    #+nil (captureAndDisplay win screen img)
-		    (when (== 27 (cv--waitKey (/ 1000 30)))
+		    (when (== 27 (cv--waitKey (/ 1000 60)))
 		      (comments "Exit loop if ESC key is pressed")
 		      break)
 		    )
