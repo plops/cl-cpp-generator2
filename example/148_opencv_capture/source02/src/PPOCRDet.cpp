@@ -10,8 +10,8 @@ PPOCRDet::PPOCRDet(std::string model_path, cv::Size input_size,
     : model_path{model_path}, input_size{input_size},
       binary_threshold{binary_threshold}, polygon_threshold{polygon_threshold},
       max_candidates{max_candidates}, unclip_ratio{unclip_ratio},
-      backend_id{backend_id}, target_id{target_id}, model{} {
-  model = cv::dnn::TextDetectionModel_DB(cv::dnn::readNet(model_path));
+      backend_id{backend_id}, target_id{target_id},
+      model{cv::dnn::TextDetectionModel_DB(cv::dnn::readNet(model_path))} {
   model.setPreferableBackend(backend_id);
   model.setPreferableTarget(target_id);
   model.setBinaryThreshold(binary_threshold);

@@ -11,8 +11,8 @@ int main(int argc, char **argv) {
   auto win{"img"};
   auto frameRate{60.F};
   auto alpha{0.20F};
-  auto w{1920 / 2};
-  auto h{1080 / 2};
+  auto w{736};
+  auto h{736};
   cv::namedWindow(win, cv::WINDOW_AUTOSIZE);
   cv::moveWindow(win, w, 100);
   cv::resizeWindow(win, w, h);
@@ -35,17 +35,21 @@ int main(int argc, char **argv) {
       },
       reinterpret_cast<void *>(&screen));
   cv::createTrackbar("clipLimit", win, &clipLimit, 100);
-  auto binary_threshold{0.30F};
-  auto polygon_threshold{0.50F};
-  auto max_candidates{200};
-  auto unclip_ratio{2.0F};
-  auto detector{PPOCRDet(
-      "text_detection_en_ppocrv3_2023may_int8.onnx", cv::Size(736, 736),
-      binary_threshold, polygon_threshold, max_candidates, unclip_ratio,
-      cv::dnn::DNN_BACKEND_DEFAULT, cv::dnn::DNN_TARGET_CPU)};
   try {
+    auto binary_threshold{0.30F};
+    auto polygon_threshold{0.50F};
+    auto max_candidates{200};
+    auto unclip_ratio{2.0F};
+    auto detector{PPOCRDet(
+        "text_detection_en_ppocrv3_2023may_int8.onnx", cv::Size(736, 736),
+        binary_threshold, polygon_threshold, max_candidates, unclip_ratio,
+        cv::dnn::DNN_BACKEND_DEFAULT, cv::dnn::DNN_TARGET_CPU)};
     while (true) {
       screen(img);
+      auto img3{cv::Mat()};
+      cv::cvtColor(img, img3, cv::COLOR_BGRA2RGB);
+      auto result{detector.infer(img3)};
+      cv::polylines(img, result.first, true, cv::Scalar(0, 255, 0), 4);
       if (clipLimit <= 99) {
         auto lab{cv::Mat()};
         cv::cvtColor(img, lab, cv::COLOR_BGR2Lab);

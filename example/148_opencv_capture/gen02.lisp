@@ -186,7 +186,7 @@
 		     (:name unclip-ratio  :type double  :param t  :initform 2.0)
 		     (:name backend-id :type "cv::dnn::Backend" :param t :initform cv--dnn--DNN_BACKEND_DEFAULT)
 		     (:name target-id :type "cv::dnn::Target" :param t :initform cv--dnn--DNN_TARGET_CPU)
-		     (:name model :type "cv::dnn::TextDetectionModel_DB" :initform "")
+		     (:name model :type "cv::dnn::TextDetectionModel_DB" :initform (cv--dnn--TextDetectionModel_DB (cv--dnn--readNet model_path)))
 		     
 		     ))
 	 (members (loop for e in members0
@@ -252,7 +252,7 @@
 					   `(,member-name ,initform)))))))
 		  ;(explicit)	    
 		  (values :constructor))
-		 (setf model (cv--dnn--TextDetectionModel_DB (cv--dnn--readNet model_path)))
+		 #+nil (setf model (cv--dnn--TextDetectionModel_DB (cv--dnn--readNet model_path)))
 		 ,@(loop for e in `((setPreferableBackend backend_id)
 				    (setPreferableTarget target_id)
 				    (setBinaryThreshold binary_threshold)
@@ -344,8 +344,8 @@
 	     (win (string "img"))
 	     (frameRate 60s0)
 	     (alpha .2s0)
-	     (w (/ 1920 2))
-	     (h (/ 1080 2)))
+	     (w 736 )
+	     (h 736))
 	 (cv--namedWindow win		;cv--WINDOW_NORMAL
 			  cv--WINDOW_AUTOSIZE
 					;cv--WINDOW_GUI_EXPANDED
@@ -390,7 +390,11 @@
 	     
 
 	    
-	      (let ((binary_threshold .3)
+	      
+	     
+	      (handler-case
+		  (do0
+		   (let ((binary_threshold .3)
 			 (polygon_threshold .5)
 			 (max_candidates 200)
 			 (unclip_ratio 2s0)
@@ -404,9 +408,6 @@
 					     cv--dnn--DNN_TARGET_CPU
 					     )))
 		     )
-	     
-	      (handler-case
-		  (do0
 		   
 		   (while true
 			
@@ -414,6 +415,17 @@
 
 			
 			  (screen img)
+			  (let ((img3 (cv--Mat)))
+			    (cv--cvtColor img img3 cv--COLOR_BGRA2RGB)
+			    (let ((result (detector.infer img3))))
+			    (cv--polylines img result.first true (cv--Scalar 0 255 0)
+					   4)
+			    #+nil(for-range (pts results.first)
+					    (dotimes (i 4)
+					      ()))
+			    #+nil(when (logand (< 0 (result.first.size))
+					       (< 0 (result.second.size)))
+				   ))
 			  (if (<= clipLimit 99)
 			      (do0
 			     
