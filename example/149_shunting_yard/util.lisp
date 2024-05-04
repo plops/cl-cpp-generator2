@@ -45,7 +45,11 @@
 				   :if-exists :supersede
 				   :if-does-not-exist :create)
        		 (format sh "~a" ,str))
-	       ,formatter)
+	       (sb-ext:run-program "/usr/bin/clang-format"
+				   (list "-i"  (namestring ,fn)
+					 "-o"))
+	      ; ,formatter
+	       )
 	     (setf (gethash fn-hash ,hash-db) code-hash)
 	     ))))))
 (defun share (name)

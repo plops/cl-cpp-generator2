@@ -301,21 +301,40 @@
 
        (let ((stkSolve (std--deque<float>))))
 
+       
        (for-range (inst stkOutput)
 		  (case inst.type
+		    (Type--Unknown
+		     ,(lprint :msg "error unknown symbol"))
 		    (Type--Literal_Numeric
+		     (comments "place literals directly on solution stack")
 		     (stkSolve.push_front (std--stod inst.symbol)))
 		    (Type--Operator
+		     
 		     (let ((mem (std--vector<double> inst.op.arguments))
 			   )
+		       (comments "get the number of arguments that the operator requires from the solution stack")
 		       (dotimes (a inst.op.arguments)
 			 (if (stkSolve.empty)
-			     ,(lprint :msg "error"
-				      :vars `(a inst.op.precedence))
 			     (do0
+			      ,(lprint :msg "error solution stack is empty but operator expects operands"
+				       :vars `(a inst.op.precedence)))
+			     (do0
+			      (comments "top of stack is at index 0")
 			      (setf (aref mem a) (aref stkSolve 0))
-			      (stkSolve.pop_front))))))))
-       
+			      (stkSolve.pop_front)))))
+		     (let ((result 0s0))
+		       (comments "perform operator and store result on solution stack")
+		       (when (== 2 inst.op.arguments)
+			 
+			 ,@(loop for e in `(/ * + -)
+				 collect
+				 `(when (== (aref inst.symbol 0)
+					    (char ,e))
+				    (setf result (,e (aref mem 1)
+						     (aref mem 0))))))
+		       (stkSolve.push_front result)))))
+       ,(lprint :msg "finished" :vars `((aref stkSolve 0)))
        (return 0)))
    :omit-parens t
    :format t

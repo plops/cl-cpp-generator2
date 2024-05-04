@@ -60,24 +60,56 @@ int main(int argc, char **argv) {
   auto stkSolve{std::deque<float>()};
   for (const auto &inst : stkOutput) {
     switch (inst.type) {
+    case Type::Unknown: {
+      std::cout << std::format("error unknown symbol\n");
+      break;
+    };
     case Type::Literal_Numeric: {
+      // place literals directly on solution stack
+
       stkSolve.push_front(std::stod(inst.symbol));
       break;
     };
     case Type::Operator: {
       auto mem{std::vector<double>(inst.op.arguments)};
+      // get the number of arguments that the operator requires from the
+      // solution stack
+
       for (auto a = 0; a < inst.op.arguments; a += 1) {
         if (stkSolve.empty()) {
-          std::cout << std::format("error a='{}' inst.op.precedence='{}'\n", a,
-                                   inst.op.precedence);
+          std::cout << std::format(
+              "error solution stack is empty but operator expects operands "
+              "a='{}' inst.op.precedence='{}'\n",
+              a, inst.op.precedence);
         } else {
+          // top of stack is at index 0
+
           mem[a] = stkSolve[0];
           stkSolve.pop_front();
         }
       }
+      auto result{0.F};
+      // perform operator and store result on solution stack
+
+      if (2 == inst.op.arguments) {
+        if (inst.symbol[0] == '/') {
+          result = ((mem[1]) / (mem[0]));
+        }
+        if (inst.symbol[0] == '*') {
+          result = mem[1] * mem[0];
+        }
+        if (inst.symbol[0] == '+') {
+          result = mem[1] + mem[0];
+        }
+        if (inst.symbol[0] == '-') {
+          result = ((mem[1]) - (mem[0]));
+        }
+      }
+      stkSolve.push_front(result);
       break;
     };
     }
   }
+  std::cout << std::format("finished stkSolve[0]='{}'\n", stkSolve[0]);
   return 0;
 }
