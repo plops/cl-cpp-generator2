@@ -9,8 +9,11 @@ set(CMAKE_CXX_STANDARD 20)
 # collect all the compile_commands.json files in the build directory
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# enable interprocedural optimization
-#set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+# option to enable interprocedural optimization
+option(ENABLE_IPO "Enable interprocedural optimization" OFF)
+if(ENABLE_IPO)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+endif()
 
 # Enable profiling
 option(ENABLE_PROFILING "Enable profiling of C++ code" OFF)
