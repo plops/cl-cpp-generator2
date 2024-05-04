@@ -21,6 +21,18 @@ PPOCRDet::PPOCRDet(std::string model_path, cv::Size input_size,
   model.setInputParams(1.0F / 255.F, input_size,
                        cv::Scalar(122.6789F, 116.66877F, 104.0070F));
 }
+std::pair<std::vector<std::vector<cv::Point>>, std::vector<float>>
+PPOCRDet::infer(cv::Mat image) {
+  CV_Assert(image.rows == input_size.height &&
+            "height of input image != net input size");
+  CV_Assert(image.cols == input_size.width &&
+            "width of input image != net input size");
+  auto pt{std::vector<std::vector<cv::Point>>()};
+  auto confidence{std::vector<float>()};
+  model.detect(image, pt, confidence);
+  return std::make_pair<std::vector<std::vector<cv::Point>> &,
+                        std::vector<float> &>(pt, confidence);
+}
 const std::string &PPOCRDet::GetModelPath() const { return model_path; }
 void PPOCRDet::SetModelPath(std::string model_path) {
   this->model_path = model_path;

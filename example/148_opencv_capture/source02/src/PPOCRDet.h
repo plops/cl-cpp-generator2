@@ -8,6 +8,7 @@
 class PPOCRDet  {
         public:
          PPOCRDet (std::string model_path = "text_detection_en_ppocrv3_2023may_int8.onnx", cv::Size input_size = cv::Size(736, 736), float binary_threshold = 0.30F, float polygon_threshold = 0.50F, int max_candidates = 200, double unclip_ratio = 2.0F, dnn::Backend backend_id = DNN_BACKEND_DEFAULT, dnn::Target target_id = DNN_TARGET_CPU)       ;   
+        std::pair<std::vector<std::vector<cv::Point>>,std::vector<float>> infer (cv::Mat image)       ;   
         const std::string& GetModelPath () const      ;   
         void SetModelPath (std::string model_path)       ;   
         const cv::Size& GetInputSize () const      ;   
