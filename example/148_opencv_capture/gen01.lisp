@@ -138,6 +138,7 @@
 		   (XDestroyImage ximg))
 		 (XShmDetach display &shminfo)
 		 (shmdt shminfo.shmaddr)
+		 (shmctl shminfo.shmid IPC_RMID 0)
 		 (XCloseDisplay display))
 	       
 	       (defmethod "operator()" (cv_img)

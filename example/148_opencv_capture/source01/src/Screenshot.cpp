@@ -39,6 +39,7 @@ Screenshot::~Screenshot() {
   }
   XShmDetach(display, &shminfo);
   shmdt(shminfo.shmaddr);
+  shmctl(shminfo.shmid, IPC_RMID, 0);
   XCloseDisplay(display);
 }
 void Screenshot::operator()(cv::Mat &cv_img) {
