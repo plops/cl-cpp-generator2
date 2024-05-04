@@ -6,12 +6,12 @@
 PPOCRDet::PPOCRDet(std::string model_path, cv::Size input_size,
                    float binary_threshold, float polygon_threshold,
                    int max_candidates, double unclip_ratio,
-                   dnn::Backend backend_id, dnn::Target target_id)
+                   cv::dnn::Backend backend_id, cv::dnn::Target target_id)
     : model_path{model_path}, input_size{input_size},
       binary_threshold{binary_threshold}, polygon_threshold{polygon_threshold},
       max_candidates{max_candidates}, unclip_ratio{unclip_ratio},
-      backend_id{backend_id}, target_id{target_id}, model{0} {
-  model = TextDetectionModel_DB(readNet(model_path));
+      backend_id{backend_id}, target_id{target_id}, model{} {
+  model = cv::dnn::TextDetectionModel_DB(cv::dnn::readNet(model_path));
   model.setPreferableBackend(backend_id);
   model.setPreferableTarget(target_id);
   model.setBinaryThreshold(binary_threshold);
@@ -57,15 +57,17 @@ const double &PPOCRDet::GetUnclipRatio() const { return unclip_ratio; }
 void PPOCRDet::SetUnclipRatio(double unclip_ratio) {
   this->unclip_ratio = unclip_ratio;
 }
-const dnn::Backend &PPOCRDet::GetBackendId() const { return backend_id; }
-void PPOCRDet::SetBackendId(dnn::Backend backend_id) {
+const cv::dnn::Backend &PPOCRDet::GetBackendId() const { return backend_id; }
+void PPOCRDet::SetBackendId(cv::dnn::Backend backend_id) {
   this->backend_id = backend_id;
 }
-const dnn::Target &PPOCRDet::GetTargetId() const { return target_id; }
-void PPOCRDet::SetTargetId(dnn::Target target_id) {
+const cv::dnn::Target &PPOCRDet::GetTargetId() const { return target_id; }
+void PPOCRDet::SetTargetId(cv::dnn::Target target_id) {
   this->target_id = target_id;
 }
-const dnn::TextDetectionModel_DB &PPOCRDet::GetModel() const { return model; }
-void PPOCRDet::SetModel(dnn::TextDetectionModel_DB model) {
+const cv::dnn::TextDetectionModel_DB &PPOCRDet::GetModel() const {
+  return model;
+}
+void PPOCRDet::SetModel(cv::dnn::TextDetectionModel_DB model) {
   this->model = model;
 }

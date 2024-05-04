@@ -16,8 +16,11 @@ find_package(OpenCV REQUIRED)
 # Find X11 libraries
 find_package(X11 REQUIRED)
 
+# Collect all source files
+file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
+
 # Add source files
-add_executable(screen_capture src/Screenshot.h src/Screenshot.cpp src/main.cpp)
+add_executable(screen_capture ${SOURCES})
 
 if(ENABLE_PROFILING)
     # Add compile flags for profiling
@@ -35,3 +38,6 @@ target_link_libraries(screen_capture ${OpenCV_LIBS} ${X11_LIBRARIES})
 
 # Include directories
 target_include_directories(screen_capture PRIVATE ${OpenCV_INCLUDE_DIRS} ${X11_INCLUDE_DIR})
+
+# coyp src/text_detection_en_ppocrv3_2023may_int8.onnx to build directory
+file(COPY ${CMAKE_SOURCE_DIR}/src/text_detection_en_ppocrv3_2023may_int8.onnx DESTINATION ${CMAKE_BINARY_DIR}/)  

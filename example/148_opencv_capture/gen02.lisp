@@ -184,9 +184,10 @@
 		     (:name polygon-threshold :type float  :param t  :initform .5s0)
 		     (:name max-candidates :type int  :param t  :initform 200)
 		     (:name unclip-ratio  :type double  :param t  :initform 2.0)
-		     (:name backend-id :type "dnn::Backend" :param t :initform DNN_BACKEND_DEFAULT)
-		     (:name target-id :type "dnn::Target" :param t :initform DNN_TARGET_CPU)
-		     (:name model :type "dnn::TextDetectionModel_DB")
+		     (:name backend-id :type "cv::dnn::Backend" :param t :initform cv--dnn--DNN_BACKEND_DEFAULT)
+		     (:name target-id :type "cv::dnn::Target" :param t :initform cv--dnn--DNN_TARGET_CPU)
+		     (:name model :type "cv::dnn::TextDetectionModel_DB" :initform "")
+		     
 		     ))
 	 (members (loop for e in members0
 			collect
@@ -251,7 +252,7 @@
 					   `(,member-name ,initform)))))))
 		  ;(explicit)	    
 		  (values :constructor))
-		 (setf model (TextDetectionModel_DB (readNet model_path)))
+		 (setf model (cv--dnn--TextDetectionModel_DB (cv--dnn--readNet model_path)))
 		 ,@(loop for e in `((setPreferableBackend backend_id)
 				    (setPreferableTarget target_id)
 				    (setBinaryThreshold binary_threshold)
@@ -324,7 +325,8 @@
       memory
       )
 
-     (include Screenshot.h)
+     (include Screenshot.h
+	      PPOCRDet.h)
 
      #+nil  (defun captureAndDisplay (win screen img)
 	      (declare (type "Screenshot&" screen)
@@ -388,14 +390,24 @@
 	     
 
 	    
-
+	      (let ((binary_threshold .3)
+			 (polygon_threshold .5)
+			 (max_candidates 200)
+			 (unclip_ratio 2s0)
+			 (detector (PPOCRDet (string "text_detection_en_ppocrv3_2023may_int8.onnx")
+					     (cv--Size 736 736)
+					     binary_threshold
+					     polygon_threshold
+					     max_candidates
+					     unclip_ratio
+					     cv--dnn--DNN_BACKEND_DEFAULT
+					     cv--dnn--DNN_TARGET_CPU
+					     )))
+		     )
 	     
 	      (handler-case
 		  (do0
-		   (let ((binary_threshold .3)
-			 (polygon_threshold .5)
-			 (max_candidates 200)
-			 (unclip_ratio 2s0)))
+		   
 		   (while true
 			
 			

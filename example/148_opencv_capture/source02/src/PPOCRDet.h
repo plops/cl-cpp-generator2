@@ -7,7 +7,7 @@
 #include <opencv2/opencv.hpp> 
 class PPOCRDet  {
         public:
-         PPOCRDet (std::string model_path = "text_detection_en_ppocrv3_2023may_int8.onnx", cv::Size input_size = cv::Size(736, 736), float binary_threshold = 0.30F, float polygon_threshold = 0.50F, int max_candidates = 200, double unclip_ratio = 2.0F, dnn::Backend backend_id = DNN_BACKEND_DEFAULT, dnn::Target target_id = DNN_TARGET_CPU)       ;   
+         PPOCRDet (std::string model_path = "text_detection_en_ppocrv3_2023may_int8.onnx", cv::Size input_size = cv::Size(736, 736), float binary_threshold = 0.30F, float polygon_threshold = 0.50F, int max_candidates = 200, double unclip_ratio = 2.0F, cv::dnn::Backend backend_id = cv::dnn::DNN_BACKEND_DEFAULT, cv::dnn::Target target_id = cv::dnn::DNN_TARGET_CPU)       ;   
         std::pair<std::vector<std::vector<cv::Point>>,std::vector<float>> infer (cv::Mat image)       ;   
         const std::string& GetModelPath () const      ;   
         void SetModelPath (std::string model_path)       ;   
@@ -21,12 +21,12 @@ class PPOCRDet  {
         void SetMaxCandidates (int max_candidates)       ;   
         const double& GetUnclipRatio () const      ;   
         void SetUnclipRatio (double unclip_ratio)       ;   
-        const dnn::Backend& GetBackendId () const      ;   
-        void SetBackendId (dnn::Backend backend_id)       ;   
-        const dnn::Target& GetTargetId () const      ;   
-        void SetTargetId (dnn::Target target_id)       ;   
-        const dnn::TextDetectionModel_DB& GetModel () const      ;   
-        void SetModel (dnn::TextDetectionModel_DB model)       ;   
+        const cv::dnn::Backend& GetBackendId () const      ;   
+        void SetBackendId (cv::dnn::Backend backend_id)       ;   
+        const cv::dnn::Target& GetTargetId () const      ;   
+        void SetTargetId (cv::dnn::Target target_id)       ;   
+        const cv::dnn::TextDetectionModel_DB& GetModel () const      ;   
+        void SetModel (cv::dnn::TextDetectionModel_DB model)       ;   
         public:
         std::string model_path;
         cv::Size input_size;
@@ -34,9 +34,9 @@ class PPOCRDet  {
         float polygon_threshold;
         int max_candidates;
         double unclip_ratio;
-        dnn::Backend backend_id;
-        dnn::Target target_id;
-        dnn::TextDetectionModel_DB model;
+        cv::dnn::Backend backend_id;
+        cv::dnn::Target target_id;
+        cv::dnn::TextDetectionModel_DB model;
 };
 
 #endif /* !PPOCRDET_H */

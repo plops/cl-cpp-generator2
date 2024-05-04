@@ -1,3 +1,4 @@
+#include "PPOCRDet.h"
 #include "Screenshot.h"
 #include <format>
 #include <iostream>
@@ -34,11 +35,15 @@ int main(int argc, char **argv) {
       },
       reinterpret_cast<void *>(&screen));
   cv::createTrackbar("clipLimit", win, &clipLimit, 100);
+  auto binary_threshold{0.30F};
+  auto polygon_threshold{0.50F};
+  auto max_candidates{200};
+  auto unclip_ratio{2.0F};
+  auto detector{PPOCRDet(
+      "text_detection_en_ppocrv3_2023may_int8.onnx", cv::Size(736, 736),
+      binary_threshold, polygon_threshold, max_candidates, unclip_ratio,
+      cv::dnn::DNN_BACKEND_DEFAULT, cv::dnn::DNN_TARGET_CPU)};
   try {
-    auto binary_threshold{0.30F};
-    auto polygon_threshold{0.50F};
-    auto max_candidates{200};
-    auto unclip_ratio{2.0F};
     while (true) {
       screen(img);
       if (clipLimit <= 99) {
