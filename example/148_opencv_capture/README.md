@@ -7,3 +7,8 @@ media-libs/opencv eigen features2d openmp python vaapi -contrib  -contribdnn -co
 
 sudo emerge -av opencv
 ```
+
+
+this would make a good addition (recognize text in the image):
+
+https://github.com/opencv/opencv_zoo/tree/main/models/text_recognition_crnn
