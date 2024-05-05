@@ -249,21 +249,22 @@
 				 :setter (model.setPreferableBackend backend_id))
 			  (:name target-id :type "cv::dnn::Target" :param t :initform cv--dnn--DNN_TARGET_CPU
 				 :setter  (model.setPreferableTarget target_id))
-			  (:name model :type "cv::Net"
+			  (:name model :type "cv::dnn::Net"
 			   :initform (cv--dnn--readNet model_path))
-			  (:name charset :type "std:vector<cv::dnn::u16string>"
-				 :initform (cv--dnn--loadCharset (string "CHARSET_EN_36")))
-			  (:name target_vertices :type "cv::Mat" :initform (lambda ()
-									    (declare (capture this))
-									    (setf this.target_vertices (cv--Mat 4 1 CV_32FC2))
-									    ,@(loop for (e f) in `((0 (0 (- this.input_size.height 1)))
-												   (1 (0 0))
-												   (2 ((- this.input_size.width 1) 0))
-												   (3 ((- this.input_size.width 1)
-												       (- this.input_size.height 1))))
-										    collect
-										    `(setf (this->target_vertices.row ,e)
-											   (cv--Vec2f ,@f))))
+			  (:name charset :type "std::vector<std::u16string>"
+				 :initform (loadCharset (string "CHARSET_EN_36")))
+			  (:name target_vertices :type "cv::Mat" :initform ((lambda ()
+									      (declare (capture this))
+									      (let ((target_vertices (cv--Mat 4 1 CV_32FC2))))
+									      ,@(loop for (e f) in `((0 (0 (- this->input_size.height 1)))
+												     (1 (0 0))
+												     (2 ((- this->input_size.width 1) 0))
+												     (3 ((- this->input_size.width 1)
+													 (- this->input_size.height 1))))
+										      collect
+										      `(setf (target_vertices.row ,e)
+											     (cv--Vec2f ,@f)))
+									      (return target_vertices)))
 			   ))
 	      :header-preamble `(do0 (comments "heaeder")
 			      (include<> string
@@ -280,7 +281,7 @@
 	      `(
 
 		(defmethod preprocess (image rbbox)
-		  (declare (values u16string)
+		  (declare (values "cv::Mat")
 			   (type "cv::Mat" image rbbox))
 		  (comments "remove conf, reshape and ensure all is np.float32")
 		  
@@ -296,15 +297,50 @@
 
 		  (comments "CN can detect digits 0-9 letters a-zA-z and some special characters")
 		  (comments "FIXME: what about EN?")
+		  (cv--cvtColor cropped cropped cv--COLOR_BGR2GRAY)
+		  (return (cv--dnn--blobFromImage cropped
+						  (/ 1s0 127.5s0)
+						  input_size
+						  (cv--Scalar--all 127.5s0)))
 		  )
 
 		(defmethod infer (image rbbox)
-		  (declare (values u16string)
+		  (declare (values "std::u16string")
 			   (type "cv::Mat" image rbbox))
 		  (let ((inputBlob (preprocess image rbbox))))
 		  (model.setInput inputBlob)
 		  (let ((outputBlob (model.forward))))
-		  (return (postprocess outputBlob))))
+		  (return (postprocess outputBlob)))
+
+		(defmethod postprocess (outputBlob)
+		  (declare (values "std::u16string")
+			   (type "cv::Mat" outputBlob))
+		  (let ((character (outputBlob.reshape 1 (aref outputBlob.size 0)))
+			(text (std--u16string "u\"\"")))
+		    (dotimes (i character.rows)
+		      (let ((minVal 1d12)
+			    (maxVal -1d12)
+			    (maxIdx (cv--Point)))
+			(cv--minMaxLoc (character.row i)
+				       &minVal
+				       &maxVal
+				       nullptr
+				       &maxIdx)
+			(comments "decode characters from outputBlob")
+			(if (== 0 maxIdx.x)
+			    (incf text "u\"-\"")
+			    (incf text (aref charset (- maxIdx.x 1))))))
+		    (comments "adjacent same letters and background text must be removed to get final output")
+		    (let ((textFilter (std--u16string "u\"\"")))
+		      (dotimes (i (text.size))
+			(when (!= "u'-'"
+					   (aref text i))
+			  (when (not (logand (< 0 i)
+					     (== (aref text i)
+						 (aref text (- i 1)))))
+			    (incf textFilter (aref text i)))))
+		      (return textFilter)
+		      ))))
 	      )
   
   
@@ -400,6 +436,7 @@
 					     cv--dnn--DNN_TARGET_CPU
 					     )))
 		     )
+		   (let ((recognizer (CRNN))))
 		   
 		   (while true
 			

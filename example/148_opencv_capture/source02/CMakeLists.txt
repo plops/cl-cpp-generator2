@@ -39,5 +39,9 @@ target_link_libraries(screen_capture ${OpenCV_LIBS} ${X11_LIBRARIES})
 # Include directories
 target_include_directories(screen_capture PRIVATE ${OpenCV_INCLUDE_DIRS} ${X11_INCLUDE_DIR})
 
-# coyp src/text_detection_en_ppocrv3_2023may_int8.onnx to build directory
-file(COPY ${CMAKE_SOURCE_DIR}/src/text_detection_en_ppocrv3_2023may_int8.onnx DESTINATION ${CMAKE_BINARY_DIR}/)  
+# copy all src/*.onnx weights to build directory
+
+file(GLOB_RECURSE ONNX_WEIGHTS "src/*.onnx")
+foreach(ONNX_WEIGHT ${ONNX_WEIGHTS})
+    file(COPY ${ONNX_WEIGHT} DESTINATION ${CMAKE_BINARY_DIR}/)
+endforeach()

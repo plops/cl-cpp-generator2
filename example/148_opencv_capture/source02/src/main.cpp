@@ -45,6 +45,7 @@ int main(int argc, char **argv) {
         "text_detection_en_ppocrv3_2023may_int8.onnx", cv::Size(736, 736),
         binary_threshold, polygon_threshold, max_candidates, unclip_ratio,
         cv::dnn::DNN_BACKEND_DEFAULT, cv::dnn::DNN_TARGET_CPU)};
+    auto recognizer{CRNN()};
     while (true) {
       screen(img);
       auto img3{cv::Mat()};
