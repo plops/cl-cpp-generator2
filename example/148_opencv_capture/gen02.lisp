@@ -372,8 +372,8 @@
 	     (win (string "img"))
 	     (frameRate 60s0)
 	     (alpha .2s0)
-	     (w 736 )
-	     (h 736))
+	     (w 320 )
+	     (h 256 ))
 	 (cv--namedWindow win		;cv--WINDOW_NORMAL
 			  cv--WINDOW_AUTOSIZE
 					;cv--WINDOW_GUI_EXPANDED
@@ -427,7 +427,7 @@
 			 (max_candidates 200)
 			 (unclip_ratio 2s0)
 			 (detector (PPOCRDet (string "text_detection_en_ppocrv3_2023may_int8.onnx")
-					     (cv--Size 736 736)
+					     (cv--Size w h)
 					     binary_threshold
 					     polygon_threshold
 					     max_candidates

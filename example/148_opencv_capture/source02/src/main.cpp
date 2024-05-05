@@ -11,8 +11,8 @@ int main(int argc, char **argv) {
   auto win{"img"};
   auto frameRate{60.F};
   auto alpha{0.20F};
-  auto w{736};
-  auto h{736};
+  auto w{320};
+  auto h{256};
   cv::namedWindow(win, cv::WINDOW_AUTOSIZE);
   cv::moveWindow(win, w, 100);
   cv::resizeWindow(win, w, h);
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     auto max_candidates{200};
     auto unclip_ratio{2.0F};
     auto detector{PPOCRDet(
-        "text_detection_en_ppocrv3_2023may_int8.onnx", cv::Size(736, 736),
+        "text_detection_en_ppocrv3_2023may_int8.onnx", cv::Size(w, h),
         binary_threshold, polygon_threshold, max_candidates, unclip_ratio,
         cv::dnn::DNN_BACKEND_DEFAULT, cv::dnn::DNN_TARGET_CPU)};
     auto recognizer{CRNN()};
