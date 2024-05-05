@@ -1,9 +1,8 @@
 #include "CRNN.h"
 #include "PPOCRDet.h"
 #include "Screenshot.h"
+#include <codecvt>
 #include <format>
-#include <iostream>
-#include <memory>
 #include <opencv2/opencv.hpp>
 
 int main(int argc, char **argv) {
@@ -52,6 +51,18 @@ int main(int argc, char **argv) {
       cv::cvtColor(img, img3, cv::COLOR_BGRA2RGB);
       auto result{detector.infer(img3)};
       cv::polylines(img, result.first, true, cv::Scalar(0, 255, 0), 4);
+      if (0 < result.first.size() && 0 < result.second.size()) {
+        auto texts{std::u16string()};
+        auto score{result.second.begin()};
+        for (const auto &box : result.first) {
+          auto res{cv::Mat(box).reshape(2, 4)};
+          texts += u'-' + recognizer.infer(img3, res) + u'-';
+        }
+        auto converter{
+            std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t>()};
+        auto ctext{converter.to_bytes(texts)};
+        std::cout << std::format(" ctext='{}'\n", ctext);
+      }
       if (clipLimit <= 99) {
         auto lab{cv::Mat()};
         cv::cvtColor(img, lab, cv::COLOR_BGR2Lab);

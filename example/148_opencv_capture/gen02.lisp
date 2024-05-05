@@ -355,9 +355,9 @@
      (include<>
       opencv2/opencv.hpp
       format
-      iostream
-      memory
-      )
+      ;iostream
+      ;memory
+      codecvt)
 
      (include Screenshot.h
 	      PPOCRDet.h
@@ -452,9 +452,20 @@
 			    #+nil(for-range (pts results.first)
 					    (dotimes (i 4)
 					      ()))
-			    #+nil(when (logand (< 0 (result.first.size))
+			    (when (logand (< 0 (result.first.size))
 					       (< 0 (result.second.size)))
-				   ))
+			      (let ((texts (std--u16string))
+				    (score (result.second.begin)))
+				(for-range (box result.first)
+					   (let ((res (dot (cv--Mat box)
+							   (reshape 2 4))))
+					     (incf texts (+ "u'-'"
+							    (recognizer.infer img3 res)
+							    "u'-'"))
+					     ))
+				(let ((converter ("std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t>")))
+					       (let ((ctext (converter.to_bytes texts)))
+						 ,(lprint :vars `(ctext)))))))
 			  (if (<= clipLimit 99)
 			      (do0
 			     
