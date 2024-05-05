@@ -11,8 +11,8 @@ int main(int argc, char **argv) {
   auto win{"img"};
   auto frameRate{60.F};
   auto alpha{0.20F};
-  auto w{320};
-  auto h{256};
+  auto w{32 * 4};
+  auto h{32 * 3};
   cv::namedWindow(win, cv::WINDOW_AUTOSIZE);
   cv::moveWindow(win, w, 100);
   cv::resizeWindow(win, w, h);

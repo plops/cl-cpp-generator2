@@ -372,8 +372,10 @@
 	     (win (string "img"))
 	     (frameRate 60s0)
 	     (alpha .2s0)
-	     (w 320 )
-	     (h 256 ))
+	     (w (* 32 4) ; 320
+		)
+	     (h (* 32 3) ; 256
+		))
 	 (cv--namedWindow win		;cv--WINDOW_NORMAL
 			  cv--WINDOW_AUTOSIZE
 					;cv--WINDOW_GUI_EXPANDED
