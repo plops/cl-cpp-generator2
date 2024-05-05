@@ -177,6 +177,164 @@
 				  (destructuring-bind (&key name type param initform param-name member-name) e
 				    `(space ,type ,member-name))))))))
 
+
+  
+  (defun make-class (class-name
+		     &key members0 header-preamble
+		       implementation-preamble
+		       constructor-code
+		       class-code)
+    (let* ((members (loop for e in members0
+			  collect
+			  (destructuring-bind (&key name type param (initform 0) setter getter) e
+			    `(:name ,name
+			      :type ,type
+			      :param ,param
+			      :initform ,initform
+			      :setter ,(if setter setter "")
+			      :getter ,(if getter getter "")
+			      :member-name ,(intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))
+			      :param-name ,(when param
+					     (intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))))))))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name class-name
+       :headers `()
+       :header-preamble header-preamble
+       :implementation-preamble implementation-preamble
+       :code `(do0
+	       (defclass ,class-name ()
+		 "public:"
+	       	 (defmethod ,class-name ( ,@(remove-if
+					     #'null
+					     (loop for e in members
+						   collect
+						   (destructuring-bind (&key name type param initform param-name member-name setter getter) e
+						     (unless (and param initform)
+						       param-name))))
+					 &key
+					   ,@(remove-if
+					      #'null
+					      (loop for e in members
+						    collect
+						    (destructuring-bind (&key name type param initform param-name member-name setter getter) e
+						      (when (and param initform)
+							`(,param-name ,initform))))))
+		   (declare
+		    ,@(remove-if #'null
+				 (loop for e in members
+				       collect
+				       (destructuring-bind (&key name type param initform param-name member-name setter getter) e
+					 (when param
+					   `(type ,type ,param-name)))))
+		    (construct
+		     ,@(remove-if #'null
+				  (loop for e in members
+					collect
+					(destructuring-bind (&key name type param initform param-name member-name setter getter) e
+					  (cond
+					    (param
+					     `(,member-name ,param-name)) 
+					    (initform
+					     `(,member-name ,initform)))))))
+					;(explicit)	    
+		    (values :constructor))
+		   ,constructor-code
+		   
+		   )
+		 ,@class-code
+		 
+		 ,@(remove-if
+		    #'null
+	            (loop for e in members
+			  appending
+			  (destructuring-bind (&key name type param initform param-name member-name setter getter) e
+			    (let ((get (cl-change-case:pascal-case (format nil "get-~a" name)))
+				  (set (cl-change-case:pascal-case (format nil "set-~a" name)))
+				  (const-p (let* ((s  (format nil "~a" type))
+						  (last-char (aref s (- (length s)
+									1))))
+					     (not (eq #\* last-char)))))
+			      `((defmethod ,get ()
+				  (declare ,@(if const-p
+						 `((const)
+						   (values ,(format nil "const ~a&" type)))
+						 `((values ,type))))
+				  ,getter
+				  (return ,member-name))
+				(defmethod ,set (,member-name)
+				  (declare (type ,type ,member-name))
+				  (setf (-> this ,member-name)
+					,member-name)
+				  ,setter))))))
+		 "public:"
+		 ,@(remove-if #'null
+			      (loop for e in members
+				    collect
+				    (destructuring-bind (&key name type param initform param-name member-name setter getter) e
+				      `(space ,type ,member-name)))))))))
+
+  (make-class 'PPOCRDet
+	      :members0 `((:name model-path :type "std::string" :param t
+			   :initform (string "text_detection_en_ppocrv3_2023may_int8.onnx")
+			   )
+			  (:name input-size :type "cv::Size" :param t  :initform (cv--Size 736 736)
+				 :setter (model.setInputParams (/ 1s0 255s0)
+			       			   input_size
+						   (cv--Scalar 122.67891434 116.66876762 104.00698793)))
+			  (:name binary-threshold :type float  :param t  :initform .3s0
+				 :setter (model.setBinaryThreshold binary_threshold))
+			  (:name polygon-threshold :type float  :param t  :initform .5s0
+				 :setter (model.setPolygonThreshold polygon_threshold))
+			  (:name max-candidates :type int  :param t  :initform 200
+				 :setter (model.setMaxCandidates max_candidates))
+			  (:name unclip-ratio  :type double  :param t  :initform 2.0
+				 :setter (model.setUnclipRatio unclip_ratio))
+			  (:name backend-id :type "cv::dnn::Backend" :param t :initform cv--dnn--DNN_BACKEND_DEFAULT
+				 :setter (model.setPreferableBackend backend_id))
+			  (:name target-id :type "cv::dnn::Target" :param t :initform cv--dnn--DNN_TARGET_CPU
+				 :setter  (model.setPreferableTarget target_id))
+			  (:name model :type "cv::dnn::TextDetectionModel_DB"
+			   :initform (cv--dnn--TextDetectionModel_DB (cv--dnn--readNet model_path))))
+	      :header-preamble `(do0 (comments "heaeder")
+			      (include<> string
+					 opencv2/opencv.hpp)
+			    
+			      )
+	      :implementation-preamble
+	      `(do0
+		(comments "implementation"))
+	      :constructor-code `(do0
+				  ,@(loop for e in `((setPreferableBackend backend_id)
+						     (setPreferableTarget target_id)
+						     (setBinaryThreshold binary_threshold)
+						     (setPolygonThreshold polygon_threshold)
+						     (setUnclipRatio unclip_ratio)
+						     (setMaxCandidates max_candidates)
+						     (setInputParams (/ 1s0 255s0)
+								     input_size
+								     (cv--Scalar 122.67891434 116.66876762 104.00698793)))
+					  collect
+					  `(dot model ,e)))
+	      :class-code
+	      `((defmethod infer (image)
+		  (declare (values "std::pair<std::vector<std::vector<cv::Point>>,std::vector<float>>")
+			   (type "cv::Mat" image))
+		  (CV_Assert (logand (== image.rows
+					 input_size.height)
+				     (string "height of input image != net input size")))
+		  (CV_Assert (logand (== image.cols
+					 input_size.width)
+				     (string "width of input image != net input size")))
+		  (let ((pt ("std::vector<std::vector<cv::Point>>"))
+			(confidence ("std::vector<float>")))
+		    (model.detect image pt confidence)
+		    (return ("std::make_pair< std::vector<std::vector<cv::Point>> &, std::vector<float> &>"
+			     pt confidence)))))
+	      )
+  #+nil
   (let* ((class-name `PPOCRDet)
 	 (members0 `((:name model-path :type "std::string" :param t :initform (string "text_detection_en_ppocrv3_2023may_int8.onnx"))
 		     (:name input-size :type "cv::Size" :param t  :initform (cv--Size 736 736))
@@ -223,16 +381,16 @@
 					   (loop for e in members
 						 collect
 						 (destructuring-bind (&key name type param initform param-name member-name) e
-						 (unless (and param initform)
-						   param-name))))
-					&key
-					,@(remove-if
-					   #'null
-					   (loop for e in members
-						 collect
-						 (destructuring-bind (&key name type param initform param-name member-name) e
-						   (when (and param initform)
-						     `(,param-name ,initform))))))
+						   (unless (and param initform)
+						     param-name))))
+				       &key
+					 ,@(remove-if
+					    #'null
+					    (loop for e in members
+						  collect
+						  (destructuring-bind (&key name type param initform param-name member-name) e
+						    (when (and param initform)
+						      `(,param-name ,initform))))))
 		 (declare
 		  ,@(remove-if #'null
 			       (loop for e in members
@@ -250,7 +408,7 @@
 					   `(,member-name ,param-name)) 
 					  (initform
 					   `(,member-name ,initform)))))))
-		  ;(explicit)	    
+					;(explicit)	    
 		  (values :constructor))
 		 #+nil (setf model (cv--dnn--TextDetectionModel_DB (cv--dnn--readNet model_path)))
 		 ,@(loop for e in `((setPreferableBackend backend_id)
@@ -326,14 +484,8 @@
       )
 
      (include Screenshot.h
-	      PPOCRDet.h)
-
-     #+nil  (defun captureAndDisplay (win screen img)
-	      (declare (type "Screenshot&" screen)
-		       (type "const char*" win)
-		       (type "cv::Mat&" img))
-	      (screen img)
-	      (cv--imshow win img))
+	      PPOCRDet.h
+	      CRNN.h)
      
      (defun main (argc argv)
        (declare (type int argc)

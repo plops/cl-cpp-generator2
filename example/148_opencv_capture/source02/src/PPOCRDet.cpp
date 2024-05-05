@@ -40,32 +40,41 @@ void PPOCRDet::SetModelPath(std::string model_path) {
 const cv::Size &PPOCRDet::GetInputSize() const { return input_size; }
 void PPOCRDet::SetInputSize(cv::Size input_size) {
   this->input_size = input_size;
+  model.setInputParams(1.0F / 255.F, input_size,
+                       cv::Scalar(122.6789F, 116.66877F, 104.0070F));
 }
 const float &PPOCRDet::GetBinaryThreshold() const { return binary_threshold; }
 void PPOCRDet::SetBinaryThreshold(float binary_threshold) {
   this->binary_threshold = binary_threshold;
+  model.setBinaryThreshold(binary_threshold);
 }
 const float &PPOCRDet::GetPolygonThreshold() const { return polygon_threshold; }
 void PPOCRDet::SetPolygonThreshold(float polygon_threshold) {
   this->polygon_threshold = polygon_threshold;
+  model.setPolygonThreshold(polygon_threshold);
 }
 const int &PPOCRDet::GetMaxCandidates() const { return max_candidates; }
 void PPOCRDet::SetMaxCandidates(int max_candidates) {
   this->max_candidates = max_candidates;
+  model.setMaxCandidates(max_candidates);
 }
 const double &PPOCRDet::GetUnclipRatio() const { return unclip_ratio; }
 void PPOCRDet::SetUnclipRatio(double unclip_ratio) {
   this->unclip_ratio = unclip_ratio;
+  model.setUnclipRatio(unclip_ratio);
 }
 const cv::dnn::Backend &PPOCRDet::GetBackendId() const { return backend_id; }
 void PPOCRDet::SetBackendId(cv::dnn::Backend backend_id) {
   this->backend_id = backend_id;
+  model.setPreferableBackend(backend_id);
 }
 const cv::dnn::Target &PPOCRDet::GetTargetId() const { return target_id; }
 void PPOCRDet::SetTargetId(cv::dnn::Target target_id) {
   this->target_id = target_id;
+  model.setPreferableTarget(target_id);
 }
 const cv::dnn::TextDetectionModel_DB &PPOCRDet::GetModel() const {
+
   return model;
 }
 void PPOCRDet::SetModel(cv::dnn::TextDetectionModel_DB model) {

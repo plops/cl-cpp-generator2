@@ -1,3 +1,4 @@
+#include "CRNN.h"
 #include "PPOCRDet.h"
 #include "Screenshot.h"
 #include <format>
