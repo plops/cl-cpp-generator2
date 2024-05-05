@@ -148,7 +148,7 @@
 					   (loop for e in members
 						 collect
 						 (destructuring-bind (&key name type param initform param-name member-name) e
-						 (unless initform
+						 (unless (and param initform)
 						   param-name))))
 					&key
 					,@(remove-if
@@ -156,7 +156,7 @@
 					   (loop for e in members
 						 collect
 						 (destructuring-bind (&key name type param initform param-name member-name) e
-						   (when initform
+						   (when (and param initform)
 						     `(,param-name ,initform))))))
 		 (declare
 		  ,@(remove-if #'null
