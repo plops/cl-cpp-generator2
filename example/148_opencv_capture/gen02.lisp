@@ -179,103 +179,6 @@
 
 
   
-  (defun make-class (class-name
-		     &key members0 header-preamble
-		       implementation-preamble
-		       constructor-code
-		       class-code)
-    (let* ((members (loop for e in members0
-			  collect
-			  (destructuring-bind (&key name type param (initform 0) setter getter) e
-			    `(:name ,name
-			      :type ,type
-			      :param ,param
-			      :initform ,initform
-			      :setter ,(if setter setter "")
-			      :getter ,(if getter getter "")
-			      :member-name ,(intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))
-			      :param-name ,(when param
-					     (intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))))))))
-      (write-class
-       :dir (asdf:system-relative-pathname
-	     'cl-cpp-generator2
-	     *source-dir*)
-       :name class-name
-       :headers `()
-       :header-preamble header-preamble
-       :implementation-preamble implementation-preamble
-       :code `(do0
-	       (defclass ,class-name ()
-		 "public:"
-	       	 (defmethod ,class-name ( ,@(remove-if
-					     #'null
-					     (loop for e in members
-						   collect
-						   (destructuring-bind (&key name type param initform param-name member-name setter getter) e
-						     (unless (and param initform)
-						       param-name))))
-					 &key
-					   ,@(remove-if
-					      #'null
-					      (loop for e in members
-						    collect
-						    (destructuring-bind (&key name type param initform param-name member-name setter getter) e
-						      (when (and param initform)
-							`(,param-name ,initform))))))
-		   (declare
-		    ,@(remove-if #'null
-				 (loop for e in members
-				       collect
-				       (destructuring-bind (&key name type param initform param-name member-name setter getter) e
-					 (when param
-					   `(type ,type ,param-name)))))
-		    (construct
-		     ,@(remove-if #'null
-				  (loop for e in members
-					collect
-					(destructuring-bind (&key name type param initform param-name member-name setter getter) e
-					  (cond
-					    (param
-					     `(,member-name ,param-name)) 
-					    (initform
-					     `(,member-name ,initform)))))))
-					;(explicit)	    
-		    (values :constructor))
-		   ,constructor-code
-		   
-		   )
-		 ,@class-code
-		 
-		 ,@(remove-if
-		    #'null
-	            (loop for e in members
-			  appending
-			  (destructuring-bind (&key name type param initform param-name member-name setter getter) e
-			    (let ((get (cl-change-case:pascal-case (format nil "get-~a" name)))
-				  (set (cl-change-case:pascal-case (format nil "set-~a" name)))
-				  (const-p (let* ((s  (format nil "~a" type))
-						  (last-char (aref s (- (length s)
-									1))))
-					     (not (eq #\* last-char)))))
-			      `((defmethod ,get ()
-				  (declare ,@(if const-p
-						 `((const)
-						   (values ,(format nil "const ~a&" type)))
-						 `((values ,type))))
-				  ,getter
-				  (return ,member-name))
-				(defmethod ,set (,member-name)
-				  (declare (type ,type ,member-name))
-				  (setf (-> this ,member-name)
-					,member-name)
-				  ,setter))))))
-		 "public:"
-		 ,@(remove-if #'null
-			      (loop for e in members
-				    collect
-				    (destructuring-bind (&key name type param initform param-name member-name setter getter) e
-				      `(space ,type ,member-name)))))))))
-
   (make-class 'PPOCRDet
 	      :members0 `((:name model-path :type "std::string" :param t
 			   :initform (string "text_detection_en_ppocrv3_2023may_int8.onnx")
@@ -334,139 +237,76 @@
 		    (return ("std::make_pair< std::vector<std::vector<cv::Point>> &, std::vector<float> &>"
 			     pt confidence)))))
 	      )
-  #+nil
-  (let* ((class-name `PPOCRDet)
-	 (members0 `((:name model-path :type "std::string" :param t :initform (string "text_detection_en_ppocrv3_2023may_int8.onnx"))
-		     (:name input-size :type "cv::Size" :param t  :initform (cv--Size 736 736))
-		     (:name binary-threshold :type float  :param t  :initform .3s0)
-		     (:name polygon-threshold :type float  :param t  :initform .5s0)
-		     (:name max-candidates :type int  :param t  :initform 200)
-		     (:name unclip-ratio  :type double  :param t  :initform 2.0)
-		     (:name backend-id :type "cv::dnn::Backend" :param t :initform cv--dnn--DNN_BACKEND_DEFAULT)
-		     (:name target-id :type "cv::dnn::Target" :param t :initform cv--dnn--DNN_TARGET_CPU)
-		     (:name model :type "cv::dnn::TextDetectionModel_DB" :initform (cv--dnn--TextDetectionModel_DB (cv--dnn--readNet model_path)))
-		     
-		     ))
-	 (members (loop for e in members0
-			collect
-			(destructuring-bind (&key name type param (initform 0)) e
-			  `(:name ,name
-			    :type ,type
-			    :param ,param
-			    :initform ,initform
-			    :member-name ,(intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))
-			    :param-name ,(when param
-					   (intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))))))))
-    (write-class
-     :dir (asdf:system-relative-pathname
-	   'cl-cpp-generator2
-	   *source-dir*)
-     :name class-name
-     :headers `()
-     :header-preamble `(do0 (comments "heaeder")
-			    (include<> string
-				       opencv2/opencv.hpp)
+
+  (make-class 'CRNN
+	      :members0 `((:name model-path :type "std::string" :param t
+			   :initform (string "text_recognition_CRNN_EN_2022oct_int8.onnx")
+			   )
+			  (:name input-size :type "cv::Size" :param nil  :initform (cv--Size 100 32)
+				 )
+			 
+			  (:name backend-id :type "cv::dnn::Backend" :param t :initform cv--dnn--DNN_BACKEND_DEFAULT
+				 :setter (model.setPreferableBackend backend_id))
+			  (:name target-id :type "cv::dnn::Target" :param t :initform cv--dnn--DNN_TARGET_CPU
+				 :setter  (model.setPreferableTarget target_id))
+			  (:name model :type "cv::Net"
+			   :initform (cv--dnn--readNet model_path))
+			  (:name charset :type "std:vector<cv::dnn::u16string>"
+				 :initform (cv--dnn--loadCharset (string "CHARSET_EN_36")))
+			  (:name target_vertices :type "cv::Mat" :initform (lambda ()
+									    (declare (capture this))
+									    (setf this.target_vertices (cv--Mat 4 1 CV_32FC2))
+									    ,@(loop for (e f) in `((0 (0 (- this.input_size.height 1)))
+												   (1 (0 0))
+												   (2 ((- this.input_size.width 1) 0))
+												   (3 ((- this.input_size.width 1)
+												       (- this.input_size.height 1))))
+										    collect
+										    `(setf (this->target_vertices.row ,e)
+											   (cv--Vec2f ,@f))))
+			   ))
+	      :header-preamble `(do0 (comments "heaeder")
+			      (include<> string
+					 opencv2/opencv.hpp)
 			    
-			    )
-     :implementation-preamble
-     `(do0
-       (comments "implementation"))
-     :code `(do0
-	     
-	     (defclass ,class-name ()
-	       "public:"
-	       
-	       (defmethod ,class-name ( ,@(remove-if
-					   #'null
-					   (loop for e in members
-						 collect
-						 (destructuring-bind (&key name type param initform param-name member-name) e
-						   (unless (and param initform)
-						     param-name))))
-				       &key
-					 ,@(remove-if
-					    #'null
-					    (loop for e in members
-						  collect
-						  (destructuring-bind (&key name type param initform param-name member-name) e
-						    (when (and param initform)
-						      `(,param-name ,initform))))))
-		 (declare
-		  ,@(remove-if #'null
-			       (loop for e in members
-				     collect
-				     (destructuring-bind (&key name type param initform param-name member-name) e
-				       (when param
-					 `(type ,type ,param-name)))))
-		  (construct
-		   ,@(remove-if #'null
-				(loop for e in members
-				      collect
-				      (destructuring-bind (&key name type param initform param-name member-name) e
-					(cond
-					  (param
-					   `(,member-name ,param-name)) 
-					  (initform
-					   `(,member-name ,initform)))))))
-					;(explicit)	    
-		  (values :constructor))
-		 #+nil (setf model (cv--dnn--TextDetectionModel_DB (cv--dnn--readNet model_path)))
-		 ,@(loop for e in `((setPreferableBackend backend_id)
-				    (setPreferableTarget target_id)
-				    (setBinaryThreshold binary_threshold)
-				    (setPolygonThreshold polygon_threshold)
-				    (setUnclipRatio unclip_ratio)
-				    (setMaxCandidates max_candidates)
-				    (setInputParams (/ 1s0 255s0)
-						    input_size
-						    (cv--Scalar 122.67891434 116.66876762 104.00698793)))
-			 collect
-			 `(dot model ,e))
-		 )
-	       (defmethod infer (image)
-		 (declare (values "std::pair<std::vector<std::vector<cv::Point>>,std::vector<float>>")
-			  (type "cv::Mat" image))
-		 (CV_Assert (logand (== image.rows
-					input_size.height)
-				    (string "height of input image != net input size")))
-		 (CV_Assert (logand (== image.cols
-					input_size.width)
-				    (string "width of input image != net input size")))
-		 (let ((pt ("std::vector<std::vector<cv::Point>>"))
-		       (confidence ("std::vector<float>")))
-		   (model.detect image pt confidence)
-		   (return ("std::make_pair< std::vector<std::vector<cv::Point>> &, std::vector<float> &>"
-			    pt confidence))))
-	       ,@(remove-if
-		  #'null
-	          (loop for e in members
-			appending
-			(destructuring-bind (&key name type param initform param-name member-name) e
-			  (let ((get (cl-change-case:pascal-case (format nil "get-~a" name)))
-				(set (cl-change-case:pascal-case (format nil "set-~a" name)))
-				(const-p (let* ((s  (format nil "~a" type))
-						(last-char (aref s (- (length s)
-								      1))))
-					   (not (eq #\* last-char)))))
-			    `((defmethod ,get ()
-				(declare ,@(if const-p
-					       `((const)
-						 (values ,(format nil "const ~a&" type)))
-					       `((values ,type))))
-				(return ,member-name))
-			      (defmethod ,set (,member-name)
-				(declare (type ,type ,member-name))
-				(setf (-> this ,member-name)
-				      ,member-name)))))))
-	       "public:"
-	       ,@(remove-if #'null
-			    (loop for e in members
-				  collect
-				  (destructuring-bind (&key name type param initform param-name member-name) e
-				    `(space ,type ,member-name))))))))
+			      )
+	      :implementation-preamble
+	      `(do0
+		(comments "implementation")
+		(include "charset_32_94_3944.h"))
+	      :constructor-code `(do0
+				  )
+	      :class-code
+	      `(
 
+		(defmethod preprocess (image rbbox)
+		  (declare (values u16string)
+			   (type "cv::Mat" image rbbox))
+		  (comments "remove conf, reshape and ensure all is np.float32")
+		  
+		  (let ((vertices (cv--Mat)))
+		    (dot rbbox
+		       (reshape  2 4)
+		       (convertTo vertices CV_32FC2)))
+
+		  (let ((rotationMatrix (cv--getPerspectiveTransform vertices
+								     target_vertices))
+			(cropped (cv--Mat)))
+		    (cv--warpPerspective image cropped rotationMatrix input_size))
+
+		  (comments "CN can detect digits 0-9 letters a-zA-z and some special characters")
+		  (comments "FIXME: what about EN?")
+		  )
+
+		(defmethod infer (image rbbox)
+		  (declare (values u16string)
+			   (type "cv::Mat" image rbbox))
+		  (let ((inputBlob (preprocess image rbbox))))
+		  (model.setInput inputBlob)
+		  (let ((outputBlob (model.forward))))
+		  (return (postprocess outputBlob))))
+	      )
   
-
   
   
   

@@ -114,3 +114,101 @@
 		  :format t
 		  :tidy nil
 		  :omit-parens t)))
+
+
+(defun make-class (class-name
+		     &key members0 header-preamble
+		       implementation-preamble
+		       constructor-code
+		       class-code)
+    (let* ((members (loop for e in members0
+			  collect
+			  (destructuring-bind (&key name type param (initform 0) setter getter) e
+			    `(:name ,name
+			      :type ,type
+			      :param ,param
+			      :initform ,initform
+			      :setter ,(if setter setter "")
+			      :getter ,(if getter getter "")
+			      :member-name ,(intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))
+			      :param-name ,(when param
+					     (intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))))))))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name class-name
+       :headers `()
+       :header-preamble header-preamble
+       :implementation-preamble implementation-preamble
+       :code `(do0
+	       (defclass ,class-name ()
+		 "public:"
+	       	 (defmethod ,class-name ( ,@(remove-if
+					     #'null
+					     (loop for e in members
+						   collect
+						   (destructuring-bind (&key name type param initform param-name member-name setter getter) e
+						     (unless (and param initform)
+						       param-name))))
+					 &key
+					   ,@(remove-if
+					      #'null
+					      (loop for e in members
+						    collect
+						    (destructuring-bind (&key name type param initform param-name member-name setter getter) e
+						      (when (and param initform)
+							`(,param-name ,initform))))))
+		   (declare
+		    ,@(remove-if #'null
+				 (loop for e in members
+				       collect
+				       (destructuring-bind (&key name type param initform param-name member-name setter getter) e
+					 (when param
+					   `(type ,type ,param-name)))))
+		    (construct
+		     ,@(remove-if #'null
+				  (loop for e in members
+					collect
+					(destructuring-bind (&key name type param initform param-name member-name setter getter) e
+					  (cond
+					    (param
+					     `(,member-name ,param-name)) 
+					    (initform
+					     `(,member-name ,initform)))))))
+					;(explicit)	    
+		    (values :constructor))
+		   ,constructor-code
+		   
+		   )
+		 ,@class-code
+		 
+		 ,@(remove-if
+		    #'null
+	            (loop for e in members
+			  appending
+			  (destructuring-bind (&key name type param initform param-name member-name setter getter) e
+			    (let ((get (cl-change-case:pascal-case (format nil "get-~a" name)))
+				  (set (cl-change-case:pascal-case (format nil "set-~a" name)))
+				  (const-p (let* ((s  (format nil "~a" type))
+						  (last-char (aref s (- (length s)
+									1))))
+					     (not (eq #\* last-char)))))
+			      `((defmethod ,get ()
+				  (declare ,@(if const-p
+						 `((const)
+						   (values ,(format nil "const ~a&" type)))
+						 `((values ,type))))
+				  ,getter
+				  (return ,member-name))
+				(defmethod ,set (,member-name)
+				  (declare (type ,type ,member-name))
+				  (setf (-> this ,member-name)
+					,member-name)
+				  ,setter))))))
+		 "public:"
+		 ,@(remove-if #'null
+			      (loop for e in members
+				    collect
+				    (destructuring-bind (&key name type param initform param-name member-name setter getter) e
+				      `(space ,type ,member-name)))))))))
