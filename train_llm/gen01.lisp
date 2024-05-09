@@ -158,6 +158,7 @@
 		  ;; only 25 rows fulfill this criterion (180kB)
 		  (df1.to_csv (string "training_data.csv")
 			      :index False))
+	     ;; i started training with the small examples (180kB) and it finished in less than a minute
 	     #+nil (with (as (open (string "training_data.json")
 				   (string "w"))
 			     f)
