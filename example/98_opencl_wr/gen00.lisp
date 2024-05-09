@@ -81,6 +81,7 @@
 		       *source-dir*))
      `(do0
        (include "../wrapper/kernel.hpp")
+       ;; FIXME: initializer changed
        (defun opencl_c_container ()
 	 (declare (values string))
 	 (return
@@ -90,18 +91,18 @@
 			 (merge-pathnames #P"kernel.cl"
 					  *source-dir*)))
 		    (code
-		     `(do0
-		       " "
-		       (defun add_kernel (A B C)
-			 (declare (type "global const float*" A B)
-				  (type "global float restrict*" C)
-				  (values "kernel void"))
-			 (let ((n (get_global_id 0)))
-			   (declare (type "const uint" n))
-			   (setf (aref C n)
-				 (+ (aref A n)
-				    (aref B n)))))
-		       " ")))
+		      `(do0
+			" "
+			(defun add_kernel (A B C)
+			  (declare (type "global const float*" A B)
+				   (type "global float restrict*" C)
+				   (values "kernel void"))
+			  (let ((n (get_global_id 0)))
+			    (declare (type "const uint" n))
+			    (setf (aref C n)
+				  (+ (aref A n)
+				     (aref B n)))))
+			" ")))
 	       (write-source fn
 			     code)
 	       (with-open-file (s fn

@@ -81,7 +81,7 @@
 
 
 	(setf training_data (list))
-	,(let ((l-ext `("cpp" "c" "h" "hpp" "cu")))
+	,(let ((l-ext `("cpp" "c" "h" "hpp" "cu" "cl")))
 	   `(for (f (dot (/ directory (string "example")) (rglob (string "gen*.lisp"))))
 
 		 (do0

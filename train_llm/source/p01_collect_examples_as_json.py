@@ -19,7 +19,7 @@ for f in ((directory)/("example")).rglob("gen*.lisp"):
     # genXX.lisp -> sourceXX
     output_dir=((f.parent)/("source{}".format(f.stem[3:5])))
     if ( output_dir.exists() ):
-        output_files=((list(output_dir.glob("*.cpp")))+(list(output_dir.glob("*.c")))+(list(output_dir.glob("*.h")))+(list(output_dir.glob("*.hpp")))+(list(output_dir.glob("*.cu"))))
+        output_files=((list(output_dir.glob("*.cpp")))+(list(output_dir.glob("*.c")))+(list(output_dir.glob("*.h")))+(list(output_dir.glob("*.hpp")))+(list(output_dir.glob("*.cu")))+(list(output_dir.glob("*.cl"))))
         if ( ((0)<(len(output_files))) ):
             print(f"Info 1: Found match {f} {len(output_files)}.")
         else:
@@ -31,7 +31,7 @@ for f in ((directory)/("example")).rglob("gen*.lisp"):
         if ( match ):
             4
             output_dir=((directory)/(match.group(1)))
-            output_files=((list(output_dir.glob("*.cpp")))+(list(output_dir.glob("*.c")))+(list(output_dir.glob("*.h")))+(list(output_dir.glob("*.hpp")))+(list(output_dir.glob("*.cu"))))
+            output_files=((list(output_dir.glob("*.cpp")))+(list(output_dir.glob("*.c")))+(list(output_dir.glob("*.h")))+(list(output_dir.glob("*.hpp")))+(list(output_dir.glob("*.cu")))+(list(output_dir.glob("*.cl"))))
             if ( ((0)<(len(output_files))) ):
                 print(f"Info 2: Found match {f} {len(output_files)}.")
             else:
