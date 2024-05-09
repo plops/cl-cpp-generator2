@@ -86,20 +86,35 @@
 	     (setf output_dir (/ f.parent (dot (string "source{}")
 					       (format (aref f.stem (slice 3 5))))))
 	     (if (output_dir.exists)
-		 (setf output_files (+ ,@(loop for e in `("cpp" "c" "h")
-					       collect
-					       `("list" (dot output_dir (glob (string ,(format nil "*.~a" e))))))))
+		 (do0
+		  (setf output_files (+ ,@(loop for e in `("cpp" "c" "h")
+						collect
+						`("list" (dot output_dir (glob (string ,(format nil "*.~a" e))))))))
+		  (if (< 0 (len output_files))
+			   (print (fstring "Info 1: Found match {f} {len(output_files)}."))
+			   (do0
+			    (print (fstring "Warning 1: No matches in output directory for {f}."))
+			    continue)))
 		 (do0
 		  (setf content (f.read_text))
-		  (setf match (re.search (rstring3 "\\(defparameter \\*source-dir\\* #P(.*)""\\)")
+		  (setf match (re.search (rstring3 "\\(defparameter \\*source-dir\\* .*\\\"(.*)\\\"\\)")
 					 content))
 		  (if match
-		      (setf output_dir (pathlib.Path (match.group 1))
-			    output_files (+ ,@(loop for e in `("cpp" "c" "h")
-					       collect
-					       `("list" (dot output_dir (glob (string ,(format nil "*.~a" e))))))))
 		      (do0
-		       (print (fstring "Warning: Could not determine output directory for {f}."))
+		       
+		       (setf output_dir (/ (pathlib.Path (string " /home/martin/stage/cl-cpp-generator2/"))
+					   (match.group 1))
+			     output_files (+ ,@(loop for e in `("cpp" "c" "h")
+						     collect
+						     `("list" (dot output_dir (glob (string ,(format nil "*.~a" e))))))))
+		       (if (< 0 (len output_files))
+			   (print (fstring "Info 2: Found match {f} {len(output_files)}."))
+			   (do0
+			    (print (fstring "Warning 2: Not enough files for {f} in {output_dir} gp1={match.group(1)}."))
+			    (print (fstring "Warning 4: match={match}."))
+			    continue)))
+		      (do0
+		       (print (fstring "Warning 3: Could not determine output directory for {f}."))
 		       continue))))))
        
        
