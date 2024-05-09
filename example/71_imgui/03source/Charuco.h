@@ -1,8 +1,11 @@
 #pragma once
-#include <opencv2/core.hpp> 
+#include <opencv2/core/cvstd.hpp> 
+#include <opencv2/core/mat.hpp> 
 #include <opencv2/videoio.hpp> 
+#include <opencv2/core.hpp> 
 #include <opencv2/imgproc.hpp> 
 #include <opencv2/aruco/charuco.hpp> 
+namespace cv { namespace aruco { class CharucoBoard;class Dictionary; struct DetectorParameters; }}
 class Charuco  {
         public:
         int squares_x; 
@@ -18,11 +21,12 @@ class Charuco  {
         cv::Mat img; 
         cv::Mat img3; 
         std::vector<uint32_t> textures; 
+        std::vector<bool> textures_dirty; 
         cv::Mat camera_matrix; 
         cv::Mat dist_coeffs; 
         std::string cap_fn; 
         cv::VideoCapture cap; 
-         Charuco (int squares_x_ = 8, int squares_y_ = 4, float square_length_ = 4.00e-2F, float marker_length_ = 2.00e-2F, std::string cap_fn_ = "/dev/video2")       ;   
+         Charuco (int squares_x_ = 8, int squares_y_ = 4, float square_length_ = 4.00e-2F, float marker_length_ = 2.00e-2F, std::string cap_fn_ = "/dev/video0")       ;   
         void Init ()       ;   
         void Render ()       ;   
         cv::Mat Capture ()       ;   
@@ -39,6 +43,7 @@ class Charuco  {
         cv::Mat get_img ()       ;   
         cv::Mat get_img3 ()       ;   
         std::vector<uint32_t> get_textures ()       ;   
+        std::vector<bool> get_textures_dirty ()       ;   
         cv::Mat get_camera_matrix ()       ;   
         cv::Mat get_dist_coeffs ()       ;   
         std::string get_cap_fn ()       ;   

@@ -3,7 +3,9 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <mutex>
 #include <thread>
+extern std::mutex g_stdout_mutex;
 extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
 #include "MainWindow.h"
 #include "imgui.h"
@@ -24,7 +26,8 @@ MainWindow::MainWindow()
 MainWindow::~MainWindow() {
   //
 }
-void MainWindow::Init(GLFWwindow *window, const char *glsl_version) {
+void MainWindow::Init(std::shared_ptr<GLFWwindow> window,
+                      const char *glsl_version) {
   //
 
   // enable keyboard controls, docking multi-viewport
@@ -39,11 +42,7 @@ void MainWindow::Init(GLFWwindow *window, const char *glsl_version) {
 
   ImGui::StyleColorsDark();
   auto style{ImGui::GetStyle()};
-  if ((io.ConfigFlags) && (ImGuiConfigFlags_ViewportsEnable)) {
-    (style.WindowRounding) = (0.F);
-    (style.(Colors)[(ImGuiCol_WindowBg)].w) = (1.0F);
-  }
-  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  ImGui_ImplGlfw_InitForOpenGL(window.get(), true);
   ImGui_ImplOpenGL3_Init(glsl_version);
   auto font_fn{"nil"};
   auto font_size{16.F};
@@ -61,7 +60,7 @@ void MainWindow::NewFrame() {
   ImGui::NewFrame();
   ImGui::DockSpaceOverViewport();
 }
-void MainWindow::Update() {
+void MainWindow::Update(std::function<void(void)> fun) {
   if (show_demo_window_) {
     ImGui::ShowDemoWindow(&show_demo_window_);
     ImPlot::ShowDemoWindow();
@@ -74,30 +73,30 @@ void MainWindow::Update() {
                 ImGui::GetIO().Framerate);
     ImGui::End();
   }
+  fun();
   ImGui::EndFrame();
 }
-void MainWindow::Render(GLFWwindow *window) {
+void MainWindow::Render(std::shared_ptr<GLFWwindow> window) {
   auto screen_width{int(0)};
   auto screen_height{int(0)};
-  glfwGetFramebufferSize(window, &screen_width, &screen_height);
+  glfwGetFramebufferSize(window.get(), &screen_width, &screen_height);
   glViewport(0, 0, screen_width, screen_height);
   glClear(GL_COLOR_BUFFER_BIT);
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-  // update and render additional platform windows
-
-  if ((io.ConfigFlags) && (ImGuiConfigFlags_ViewportsEnable)) {
-    auto *backup_current_context{glfwGetCurrentContext()};
-    ImGui::UpdatePlatformWindows();
-    ImGui::RenderPlatformWindowsDefault();
-    glfwMakeContextCurrent(backup_current_context);
-  }
-  glfwSwapBuffers(window);
+  glfwSwapBuffers(window.get());
 }
 void MainWindow::Shutdown() {
-  //
+  // destroy ImPlot Context
+
+  ImPlot::DestroyContext();
+  // delete ImGui buffers and textures
 
   ImGui_ImplOpenGL3_Shutdown();
+  // delete ImGui callbacks and mouse cursor from GLFW
+
   ImGui_ImplGlfw_Shutdown();
+  // destroy ImGui Context
+
   ImGui::DestroyContext();
 }

@@ -13,98 +13,47 @@ std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
 #include "implot.h"
 #include <GLFW/glfw3.h>
 // https://gist.github.com/TheOpenDevProject/1662fa2bfd8ef087d94ad4ed27746120
-;
+
 class DestroyGLFWwindow {
 public:
   void operator()(GLFWwindow *ptr) {
-    {
+    // Destroy GLFW window context.
 
-      std::chrono::duration<double> timestamp =
-          std::chrono::high_resolution_clock::now() - g_start_time;
-      (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                  << (std::this_thread::get_id()) << (" ") << (__FILE__)
-                  << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-                  << ("Destroy GLFW window context.") << (" ") << (std::endl)
-                  << (std::flush);
-    }
     glfwDestroyWindow(ptr);
     glfwTerminate();
   }
 };
+
 int main(int argc, char **argv) {
-  g_start_time = std::chrono::high_resolution_clock::now();
-  {
+  (g_start_time) = (std::chrono::high_resolution_clock::now());
+  // start
 
-    std::chrono::duration<double> timestamp =
-        std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ") << ("start")
-                << (" ") << (std::setw(8)) << (" argc='") << (argc) << ("'")
-                << (std::setw(8)) << (" argv[0]='") << (argv[0]) << ("'")
-                << (std::endl) << (std::flush);
-  }
   // glfw initialization
-  ;
-  // https://github.com/ocornut/imgui/blob/docking/examples/example_glfw_opengl3/main.cpp
-  ;
-  glfwSetErrorCallback([](int err, const char *description) {
-    {
 
-      std::chrono::duration<double> timestamp =
-          std::chrono::high_resolution_clock::now() - g_start_time;
-      (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                  << (std::this_thread::get_id()) << (" ") << (__FILE__)
-                  << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-                  << ("glfw error") << (" ") << (std::setw(8)) << (" err='")
-                  << (err) << ("'") << (std::setw(8)) << (" description='")
-                  << (description) << ("'") << (std::endl) << (std::flush);
-    }
+  // https://github.com/ocornut/imgui/blob/docking/examples/example_glfw_opengl3/main.cpp
+
+  glfwSetErrorCallback([&](int err, const char *description) {
+    // glfw error
   });
   if (!(glfwInit())) {
-    {
-
-      std::chrono::duration<double> timestamp =
-          std::chrono::high_resolution_clock::now() - g_start_time;
-      (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                  << (std::this_thread::get_id()) << (" ") << (__FILE__)
-                  << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-                  << ("glfwInit failed.") << (" ") << (std::endl)
-                  << (std::flush);
-    }
+    // glfwInit failed.
   }
   const char *glsl_version = "#version 130";
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
   std::unique_ptr<GLFWwindow, DestroyGLFWwindow> window;
-  auto w = glfwCreateWindow(1280, 720, "dear imgui example", nullptr, nullptr);
+  auto w{glfwCreateWindow(1280, 720, "dear imgui example", nullptr, nullptr)};
   if ((nullptr) == (w)) {
-    {
-
-      std::chrono::duration<double> timestamp =
-          std::chrono::high_resolution_clock::now() - g_start_time;
-      (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                  << (std::this_thread::get_id()) << (" ") << (__FILE__)
-                  << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-                  << ("glfwCreatWindow failed.") << (" ") << (std::endl)
-                  << (std::flush);
-    }
+    // glfwCreatWindow failed.
   }
   window.reset(w);
   glfwMakeContextCurrent(window.get());
-  {
+  // enable vsync
 
-    std::chrono::duration<double> timestamp =
-        std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("enable vsync") << (" ") << (std::endl) << (std::flush);
-  }
   glfwSwapInterval(1);
   // imgui brings its own opengl loader
   // https://github.com/ocornut/imgui/issues/4445
-  ;
+
   MainWindow M;
   M.Init(window.get(), glsl_version);
   while (!glfwWindowShouldClose(window.get())) {
@@ -113,24 +62,10 @@ int main(int argc, char **argv) {
     M.Update();
     M.Render(window.get());
   }
-  {
+  // cleanup
 
-    std::chrono::duration<double> timestamp =
-        std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ") << ("cleanup")
-                << (" ") << (std::endl) << (std::flush);
-  }
   M.Shutdown();
-  {
+  // leave program
 
-    std::chrono::duration<double> timestamp =
-        std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("leave program") << (" ") << (std::endl) << (std::flush);
-  }
   return 0;
 }

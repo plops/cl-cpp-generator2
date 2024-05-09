@@ -61,7 +61,7 @@ void MainWindow::NewFrame() {
   ImGui::NewFrame();
   ImGui::DockSpaceOverViewport();
 }
-void MainWindow::Update() {
+void MainWindow::Update(std::function<void(void)> fun) {
   if (show_demo_window_) {
     ImGui::ShowDemoWindow(&show_demo_window_);
     ImPlot::ShowDemoWindow();
@@ -74,6 +74,7 @@ void MainWindow::Update() {
                 ImGui::GetIO().Framerate);
     ImGui::End();
   }
+  fun();
   ImGui::EndFrame();
 }
 void MainWindow::Render(GLFWwindow *window) {

@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
-#include <functional>
-#include <memory> 
+#include <functional> 
 class GLFWwindow; 
 class ImVec4; 
 class ImGuiIO; 
@@ -11,9 +10,9 @@ class MainWindow  {
         ImGuiIO& io; 
         explicit  MainWindow ()       ;   
          ~MainWindow ()       ;   
-        void Init (std::shared_ptr< GLFWwindow > window, const char* glsl_version)       ;   
+        void Init (GLFWwindow* window, const char* glsl_version)       ;   
         void NewFrame ()       ;   
         void Update (std::function<void(void)> fun)       ;   
-        void Render (std::shared_ptr< GLFWwindow > window)       ;   
+        void Render (GLFWwindow* window)       ;   
         void Shutdown ()       ;   
 };

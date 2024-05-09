@@ -1,14 +1,14 @@
 // no preamble
 
 #include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
-#include "imgui_impl_opengl3_loader.h"
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <mutex>
 #include <thread>
+extern std::mutex g_stdout_mutex;
 extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
 #include "GraphicsFramework.h"
 GraphicsFramework::GraphicsFramework() {
@@ -33,6 +33,12 @@ GraphicsFramework::GraphicsFramework() {
   // enable vsync
 
   glfwSwapInterval(1);
+  // load OpenGL with glew
+
+  auto err{glewInit()};
+  if (!((GLEW_OK) == (err))) {
+    // glewInit failed
+  }
   // imgui brings its own opengl loader
   // https://github.com/ocornut/imgui/issues/4445
 }
