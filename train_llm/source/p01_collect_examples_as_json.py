@@ -23,6 +23,11 @@ for f in ((directory)/("example")).rglob("gen*.lisp"):
         output_files=((list(output_dir.rglob("*.cpp")))+(list(output_dir.rglob("*.c")))+(list(output_dir.rglob("*.h")))+(list(output_dir.rglob("*.hpp")))+(list(output_dir.rglob("*.cu")))+(list(output_dir.rglob("*.cl")))+(list(output_dir.rglob("*CMakeLists.txt"))))
         if ( ((0)<(len(output_files))) ):
             print(f"Info 1: Found match {f} {len(output_files)}.")
+            lisp_content=f.read_text()
+            text_input=""
+            for output_file in output_files:
+                text_input += f"// {output_file}\n{output_file.read_text()}\n\n"
+            training_data.append(dict(text_input=text_input, output=lisp_content))
         else:
             print(f"Warning 1: No matches in output directory for {f}.")
             continue
@@ -30,11 +35,15 @@ for f in ((directory)/("example")).rglob("gen*.lisp"):
         content=f.read_text()
         match=re.search(r"""\(defparameter \*source-dir\* .*\"(.*)\"\)""", content)
         if ( match ):
-            4
             output_dir=((directory)/(match.group(1)))
             output_files=((list(output_dir.rglob("*.cpp")))+(list(output_dir.rglob("*.c")))+(list(output_dir.rglob("*.h")))+(list(output_dir.rglob("*.hpp")))+(list(output_dir.rglob("*.cu")))+(list(output_dir.rglob("*.cl")))+(list(output_dir.rglob("*CMakeLists.txt"))))
             if ( ((0)<(len(output_files))) ):
                 print(f"Info 2: Found match {f} {len(output_files)}.")
+                lisp_content=f.read_text()
+                text_input=""
+                for output_file in output_files:
+                    text_input += f"// {output_file}\n{output_file.read_text()}\n\n"
+                training_data.append(dict(text_input=text_input, output=lisp_content))
             else:
                 print(f"Warning 2: Not enough files for {f} in {output_dir} gp1={match.group(1)}.")
                 print(f"Warning 4: match={match} ls {output_dir}={output_files}.")
@@ -42,3 +51,5 @@ for f in ((directory)/("example")).rglob("gen*.lisp"):
         else:
             print(f"Warning 3: Could not determine output directory for {f}.")
             continue
+with open("training_data.json", "w") as f:
+    json.dump(training_data, f, indent=2)

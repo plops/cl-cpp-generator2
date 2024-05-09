@@ -82,51 +82,74 @@
 
 	(setf training_data (list))
 	,(let ((l-ext `(".cpp" ".c" ".h" ".hpp" ".cu" ".cl" "CMakeLists.txt")))
-	   `(for (f (dot (/ directory (string "example")) (rglob (string "gen*.lisp"))))
+	   `(do0
+	     (for (f (dot (/ directory (string "example")) (rglob (string "gen*.lisp"))))
 
-		 (do0
-		  (comments "exclude python generating files")
-		  (setf content (f.read_text))
-		  (when (re.search (rstring3 "\\(ql:quickload \"cl-py-generator\"\\)"
-					     )
-				   content)
-		    (print (fstring (string "Info 0: Skip python generator {f}.")))
-		    continue))
-		 (comments "genXX.lisp -> sourceXX")
-	       (setf output_dir (/ f.parent (dot (string "source{}")
-						 (format (aref f.stem (slice 3 5))))))
-	       (if (output_dir.exists)
-		   (do0
-		    (setf output_files (+ ,@(loop for e in l-ext
-						  collect
-						  `("list" (dot output_dir (rglob (string ,(format nil "*~a" e))))))))
-		    (if (< 0 (len output_files))
-			(print (fstring "Info 1: Found match {f} {len(output_files)}."))
-			(do0
-			 (print (fstring "Warning 1: No matches in output directory for {f}."))
-			 continue)))
-		   (do0
-		    (setf content (f.read_text))
-		    (setf match (re.search (rstring3 "\\(defparameter \\*source-dir\\* .*\\\"(.*)\\\"\\)")
-					   content))
-		    (if match
-			(do0
-		       4
-			 (setf output_dir (/ directory
-					     (match.group 1))
-			       output_files (+ ,@(loop for e in l-ext
-						       collect
-						       `("list" (dot output_dir (rglob (string ,(format nil "*~a" e))))))))
-			 (if (< 0 (len output_files))
-			     (print (fstring "Info 2: Found match {f} {len(output_files)}."))
-			     (do0
-			      (print (fstring "Warning 2: Not enough files for {f} in {output_dir} gp1={match.group(1)}."))
-			      (print (fstring "Warning 4: match={match} ls {output_dir}={output_files}."))
+		  (do0
+		   (comments "exclude python generating files")
+		   (setf content (f.read_text))
+		   (when (re.search (rstring3 "\\(ql:quickload \"cl-py-generator\"\\)"
+					      )
+				    content)
+		     (print (fstring (string "Info 0: Skip python generator {f}.")))
+		     continue))
+		  (comments "genXX.lisp -> sourceXX")
+		  (setf output_dir (/ f.parent (dot (string "source{}")
+						    (format (aref f.stem (slice 3 5))))))
+		  (if (output_dir.exists)
+		      (do0
+		       (setf output_files (+ ,@(loop for e in l-ext
+						     collect
+						     `("list" (dot output_dir (rglob (string ,(format nil "*~a" e))))))))
+		       (if (< 0 (len output_files))
+			   (do0
+			    (print (fstring "Info 1: Found match {f} {len(output_files)}."))
+			    (do0
+			     (setf lisp_content (f.read_text)
+				   text_input (string ""))
+			     (for (output_file output_files)
+				  (incf text_input (fstring "// {output_file}\\n{output_file.read_text()}\\n\\n")))
+			     (training_data.append
+			      (dictionary :text_input text_input
+					  :output lisp_content))))
+			   (do0
+			    (print (fstring "Warning 1: No matches in output directory for {f}."))
+			    continue)))
+		      (do0
+		       (setf content (f.read_text))
+		       (setf match (re.search (rstring3 "\\(defparameter \\*source-dir\\* .*\\\"(.*)\\\"\\)")
+					      content))
+		       (if match
+			   (do0
+			    (setf output_dir (/ directory
+						(match.group 1))
+				  output_files (+ ,@(loop for e in l-ext
+							  collect
+							  `("list" (dot output_dir (rglob (string ,(format nil "*~a" e))))))))
+			    (if (< 0 (len output_files))
+				(do0
+				 (print (fstring "Info 2: Found match {f} {len(output_files)}."))
+				 (do0
+				  (setf lisp_content (f.read_text)
+					text_input (string ""))
+				  (for (output_file output_files)
+				       (incf text_input (fstring "// {output_file}\\n{output_file.read_text()}\\n\\n")))
+				  (training_data.append
+				   (dictionary :text_input text_input
+					       :output lisp_content))))
+				(do0
+				 (print (fstring "Warning 2: Not enough files for {f} in {output_dir} gp1={match.group(1)}."))
+				 (print (fstring "Warning 4: match={match} ls {output_dir}={output_files}."))
 			      
-			      continue)))
-			(do0
-			 (print (fstring "Warning 3: Could not determine output directory for {f}."))
-			 continue)))))))
+				 continue)))
+			   (do0
+			    (print (fstring "Warning 3: Could not determine output directory for {f}."))
+			    continue)))))
+
+	     (with (as (open (string "training_data.json")
+			     (string "w"))
+		       f)
+		   (json.dump training_data f :indent 2)))))
        
        
        ))))
