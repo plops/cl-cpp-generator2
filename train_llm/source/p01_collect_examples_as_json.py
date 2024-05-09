@@ -14,7 +14,7 @@ for f in directory.rglob("gen*.lisp"):
     # genXX.lisp -> sourceXX
     output_dir=((f.parent)/("source{}".format(f.stem[3:5])))
     if ( output_dir.exists() ):
-        output_files=((list(output_dir.glob("*.cpp")))+(list(output_dir.glob("*.c")))+(list(output_dir.glob("*.h"))))
+        output_files=((list(output_dir.glob("*.cpp")))+(list(output_dir.glob("*.c")))+(list(output_dir.glob("*.h")))+(list(output_dir.glob("*.hpp"))))
         if ( ((0)<(len(output_files))) ):
             print(f"Info 1: Found match {f} {len(output_files)}.")
         else:
@@ -25,12 +25,12 @@ for f in directory.rglob("gen*.lisp"):
         match=re.search(r"""\(defparameter \*source-dir\* .*\"(.*)\"\)""", content)
         if ( match ):
             output_dir=((pathlib.Path(" /home/martin/stage/cl-cpp-generator2/"))/(match.group(1)))
-            output_files=((list(output_dir.glob("*.cpp")))+(list(output_dir.glob("*.c")))+(list(output_dir.glob("*.h"))))
+            output_files=((list(output_dir.glob("*.cpp")))+(list(output_dir.glob("*.c")))+(list(output_dir.glob("*.h")))+(list(output_dir.glob("*.hpp"))))
             if ( ((0)<(len(output_files))) ):
                 print(f"Info 2: Found match {f} {len(output_files)}.")
             else:
                 print(f"Warning 2: Not enough files for {f} in {output_dir} gp1={match.group(1)}.")
-                print(f"Warning 4: match={match}.")
+                print(f"Warning 4: match={match} ls {output_dir}={output_files}.")
                 continue
         else:
             print(f"Warning 3: Could not determine output directory for {f}.")

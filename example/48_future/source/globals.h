@@ -13,6 +13,6 @@ struct State {
   std::string _code_repository;
   std::string _main_version;
 };
-typedef struct State State;
+;
 
 #endif
