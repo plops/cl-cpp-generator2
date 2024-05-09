@@ -159,6 +159,7 @@
 		  (df1.to_csv (string "training_data.csv")
 			      :index False))
 	     ;; i started training with the small examples (180kB) and it finished in less than a minute
+	     ;; loss went from 700 to 100 but not stable yet
 	     #+nil (with (as (open (string "training_data.json")
 				   (string "w"))
 			     f)
