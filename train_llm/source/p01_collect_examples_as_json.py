@@ -5,10 +5,10 @@
 # pip install lmfit
 import os
 import time
-import json
 import pathlib
 import re
 import sys
+import pandas as pd
 directory=pathlib.Path("/home/martin/stage/cl-cpp-generator2")
 training_data=[]
 for f in ((directory)/("example")).rglob("gen*.lisp"):
@@ -51,5 +51,5 @@ for f in ((directory)/("example")).rglob("gen*.lisp"):
         else:
             print(f"Warning 3: Could not determine output directory for {f}.")
             continue
-with open("training_data.json", "w") as f:
-    json.dump(training_data, f, indent=2)
+df=pd.DataFrame(training_data)
+df.to_csv("training_data.csv", index=False)

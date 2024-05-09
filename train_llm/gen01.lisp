@@ -41,12 +41,12 @@
 		 "pip install lmfit")
        (imports (os
 		 time
-		 json
+		 ;json
 		 pathlib
 		 re
 		 sys
 		 ;torch
-		 ;(pd pandas)
+		 (pd pandas)
 		 ;lmfit
 		 ))
 
@@ -146,10 +146,13 @@
 			    (print (fstring "Warning 3: Could not determine output directory for {f}."))
 			    continue)))))
 
-	     (with (as (open (string "training_data.json")
-			     (string "w"))
-		       f)
-		   (json.dump training_data f :indent 2)))))
+	     (do0 (setf df (pd.DataFrame training_data))
+		  (df.to_csv (string "training_data.csv")
+			     :index False))
+	     #+nil (with (as (open (string "training_data.json")
+				   (string "w"))
+			     f)
+			 (json.dump training_data f :indent 2)))))
        
        
        ))))
