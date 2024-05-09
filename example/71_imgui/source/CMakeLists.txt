@@ -5,8 +5,7 @@ set( CMAKE_VERBOSE_MAKEFILE ON )
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -O0  -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope  ")
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -ggdb -O0   ")
 set( SRCS /home/martin/stage/cl-cpp-generator2/example/71_imgui/source/MainWindow.cpp
-/home/martin/stage/cl-cpp-generator2/example/71_imgui/source/main.cpp
-/home/martin/src/vcpkg/buildtrees/implot/src/v0.12-10fbb8cc87.clean/implot_demo.cpp )
+/home/martin/stage/cl-cpp-generator2/example/71_imgui/source/main.cpp )
 add_executable( mytest ${SRCS} )
 target_compile_features( mytest PUBLIC cxx_std_17 )
 find_package( imgui CONFIG REQUIRED )

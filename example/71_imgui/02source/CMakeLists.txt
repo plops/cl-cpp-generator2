@@ -10,8 +10,7 @@ set( SRCS /home/martin/stage/cl-cpp-generator2/example/71_imgui/02source/BoardPr
 /home/martin/stage/cl-cpp-generator2/example/71_imgui/02source/MainWindow.cpp
 /home/martin/stage/cl-cpp-generator2/example/71_imgui/02source/ProcessFrameEvent.cpp
 /home/martin/stage/cl-cpp-generator2/example/71_imgui/02source/ProcessedFrameMessage.cpp
-/home/martin/stage/cl-cpp-generator2/example/71_imgui/02source/main.cpp
-/home/martin/src/vcpkg/buildtrees/imgui/src/15fb394321-d60a8379fc.clean/backends/imgui_impl_opengl3.cpp )
+/home/martin/stage/cl-cpp-generator2/example/71_imgui/02source/main.cpp )
 add_executable( mytest ${SRCS} )
 target_compile_features( mytest PUBLIC cxx_std_17 )
 find_package( imgui CONFIG REQUIRED )

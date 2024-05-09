@@ -90,6 +90,7 @@
 		  (when (re.search (rstring3 "\\(ql:quickload \"cl-py-generator\"\\)"
 					     )
 				   content)
+		    (print (fstring (string "Info 0: Skip python generator {f}.")))
 		    continue))
 		 (comments "genXX.lisp -> sourceXX")
 	       (setf output_dir (/ f.parent (dot (string "source{}")

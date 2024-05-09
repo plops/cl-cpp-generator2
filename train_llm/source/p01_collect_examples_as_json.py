@@ -15,6 +15,7 @@ for f in ((directory)/("example")).rglob("gen*.lisp"):
     # exclude python generating files
     content=f.read_text()
     if ( re.search(r"""\(ql:quickload "cl-py-generator"\)""", content) ):
+        print(f"(string Info 0: Skip python generator {f}.)")
         continue
     # genXX.lisp -> sourceXX
     output_dir=((f.parent)/("source{}".format(f.stem[3:5])))
