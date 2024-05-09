@@ -147,8 +147,16 @@
 			    continue)))))
 
 	     (do0 (setf df (pd.DataFrame training_data))
-		  (df.to_csv (string "training_data.csv")
-			     :index False))
+		  ,@(loop for e in `(text_input output)
+			  collect
+			  `(setf (aref df (string ,(format nil "~a_len" e)))
+				 (dot df ,e str (len))))
+		  ;; df has 147 rows
+		  (setf df1 (aref df (& (< df.text_input_len 40000)
+					(< df.output_len 5000))))
+		  ;; only 26 rows fulfill this criterion
+		  (df1.to_csv (string "training_data.csv")
+			      :index False))
 	     #+nil (with (as (open (string "training_data.json")
 				   (string "w"))
 			     f)

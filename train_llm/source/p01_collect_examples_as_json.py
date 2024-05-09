@@ -52,4 +52,7 @@ for f in ((directory)/("example")).rglob("gen*.lisp"):
             print(f"Warning 3: Could not determine output directory for {f}.")
             continue
 df=pd.DataFrame(training_data)
-df.to_csv("training_data.csv", index=False)
+df["text_input_len"]=df.text_input.str.len()
+df["output_len"]=df.output.str.len()
+df1=df[((((df.text_input_len)<(40000))) & (((df.output_len)<(5000))))]
+df1.to_csv("training_data.csv", index=False)
