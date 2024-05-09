@@ -44,6 +44,7 @@
 		 json
 		 pathlib
 		 re
+		 sys
 		 ;torch
 		 ;(pd pandas)
 		 ;lmfit
@@ -102,7 +103,7 @@
 		    (if match
 			(do0
 		       4
-			 (setf output_dir (/ (pathlib.Path (string " /home/martin/stage/cl-cpp-generator2/"))
+			 (setf output_dir (/ (pathlib.Path (string "/home/martin/stage/cl-cpp-generator2/"))
 					     (match.group 1))
 			       output_files (+ ,@(loop for e in l-ext
 						       collect
@@ -112,6 +113,7 @@
 			     (do0
 			      (print (fstring "Warning 2: Not enough files for {f} in {output_dir} gp1={match.group(1)}."))
 			      (print (fstring "Warning 4: match={match} ls {output_dir}={output_files}."))
+			      (sys.exit)
 			      continue)))
 			(do0
 			 (print (fstring "Warning 3: Could not determine output directory for {f}."))

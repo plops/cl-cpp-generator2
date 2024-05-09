@@ -8,6 +8,7 @@ import time
 import json
 import pathlib
 import re
+import sys
 directory=pathlib.Path("/home/martin/stage/cl-cpp-generator2/example")
 training_data=[]
 for f in directory.rglob("gen*.lisp"):
@@ -24,13 +25,15 @@ for f in directory.rglob("gen*.lisp"):
         content=f.read_text()
         match=re.search(r"""\(defparameter \*source-dir\* .*\"(.*)\"\)""", content)
         if ( match ):
-            output_dir=((pathlib.Path(" /home/martin/stage/cl-cpp-generator2/"))/(match.group(1)))
+            4
+            output_dir=((pathlib.Path("/home/martin/stage/cl-cpp-generator2/"))/(match.group(1)))
             output_files=((list(output_dir.glob("*.cpp")))+(list(output_dir.glob("*.c")))+(list(output_dir.glob("*.h")))+(list(output_dir.glob("*.hpp"))))
             if ( ((0)<(len(output_files))) ):
                 print(f"Info 2: Found match {f} {len(output_files)}.")
             else:
                 print(f"Warning 2: Not enough files for {f} in {output_dir} gp1={match.group(1)}.")
                 print(f"Warning 4: match={match} ls {output_dir}={output_files}.")
+                sys.exit()
                 continue
         else:
             print(f"Warning 3: Could not determine output directory for {f}.")
