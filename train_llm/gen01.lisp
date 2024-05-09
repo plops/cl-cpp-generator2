@@ -111,7 +111,9 @@
 			     (for (output_file output_files)
 				  (incf text_input (fstring "// {output_file}\\n{output_file.read_text()}\\n\\n")))
 			     (training_data.append
-			      (dictionary :text_input text_input
+			      (dictionary ;:path f
+					  :path  (fstring "{f.parent.stem}/{f.stem}")
+					  :text_input text_input
 					  :output lisp_content))))
 			   (do0
 			    (print (fstring "Warning 1: No matches in output directory for {f}."))
@@ -155,6 +157,7 @@
 		  ;; df has 142 rows
 		  (setf df1 (aref df (& (< df.text_input_len 40000)
 					(< df.output_len 5000))))
+		  (setf df1 (df1.sort_values :by (string "path")))
 		  ;; only 25 rows fulfill this criterion (180kB)
 		  (df1.to_csv (string "training_data.csv")
 			      :index False))
