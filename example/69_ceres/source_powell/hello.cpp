@@ -11,13 +11,14 @@ using ceres::CostFunction;
 using ceres::Problem;
 using ceres::Solve;
 using ceres::Solver;
+
 int main(int argc, char **argv) {
-  google::InitGoogleLogging(argv[0]);
-  auto x1 = (3.0);
-  auto x2 = (-1.0);
-  auto x3 = (0.);
-  auto x4 = (1.0);
-  auto problem = Problem();
+  google::InitGoogleLogging((argv)[(0)]);
+  auto x1{3.0};
+  auto x2{-1.0};
+  auto x3{0.};
+  auto x4{1.0};
+  auto problem{Problem()};
   problem.AddResidualBlock(new AutoDiffCostFunction<F1, 1, 1, 1>(new F1),
                            nullptr, &(x1), &(x2));
   problem.AddResidualBlock(new AutoDiffCostFunction<F2, 1, 1, 1>(new F2),
@@ -26,11 +27,11 @@ int main(int argc, char **argv) {
                            nullptr, &(x2), &(x3));
   problem.AddResidualBlock(new AutoDiffCostFunction<F4, 1, 1, 1>(new F4),
                            nullptr, &(x1), &(x4));
-  auto options = Solver::Options();
-  auto summary = Solver::Summary();
-  options.minimizer_progress_to_stdout = true;
-  options.max_num_iterations = 100;
-  options.linear_solver_type = ceres::DENSE_QR;
+  auto options{Solver::Options()};
+  auto summary{Solver::Summary()};
+  (options.minimizer_progress_to_stdout) = (true);
+  (options.max_num_iterations) = (100);
+  (options.linear_solver_type) = (ceres::DENSE_QR);
   Solve(options, &problem, &summary);
   {
 

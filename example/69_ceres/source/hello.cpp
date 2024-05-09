@@ -10,17 +10,18 @@ using ceres::CostFunction;
 using ceres::Problem;
 using ceres::Solve;
 using ceres::Solver;
+
 int main(int argc, char **argv) {
-  google::InitGoogleLogging(argv[0]);
-  auto initial_x = (5.0);
-  auto x = initial_x;
-  auto problem = Problem();
-  auto *cost_function =
-      new AutoDiffCostFunction<CostFunctor, 1, 1>(new CostFunctor);
+  google::InitGoogleLogging((argv)[(0)]);
+  auto initial_x{5.0};
+  auto x{initial_x};
+  auto problem{Problem()};
+  auto *cost_function{
+      new AutoDiffCostFunction<CostFunctor, 1, 1>(new CostFunctor)};
   problem.AddResidualBlock(cost_function, nullptr, &x);
-  auto options = Solver::Options();
-  auto summary = Solver::Summary();
-  options.minimizer_progress_to_stdout = true;
+  auto options{Solver::Options()};
+  auto summary{Solver::Summary()};
+  (options.minimizer_progress_to_stdout) = (true);
   Solve(options, &problem, &summary);
   {
 
