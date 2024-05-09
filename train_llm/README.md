@@ -364,3 +364,8 @@ Model Output:
       (kj::NEVER_DONE.wait waitScope)
       (return 0))))
 ```
+
+- interesting that it doesn't use (dot ) but just include the "." into the operator name
+- it doesn't declare the type of variable server properly
+- it doesn't use (?) for the ternary operator
+- (in-package) and (ql:quickload) is wrong
