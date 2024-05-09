@@ -12,6 +12,10 @@ import sys
 directory=pathlib.Path("/home/martin/stage/cl-cpp-generator2")
 training_data=[]
 for f in ((directory)/("example")).rglob("gen*.lisp"):
+    # exclude python generating files
+    content=f.read_text()
+    if ( re.search(r"""\(ql:quickload "cl-py-generator"\)""", content) ):
+        continue
     # genXX.lisp -> sourceXX
     output_dir=((f.parent)/("source{}".format(f.stem[3:5])))
     if ( output_dir.exists() ):

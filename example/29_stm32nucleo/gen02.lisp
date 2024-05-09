@@ -11,7 +11,7 @@
 (progn
   (defparameter *path* "/home/martin/stage/cl-cpp-generator2/example/29_stm32nucleo/")
   (defparameter *code-file* "run_00_uart")
-  (defparameter *source* (format nil "~a/source2/~a" *path* *code-file*))
+  (defparameter *source* (format nil "~a/source02/~a" *path* *code-file*))
   
   (defparameter *inspection-facts*
     `((10 "")))

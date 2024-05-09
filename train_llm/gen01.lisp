@@ -83,7 +83,15 @@
 	(setf training_data (list))
 	,(let ((l-ext `("cpp" "c" "h" "hpp" "cu")))
 	   `(for (f (dot (/ directory (string "example")) (rglob (string "gen*.lisp"))))
-	       (comments "genXX.lisp -> sourceXX")
+
+		 (do0
+		  (comments "exclude python generating files")
+		  (setf content (f.read_text))
+		  (when (re.search (rstring3 "\\(ql:quickload \"cl-py-generator\"\\)"
+					     )
+				   content)
+		    continue))
+		 (comments "genXX.lisp -> sourceXX")
 	       (setf output_dir (/ f.parent (dot (string "source{}")
 						 (format (aref f.stem (slice 3 5))))))
 	       (if (output_dir.exists)

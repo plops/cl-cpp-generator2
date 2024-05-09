@@ -26,7 +26,7 @@
 				   )))
 
 (progn
-  (defparameter *source-dir* #P"example/29_stm32nucleo/source/")
+  (defparameter *source-dir* #P"example/29_stm32nucleo/source00/")
   
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"

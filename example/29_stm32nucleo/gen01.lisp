@@ -21,7 +21,7 @@
 ;; qmake -project
 ;; qmake source1
 (progn
-  (defparameter *source-dir* #P"example/29_stm32nucleo/source1/")
+  (defparameter *source-dir* #P"example/29_stm32nucleo/source01/")
   
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
