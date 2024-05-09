@@ -81,7 +81,8 @@
 
 
 	(setf training_data (list))
-	,(let ((l-ext `(".cpp" ".c" ".h" ".hpp" ".cu" ".cl" "CMakeLists.txt")))
+	,(let ((l-ext `(".cpp" ".c" ".h" ".hpp" ;".cu" ".cl" "CMakeLists.txt"
+			       )))
 	   `(do0
 	     (for (f (dot (/ directory (string "example")) (rglob (string "gen*.lisp"))))
 
@@ -151,10 +152,10 @@
 			  collect
 			  `(setf (aref df (string ,(format nil "~a_len" e)))
 				 (dot df ,e str (len))))
-		  ;; df has 147 rows
+		  ;; df has 142 rows
 		  (setf df1 (aref df (& (< df.text_input_len 40000)
 					(< df.output_len 5000))))
-		  ;; only 26 rows fulfill this criterion
+		  ;; only 25 rows fulfill this criterion (180kB)
 		  (df1.to_csv (string "training_data.csv")
 			      :index False))
 	     #+nil (with (as (open (string "training_data.json")

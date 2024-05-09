@@ -20,7 +20,7 @@ for f in ((directory)/("example")).rglob("gen*.lisp"):
     # genXX.lisp -> sourceXX
     output_dir=((f.parent)/("source{}".format(f.stem[3:5])))
     if ( output_dir.exists() ):
-        output_files=((list(output_dir.rglob("*.cpp")))+(list(output_dir.rglob("*.c")))+(list(output_dir.rglob("*.h")))+(list(output_dir.rglob("*.hpp")))+(list(output_dir.rglob("*.cu")))+(list(output_dir.rglob("*.cl")))+(list(output_dir.rglob("*CMakeLists.txt"))))
+        output_files=((list(output_dir.rglob("*.cpp")))+(list(output_dir.rglob("*.c")))+(list(output_dir.rglob("*.h")))+(list(output_dir.rglob("*.hpp"))))
         if ( ((0)<(len(output_files))) ):
             print(f"Info 1: Found match {f} {len(output_files)}.")
             lisp_content=f.read_text()
@@ -36,7 +36,7 @@ for f in ((directory)/("example")).rglob("gen*.lisp"):
         match=re.search(r"""\(defparameter \*source-dir\* .*\"(.*)\"\)""", content)
         if ( match ):
             output_dir=((directory)/(match.group(1)))
-            output_files=((list(output_dir.rglob("*.cpp")))+(list(output_dir.rglob("*.c")))+(list(output_dir.rglob("*.h")))+(list(output_dir.rglob("*.hpp")))+(list(output_dir.rglob("*.cu")))+(list(output_dir.rglob("*.cl")))+(list(output_dir.rglob("*CMakeLists.txt"))))
+            output_files=((list(output_dir.rglob("*.cpp")))+(list(output_dir.rglob("*.c")))+(list(output_dir.rglob("*.h")))+(list(output_dir.rglob("*.hpp"))))
             if ( ((0)<(len(output_files))) ):
                 print(f"Info 2: Found match {f} {len(output_files)}.")
                 lisp_content=f.read_text()
