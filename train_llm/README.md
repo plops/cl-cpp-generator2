@@ -88,7 +88,7 @@ i have a directory with many examples of input lisp file (always named gen[0-9][
 /home/martin/stage/cl-cpp-generator2/example/95_vr/gen00.lisp
 ```
 
-the output can be cpp, c or h files. typically they are placed into a source<a><b> folder if the input file was called gen<a><b>.lisp.
+the output can be cpp, c or h files. typically they are placed into a `source<a><b>` folder if the input file was called `gen<a><b>.lisp`.
 
 however, sometimes this mapping to the output directory is not so clear. e.g.
 /home/martin/stage/cl-cpp-generator2/example/08_copernicus_radar/gen02.lisp
