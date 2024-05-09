@@ -41,6 +41,9 @@
 		 "pip install lmfit")
        (imports (os
 		 time
+		 json
+		 pathlib
+		 re
 		 ;torch
 		 ;(pd pandas)
 		 ;lmfit
@@ -71,6 +74,33 @@
 			    month
 			    date
 			    (- tz))))))
+
+       (do0
+	(setf directory (dot pathlib (Path (string "/home/martin/stage/cl-cpp-generator2/example"))))
+
+
+	(setf training_data (list))
+
+	(for (f (directory.rglob (string "gen*.lisp")))
+	     (comments "genXX.lisp -> sourceXX")
+	     (setf output_dir (/ f.parent (dot (string "source{}")
+					       (format (aref f.stem (slice 3 5))))))
+	     (if (output_dir.exists)
+		 (setf output_files (+ ,@(loop for e in `("cpp" "c" "h")
+					       collect
+					       `("list" (dot output_dir (glob (string ,(format nil "*.~a" e))))))))
+		 (do0
+		  (setf content (f.read_text))
+		  (setf match (re.search (rstring3 "\\(defparameter \\*source-dir\\* #P(.*)""\\)")
+					 content))
+		  (if match
+		      (setf output_dir (pathlib.Path (match.group 1))
+			    output_files (+ ,@(loop for e in `("cpp" "c" "h")
+					       collect
+					       `("list" (dot output_dir (glob (string ,(format nil "*.~a" e))))))))
+		      (do0
+		       (print (fstring "Warning: Could not determine output directory for {f}."))
+		       continue))))))
        
        
        ))))
