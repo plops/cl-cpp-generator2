@@ -28,7 +28,7 @@
 # Python code
 
 i have a directory with many examples of input lisp file (always named gen[0-9][0-9].lisp) and corresponding output:
-
+```
 /home/martin/stage/cl-cpp-generator2/example/44_asio/source/simple_01_server.cpp
 /home/martin/stage/cl-cpp-generator2/example/44_asio/source/vis_03_connection.cpp
 /home/martin/stage/cl-cpp-generator2/example/44_asio/source/simple_00_client.cpp
@@ -86,7 +86,7 @@ i have a directory with many examples of input lisp file (always named gen[0-9][
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Framebuffer.h
 /home/martin/stage/cl-cpp-generator2/example/95_vr/util.lisp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/gen00.lisp
-
+```
 
 the output can be cpp, c or h files. typically they are placed into a source<a><b> folder if the input file was called gen<a><b>.lisp.
 
@@ -94,7 +94,7 @@ however, sometimes this mapping to the output directory is not so clear. e.g.
 /home/martin/stage/cl-cpp-generator2/example/08_copernicus_radar/gen02.lisp
 
 is written into the folder source_doppler. this can be seen inside of gen02.lisp:
-```
+```common-lisp
   (defparameter *source-dir* #P"example/08_copernicus_radar/source_doppler/")
 ```
 
@@ -123,7 +123,7 @@ here is the corresponding abreviated entry for
 /home/martin/stage/cl-cpp-generator2/example/95_vr/gen00.lisp
 
 
-```
+```json
         {
              'text_input': '// source00/App.cpp
   // no preamble
