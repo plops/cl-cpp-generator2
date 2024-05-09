@@ -369,3 +369,5 @@ Model Output:
 - it doesn't declare the type of variable server properly
 - it doesn't use (?) for the ternary operator
 - (in-package) and (ql:quickload) is wrong
+
+- but this is promising progress
