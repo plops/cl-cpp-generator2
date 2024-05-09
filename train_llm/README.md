@@ -249,10 +249,41 @@ create_training_data(directory)
 
 ```
 
+This is the tiny training dataset:
+```
+                           path                                         text_input                                             output  text_input_len  output_len
+13            01_helloworld/gen  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...             228         521
+94              02_shader/gen01  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            3124        4363
+48        102_simple_test/gen00  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...             421         988
+32                103_xcb/gen00  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            2451        3648
+23          106_clang_ast/gen00  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...             964        2565
+22          106_clang_ast/gen01  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            1220        1924
+35              111_audio/gen00  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...           11308        4240
+33              111_audio/gen01  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            2902        4338
+34              111_audio/gen02  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            3125        4538
+133        115_microbench/gen01  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            1425        3259
+66        118_opencascade/gen00  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            1429        2291
+97    119_vulkan_hpp_comp/gen00  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            2408        3519
+105         126_quant_pow/gen00  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            1795        3139
+41         127_opencv_amd/gen01  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...             514        1247
+42         127_opencv_amd/gen02  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...             989        1823
+47         127_opencv_amd/gen03  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...             723        1556
+43         127_opencv_amd/gen04  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...             890        1896
+40         127_opencv_amd/gen05  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...             669        1382
+45         127_opencv_amd/gen06  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            1027        1745
+92          128_liquiddsp/gen00  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            3912        2799
+1             138_lambdas/gen01  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            3186        3101
+16      139_cxx20_modules/gen01  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            1084        2515
+90             140_halide/gen01  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...             695        1359
+138  64_opencv_star_video/gen00  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...            1464        4365
+38          82_static_cpp/gen00  Convert the following C++ code into s-expressi...  (eval-when (:compile-toplevel :execute :load-t...             943        4798
+
+```
+
 
 # Example usage
 
-Input prompt:
+Input prompt (this is example 110, which wasn't in the training dataset):
 
 ```C++
 Convert the following c++ code into s-expressions:
