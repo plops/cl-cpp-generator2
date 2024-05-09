@@ -167,6 +167,9 @@ note that the input may contain a listing of multiple files.
 
 correction: the training data shall be formatted as csv with two columns "text_input" and "output". json can't be uploaded to train gemini 1.0
 
+Each example input must have fewer than 40,000 characters
+Each example output must have fewer than 5,000 characters 
+
 create python code that performs the following steps:
 
 - iterate through directory and list input .lisp files with corresponding output files (if relationship is clear from filenames)
