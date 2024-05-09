@@ -11,17 +11,18 @@ extern State state;
 using namespace std::chrono_literals;
 
 // implementation
-State state = {};
+State state{{}};
+
 int main(int argc, char **argv) {
-  state._main_version = "208a658f25fb56beee9f50f23298edfdb2be096b";
-  state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
-                           "master/example/48_future";
-  state._code_generation_time = "21:29:12 of Friday, 2020-12-04 (GMT+1)";
-  state._start_time =
-      std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  (state._main_version) = ("b08cdbf9caa770a7715b0a8121923d729c8fbf94");
+  (state._code_repository) = ("https://github.com/plops/cl-cpp-generator2/tree/"
+                              "master/example/48_future");
+  (state._code_generation_time) = ("11:25:23 of Thursday, 2024-05-09 (GMT+1)");
+  (state._start_time) =
+      (std::chrono::high_resolution_clock::now().time_since_epoch().count());
   {
 
-    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
+    auto lock{std::unique_lock<std::mutex>(state._stdout_mutex)};
     (std::cout) << (std::setw(10))
                 << (std::chrono::high_resolution_clock::now()
                         .time_since_epoch()
@@ -38,7 +39,7 @@ int main(int argc, char **argv) {
   }
   {
 
-    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
+    auto lock{std::unique_lock<std::mutex>(state._stdout_mutex)};
     (std::cout) << (std::setw(10))
                 << (std::chrono::high_resolution_clock::now()
                         .time_since_epoch()
@@ -46,16 +47,16 @@ int main(int argc, char **argv) {
                 << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
                 << (":") << (__LINE__) << (" ") << (__func__) << (" ")
                 << ("start") << (" ") << (std::setw(8)) << (" argc='") << (argc)
-                << ("'") << (std::setw(8)) << (" argv[0]='") << (argv[0])
-                << ("'") << (std::endl) << (std::flush);
+                << ("'") << (std::setw(8)) << (" (argv)[(0)]='")
+                << ((argv)[(0)]) << ("'") << (std::endl) << (std::flush);
   }
-  auto results = std::vector<std::future<int>>();
+  auto results{std::vector<std::future<int>>()};
   for (auto i = 0; (i) < (12); (i) += (1)) {
-    results.push_back(([](int v) {
-      auto task = std::packaged_task<int()>([v]() {
+    results.push_back(([&](int v) {
+      auto task{std::packaged_task<int()>([v]() {
         {
 
-          auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
+          auto lock{std::unique_lock<std::mutex>(state._stdout_mutex)};
           (std::cout) << (std::setw(10))
                       << (std::chrono::high_resolution_clock::now()
                               .time_since_epoch()
@@ -67,16 +68,16 @@ int main(int argc, char **argv) {
                       << (std::endl) << (std::flush);
         }
         return v;
-      });
-      auto result = task.get_future();
+      })};
+      auto result{task.get_future()};
       // spawn thread
-      ;
-      auto th = std::thread(std::move(task));
+
+      auto th{std::thread(std::move(task))};
       th.detach();
       return result;
     })(i));
   }
-  for (auto &r : results) {
+  for (const auto &&r : results) {
     r.wait();
   }
   return 0;
