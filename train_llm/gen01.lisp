@@ -160,7 +160,7 @@
 	      ;; loss went from 700 to 100 but not stable yet
 
 	      ;; second training: i added a prompt "Convert the following C++ code to s-expressions:"
-	      ;; 21 epochs, learning rate .1, batch 4
+	      ;; 25 examples, 29 epochs, learning rate .1, batch 4
 	      ;; went from 800 to 100 and seems kind of stable
 	      #+nil (with (as (open (string "training_data.json")
 				    (string "w"))
