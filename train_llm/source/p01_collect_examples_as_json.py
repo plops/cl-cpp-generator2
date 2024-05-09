@@ -24,7 +24,7 @@ for f in ((directory)/("example")).rglob("gen*.lisp"):
         if ( ((0)<(len(output_files))) ):
             print(f"Info 1: Found match {f} {len(output_files)}.")
             lisp_content=f.read_text()
-            text_input=""
+            text_input="Convert the following C++ code into s-expressions: \n"
             for output_file in output_files:
                 text_input += f"// {output_file}\n{output_file.read_text()}\n\n"
             training_data.append(dict(path=f"{f.parent.stem}/{f.stem}", text_input=text_input, output=lisp_content))
@@ -40,10 +40,10 @@ for f in ((directory)/("example")).rglob("gen*.lisp"):
             if ( ((0)<(len(output_files))) ):
                 print(f"Info 2: Found match {f} {len(output_files)}.")
                 lisp_content=f.read_text()
-                text_input=""
+                text_input="Convert the following C++ code into s-expressions: \n"
                 for output_file in output_files:
                     text_input += f"// {output_file}\n{output_file.read_text()}\n\n"
-                training_data.append(dict(text_input=text_input, output=lisp_content))
+                training_data.append(dict(path=f"{f.parent.stem}/{f.stem}", text_input=text_input, output=lisp_content))
             else:
                 print(f"Warning 2: Not enough files for {f} in {output_dir} gp1={match.group(1)}.")
                 print(f"Warning 4: match={match} ls {output_dir}={output_files}.")
