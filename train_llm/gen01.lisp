@@ -77,12 +77,12 @@
 			    (- tz))))))
 
        (do0
-	(setf directory (dot pathlib (Path (string "/home/martin/stage/cl-cpp-generator2/example"))))
+	(setf directory (dot pathlib (Path (string "/home/martin/stage/cl-cpp-generator2"))))
 
 
 	(setf training_data (list))
-	,(let ((l-ext `("cpp" "c" "h" "hpp")))
-	  `(for (f (directory.rglob (string "gen*.lisp")))
+	,(let ((l-ext `("cpp" "c" "h" "hpp" "cu")))
+	   `(for (f (dot (/ directory (string "example")) (rglob (string "gen*.lisp"))))
 	       (comments "genXX.lisp -> sourceXX")
 	       (setf output_dir (/ f.parent (dot (string "source{}")
 						 (format (aref f.stem (slice 3 5))))))
@@ -103,7 +103,7 @@
 		    (if match
 			(do0
 		       4
-			 (setf output_dir (/ (pathlib.Path (string "/home/martin/stage/cl-cpp-generator2/"))
+			 (setf output_dir (/ directory
 					     (match.group 1))
 			       output_files (+ ,@(loop for e in l-ext
 						       collect
@@ -113,7 +113,7 @@
 			     (do0
 			      (print (fstring "Warning 2: Not enough files for {f} in {output_dir} gp1={match.group(1)}."))
 			      (print (fstring "Warning 4: match={match} ls {output_dir}={output_files}."))
-			      (sys.exit)
+			      
 			      continue)))
 			(do0
 			 (print (fstring "Warning 3: Could not determine output directory for {f}."))
