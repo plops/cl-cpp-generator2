@@ -194,8 +194,7 @@ create python code that performs the following steps:
 
     Save JSON: The collected training examples are saved to a JSON file named training_data.json.
 	
-```
-
+```Python
 import os
 import json
 import re
