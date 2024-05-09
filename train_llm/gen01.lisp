@@ -81,7 +81,7 @@
 
 
 	(setf training_data (list))
-	,(let ((l-ext `("cpp" "c" "h" "hpp" "cu" "cl")))
+	,(let ((l-ext `(".cpp" ".c" ".h" ".hpp" ".cu" ".cl" "CMakeLists.txt")))
 	   `(for (f (dot (/ directory (string "example")) (rglob (string "gen*.lisp"))))
 
 		 (do0
@@ -99,7 +99,7 @@
 		   (do0
 		    (setf output_files (+ ,@(loop for e in l-ext
 						  collect
-						  `("list" (dot output_dir (glob (string ,(format nil "*.~a" e))))))))
+						  `("list" (dot output_dir (rglob (string ,(format nil "*~a" e))))))))
 		    (if (< 0 (len output_files))
 			(print (fstring "Info 1: Found match {f} {len(output_files)}."))
 			(do0
@@ -116,7 +116,7 @@
 					     (match.group 1))
 			       output_files (+ ,@(loop for e in l-ext
 						       collect
-						       `("list" (dot output_dir (glob (string ,(format nil "*.~a" e))))))))
+						       `("list" (dot output_dir (rglob (string ,(format nil "*~a" e))))))))
 			 (if (< 0 (len output_files))
 			     (print (fstring "Info 2: Found match {f} {len(output_files)}."))
 			     (do0
