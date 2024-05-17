@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# sudo emerge -av dev-python/flatbuffers
 # flatc --python image.fbs
 import os
 import time

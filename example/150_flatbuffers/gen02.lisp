@@ -30,7 +30,8 @@
      (format nil "~a/source01/src/p~a_~a" *path* *idx* notebook-name)
      `(do0
        "#!/usr/bin/env python3"
-       (comments "flatc --python image.fbs")
+       (comments "sudo emerge -av dev-python/flatbuffers"
+		 "flatc --python image.fbs")
        (imports (os
 		 time
 		 flatbuffers

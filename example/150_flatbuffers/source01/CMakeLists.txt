@@ -23,4 +23,4 @@ include_directories(${FLATBUFFERS_INCLUDE_DIRS})
 add_executable(image_serialize src/main.cpp src/image_generated.h)
 
 # Link against the FlatBuffers library
-target_link_libraries(image_serialize ${FLATBUFFERS_LIBRARIES})
+# target_link_libraries(image_serialize ${FLATBUFFERS_LIBRARIES})
