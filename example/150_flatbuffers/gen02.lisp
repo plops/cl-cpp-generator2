@@ -37,7 +37,7 @@
 		 flatbuffers
 		 (np numpy)))
        ;(imports ((plt matplotlib.pyplot)))
-       "from MyImage.image_generated import Image"
+       "from MyImage.Image import Image"
 
        #+nil(do0
 	     (setf start_time (time.time)

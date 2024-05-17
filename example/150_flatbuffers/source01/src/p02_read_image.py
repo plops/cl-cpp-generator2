@@ -5,7 +5,7 @@ import os
 import time
 import flatbuffers
 import numpy as np
-from MyImage.image_generated import Image
+from MyImage.Image import Image
 with open("image.bin", "rb") as f:
     buf=f.read()
 image=Image.GetRootAsImage(bytes(buf), 0)
