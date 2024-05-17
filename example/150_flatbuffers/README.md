@@ -1,8 +1,9 @@
 
-|       |     |                                   |
-|-------|-----|-----------------------------------|
-| gen01 | c++ | writes image into flatbuffer file |
-|       |     |                                   |
+|       |     |                                       |
+|-------|-----|---------------------------------------|
+| gen01 | c++ | writes image into flatbuffer file     |
+| gen02 | py  | read flatbuffer file into numpy array |
+|       |     |                                       |
 
 # Intro
 

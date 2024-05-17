@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
   auto image{MyImage::CreateImageDirect(builder, width, height, &imageData)};
   builder.Finish(image);
   auto output{std::ofstream("image.bin", std::ios::binary)};
-  output.write(reinterpret_cast<const char *>(builder.data()),
+  output.write(reinterpret_cast<const char *>(builder.GetBufferPointer()),
                builder.GetSize());
   output.close();
   return 0;

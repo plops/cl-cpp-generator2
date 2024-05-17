@@ -63,7 +63,7 @@
 	 (let ((output (std--ofstream (string "image.bin")
 				      std--ios--binary)))
 	   (output.write ("reinterpret_cast<const char*>"
-			  (builder.data))
+			  (builder.GetBufferPointer))
 			 (builder.GetSize))
 	   (output.close))
 	 )
