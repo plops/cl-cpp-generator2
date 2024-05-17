@@ -1,0 +1,7 @@
+namespace MyImage;
+table Image {
+            width:uint
+    height:uint
+    data:[ubyte]; 
+};
+root_type Image;
