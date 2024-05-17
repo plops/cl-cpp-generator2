@@ -34,7 +34,6 @@ cv::Mat CRNN::preprocess(cv::Mat image, cv::Mat rbbox) {
   return cv::dnn::blobFromImage(cropped, 1.0F / 127.50F, input_size,
                                 cv::Scalar::all(127.50F));
 }
-std::u16string CRNN::infer(cv::Mat image, cv::Mat rbbox) {
   auto inputBlob{preprocess(image, rbbox)};
   model.setInput(inputBlob);
   auto outputBlob{model.forward()};

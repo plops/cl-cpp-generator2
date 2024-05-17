@@ -26,12 +26,11 @@
 		     *source-dir*))
    `(do0
      (space namespace MyImage)
-     (space table Image
+     (space-n table Image
 	    (progn
-	      (do0
-	       "width:uint"
-	       "height:uint"
-	       (aref "data:" ubyte))))
+	      (space "width:uint")
+	      (space "height:uint")
+	      (aref "data:" ubyte)))
      (space root_type Image))
    :omit-parens t
    :format nil
