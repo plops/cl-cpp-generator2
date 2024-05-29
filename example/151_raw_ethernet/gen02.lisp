@@ -47,7 +47,12 @@
       system_error
       format
       cstdint
-      cstring)
+      cstring
+      chrono
+      thread
+      )
+
+     (comments "Note: not working, yet")
 
      (comments "assume we receive a packet for each line of a video camera"
 	       "i didn't add error handling. i suggest strace instead")
@@ -120,8 +125,8 @@
 	      (let ((current_block 0))
 		(comments "packet processing loop")
 		(while true
-		       (let ((pfd (pollfd (curly (space (curly (= .fd sockfd)
-							       (= .events POLLIN))))))))
+		       (let ((pfd (pollfd (space (curly (= .fd sockfd)
+							(= .events POLLIN)))))))
 		       (let ((pollresult (poll &pfd 1 -1)))
 			 (when (< 0 pollresult)
 			   (dotimes (frame_idx (static_cast<int> ring_info.tp_frame_nr))
@@ -135,7 +140,16 @@
 							     hdr->tp_next_offset))
 				       (videoLine (space new (paren placement_address)
 							 (VideoLine))))
-				   ,(lprint :vars `(videoLine->width)))))))))))
+				   ,(lprint :vars `(videoLine->width)))
+				 (setf hdr->hv1.tp_rxhash 0)
+				 (comments "delete of videoLine not required as it is placement new and memory is in ring buffer")))
+			     )
+			   (do0 (comments "move to next block")
+				  (setf current_block (% (+ current_block 1)
+							 ring_info.tp_block_nr)))))
+		       (comments "prevent busy wait")
+		       (std--this_thread--sleep_for (std--chrono--microseconds 1))
+		       )))
 	    )
 	 ("const std::system_error&" (ex)
 	   (<< std--cerr

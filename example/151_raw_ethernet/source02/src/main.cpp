@@ -2,6 +2,7 @@
 
 #include <arpa/inet.h>
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <cstring>
 #include <format>
@@ -14,7 +15,10 @@
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <system_error>
+#include <thread>
 #include <unistd.h>
+// Note: not working, yet
+
 // assume we receive a packet for each line of a video camera
 // i didn't add error handling. i suggest strace instead
 
@@ -66,7 +70,7 @@ int main(int argc, char **argv) {
     // packet processing loop
 
     while (true) {
-      auto pfd{pollfd({{.fd = sockfd, .events = POLLIN}})};
+      auto pfd{pollfd({.fd = sockfd, .events = POLLIN})};
       auto pollresult{poll(&pfd, 1, -1)};
       if (0 < pollresult) {
         for (auto frame_idx = 0;
@@ -82,9 +86,18 @@ int main(int argc, char **argv) {
             std::cout << ""
                       << " videoLine->width='" << videoLine->width << "' "
                       << std::endl;
+            hdr->hv1.tp_rxhash = 0;
+            // delete of videoLine not required as it is placement new and
+            // memory is in ring buffer
           }
         }
+        // move to next block
+
+        current_block = ((current_block + 1) % ring_info.tp_block_nr);
       }
+      // prevent busy wait
+
+      std::this_thread::sleep_for(std::chrono::microseconds(1));
     }
   } catch (const std::system_error &ex) {
     std::cerr << "Error: " << ex.what() << " (" << ex.code() << ")\n";
