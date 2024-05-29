@@ -102,7 +102,7 @@
 		      (check numbytes (string "Failed to receive data"))
 		      (let ((eh (reinterpret_cast<ether_header*> (buf.data)))
 			    (receivedMac ("std::span<const uint8_t, 6>" eh->ether_dhost 6)))
-			;,(lprint :vars `(receivedMac))
+			;(lprint :vars `(receivedMac))
 			
 			)
 		      )

@@ -72,7 +72,9 @@
        ,(lprint :vars `(argc (aref argv 0)))
        (handler-case
 	   (do0
-	    (comments "DGRAM .. don't merge packets together")
+	    (comments "SOCK_STREAM .. merges packets together"
+		      "SOCK_DGRAM  .. don't merge packets together"
+		      "SOCK_RAW    .. capture ethernet header as well")
 	    (let ((sockfd (socket PF_PACKET
 				  SOCK_DGRAM
 				  (htons ETH_P_ALL)
