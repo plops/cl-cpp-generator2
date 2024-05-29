@@ -103,7 +103,7 @@
 
 	      (let ((ll (sockaddr_ll (curly (= .sll_family AF_PACKET)
 					    (= .sll_protocol (htons ETH_P_ALL))
-					    (= .sll_ifindex (static_cast<int> (if_nametoindex (string "wlan0"))))
+					    (= .sll_ifindex (static_cast<int> (if_nametoindex (string "lo"))))
 					    (= .sll_hatype ARPHRD_ETHER)
 					    (= .sll_pkttype PACKET_BROADCAST)
 					    (= .sll_halen 0)
