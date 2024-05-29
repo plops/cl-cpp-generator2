@@ -31,6 +31,7 @@
       linux/if_packet.h
       ;linux/ip.h
       ;linux/udp.h
+ 
       net/if.h
       netinet/ether.h
       ;sys/ioctl.h
@@ -72,10 +73,10 @@
 				  (htons ETH_P_ALL)
 				  ))))
 	    (comments "block release timeout 10ms")
-	    (let ((packet_size 512)
+	    (let ((packet_size 512U)
 		  (frame_size packet_size)
-		  (frame_nr 2048)
-		  (block_nr 2)
+		  (frame_nr 2048U)
+		  (block_nr 2U)
 		  (req (space tpacket_req3 (curly (= .tp_block_size (/ (* frame_size
 									  frame_nr)
 								       block_nr))
@@ -93,7 +94,48 @@
 	      (setsockopt sockfd SOL_PACKET
 			  PACKET_RX_RING
 			  &req
-			  (sizeof req)))
+			  (sizeof req))
+
+	      (let ((ll (sockaddr_ll (curly (= .sll_family AF_PACKET)
+					    (= .sll_protocol (htons ETH_P_ALL))
+					    (= .sll_ifindex (static_cast<int> (if_nametoindex (string "wlan0"))))
+					    (= .sll_hatype ARPHRD_ETHER)
+					    (= .sll_pkttype PACKET_BROADCAST)
+					    (= .sll_halen 0)
+					    ))))
+		(bind sockfd (reinterpret_cast<sockaddr*> &ll)
+		  (sizeof ll))
+		)
+	      (let ((ring_info (tpacket_req3))
+		    (len (static_cast<socklen_t> (sizeof ring_info))))
+		(getsockopt sockfd SOL_PACKET PACKET_RX_RING &ring_info &len))
+	      (let ((ring_buffer (static_cast<char*>
+				  (mmap 0
+					(* ring_info.tp_block_size
+					   ring_info.tp_block_nr)
+					(logior PROT_READ PROT_WRITE)
+					(logior MAP_SHARED MAP_LOCKED)
+					sockfd 0)))))
+
+	      (let ((current_block 0))
+		(comments "packet processing loop")
+		(while true
+		       (let ((pfd (pollfd (curly (space (curly (= .fd sockfd)
+							       (= .events POLLIN))))))))
+		       (let ((pollresult (poll &pfd 1 -1)))
+			 (when (< 0 pollresult)
+			   (dotimes (frame_idx (static_cast<int> ring_info.tp_frame_nr))
+			     (let ((hdr (reinterpret_cast<tpacket3_hdr*>
+					 (+ ring_buffer
+					    (* current_block ring_info.tp_block_size)
+					    (* frame_idx ring_info.tp_frame_size)))))
+			       (when (& TP_STATUS_USER
+					hdr->hv1.tp_rxhash)
+				 (let ((placement_address (+ (reinterpret_cast<char*> hdr)
+							     hdr->tp_next_offset))
+				       (videoLine (space new (paren placement_address)
+							 (VideoLine))))
+				   ,(lprint :vars `(videoLine->width)))))))))))
 	    )
 	 ("const std::system_error&" (ex)
 	   (<< std--cerr
