@@ -12,7 +12,7 @@
 						      ))))
 
 (let ()
-  (defparameter *source-dir* #P"example/151_raw_ethernet/source01/src/")
+  (defparameter *source-dir* #P"example/151_raw_ethernet/source02/src/")
   (defparameter *full-source-dir* (asdf:system-relative-pathname
 				   'cl-cpp-generator2
 				   *source-dir*))
@@ -29,86 +29,71 @@
      (include<>
       arpa/inet.h
       linux/if_packet.h
-      linux/ip.h
-      linux/udp.h
+      ;linux/ip.h
+      ;linux/udp.h
       net/if.h
       netinet/ether.h
-      sys/ioctl.h
+      ;sys/ioctl.h
       sys/socket.h
       unistd.h
-
+      sys/mman.h
+      poll.h
+      
+      cstring
       iostream
       array
       span
-      string
       system_error
       format
-
+      cstdint
       cstring)
-     (defun check (result msg)
-       (declare (type int result)
-		(type "const std::string&" msg))
-       (when (== -1 result)
-	 (throw (std--system_error errno
-				   (std--generic_category)
-				   msg))))
+
+     (comments "assume we receive a packet for each line of a video camera"
+	       "i didn't add error handling. i suggest strace instead")
+     
+     (defclass+ VideoLine ()
+       "public:"
+       "uint16_t width;"
+       "uint16_t height;"
+       "uint32_t timestamp;"
+       "std::array<uint8_t,320> imageData;"
+       )
+     
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
 		(values int))
+       ,(lprint :vars `(argc (aref argv 0)))
        (handler-case
 	   (do0
-	    (comments "Open PF_PACKET socket")
-	    (let ((ifName (string "lo"))
-		  (sockfd (socket PF_PACKET SOCK_RAW (htons (hex #x800)))))
-	      (check sockfd (string "Failed to create socket")))
-	    (do0
-	     (comments "Set interface to promiscuous mode")
-	     (let ((ifopts "ifreq{}"))
-	       (strncpy ifopts.ifr_name
-			ifName
-			(- IFNAMSIZ 1))
-	       (check (ioctl sockfd SIOCGIFFLAGS &ifopts)
-		      (string "Failed to get interface flags"))
-	       (setf ifopts.ifr_flags (logior ifopts.ifr_flags
-					     IFF_PROMISC))
-	       (check (ioctl sockfd SIOCSIFFLAGS &ifopts)
-		      (string "Failed to set interface flags"))))
-	    (do0
-	     (comments "Allow the socket to be reused")
-	     (let ((sockopt SO_REUSEADDR))
-	       (check
-		(setsockopt sockfd SOL_SOCKET
-			    SO_REUSEADDR
-			    &sockopt (sizeof sockopt))
-		(string "Failed to set socket option SO_REUSEADDR"))))
+	    (comments "DGRAM .. don't merge packets together")
+	    (let ((sockfd (socket PF_PACKET
+				  SOCK_DGRAM
+				  (htons ETH_P_ALL)
+				  ))))
+	    (comments "block release timeout 10ms")
+	    (let ((packet_size 512)
+		  (frame_size packet_size)
+		  (frame_nr 2048)
+		  (block_nr 2)
+		  (req (space tpacket_req3 (curly (= .tp_block_size (/ (* frame_size
+									  frame_nr)
+								       block_nr))
+						  (= .tp_block_nr block_nr)
 
-	    (do0
-	     (comments "Bind to device")
-	     (check (setsockopt sockfd SOL_SOCKET SO_BINDTODEVICE
-				ifName
-				(- IFNAMSIZ 1))
-		    (string "Failed to set socket option SO_BINDTODEVICE")))
-	    (do0
-	     (comments "Receive loop")
-	     (while true
-		    (let ((buf "std::array<uint8_t,1024>{}")
-			  (numbytes (recvfrom sockfd
-					      (buf.data)
-					      (buf.size)
-					      0
-					      nullptr
-					      nullptr)))
-		      (check numbytes (string "Failed to receive data"))
-		      (let ((eh (reinterpret_cast<ether_header*> (buf.data)))
-			    (receivedMac ("std::span<const uint8_t, 6>" eh->ether_dhost 6)))
-			;,(lprint :vars `(receivedMac))
-			
-			)
-		      )
-	      ))
-	    (close sockfd)
-	    
+						  (= .tp_frame_size  frame_size)
+						  (= .tp_frame_nr frame_nr)
+						  (= .tp_retire_blk_tov 10)
+						  (= .tp_sizeof_priv 0)
+						  (= .tp_feature_req_word TP_FT_REQ_FILL_RXHASH)
+						  						  
+						  ;(= .tp_rx_ring 1)
+						  ))))
+	      
+	      (setsockopt sockfd SOL_PACKET
+			  PACKET_RX_RING
+			  &req
+			  (sizeof req)))
 	    )
 	 ("const std::system_error&" (ex)
 	   (<< std--cerr

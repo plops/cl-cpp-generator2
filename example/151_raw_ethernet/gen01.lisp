@@ -18,7 +18,7 @@
 				   *source-dir*))
   (ensure-directories-exist *full-source-dir*)
 
-  
+  (load "util.lisp")
   (write-source 
    (asdf:system-relative-pathname
     'cl-cpp-generator2 
@@ -42,6 +42,7 @@
       span
       string
       system_error
+      format
 
       cstring)
      (defun check (result msg)
@@ -100,7 +101,10 @@
 					      nullptr)))
 		      (check numbytes (string "Failed to receive data"))
 		      (let ((eh (reinterpret_cast<ether_header*> (buf.data)))
-			    (receivedMac ("std::span<const uint8_t, 6>" eh->ether_dhost 6))))
+			    (receivedMac ("std::span<const uint8_t, 6>" eh->ether_dhost 6)))
+			;,(lprint :vars `(receivedMac))
+			
+			)
 		      )
 	      ))
 	    (close sockfd)

@@ -1,13 +1,13 @@
 (defun lprint (&key (msg "")
 		 (vars nil)
 		 )
-  `(<< std--cout
+  #+nil `(<< std--cout
        (std--format
 	(string ,(format nil "~a~{ ~a='{}'~}\\n"
 			 msg
 			 (loop for e in vars collect (emit-c :code e  :omit-redundant-parentheses t)) ))
 	,@vars))
-  #+nil
+  #-nil
   `(<< std--cout
        (string ,(format nil "~a"
 			msg
@@ -15,7 +15,7 @@
 			))
        ,@(loop for e in vars
 	       appending
-	       `((string ,(format nil " ~a='" (emit-c :code e)))
+	       `((string ,(format nil " ~a='" (emit-c :code e :omit-redundant-parentheses t)))
 		 ,e
 		 (string "' ")))   
        std--endl))
