@@ -1,5 +1,3 @@
-// based on https://gist.github.com/austinmarton/2862515
-
 #include <arpa/inet.h>
 #include <array>
 #include <chrono>

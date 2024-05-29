@@ -25,7 +25,7 @@
     (merge-pathnames "main.cpp"
 		     *source-dir*))
    `(do0
-     (comments "based on https://gist.github.com/austinmarton/2862515")
+     
      (include<>
       arpa/inet.h
       linux/if_packet.h
