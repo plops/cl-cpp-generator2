@@ -67,44 +67,25 @@ int main(int argc, char **argv) {
     auto mmap_size{block_size * block_nr};
     auto mmap_base{
         mmap(0, mmap_size, PROT_READ || PROT_WRITE, MAP_SHARED, sockfd, 0)};
-    auto ring_info{tpacket_req3()};
-    auto len{static_cast<socklen_t>(sizeof(ring_info))};
-    getsockopt(sockfd, SOL_PACKET, PACKET_RX_RING, &ring_info, &len);
-    auto ring_buffer{static_cast<char *>(
-        mmap(0, ring_info.tp_block_size * ring_info.tp_block_nr,
-             PROT_READ || PROT_WRITE, MAP_SHARED || MAP_LOCKED, sockfd, 0))};
-    auto current_block{0};
-    // packet processing loop
+    auto rx_buffer_size{block_size * block_nr};
+    auto rx_buffer_addr{mmap_base};
+    auto rx_buffer_idx{0};
+    auto rx_buffer_cnt{(block_size * block_nr) / frame_size};
+    auto base{rx_buffer_addr + rx_buffer_idx * frame_size};
+    volatile tpacket2_hdr *header{static_cast<tpacket2_hdr *>(base)};
+    auto pollfds{pollfd({.fd = sockfd, .events = POLLIN, .revents = 0})};
+    auto poll_res{ppoll(&pollfds, 1, nullptr, nullptr)};
+    if ((POLLIN & pollfds.revents)) {
+      auto data{base + header->tp_net};
+      auto data_len{header->tp_snaplen};
+      auto ts{timespec({.tv_sec = header->tp_sec, .tv_nsec = header->tp_nsec})};
+      std::cout << ""
+                << " ts.tv_sec='" << ts.tv_sec << "' "
+                << " ts.tv_nsec='" << ts.tv_nsec << "' "
+                << " data_len='" << data_len << "' " << std::endl;
+      // hand frame back to kernel
 
-    while (true) {
-      auto pfd{pollfd({.fd = sockfd, .events = POLLIN})};
-      auto pollresult{poll(&pfd, 1, -1)};
-      if (0 < pollresult) {
-        for (auto frame_idx = 0;
-             frame_idx < static_cast<int>(ring_info.tp_frame_nr);
-             frame_idx += 1) {
-          auto hdr{reinterpret_cast<tpacket3_hdr *>(
-              ring_buffer + current_block * ring_info.tp_block_size +
-              frame_idx * ring_info.tp_frame_size)};
-          if ((TP_STATUS_USER & hdr->hv1.tp_rxhash)) {
-            auto placement_address{reinterpret_cast<char *>(hdr) +
-                                   hdr->tp_next_offset};
-            auto videoLine{new (placement_address) VideoLine()};
-            std::cout << ""
-                      << " videoLine->width='" << videoLine->width << "' "
-                      << std::endl;
-            hdr->hv1.tp_rxhash = 0;
-            // delete of videoLine not required as it is placement new and
-            // memory is in ring buffer
-          }
-        }
-        // move to next block
-
-        current_block = ((current_block + 1) % ring_info.tp_block_nr);
-      }
-      // prevent busy wait
-
-      std::this_thread::sleep_for(std::chrono::microseconds(1));
+      header->tp_status = TP_STATUS_KERNEL;
     }
   } catch (const std::system_error &ex) {
     std::cerr << "Error: " << ex.what() << " (" << ex.code() << ")\n";
