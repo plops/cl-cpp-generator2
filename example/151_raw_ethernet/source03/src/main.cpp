@@ -71,10 +71,10 @@ int main(int argc, char **argv) {
     auto rx_buffer_addr{mmap_base};
     auto rx_buffer_idx{0};
     auto rx_buffer_cnt{(block_size * block_nr) / frame_size};
+    auto idx{0};
     while (true) {
       auto pollfds{pollfd({.fd = sockfd, .events = POLLIN, .revents = 0})};
       auto poll_res{ppoll(&pollfds, 1, nullptr, nullptr)};
-      auto idx{0};
       if ((POLLIN & pollfds.revents)) {
         auto base{rx_buffer_addr + idx * frame_size};
         volatile tpacket2_hdr *header{static_cast<tpacket2_hdr *>(base)};
@@ -90,10 +90,9 @@ int main(int argc, char **argv) {
                     << " status='" << status << "' "
                     << " idx='" << idx << "' "
                     << " data_len='" << data_len << "' " << std::endl;
-          // hand frame back to kernel
-
-          header->tp_status = TP_STATUS_KERNEL;
           idx++;
+          base = rx_buffer_addr + idx * frame_size;
+          header = static_cast<tpacket2_hdr *>(base);
         }
       }
     }

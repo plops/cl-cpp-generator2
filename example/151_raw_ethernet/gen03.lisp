@@ -135,38 +135,42 @@
 				     frame_size))))
 	     )
 
+	    (let ((idx 0)))
 	    (while true
-	     (let ((pollfds (pollfd (curly (space (= .fd sockfd))
-					   (space (= .events POLLIN))
-					   (space (= .revents 0)))))
-		   (poll_res (ppoll &pollfds 1 nullptr nullptr)))
+		   (let ((pollfds (pollfd (curly (space (= .fd sockfd))
+						 (space (= .events POLLIN))
+						 (space (= .revents 0)))))
+			 (poll_res (ppoll &pollfds 1 nullptr nullptr)))
 
 	      
-	       (do0
-		(let ((idx 0)))
-		(when (& POLLIN pollfds.revents)
+		     (do0
+		
+		      (when (& POLLIN pollfds.revents)
 
-		  (let ((base (+ rx_buffer_addr
-				 (* idx frame_size)))
-			(header (static_cast<tpacket2_hdr*> base)))
-		    (declare (type "volatile tpacket2_hdr*" header)))
+			(let ((base (+ rx_buffer_addr
+				       (* idx frame_size)))
+			      (header (static_cast<tpacket2_hdr*> base)))
+			  (declare (type "volatile tpacket2_hdr*" header)))
 
-		  (while (& header->tp_status TP_STATUS_USER)
+			(while (& header->tp_status TP_STATUS_USER)
 
-			 (do0
+			       (do0
 		
 		  
-			  (let ((data (+ base header->tp_net))
-				(data_len header->tp_snaplen)
-				(status (& TP_STATUS_USER header->tp_status))
-				(ts (timespec (curly (space (= .tv_sec header->tp_sec))
-						     (space (= .tv_nsec header->tp_nsec)))))))
-			  ,(lprint :vars `(ts.tv_sec ts.tv_nsec status idx data_len))
+				(let ((data (+ base header->tp_net))
+				      (data_len header->tp_snaplen)
+				      (status (& TP_STATUS_USER header->tp_status))
+				      (ts (timespec (curly (space (= .tv_sec header->tp_sec))
+							   (space (= .tv_nsec header->tp_nsec)))))))
+				,(lprint :vars `(ts.tv_sec ts.tv_nsec status idx data_len))
 		  
-			  (do0 (comments "hand frame back to kernel")
-			       (setf header->tp_status TP_STATUS_KERNEL))
-			  (incf idx)))))
-	       ))
+				#+nil(do0 (comments "hand frame back to kernel")
+				     (setf header->tp_status TP_STATUS_KERNEL))
+				(incf idx)
+				(do0 (setf base (+ rx_buffer_addr
+						   (* idx frame_size)))
+				     (setf  header (static_cast<tpacket2_hdr*> base)))))))
+		     ))
 
 
 	    
