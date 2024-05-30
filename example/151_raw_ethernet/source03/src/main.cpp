@@ -76,6 +76,7 @@ int main(int argc, char **argv) {
       auto pollfds{pollfd({.fd = sockfd, .events = POLLIN, .revents = 0})};
       auto poll_res{ppoll(&pollfds, 1, nullptr, nullptr)};
       if ((POLLIN & pollfds.revents)) {
+        idx = 0;
         auto base{rx_buffer_addr + idx * frame_size};
         volatile tpacket2_hdr *header{static_cast<tpacket2_hdr *>(base)};
         while ((header->tp_status & TP_STATUS_USER)) {
@@ -90,6 +91,9 @@ int main(int argc, char **argv) {
                     << " status='" << status << "' "
                     << " idx='" << idx << "' "
                     << " data_len='" << data_len << "' " << std::endl;
+          // hand frame back to kernel
+
+          header->tp_status = TP_STATUS_KERNEL;
           idx++;
           base = rx_buffer_addr + idx * frame_size;
           header = static_cast<tpacket2_hdr *>(base);

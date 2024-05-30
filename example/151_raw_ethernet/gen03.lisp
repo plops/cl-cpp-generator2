@@ -146,7 +146,7 @@
 		     (do0
 		
 		      (when (& POLLIN pollfds.revents)
-
+			(setf idx 0)
 			(let ((base (+ rx_buffer_addr
 				       (* idx frame_size)))
 			      (header (static_cast<tpacket2_hdr*> base)))
@@ -164,7 +164,7 @@
 							   (space (= .tv_nsec header->tp_nsec)))))))
 				,(lprint :vars `(ts.tv_sec ts.tv_nsec status idx data_len))
 		  
-				#+nil(do0 (comments "hand frame back to kernel")
+				#-nil(do0 (comments "hand frame back to kernel")
 				     (setf header->tp_status TP_STATUS_KERNEL))
 				(incf idx)
 				(do0 (setf base (+ rx_buffer_addr
