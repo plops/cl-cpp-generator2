@@ -37,13 +37,16 @@ int main(int argc, char **argv) {
     // SOCK_DGRAM  .. don't merge packets together
     // SOCK_RAW    .. capture ethernet header as well
 
-    auto sockfd{socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL))};
+    auto sockfd{socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))};
     // bind socket to the hardware interface
 
-    auto ifindex{static_cast<int>(if_nametoindex("lo"))};
-    auto ll{sockaddr_ll({.sll_family = AF_PACKET,
-                         .sll_protocol = htons(ETH_P_ALL),
-                         .sll_ifindex = ifindex})};
+    auto ifindex{static_cast<int>(if_nametoindex("wlan0"))};
+    auto ll{sockaddr_ll(
+        {.sll_family = AF_PACKET,
+         .sll_protocol = htons(ETH_P_ALL),
+         .sll_ifindex = ifindex,
+         .sll_hatype = ARPHRD_ETHER,
+         .sll_pkttype = PACKET_HOST | PACKET_OTHERHOST | PACKET_BROADCAST})};
     std::cout << ""
               << " ifindex='" << ifindex << "' " << std::endl;
     bind(sockfd, reinterpret_cast<sockaddr *>(&ll), sizeof(ll));
@@ -61,12 +64,17 @@ int main(int argc, char **argv) {
                          .tp_block_nr = block_nr,
                          .tp_frame_size = frame_size,
                          .tp_frame_nr = frame_nr}};
+    std::cout << ""
+              << " block_size='" << block_size << "' "
+              << " block_nr='" << block_nr << "' "
+              << " frame_size='" << frame_size << "' "
+              << " frame_nr='" << frame_nr << "' " << std::endl;
     setsockopt(sockfd, SOL_PACKET, PACKET_RX_RING, &req, sizeof(req));
     // map the ring buffer
 
     auto mmap_size{block_size * block_nr};
     auto mmap_base{
-        mmap(0, mmap_size, PROT_READ || PROT_WRITE, MAP_SHARED, sockfd, 0)};
+        mmap(0, mmap_size, PROT_READ | PROT_WRITE, MAP_SHARED, sockfd, 0)};
     auto rx_buffer_size{block_size * block_nr};
     auto rx_buffer_addr{mmap_base};
     auto rx_buffer_idx{0};
@@ -78,11 +86,12 @@ int main(int argc, char **argv) {
       if ((POLLIN & pollfds.revents)) {
         idx = 0;
         auto base{rx_buffer_addr + idx * frame_size};
-        volatile tpacket2_hdr *header{static_cast<tpacket2_hdr *>(base)};
-        while ((header->tp_status & TP_STATUS_USER)) {
+        auto header{
+            static_cast<tpacket2_hdr *>(rx_buffer_addr + idx * frame_size)};
+        auto status{(header->tp_status & TP_STATUS_USER)};
+        while (status) {
           auto data{base + header->tp_net};
           auto data_len{header->tp_snaplen};
-          auto status{(TP_STATUS_USER & header->tp_status)};
           auto ts{
               timespec({.tv_sec = header->tp_sec, .tv_nsec = header->tp_nsec})};
           std::cout << ""
@@ -94,9 +103,10 @@ int main(int argc, char **argv) {
           // hand frame back to kernel
 
           header->tp_status = TP_STATUS_KERNEL;
-          idx++;
-          base = rx_buffer_addr + idx * frame_size;
-          header = static_cast<tpacket2_hdr *>(base);
+          idx = ((idx + 1) % rx_buffer_cnt);
+          header =
+              static_cast<tpacket2_hdr *>(rx_buffer_addr + idx * frame_size);
+          status = (header->tp_status & TP_STATUS_USER);
         }
       }
     }

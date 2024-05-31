@@ -75,7 +75,7 @@
 	    (comments "SOCK_STREAM .. merges packets together"
 		      "SOCK_DGRAM  .. don't merge packets together"
 		      "SOCK_RAW    .. capture ethernet header as well")
-	    (let ((sockfd (socket PF_PACKET
+	    (let ((sockfd (socket AF_PACKET
 				  SOCK_RAW
 				  (htons ETH_P_ALL)
 				  ))))
@@ -83,12 +83,14 @@
 	    
 	    (do0
 	     (comments "bind socket to the hardware interface")
-	     (let ((ifindex (static_cast<int> (if_nametoindex (string "lo"))))
+	     (let ((ifindex (static_cast<int> (if_nametoindex (string "wlan0"))))
 		   (ll (sockaddr_ll (curly (= .sll_family AF_PACKET)
 					   (= .sll_protocol (htons ETH_P_ALL))
 					   (= .sll_ifindex ifindex)
-					;(= .sll_hatype ARPHRD_ETHER)
-					;(= .sll_pkttype PACKET_BROADCAST)
+					   (= .sll_hatype ARPHRD_ETHER)
+					   (= .sll_pkttype (or PACKET_HOST
+							       PACKET_OTHERHOST
+							       PACKET_BROADCAST))
 					;(= .sll_halen 0)
 					   ))))
 	       ,(lprint :vars `(ifindex))
@@ -118,15 +120,16 @@
 						  (= .tp_frame_nr frame_nr)
 						  ))))
 
+	       ,(lprint :vars `(block_size block_nr frame_size frame_nr))
 	       (setsockopt sockfd SOL_PACKET
-			  PACKET_RX_RING
-			  &req
-			  (sizeof req))))
+			   PACKET_RX_RING
+			   &req
+			   (sizeof req))))
 
 	    (do0
 	     (comments "map the ring buffer")
 	     (let ((mmap_size (* block_size block_nr))
-		   (mmap_base (mmap 0 mmap_size (logior PROT_READ PROT_WRITE)
+		   (mmap_base (mmap 0 mmap_size (or PROT_READ PROT_WRITE)
 				    MAP_SHARED sockfd 0))))
 	     (let ((rx_buffer_size (* block_size block_nr))
 		   (rx_buffer_addr mmap_base)
@@ -149,27 +152,34 @@
 			(setf idx 0)
 			(let ((base (+ rx_buffer_addr
 				       (* idx frame_size)))
-			      (header (static_cast<tpacket2_hdr*> base)))
-			  (declare (type "volatile tpacket2_hdr*" header)))
+			      (header (static_cast<tpacket2_hdr*> (+ rx_buffer_addr
+				       (* idx frame_size)))))
+			  ;(declare (type "volatile tpacket2_hdr*" header))
+			  )
 
-			(while (& header->tp_status TP_STATUS_USER)
+			(let ((status (& header->tp_status TP_STATUS_USER))))
+
+			(while status 
 
 			       (do0
 		
 		  
 				(let ((data (+ base header->tp_net))
 				      (data_len header->tp_snaplen)
-				      (status (& TP_STATUS_USER header->tp_status))
+				      
 				      (ts (timespec (curly (space (= .tv_sec header->tp_sec))
 							   (space (= .tv_nsec header->tp_nsec)))))))
 				,(lprint :vars `(ts.tv_sec ts.tv_nsec status idx data_len))
 		  
-				#-nil(do0 (comments "hand frame back to kernel")
-				     (setf header->tp_status TP_STATUS_KERNEL))
-				(incf idx)
-				(do0 (setf base (+ rx_buffer_addr
-						   (* idx frame_size)))
-				     (setf  header (static_cast<tpacket2_hdr*> base)))))))
+				(do0 (do0 (comments "hand frame back to kernel")
+					  (setf header->tp_status TP_STATUS_KERNEL))
+				     (setf idx (% (+ idx 1)
+						  rx_buffer_cnt))
+				     (setf  header (static_cast<tpacket2_hdr*>
+						    (+ rx_buffer_addr
+						       (* idx frame_size))))
+				     (setf 
+				      status (& header->tp_status TP_STATUS_USER)))))))
 		     ))
 
 
