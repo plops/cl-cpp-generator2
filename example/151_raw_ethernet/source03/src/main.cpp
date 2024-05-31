@@ -56,9 +56,9 @@ int main(int argc, char **argv) {
     setsockopt(sockfd, SOL_PACKET, PACKET_VERSION, &version, sizeof(version));
     // configure ring buffer
 
-    auto block_size{static_cast<uint32_t>(2 * getpagesize())};
+    auto block_size{static_cast<uint32_t>(16 * getpagesize())};
     auto block_nr{2U};
-    auto frame_size{2048U};
+    auto frame_size{128U};
     auto frame_nr{(block_size / frame_size) * block_nr};
     auto req{tpacket_req{.tp_block_size = block_size,
                          .tp_block_nr = block_nr,
@@ -79,6 +79,9 @@ int main(int argc, char **argv) {
     auto rx_buffer_addr{mmap_base};
     auto rx_buffer_idx{0};
     auto rx_buffer_cnt{(block_size * block_nr) / frame_size};
+    std::cout << ""
+              << " rx_buffer_size='" << rx_buffer_size << "' "
+              << " rx_buffer_cnt='" << rx_buffer_cnt << "' " << std::endl;
     auto idx{0};
     while (true) {
       auto pollfds{pollfd({.fd = sockfd, .events = POLLIN, .revents = 0})};

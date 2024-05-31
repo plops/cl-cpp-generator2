@@ -109,9 +109,10 @@
 
 	    (do0
 	     (comments "configure ring buffer")
-	     (let ((block_size (static_cast<uint32_t> (* 2 (getpagesize))))
+	     (let ((block_size (static_cast<uint32_t> (* 16 (getpagesize))))
 		   (block_nr 2U)
-		   (frame_size 2048U)
+		   (frame_size 128U ;2048U
+			       )
 		   (frame_nr (* (/ block_size frame_size)
 				block_nr))
 		   (req (space tpacket_req (curly (= .tp_block_size block_size)
@@ -135,7 +136,9 @@
 		   (rx_buffer_addr mmap_base)
 		   (rx_buffer_idx 0)
 		   (rx_buffer_cnt (/ (* block_size block_nr)
-				     frame_size))))
+				     frame_size)))
+	       ,(lprint :vars `(rx_buffer_size
+				rx_buffer_cnt)))
 	     )
 
 	    (let ((idx 0)))
