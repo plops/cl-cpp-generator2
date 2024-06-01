@@ -50,6 +50,7 @@
       cstring
       chrono
       thread
+      iomanip
       )
 
      (comments "Note: not working, yet")
@@ -80,6 +81,10 @@
 				  (htons ETH_P_ALL)
 				  ))))
 
+	    (when (< sockfd 0)
+	      ,(lprint :msg "error opening socket. try running as root")
+	      (return -1))
+
 	    
 	    (do0
 	     (comments "bind socket to the hardware interface")
@@ -91,7 +96,8 @@
 					   (= .sll_pkttype (or PACKET_HOST
 							       PACKET_OTHERHOST
 							       PACKET_BROADCAST))
-					;(= .sll_halen 0)
+					   (= .sll_halen 0)
+					   (= .sll_addr (curly 0 0 0 0  0 0 0 0))
 					   ))))
 	       ,(lprint :vars `(ifindex))
 	       (bind sockfd (reinterpret_cast<sockaddr*> &ll)
@@ -111,7 +117,8 @@
 	     (comments "configure ring buffer")
 	     (let ((block_size (static_cast<uint32_t> (* 1 (getpagesize))))
 		   (block_nr 2U)
-		   (frame_size 128U ;2048U
+		   (frame_size ;128U
+			       2048U
 			       )
 		   (frame_nr (* (/ block_size frame_size)
 				block_nr))
@@ -134,61 +141,88 @@
 				    MAP_SHARED sockfd 0))))
 	     (let ((rx_buffer_size (* block_size block_nr))
 		   (rx_buffer_addr mmap_base)
-		   ;(rx_buffer_idx 0)
 		   (rx_buffer_cnt (/ (* block_size block_nr)
 				     frame_size)))
 	       ,(lprint :vars `(rx_buffer_size
-				rx_buffer_cnt)))
-	     )
+				rx_buffer_cnt))))
 
-	    (let ((idx 0)))
+	    (let ((idx 0U)
+		  (old_arrival_time64 (uint64_t 0))))
 	    (while true
 		   (let ((pollfds (pollfd (curly (space (= .fd sockfd))
 						 (space (= .events POLLIN))
 						 (space (= .revents 0)))))
-			 (poll_res (ppoll &pollfds 1 nullptr nullptr)))
-
-	      
-		     (do0
-		
-		      (when (& POLLIN pollfds.revents)
-			(setf idx 0)
-			(let ((base (+ (reinterpret_cast<uint8_t*> rx_buffer_addr)))
-			      (header (reinterpret_cast<tpacket2_hdr*> (+ base
-								     (* idx frame_size)))))
-			  ;(declare (type "volatile tpacket2_hdr*" header))
-			  )
-
-			(let ((status (& header->tp_status TP_STATUS_USER))))
-
-			(while status 
-
-			       (do0
-		
-		  
-				(let ((data (+ (reinterpret_cast<uint8_t*> header) header->tp_net))
-				      (data_len header->tp_snaplen)
-				      (timepoint (+ (std--chrono--system_clock--from_time_t header->tp_sec)
-					     (std--chrono--nanoseconds  header->tp_nsec)))
-				      (time (std--chrono--system_clock--to_time_t timepoint))
-				      (local_time (std--localtime &time ))
-				      (local_time_hr (std--put_time local_time (string "%Y-%m-%d %H:%M:%S")))))
-				
-				,(lprint :vars `(local_time_hr))
-				(do0 (do0 (comments "hand frame back to kernel")
-					  (setf header->tp_status TP_STATUS_KERNEL))
-				     (setf idx (% (+ idx 1)
-						  rx_buffer_cnt))
-				     (setf  header (reinterpret_cast<tpacket2_hdr*>
-						    (+ base
-						       (* idx frame_size))))
-				     (setf 
-				      status (& header->tp_status TP_STATUS_USER)))))))
-		     ))
-
-
-	    
-	    )
+			 (poll_res (ppoll &pollfds 1 nullptr nullptr))) ;; waits indefinetely
+		     (cond
+		       ((< poll_res 0)
+			,(lprint :msg "error in ppoll"
+				 :vars `(poll_res errno))
+			)
+		       ((== poll_res 0)
+			,(lprint :msg "timeout")
+			(std--this_thread--sleep_for (std--chrono--milliseconds 4)))
+		       (t
+	      		(do0
+			 (<< std--cout (string ".") idx (string " ") poll_res (string " "))
+			 (when (and POLLIN pollfds.revents)
+			   (setf idx 0)
+			   (let ((base (+ (reinterpret_cast<uint8_t*> rx_buffer_addr)))
+				 (header (reinterpret_cast<tpacket2_hdr*> (+ base
+									     (* idx frame_size))))))
+			   (comments "Iterate through packets in the ring buffer")
+			   (while (and header->tp_status TP_STATUS_USER)
+				  (do0
+				   (let ((data (+ (reinterpret_cast<uint8_t*> header) header->tp_net))
+					 (data_len header->tp_snaplen)
+					 (arrival_time64 (+ (* 1000000000 header->tp_sec)
+							    header->tp_nsec))
+					 (delta64 (- arrival_time64 old_arrival_time64 ))
+					 (delta_ms (/ delta64 1000000d0))
+					 (arrival_timepoint (+ (std--chrono--system_clock--from_time_t header->tp_sec)
+							       (std--chrono--nanoseconds  header->tp_nsec)))
+					 (time (std--chrono--system_clock--to_time_t arrival_timepoint))
+					 (local_time (std--localtime &time))
+					 (local_time_hr (std--put_time local_time (string "%Y-%m-%d %H:%M:%S")))))
+					;  ,(lprint :vars `(local_time_hr delta_ms data_len (aref data 0)))
+				   (<< std--cout
+				       local_time_hr
+				       (string " ")
+				       (std--setfill (char " "))
+				       (std--setw (+ 4 6))
+				       std--fixed
+				       (std--setprecision 6)
+				       (? (< delta_ms 1) (std--to_string delta_ms) (string "xxx.xxxxxx"))
+				       (string " ")
+				       std--dec
+				       (std--setw 6)
+				       data_len
+				       (string " ")
+				       )
+				   (dotimes (i (? (< data_len 64U)
+						  data_len
+						  64U))
+				     (<< std--cout
+					 std--hex
+					 (std--setw 2)
+					 (std--setfill (char "0"))
+					 (static_cast<int> (aref data i))
+					 (string " "))
+				     (when (== 0 (% i 8))
+				       (<< std--cout (string " "))))
+				   (<< std--cout std--endl)
+				   (setf  old_arrival_time64  arrival_time64 )
+				   (do0 (do0 (comments "Hand this entry of the ring buffer (frame) back to kernel")
+					     (setf header->tp_status TP_STATUS_KERNEL))
+					(comments "Go to next frame in ring buffer")
+					(setf idx (% (+ idx 1)
+						     rx_buffer_cnt))
+					(setf  header (reinterpret_cast<tpacket2_hdr*>
+						       (+ base
+							  (* idx frame_size))))))))
+			 (std--this_thread--sleep_for (std--chrono--milliseconds 4))
+			 
+			 (<< std--cout (string "o")))))
+		     )))
 	 ("const std::system_error&" (ex)
 	   (<< std--cerr
 	       (string "Error: ")
@@ -201,4 +235,4 @@
        (return 0)))
    :omit-parens t
    :format t
-   :tidy t))
+   :tidy nil))
