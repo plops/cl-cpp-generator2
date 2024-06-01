@@ -117,8 +117,8 @@
 	     (comments "configure ring buffer")
 	     (let ((block_size (static_cast<uint32_t> (* 8 (getpagesize))))
 		   (block_nr 2U)
-		   (frame_size ;128U
-			       2048U
+		   (frame_size 128U
+			       ;2048U
 			       )
 		   (frame_nr (* (/ block_size frame_size)
 				block_nr))
@@ -208,6 +208,7 @@
 					(dotimes (i (? (< data_len 64U)
 						       data_len
 						       64U))
+					  (declare (type "unsigned int" i))
 					  (<< std--cout
 					      std--hex
 					      (std--setw 2)
@@ -218,14 +219,15 @@
 					    (<< std--cout (string " "))))
 					(<< std--cout std--endl)
 					(setf  old_arrival_time64  arrival_time64 )
-					(do0 (do0 (comments "Hand this entry of the ring buffer (frame) back to kernel")
+					)))
+				    (do0 (do0 (comments "Hand this entry of the ring buffer (frame) back to kernel")
 						  (setf header->tp_status TP_STATUS_KERNEL))
 					     (comments "Go to next frame in ring buffer")
 					     (setf idx (% (+ idx 1)
 							  rx_buffer_cnt))
 					     (setf  header (reinterpret_cast<tpacket2_hdr*>
 							    (+ base
-							       (* idx frame_size)))))))))
+							       (* idx frame_size))))))
 				  while
 				  (paren (and header->tp_status TP_STATUS_USER)) ))
 			 (std--this_thread--sleep_for (std--chrono--milliseconds 4))

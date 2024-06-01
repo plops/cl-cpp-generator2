@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
 
     auto block_size{static_cast<uint32_t>(8 * getpagesize())};
     auto block_nr{2U};
-    auto frame_size{2048U};
+    auto frame_size{128U};
     auto frame_nr{(block_size / frame_size) * block_nr};
     auto req{tpacket_req{.tp_block_size = block_size,
                          .tp_block_nr = block_nr,
@@ -130,7 +130,8 @@ int main(int argc, char **argv) {
                         << (delta_ms < 1000 ? std::to_string(delta_ms)
                                             : "xxx.xxxxxx")
                         << " " << std::dec << std::setw(6) << data_len << " ";
-              for (auto i = 0; i < (data_len < 64U ? data_len : 64U); i += 1) {
+              for (unsigned int i = 0; i < (data_len < 64U ? data_len : 64U);
+                   i += 1) {
                 std::cout << std::hex << std::setw(2) << std::setfill('0')
                           << static_cast<int>(data[i]) << " ";
                 if (0 == (i % 8)) {
@@ -139,15 +140,14 @@ int main(int argc, char **argv) {
               }
               std::cout << std::endl;
               old_arrival_time64 = arrival_time64;
-              // Hand this entry of the ring buffer (frame) back to kernel
-
-              header->tp_status = TP_STATUS_KERNEL;
-              // Go to next frame in ring buffer
-
-              idx = ((idx + 1) % rx_buffer_cnt);
-              header =
-                  reinterpret_cast<tpacket2_hdr *>(base + idx * frame_size);
             }
+            // Hand this entry of the ring buffer (frame) back to kernel
+
+            header->tp_status = TP_STATUS_KERNEL;
+            // Go to next frame in ring buffer
+
+            idx = ((idx + 1) % rx_buffer_cnt);
+            header = reinterpret_cast<tpacket2_hdr *>(base + idx * frame_size);
           } while (header->tp_status & TP_STATUS_USER);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(4));
