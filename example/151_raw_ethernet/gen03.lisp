@@ -115,7 +115,7 @@
 
 	    (do0
 	     (comments "configure ring buffer")
-	     (let ((block_size (static_cast<uint32_t> (* 1 (getpagesize))))
+	     (let ((block_size (static_cast<uint32_t> (* 8 (getpagesize))))
 		   (block_nr 2U)
 		   (frame_size ;128U
 			       2048U
@@ -163,65 +163,73 @@
 			(std--this_thread--sleep_for (std--chrono--milliseconds 4)))
 		       (t
 	      		(do0
-			 (<< std--cout (string ".") idx (string " ") poll_res (string " "))
 			 (when (and POLLIN pollfds.revents)
 			   (setf idx 0)
 			   (let ((base (+ (reinterpret_cast<uint8_t*> rx_buffer_addr)))
 				 (header (reinterpret_cast<tpacket2_hdr*> (+ base
 									     (* idx frame_size))))))
 			   (comments "Iterate through packets in the ring buffer")
-			   (while (and header->tp_status TP_STATUS_USER)
-				  (do0
-				   (let ((data (+ (reinterpret_cast<uint8_t*> header) header->tp_net))
-					 (data_len header->tp_snaplen)
-					 (arrival_time64 (+ (* 1000000000 header->tp_sec)
-							    header->tp_nsec))
-					 (delta64 (- arrival_time64 old_arrival_time64 ))
-					 (delta_ms (/ delta64 1000000d0))
-					 (arrival_timepoint (+ (std--chrono--system_clock--from_time_t header->tp_sec)
-							       (std--chrono--nanoseconds  header->tp_nsec)))
-					 (time (std--chrono--system_clock--to_time_t arrival_timepoint))
-					 (local_time (std--localtime &time))
-					 (local_time_hr (std--put_time local_time (string "%Y-%m-%d %H:%M:%S")))))
+			   (space do
+				  (progn
+				    
+				    (cond
+				      ((and header->tp_status TP_STATUS_COPY)
+				       ,(lprint :msg "copy"))
+				      ((and header->tp_status TP_STATUS_LOSING)
+				       ,(lprint :msg "loss"))
+				      ((and header->tp_status TP_STATUS_USER)
+				       (do0
+					(let ((data (+ (reinterpret_cast<uint8_t*> header) header->tp_net))
+					      (data_len header->tp_snaplen)
+					      (arrival_time64 (+ (* 1000000000 header->tp_sec)
+								 header->tp_nsec))
+					      (delta64 (- arrival_time64 old_arrival_time64 ))
+					      (delta_ms (/ delta64 1000000d0))
+					      (arrival_timepoint (+ (std--chrono--system_clock--from_time_t header->tp_sec)
+								    (std--chrono--nanoseconds  header->tp_nsec)))
+					      (time (std--chrono--system_clock--to_time_t arrival_timepoint))
+					      (local_time (std--localtime &time))
+					      (local_time_hr (std--put_time local_time (string "%Y-%m-%d %H:%M:%S")))))
 					;  ,(lprint :vars `(local_time_hr delta_ms data_len (aref data 0)))
-				   (<< std--cout
-				       local_time_hr
-				       (string " ")
-				       (std--setfill (char " "))
-				       (std--setw (+ 4 6))
-				       std--fixed
-				       (std--setprecision 6)
-				       (? (< delta_ms 1) (std--to_string delta_ms) (string "xxx.xxxxxx"))
-				       (string " ")
-				       std--dec
-				       (std--setw 6)
-				       data_len
-				       (string " ")
-				       )
-				   (dotimes (i (? (< data_len 64U)
-						  data_len
-						  64U))
-				     (<< std--cout
-					 std--hex
-					 (std--setw 2)
-					 (std--setfill (char "0"))
-					 (static_cast<int> (aref data i))
-					 (string " "))
-				     (when (== 0 (% i 8))
-				       (<< std--cout (string " "))))
-				   (<< std--cout std--endl)
-				   (setf  old_arrival_time64  arrival_time64 )
-				   (do0 (do0 (comments "Hand this entry of the ring buffer (frame) back to kernel")
-					     (setf header->tp_status TP_STATUS_KERNEL))
-					(comments "Go to next frame in ring buffer")
-					(setf idx (% (+ idx 1)
-						     rx_buffer_cnt))
-					(setf  header (reinterpret_cast<tpacket2_hdr*>
-						       (+ base
-							  (* idx frame_size))))))))
+					(<< std--cout
+					    local_time_hr
+					    (string " ")
+					    (std--setfill (char " "))
+					    (std--setw (+ 4 6))
+					    std--fixed
+					    (std--setprecision 6)
+					    (? (< delta_ms 1000) (std--to_string delta_ms) (string "xxx.xxxxxx"))
+					    (string " ")
+					    std--dec
+					    (std--setw 6)
+					    data_len
+					    (string " ")
+					    )
+					(dotimes (i (? (< data_len 64U)
+						       data_len
+						       64U))
+					  (<< std--cout
+					      std--hex
+					      (std--setw 2)
+					      (std--setfill (char "0"))
+					      (static_cast<int> (aref data i))
+					      (string " "))
+					  (when (== 0 (% i 8))
+					    (<< std--cout (string " "))))
+					(<< std--cout std--endl)
+					(setf  old_arrival_time64  arrival_time64 )
+					(do0 (do0 (comments "Hand this entry of the ring buffer (frame) back to kernel")
+						  (setf header->tp_status TP_STATUS_KERNEL))
+					     (comments "Go to next frame in ring buffer")
+					     (setf idx (% (+ idx 1)
+							  rx_buffer_cnt))
+					     (setf  header (reinterpret_cast<tpacket2_hdr*>
+							    (+ base
+							       (* idx frame_size)))))))))
+				  while
+				  (paren (and header->tp_status TP_STATUS_USER)) ))
 			 (std--this_thread--sleep_for (std--chrono--milliseconds 4))
-			 
-			 (<< std--cout (string "o")))))
+			 )))
 		     )))
 	 ("const std::system_error&" (ex)
 	   (<< std--cerr
