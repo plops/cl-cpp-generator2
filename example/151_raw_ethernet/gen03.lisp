@@ -52,11 +52,6 @@
       thread
       iomanip
       )
-
-     (comments "Note: not working, yet")
-
-     (comments "assume we receive a packet for each line of a video camera"
-	       "i didn't add error handling. i suggest strace instead")
      
      (defclass+ VideoLine ()
        "public:"
@@ -88,8 +83,8 @@
 	    
 	    (do0
 	     (comments "bind socket to the hardware interface")
-	     (let ((ifindex (static_cast<int> (if_nametoindex (string "lo"
-								      #+nil "wlan0"))))
+	     (let ((ifindex (static_cast<int> (if_nametoindex (string #+nil "lo"
+								      #-nil "wlan0"))))
 		   (ll (sockaddr_ll (curly (= .sll_family AF_PACKET)
 					   (= .sll_protocol (htons ETH_P_ALL))
 					   (= .sll_ifindex ifindex)
@@ -118,8 +113,8 @@
 	     (comments "configure ring buffer")
 	     (let ((block_size (static_cast<uint32_t> (* 1 (getpagesize))))
 		   (block_nr 8U)
-		   (frame_size 
-			       2048U
+		   (frame_size 256U
+			       ;2048U
 			       )
 		   (frame_nr (* (/ block_size frame_size)
 				block_nr))
@@ -242,7 +237,7 @@
 					      )
 					  (when (== (- #x3c 13) i)
 					    (<< std--cout (string "\\033[0m")))
-					  (when (== 0 (% i 8))
+					  (when (== 7 (% i 8))
 					    (<< std--cout (string " "))))
 					(<< std--cout std--dec std--endl)
 					(setf  old_arrival_time64  arrival_time64 )

@@ -16,11 +16,6 @@
 #include <system_error>
 #include <thread>
 #include <unistd.h>
-// Note: not working, yet
-
-// assume we receive a packet for each line of a video camera
-// i didn't add error handling. i suggest strace instead
-
 class VideoLine {
 public:
   uint16_t width;
@@ -41,7 +36,7 @@ int main(int argc, char **argv) {
     }
     // bind socket to the hardware interface
 
-    auto ifindex{static_cast<int>(if_nametoindex("lo"))};
+    auto ifindex{static_cast<int>(if_nametoindex("wlan0"))};
     auto ll{sockaddr_ll(
         {.sll_family = AF_PACKET,
          .sll_protocol = htons(ETH_P_ALL),
@@ -61,7 +56,7 @@ int main(int argc, char **argv) {
 
     auto block_size{static_cast<uint32_t>(1 * getpagesize())};
     auto block_nr{8U};
-    auto frame_size{2048U};
+    auto frame_size{256U};
     auto frame_nr{(block_size / frame_size) * block_nr};
     auto req{tpacket_req{.tp_block_size = block_size,
                          .tp_block_nr = block_nr,
@@ -153,7 +148,7 @@ int main(int argc, char **argv) {
                 if ((60 - 13) == i) {
                   std::cout << "\033[0m";
                 }
-                if (0 == (i % 8)) {
+                if (7 == (i % 8)) {
                   std::cout << " ";
                 }
               }
