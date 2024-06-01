@@ -88,7 +88,8 @@
 	    
 	    (do0
 	     (comments "bind socket to the hardware interface")
-	     (let ((ifindex (static_cast<int> (if_nametoindex (string "wlan0"))))
+	     (let ((ifindex (static_cast<int> (if_nametoindex (string "lo"
+								      #+nil "wlan0"))))
 		   (ll (sockaddr_ll (curly (= .sll_family AF_PACKET)
 					   (= .sll_protocol (htons ETH_P_ALL))
 					   (= .sll_ifindex ifindex)
@@ -117,8 +118,8 @@
 	     (comments "configure ring buffer")
 	     (let ((block_size (static_cast<uint32_t> (* 1 (getpagesize))))
 		   (block_nr 2U)
-		   (frame_size ;128U
-			       2048U
+		   (frame_size 128U
+			       ;2048U
 			       )
 		   (frame_nr (* (/ block_size frame_size)
 				block_nr))
@@ -206,12 +207,16 @@
 					;  ,(lprint :vars `(local_time_hr delta_ms data_len (aref data 0)))
 					(<< std--cout
 					    local_time_hr
+					    (string ".")
+					    std--dec
+					    (std--setw 9)
+					    header->tp_nsec
 					    (string " ")
 					    (std--setfill (char " "))
-					    (std--setw (+ 4 6))
+					    (std--setw (+ 5 6))
 					    std--fixed
 					    (std--setprecision 6)
-					    (? (< delta_ms 1000) (std--to_string delta_ms) (string "xxx.xxxxxx"))
+					    (? (< delta_ms 10000) (std--to_string delta_ms) (string "xxxx.xxxxxx"))
 					    (string " ")
 					    std--dec
 					    (std--setw 6)

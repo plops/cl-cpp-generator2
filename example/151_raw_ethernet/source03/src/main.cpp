@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     }
     // bind socket to the hardware interface
 
-    auto ifindex{static_cast<int>(if_nametoindex("wlan0"))};
+    auto ifindex{static_cast<int>(if_nametoindex("lo"))};
     auto ll{sockaddr_ll(
         {.sll_family = AF_PACKET,
          .sll_protocol = htons(ETH_P_ALL),
@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
 
     auto block_size{static_cast<uint32_t>(1 * getpagesize())};
     auto block_nr{2U};
-    auto frame_size{2048U};
+    auto frame_size{128U};
     auto frame_nr{(block_size / frame_size) * block_nr};
     auto req{tpacket_req{.tp_block_size = block_size,
                          .tp_block_nr = block_nr,
@@ -133,11 +133,12 @@ int main(int argc, char **argv) {
               auto local_time{std::localtime(&time)};
               auto local_time_hr{
                   std::put_time(local_time, "%Y-%m-%d %H:%M:%S")};
-              std::cout << local_time_hr << " " << std::setfill(' ')
-                        << std::setw(4 + 6) << std::fixed
+              std::cout << local_time_hr << "." << std::dec << std::setw(9)
+                        << header->tp_nsec << " " << std::setfill(' ')
+                        << std::setw(5 + 6) << std::fixed
                         << std::setprecision(6)
-                        << (delta_ms < 1000 ? std::to_string(delta_ms)
-                                            : "xxx.xxxxxx")
+                        << (delta_ms < 10000 ? std::to_string(delta_ms)
+                                             : "xxxx.xxxxxx")
                         << " " << std::dec << std::setw(6) << data_len << " "
                         << std::setw(4) << idx << " ";
               for (unsigned int i = 0; i < (data_len < 64U ? data_len : 64U);
