@@ -33,10 +33,6 @@ int main(int argc, char **argv) {
             << " argc='" << argc << "' "
             << " argv[0]='" << argv[0] << "' " << std::endl;
   try {
-    // SOCK_STREAM .. merges packets together
-    // SOCK_DGRAM  .. don't merge packets together
-    // SOCK_RAW    .. capture ethernet header as well
-
     auto sockfd{socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))};
     // bind socket to the hardware interface
 
@@ -56,7 +52,7 @@ int main(int argc, char **argv) {
     setsockopt(sockfd, SOL_PACKET, PACKET_VERSION, &version, sizeof(version));
     // configure ring buffer
 
-    auto block_size{static_cast<uint32_t>(16 * getpagesize())};
+    auto block_size{static_cast<uint32_t>(1 * getpagesize())};
     auto block_nr{2U};
     auto frame_size{128U};
     auto frame_nr{(block_size / frame_size) * block_nr};
@@ -77,7 +73,6 @@ int main(int argc, char **argv) {
         mmap(0, mmap_size, PROT_READ | PROT_WRITE, MAP_SHARED, sockfd, 0)};
     auto rx_buffer_size{block_size * block_nr};
     auto rx_buffer_addr{mmap_base};
-    auto rx_buffer_idx{0};
     auto rx_buffer_cnt{(block_size * block_nr) / frame_size};
     std::cout << ""
               << " rx_buffer_size='" << rx_buffer_size << "' "
@@ -88,27 +83,25 @@ int main(int argc, char **argv) {
       auto poll_res{ppoll(&pollfds, 1, nullptr, nullptr)};
       if ((POLLIN & pollfds.revents)) {
         idx = 0;
-        auto base{rx_buffer_addr + idx * frame_size};
-        auto header{
-            static_cast<tpacket2_hdr *>(rx_buffer_addr + idx * frame_size)};
+        auto base{reinterpret_cast<uint8_t *>(rx_buffer_addr)};
+        auto header{reinterpret_cast<tpacket2_hdr *>(base + idx * frame_size)};
         auto status{(header->tp_status & TP_STATUS_USER)};
         while (status) {
-          auto data{base + header->tp_net};
+          auto data{reinterpret_cast<uint8_t *>(header) + header->tp_net};
           auto data_len{header->tp_snaplen};
-          auto ts{
-              timespec({.tv_sec = header->tp_sec, .tv_nsec = header->tp_nsec})};
+          auto timepoint{
+              std::chrono::system_clock::from_time_t(header->tp_sec) +
+              std::chrono::nanoseconds(header->tp_nsec)};
+          auto time{std::chrono::system_clock::to_time_t(timepoint)};
+          auto local_time{std::localtime(&time)};
+          auto local_time_hr{std::put_time(local_time, "%Y-%m-%d %H:%M:%S")};
           std::cout << ""
-                    << " ts.tv_sec='" << ts.tv_sec << "' "
-                    << " ts.tv_nsec='" << ts.tv_nsec << "' "
-                    << " status='" << status << "' "
-                    << " idx='" << idx << "' "
-                    << " data_len='" << data_len << "' " << std::endl;
+                    << " local_time_hr='" << local_time_hr << "' " << std::endl;
           // hand frame back to kernel
 
           header->tp_status = TP_STATUS_KERNEL;
           idx = ((idx + 1) % rx_buffer_cnt);
-          header =
-              static_cast<tpacket2_hdr *>(rx_buffer_addr + idx * frame_size);
+          header = reinterpret_cast<tpacket2_hdr *>(base + idx * frame_size);
           status = (header->tp_status & TP_STATUS_USER);
         }
       }

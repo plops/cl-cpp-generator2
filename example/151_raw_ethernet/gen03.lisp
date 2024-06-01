@@ -72,7 +72,7 @@
        ,(lprint :vars `(argc (aref argv 0)))
        (handler-case
 	   (do0
-	    (comments "SOCK_STREAM .. merges packets together"
+	    #+nil (comments "SOCK_STREAM .. merges packets together"
 		      "SOCK_DGRAM  .. don't merge packets together"
 		      "SOCK_RAW    .. capture ethernet header as well")
 	    (let ((sockfd (socket AF_PACKET
@@ -109,7 +109,7 @@
 
 	    (do0
 	     (comments "configure ring buffer")
-	     (let ((block_size (static_cast<uint32_t> (* 16 (getpagesize))))
+	     (let ((block_size (static_cast<uint32_t> (* 1 (getpagesize))))
 		   (block_nr 2U)
 		   (frame_size 128U ;2048U
 			       )
@@ -134,7 +134,7 @@
 				    MAP_SHARED sockfd 0))))
 	     (let ((rx_buffer_size (* block_size block_nr))
 		   (rx_buffer_addr mmap_base)
-		   (rx_buffer_idx 0)
+		   ;(rx_buffer_idx 0)
 		   (rx_buffer_cnt (/ (* block_size block_nr)
 				     frame_size)))
 	       ,(lprint :vars `(rx_buffer_size
@@ -153,10 +153,9 @@
 		
 		      (when (& POLLIN pollfds.revents)
 			(setf idx 0)
-			(let ((base (+ rx_buffer_addr
-				       (* idx frame_size)))
-			      (header (static_cast<tpacket2_hdr*> (+ rx_buffer_addr
-				       (* idx frame_size)))))
+			(let ((base (+ (reinterpret_cast<uint8_t*> rx_buffer_addr)))
+			      (header (reinterpret_cast<tpacket2_hdr*> (+ base
+								     (* idx frame_size)))))
 			  ;(declare (type "volatile tpacket2_hdr*" header))
 			  )
 
@@ -167,19 +166,21 @@
 			       (do0
 		
 		  
-				(let ((data (+ base header->tp_net))
+				(let ((data (+ (reinterpret_cast<uint8_t*> header) header->tp_net))
 				      (data_len header->tp_snaplen)
-				      
-				      (ts (timespec (curly (space (= .tv_sec header->tp_sec))
-							   (space (= .tv_nsec header->tp_nsec)))))))
-				,(lprint :vars `(ts.tv_sec ts.tv_nsec status idx data_len))
-		  
+				      (timepoint (+ (std--chrono--system_clock--from_time_t header->tp_sec)
+					     (std--chrono--nanoseconds  header->tp_nsec)))
+				      (time (std--chrono--system_clock--to_time_t timepoint))
+				      (local_time (std--localtime &time ))
+				      (local_time_hr (std--put_time local_time (string "%Y-%m-%d %H:%M:%S")))))
+				
+				,(lprint :vars `(local_time_hr))
 				(do0 (do0 (comments "hand frame back to kernel")
 					  (setf header->tp_status TP_STATUS_KERNEL))
 				     (setf idx (% (+ idx 1)
 						  rx_buffer_cnt))
-				     (setf  header (static_cast<tpacket2_hdr*>
-						    (+ rx_buffer_addr
+				     (setf  header (reinterpret_cast<tpacket2_hdr*>
+						    (+ base
 						       (* idx frame_size))))
 				     (setf 
 				      status (& header->tp_status TP_STATUS_USER)))))))
