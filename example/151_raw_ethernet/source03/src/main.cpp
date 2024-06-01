@@ -59,9 +59,9 @@ int main(int argc, char **argv) {
     setsockopt(sockfd, SOL_PACKET, PACKET_VERSION, &version, sizeof(version));
     // configure ring buffer
 
-    auto block_size{static_cast<uint32_t>(8 * getpagesize())};
+    auto block_size{static_cast<uint32_t>(1 * getpagesize())};
     auto block_nr{2U};
-    auto frame_size{128U};
+    auto frame_size{2048U};
     auto frame_nr{(block_size / frame_size) * block_nr};
     auto req{tpacket_req{.tp_block_size = block_size,
                          .tp_block_nr = block_nr,
@@ -98,18 +98,27 @@ int main(int argc, char **argv) {
         std::this_thread::sleep_for(std::chrono::milliseconds(4));
       } else {
         if (POLLIN & pollfds.revents) {
-          idx = 0;
           auto base{reinterpret_cast<uint8_t *>(rx_buffer_addr)};
           auto header{
               reinterpret_cast<tpacket2_hdr *>(base + idx * frame_size)};
           // Iterate through packets in the ring buffer
 
           do {
-            if (header->tp_status & TP_STATUS_COPY) {
-              std::cout << "copy" << std::endl;
-            } else if (header->tp_status & TP_STATUS_LOSING) {
-              std::cout << "loss" << std::endl;
-            } else if (header->tp_status & TP_STATUS_USER) {
+            if (header->tp_status & TP_STATUS_USER) {
+              if (header->tp_status & TP_STATUS_COPY) {
+                std::cout << "copy"
+                          << " idx='" << idx << "' " << std::endl;
+              } else if (header->tp_status & TP_STATUS_LOSING) {
+                auto stats{tpacket_stats()};
+                auto stats_size{static_cast<socklen_t>(sizeof(stats))};
+                getsockopt(sockfd, SOL_PACKET, PACKET_STATISTICS, &stats,
+                           &stats_size);
+                std::cout << "loss"
+                          << " idx='" << idx << "' "
+                          << " stats.tp_drops='" << stats.tp_drops << "' "
+                          << " stats.tp_packets='" << stats.tp_packets << "' "
+                          << std::endl;
+              }
               auto data{reinterpret_cast<uint8_t *>(header) + header->tp_net};
               auto data_len{header->tp_snaplen};
               auto arrival_time64{1000000000 * header->tp_sec +
@@ -129,7 +138,8 @@ int main(int argc, char **argv) {
                         << std::setprecision(6)
                         << (delta_ms < 1000 ? std::to_string(delta_ms)
                                             : "xxx.xxxxxx")
-                        << " " << std::dec << std::setw(6) << data_len << " ";
+                        << " " << std::dec << std::setw(6) << data_len << " "
+                        << std::setw(4) << idx << " ";
               for (unsigned int i = 0; i < (data_len < 64U ? data_len : 64U);
                    i += 1) {
                 std::cout << std::hex << std::setw(2) << std::setfill('0')
@@ -138,12 +148,17 @@ int main(int argc, char **argv) {
                   std::cout << " ";
                 }
               }
-              std::cout << std::endl;
+              std::cout << std::dec << std::endl;
               old_arrival_time64 = arrival_time64;
-            }
-            // Hand this entry of the ring buffer (frame) back to kernel
+              // Hand this entry of the ring buffer (frame) back to kernel
 
-            header->tp_status = TP_STATUS_KERNEL;
+              header->tp_status = TP_STATUS_KERNEL;
+            } else {
+              // this packet is not tp_status_user, poll again
+
+              std::cout << "poll" << std::endl;
+              continue;
+            }
             // Go to next frame in ring buffer
 
             idx = ((idx + 1) % rx_buffer_cnt);

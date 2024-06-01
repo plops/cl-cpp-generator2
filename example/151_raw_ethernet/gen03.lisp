@@ -115,10 +115,10 @@
 
 	    (do0
 	     (comments "configure ring buffer")
-	     (let ((block_size (static_cast<uint32_t> (* 8 (getpagesize))))
+	     (let ((block_size (static_cast<uint32_t> (* 1 (getpagesize))))
 		   (block_nr 2U)
-		   (frame_size 128U
-			       ;2048U
+		   (frame_size ;128U
+			       2048U
 			       )
 		   (frame_nr (* (/ block_size frame_size)
 				block_nr))
@@ -163,8 +163,10 @@
 			(std--this_thread--sleep_for (std--chrono--milliseconds 4)))
 		       (t
 	      		(do0
+			 
 			 (when (and POLLIN pollfds.revents)
-			   (setf idx 0)
+			 
+			   
 			   (let ((base (+ (reinterpret_cast<uint8_t*> rx_buffer_addr)))
 				 (header (reinterpret_cast<tpacket2_hdr*> (+ base
 									     (* idx frame_size))))))
@@ -173,12 +175,23 @@
 				  (progn
 				    
 				    (cond
-				      ((and header->tp_status TP_STATUS_COPY)
-				       ,(lprint :msg "copy"))
-				      ((and header->tp_status TP_STATUS_LOSING)
-				       ,(lprint :msg "loss"))
 				      ((and header->tp_status TP_STATUS_USER)
 				       (do0
+					
+					(cond
+					  ((and header->tp_status TP_STATUS_COPY)
+					   ,(lprint :msg "copy" :vars `(idx)))
+					  ((and header->tp_status TP_STATUS_LOSING)
+					   (let ((stats (tpacket_stats))
+						 (stats_size (static_cast<socklen_t> (sizeof stats))))
+					     (getsockopt sockfd SOL_PACKET
+							 PACKET_STATISTICS
+							 &stats
+							 &stats_size))
+					   
+					   ,(lprint :msg "loss" :vars `(idx stats.tp_drops
+									    stats.tp_packets)))
+					  )
 					(let ((data (+ (reinterpret_cast<uint8_t*> header) header->tp_net))
 					      (data_len header->tp_snaplen)
 					      (arrival_time64 (+ (* 1000000000 header->tp_sec)
@@ -204,6 +217,9 @@
 					    (std--setw 6)
 					    data_len
 					    (string " ")
+					    (std--setw 4)
+					    idx
+					    (string " ")
 					    )
 					(dotimes (i (? (< data_len 64U)
 						       data_len
@@ -217,17 +233,25 @@
 					      (string " "))
 					  (when (== 0 (% i 8))
 					    (<< std--cout (string " "))))
-					(<< std--cout std--endl)
+					(<< std--cout std--dec std--endl)
 					(setf  old_arrival_time64  arrival_time64 )
-					)))
-				    (do0 (do0 (comments "Hand this entry of the ring buffer (frame) back to kernel")
-						  (setf header->tp_status TP_STATUS_KERNEL))
-					     (comments "Go to next frame in ring buffer")
-					     (setf idx (% (+ idx 1)
-							  rx_buffer_cnt))
-					     (setf  header (reinterpret_cast<tpacket2_hdr*>
-							    (+ base
-							       (* idx frame_size))))))
+					)
+
+				       (do0 (comments "Hand this entry of the ring buffer (frame) back to kernel")
+					    ;,(lprint :msg "hand back" :vars `(idx))
+					    (setf header->tp_status TP_STATUS_KERNEL))
+				       )
+				      (t
+				       (comments "this packet is not tp_status_user, poll again")
+				       ,(lprint :msg "poll")
+				       continue))
+				    (do0 
+				     (comments "Go to next frame in ring buffer")
+				     (setf idx (% (+ idx 1)
+						  rx_buffer_cnt))
+				     (setf  header (reinterpret_cast<tpacket2_hdr*>
+						    (+ base
+						       (* idx frame_size))))))
 				  while
 				  (paren (and header->tp_status TP_STATUS_USER)) ))
 			 (std--this_thread--sleep_for (std--chrono--milliseconds 4))
