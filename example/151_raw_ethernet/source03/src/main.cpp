@@ -1,16 +1,11 @@
 #include <arpa/inet.h>
-#include <array>
-#include <chrono>
 #include <cstdint>
-#include <cstring>
-#include <format>
 #include <iomanip>
 #include <iostream>
 #include <linux/if_packet.h>
 #include <net/if.h>
 #include <netinet/ether.h>
 #include <poll.h>
-#include <span>
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <system_error>
