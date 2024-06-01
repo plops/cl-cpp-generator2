@@ -35,7 +35,10 @@ int main(int argc, char **argv) {
          .sll_addr = {0, 0, 0, 0, 0, 0, 0, 0}})};
     std::cout << ""
               << " ifindex='" << ifindex << "' " << std::endl;
-    bind(sockfd, reinterpret_cast<sockaddr *>(&ll), sizeof(ll));
+    if (bind(sockfd, reinterpret_cast<sockaddr *>(&ll), sizeof(ll)) < 0) {
+      std::cout << "bind error"
+                << " errno='" << errno << "' " << std::endl;
+    }
     // define version
 
     auto version{TPACKET_V2};
@@ -59,8 +62,8 @@ int main(int argc, char **argv) {
     // map the ring buffer
 
     auto mmap_size{block_size * block_nr};
-    auto mmap_base{
-        mmap(0, mmap_size, PROT_READ | PROT_WRITE, MAP_SHARED, sockfd, 0)};
+    auto mmap_base{mmap(nullptr, mmap_size, PROT_READ | PROT_WRITE, MAP_SHARED,
+                        sockfd, 0)};
     auto rx_buffer_size{block_size * block_nr};
     auto rx_buffer_addr{mmap_base};
     auto rx_buffer_cnt{(block_size * block_nr) / frame_size};
@@ -107,7 +110,7 @@ int main(int argc, char **argv) {
               auto arrival_time64{1000000000 * header->tp_sec +
                                   header->tp_nsec};
               auto delta64{arrival_time64 - old_arrival_time64};
-              auto delta_ms{delta64 / 1.00e+6};
+              auto delta_ms{static_cast<double>(delta64) / 1.00e+6};
               auto arrival_timepoint{
                   std::chrono::system_clock::from_time_t(header->tp_sec) +
                   std::chrono::nanoseconds(header->tp_nsec)};
@@ -164,5 +167,7 @@ int main(int argc, char **argv) {
     std::cerr << "Error: " << ex.what() << " (" << ex.code() << ")\n";
     return 1;
   }
+  // unreachable:
+
   return 0;
 }

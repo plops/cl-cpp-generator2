@@ -96,8 +96,10 @@
 					   (= .sll_addr (curly 0 0 0 0  0 0 0 0))
 					   ))))
 	       ,(lprint :vars `(ifindex))
-	       (bind sockfd (reinterpret_cast<sockaddr*> &ll)
-		 (sizeof ll))
+	       (when (< (bind sockfd (reinterpret_cast<sockaddr*> &ll)
+			  (sizeof ll))
+			0)
+		 ,(lprint :msg "bind error" :vars `(errno)))
 	       ))
 
 	    (do0
@@ -133,7 +135,8 @@
 	    (do0
 	     (comments "map the ring buffer")
 	     (let ((mmap_size (* block_size block_nr))
-		   (mmap_base (mmap 0 mmap_size (or PROT_READ PROT_WRITE)
+		   (mmap_base (mmap nullptr
+				    mmap_size (or PROT_READ PROT_WRITE)
 				    MAP_SHARED sockfd 0))))
 	     (let ((rx_buffer_size (* block_size block_nr))
 		   (rx_buffer_addr mmap_base)
@@ -193,7 +196,7 @@
 					      (arrival_time64 (+ (* 1000000000 header->tp_sec)
 								 header->tp_nsec))
 					      (delta64 (- arrival_time64 old_arrival_time64 ))
-					      (delta_ms (/ delta64 1000000d0))
+					      (delta_ms (/ (static_cast<double> delta64) 1000000d0))
 					      (arrival_timepoint (+ (std--chrono--system_clock--from_time_t header->tp_sec)
 								    (std--chrono--nanoseconds  header->tp_nsec)))
 					      (time (std--chrono--system_clock--to_time_t arrival_timepoint))
@@ -276,7 +279,8 @@
 	       (ex.code)
 	       (string ")\\n"))
 	   (return 1)))
-       
+
+       (comments "unreachable:")
        (return 0)))
    :omit-parens t
    :format t
