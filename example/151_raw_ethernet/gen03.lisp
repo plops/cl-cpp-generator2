@@ -52,7 +52,7 @@
       thread
       iomanip
       )
-     
+     #+nil
      (defclass+ VideoLine ()
        "public:"
        "uint16_t width;"
@@ -221,30 +221,35 @@
 					    idx
 					    (string " ")
 					    )
-					(dotimes (i (? (< data_len 128U)
-						       data_len
-						       128U))
-					  (declare (type "unsigned int" i))
-					  (comments "color sequence bytes of icmp packet in red")
-					  (when (== (- #x3b 13) i)
-					    (<< std--cout (string "\\033[31m")))
-					  (<< std--cout
-					      std--hex
-					      (std--setw 2)
-					      (std--setfill (char "0"))
-					      (static_cast<int> (aref data i))
-					      ;(string " ")
-					      )
-					  (when (== (- #x3c 13) i)
-					    (<< std--cout (string "\\033[0m")))
-					  (when (== 7 (% i 8))
-					    (<< std--cout (string " "))))
-					(<< std--cout std--dec std--endl)
-					(setf  old_arrival_time64  arrival_time64 )
+					,(let ((pos-red #+ipv6 `(,(- #x3b 13) 1)
+							#-ipv6 `(,(- 40 13) 1)))
+					   `(dotimes (i (? (< data_len 128U)
+							   data_len
+							   128U))
+					      (declare (type "unsigned int" i))
+					      (comments "color sequence bytes of icmp packet in red")
+					      (when (== ,(elt pos-red 0) i)
+						(<< std--cout (string "\\033[31m"))
+						)
+					      (<< std--cout
+						  std--hex
+						  (std--setw 2)
+						  (std--setfill (char "0"))
+						  (static_cast<int> (aref data i)))
+					      (when (== (+ ,(elt pos-red 0)
+							   ,(elt pos-red 1) )
+							i)
+						(<< std--cout (string "\\033[0m")))
+					      (when (== 7 (% i 8))
+						(<< std--cout (string " "))))
+
+					   )
+					(do0
+					    (<< std--cout std--dec std--endl)
+					    (setf  old_arrival_time64  arrival_time64 ))
 					)
 
 				       (do0 (comments "Hand this entry of the ring buffer (frame) back to kernel")
-					    ;,(lprint :msg "hand back" :vars `(idx))
 					    (setf header->tp_status TP_STATUS_KERNEL))
 				       )
 				      (t

@@ -16,13 +16,6 @@
 #include <system_error>
 #include <thread>
 #include <unistd.h>
-class VideoLine {
-public:
-  uint16_t width;
-  uint16_t height;
-  uint32_t timestamp;
-  std::array<uint8_t, 320> imageData;
-};
 
 int main(int argc, char **argv) {
   std::cout << ""
@@ -140,12 +133,12 @@ int main(int argc, char **argv) {
                    i += 1) {
                 // color sequence bytes of icmp packet in red
 
-                if ((59 - 13) == i) {
+                if (27 == i) {
                   std::cout << "\033[31m";
                 }
                 std::cout << std::hex << std::setw(2) << std::setfill('0')
                           << static_cast<int>(data[i]);
-                if ((60 - 13) == i) {
+                if (27 + 1 == i) {
                   std::cout << "\033[0m";
                 }
                 if (7 == (i % 8)) {
