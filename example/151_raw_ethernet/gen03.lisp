@@ -117,9 +117,9 @@
 	    (do0
 	     (comments "configure ring buffer")
 	     (let ((block_size (static_cast<uint32_t> (* 1 (getpagesize))))
-		   (block_nr 2U)
-		   (frame_size 128U
-			       ;2048U
+		   (block_nr 8U)
+		   (frame_size 
+			       2048U
 			       )
 		   (frame_nr (* (/ block_size frame_size)
 				block_nr))
@@ -209,8 +209,8 @@
 					    local_time_hr
 					    (string ".")
 					    std--dec
-					    (std--setw 9)
-					    header->tp_nsec
+					    (std--setw 6) ;; i want 1us granularity
+					    (/ header->tp_nsec 1000)
 					    (string " ")
 					    (std--setfill (char " "))
 					    (std--setw (+ 5 6))
@@ -226,16 +226,22 @@
 					    idx
 					    (string " ")
 					    )
-					(dotimes (i (? (< data_len 64U)
+					(dotimes (i (? (< data_len 128U)
 						       data_len
-						       64U))
+						       128U))
 					  (declare (type "unsigned int" i))
+					  (comments "color sequence bytes of icmp packet in red")
+					  (when (== (- #x3b 13) i)
+					    (<< std--cout (string "\\033[31m")))
 					  (<< std--cout
 					      std--hex
 					      (std--setw 2)
 					      (std--setfill (char "0"))
 					      (static_cast<int> (aref data i))
-					      (string " "))
+					      ;(string " ")
+					      )
+					  (when (== (- #x3c 13) i)
+					    (<< std--cout (string "\\033[0m")))
 					  (when (== 0 (% i 8))
 					    (<< std--cout (string " "))))
 					(<< std--cout std--dec std--endl)

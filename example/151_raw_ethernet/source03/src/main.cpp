@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
     // configure ring buffer
 
     auto block_size{static_cast<uint32_t>(1 * getpagesize())};
-    auto block_nr{2U};
-    auto frame_size{128U};
+    auto block_nr{8U};
+    auto frame_size{2048U};
     auto frame_nr{(block_size / frame_size) * block_nr};
     auto req{tpacket_req{.tp_block_size = block_size,
                          .tp_block_nr = block_nr,
@@ -133,18 +133,26 @@ int main(int argc, char **argv) {
               auto local_time{std::localtime(&time)};
               auto local_time_hr{
                   std::put_time(local_time, "%Y-%m-%d %H:%M:%S")};
-              std::cout << local_time_hr << "." << std::dec << std::setw(9)
-                        << header->tp_nsec << " " << std::setfill(' ')
+              std::cout << local_time_hr << "." << std::dec << std::setw(6)
+                        << (header->tp_nsec / 1000) << " " << std::setfill(' ')
                         << std::setw(5 + 6) << std::fixed
                         << std::setprecision(6)
                         << (delta_ms < 10000 ? std::to_string(delta_ms)
                                              : "xxxx.xxxxxx")
                         << " " << std::dec << std::setw(6) << data_len << " "
                         << std::setw(4) << idx << " ";
-              for (unsigned int i = 0; i < (data_len < 64U ? data_len : 64U);
+              for (unsigned int i = 0; i < (data_len < 128U ? data_len : 128U);
                    i += 1) {
+                // color sequence bytes of icmp packet in red
+
+                if ((59 - 13) == i) {
+                  std::cout << "\033[31m";
+                }
                 std::cout << std::hex << std::setw(2) << std::setfill('0')
-                          << static_cast<int>(data[i]) << " ";
+                          << static_cast<int>(data[i]);
+                if ((60 - 13) == i) {
+                  std::cout << "\033[0m";
+                }
                 if (0 == (i % 8)) {
                   std::cout << " ";
                 }
