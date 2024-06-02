@@ -16,14 +16,13 @@
 #include <system_error>
 #include <thread>
 #include <unistd.h>
-PacketReceiver::PacketReceiver(const std::string &if_name,
-                               const uint32_t &block_size,
-                               const uint32_t &block_nr,
-                               const uint32_t &frame_size,
-                               const PacketReceivedCallback &callback)
-    : sockfd{-1}, mmap_base{nullptr}, mmap_size{0}, if_name{if_name},
-      block_size{block_size}, block_nr{block_nr}, frame_size{frame_size},
-      frame_nr{0}, rx_buffer_cnt{0}, callback{callback} {
+PacketReceiver::PacketReceiver(
+    std::function<void(const uint8_t *, const size_t)> callback,
+    const std::string &if_name, const uint32_t &block_size,
+    const uint32_t &block_nr, const uint32_t &frame_size)
+    : callback{std::move(callback)}, sockfd{-1}, mmap_base{nullptr},
+      mmap_size{0}, if_name{if_name}, block_size{block_size},
+      block_nr{block_nr}, frame_size{frame_size} {
   auto sockfd{socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))};
   if (sockfd < 0) {
     throw std::runtime_error("error opening socket. try running as root");
@@ -130,6 +129,14 @@ void PacketReceiver::receive() {
     }
   }
 }
+const std::function<void(const uint8_t *, size_t)> &
+PacketReceiver::GetCallback() const {
+  return callback;
+}
+void PacketReceiver::SetCallback(
+    std::function<void(const uint8_t *, size_t)> callback) {
+  this->callback = callback;
+}
 const int &PacketReceiver::GetSockfd() const { return sockfd; }
 void PacketReceiver::SetSockfd(int sockfd) { this->sockfd = sockfd; }
 void *PacketReceiver::GetMmapBase() { return mmap_base; }
@@ -161,10 +168,4 @@ void PacketReceiver::SetFrameNr(uint32_t frame_nr) {
 const uint32_t &PacketReceiver::GetRxBufferCnt() const { return rx_buffer_cnt; }
 void PacketReceiver::SetRxBufferCnt(uint32_t rx_buffer_cnt) {
   this->rx_buffer_cnt = rx_buffer_cnt;
-}
-const PacketReceivedCallback &PacketReceiver::GetCallback() const {
-  return callback;
-}
-void PacketReceiver::SetCallback(PacketReceivedCallback callback) {
-  this->callback = callback;
 }

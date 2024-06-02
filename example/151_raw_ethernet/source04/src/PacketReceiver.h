@@ -10,8 +10,7 @@
 #include <functional> 
 class PacketReceiver  {
         public:
-        using PacketReceivedCallback = std::function<void(const uint8_t*, const size_t)>
-         PacketReceiver (const std::string& if_name = "lo", const uint32_t& block_size = 4096, const uint32_t& block_nr = 1, const uint32_t& frame_size = 128, const PacketReceivedCallback& callback = std::move(callback))       ;   
+         PacketReceiver (std::function<void(const uint8_t*, const size_t)> callback = nullptr, const std::string& if_name = "lo", const uint32_t& block_size = 4096, const uint32_t& block_nr = 1, const uint32_t& frame_size = 128)       ;   
          ~PacketReceiver ()       ;   
             /** @brief Receives packets from a socket and stores them in a vector.
 
@@ -27,6 +26,8 @@ This is done to minimize memory allocations if a similar number of packets is re
 
     */ 
         void receive ()       ;   
+        const std::function<void(const uint8_t*, size_t)>& GetCallback () const      ;   
+        void SetCallback (std::function<void(const uint8_t*, size_t)> callback)       ;   
         const int& GetSockfd () const      ;   
         void SetSockfd (int sockfd)       ;   
         void* GetMmapBase ()       ;   
@@ -45,9 +46,8 @@ This is done to minimize memory allocations if a similar number of packets is re
         void SetFrameNr (uint32_t frame_nr)       ;   
         const uint32_t& GetRxBufferCnt () const      ;   
         void SetRxBufferCnt (uint32_t rx_buffer_cnt)       ;   
-        const PacketReceivedCallback& GetCallback () const      ;   
-        void SetCallback (PacketReceivedCallback callback)       ;   
         private:
+        std::function<void(const uint8_t*, size_t)> callback;
         int sockfd;
         void* mmap_base;
         size_t mmap_size;
@@ -57,7 +57,6 @@ This is done to minimize memory allocations if a similar number of packets is re
         uint32_t frame_size;
         uint32_t frame_nr;
         uint32_t rx_buffer_cnt;
-        PacketReceivedCallback callback;
 };
 
 #endif /* !PACKETRECEIVER_H */

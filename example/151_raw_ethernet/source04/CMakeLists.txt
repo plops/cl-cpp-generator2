@@ -7,6 +7,9 @@ project(packet_listener4)
 # Specify C++17 standard
 set(CMAKE_CXX_STANDARD 23)
 
+# store compilation database in build directory
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Find necessary libraries (this example is minimal, you might need more)
 # You can use find_package for more complex dependencies.
 #find_package(Threads REQUIRED)
