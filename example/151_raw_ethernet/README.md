@@ -1,7 +1,8 @@
 |       |     |                                                                                                              |
 | gen01 | c++ | read network packets individually with recv                                                                  |
 | gen02 | c++ | read network packets with rx ring buffer packet mmap (similar to what tcpdump does) TPACKET_v3 (not working) |
-| gen03 | c++ | packet mmap TPACKET_v2                                                                                       |
+| gen03 | c++ | packet mmap TPACKET_v2, print loss statistics                                                                |
+| gen04 | c++ | 03 but unit-testable                                                                                         |
 |       |     |                                                                                                              |
 
 
