@@ -125,6 +125,25 @@
 						  (= .tp_frame_size  frame_size)
 						  (= .tp_frame_nr frame_nr)
 						  ))))
+	       (do0
+		(comments "the following conditions don't have to be strictly fulfilled. the ring buffer"
+			  "in the kernel works with other configurations. but my code to iterate through"
+			  "the blocks of the ring buffer can only handle this")
+		
+		(when (!= 0 (% block_size (getpagesize)))
+		  (throw (std--runtime_error (string "block_size should be a multiple of getpagesize()"))))
+		(let ((factor (/ block_size
+				 (getpagesize))))
+		  (comments "if factor is a power of two, it has exactly one bit set to 1 in its binary representation"
+			    "when you subtract 1 from factor, all the bits after the bit that was set to 1 are set to 1"
+			    "the bitwise AND operation returns a number that has 1s in the positions where both numbers have 1s"
+			    "if factor is a power of two, then factor & (factor-1) is zero")
+		  (unless (!= 0 (logand factor (- factor 1)))
+		    (throw (std--runtime_error (string "block_size/pagesize should be  a power of two")))))
+		(when (!= 0 (% block_size
+			       frame_size))
+		  (throw (std--runtime_error (string "block_size should be a multiple of frame_size")))))
+	       
 
 	       ,(lprint :vars `(block_size block_nr frame_size frame_nr))
 	       (setsockopt sockfd SOL_PACKET

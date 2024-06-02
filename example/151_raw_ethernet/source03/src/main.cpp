@@ -53,6 +53,29 @@ int main(int argc, char **argv) {
                          .tp_block_nr = block_nr,
                          .tp_frame_size = frame_size,
                          .tp_frame_nr = frame_nr}};
+    // the following conditions don't have to be strictly fulfilled. the ring
+    // buffer
+    // in the kernel works with other configurations. but my code to iterate
+    // through the blocks of the ring buffer can only handle this
+
+    if (0 != (block_size % getpagesize())) {
+      throw std::runtime_error(
+          "block_size should be a multiple of getpagesize()");
+    }
+    auto factor{block_size / getpagesize()};
+    // if factor is a power of two, it has exactly one bit set to 1 in its
+    // binary representation
+    // when you subtract 1 from factor, all the bits after the bit that was set
+    // to 1 are set to 1 the bitwise AND operation returns a number that has 1s
+    // in the positions where both numbers have 1s if factor is a power of two,
+    // then factor & (factor-1) is zero
+
+    if (!(0 != (factor && (factor - 1)))) {
+      throw std::runtime_error("block_size/pagesize should be  a power of two");
+    }
+    if (0 != (block_size % frame_size)) {
+      throw std::runtime_error("block_size should be a multiple of frame_size");
+    }
     std::cout << ""
               << " block_size='" << block_size << "' "
               << " block_nr='" << block_nr << "' "
