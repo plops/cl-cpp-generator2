@@ -18,11 +18,11 @@
 #include <unistd.h>
 PacketReceiver::PacketReceiver(
     std::function<void(const uint8_t *, const size_t)> callback,
-    const std::string &if_name, const uint32_t &block_size,
-    const uint32_t &block_nr, const uint32_t &frame_size)
+    const std::string &if_name, const uint32_t &frame_size,
+    const uint32_t &block_size, const uint32_t &block_nr)
     : callback{std::move(callback)}, sockfd{-1}, mmap_base{nullptr},
-      mmap_size{0}, if_name{if_name}, block_size{block_size},
-      block_nr{block_nr}, frame_size{frame_size} {
+      mmap_size{0}, if_name{if_name}, frame_size{frame_size},
+      block_size{block_size}, block_nr{block_nr} {
   auto sockfd{socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))};
   if (sockfd < 0) {
     throw std::runtime_error("error opening socket. try running as root");
@@ -54,26 +54,16 @@ PacketReceiver::PacketReceiver(
                        .tp_block_nr = block_nr,
                        .tp_frame_size = frame_size,
                        .tp_frame_nr = frame_nr}};
-  // the following conditions don't have to be strictly fulfilled. the ring
-  // buffer
-  // in the kernel works with other configurations. but my code to iterate
-  // through the blocks of the ring buffer can only handle this
+  // The following conditions are not strictly necessary for the kernel's ring
+  // buffer to function. However, the code that iterates through the blocks of
+  // the ring buffer is designed to handle these specific configurations.
 
   if (0 != (block_size % getpagesize())) {
     throw std::runtime_error(
         "block_size should be a multiple of getpagesize()");
   }
-  auto factor{block_size / getpagesize()};
-  // if factor is a power of two, it has exactly one bit set to 1 in its binary
-  // representation
-  // when you subtract 1 from factor, all the bits after the bit that was set to
-  // 1 are set to 1 the bitwise AND operation returns a number that has 1s in
-  // the positions where both numbers have 1s if factor is a power of two, then
-  // factor & (factor-1) is zero
+  // Calculate the factor as the ratio of block_size to page size.
 
-  if (!(0 != (factor && (factor - 1)))) {
-    throw std::runtime_error("block_size/pagesize should be  a power of two");
-  }
   if (0 != (block_size % frame_size)) {
     throw std::runtime_error("block_size should be a multiple of frame_size");
   }
@@ -172,6 +162,10 @@ void PacketReceiver::SetMmapSize(size_t mmap_size) {
 }
 const std::string &PacketReceiver::GetIfName() const { return if_name; }
 void PacketReceiver::SetIfName(std::string if_name) { this->if_name = if_name; }
+const uint32_t &PacketReceiver::GetFrameSize() const { return frame_size; }
+void PacketReceiver::SetFrameSize(uint32_t frame_size) {
+  this->frame_size = frame_size;
+}
 const uint32_t &PacketReceiver::GetBlockSize() const { return block_size; }
 void PacketReceiver::SetBlockSize(uint32_t block_size) {
   this->block_size = block_size;
@@ -179,10 +173,6 @@ void PacketReceiver::SetBlockSize(uint32_t block_size) {
 const uint32_t &PacketReceiver::GetBlockNr() const { return block_nr; }
 void PacketReceiver::SetBlockNr(uint32_t block_nr) {
   this->block_nr = block_nr;
-}
-const uint32_t &PacketReceiver::GetFrameSize() const { return frame_size; }
-void PacketReceiver::SetFrameSize(uint32_t frame_size) {
-  this->frame_size = frame_size;
 }
 const uint32_t &PacketReceiver::GetFrameNr() const { return frame_nr; }
 void PacketReceiver::SetFrameNr(uint32_t frame_nr) {

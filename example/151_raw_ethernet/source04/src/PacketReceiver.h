@@ -10,7 +10,7 @@
 #include <functional> 
 class PacketReceiver  {
         public:
-         PacketReceiver (std::function<void(const uint8_t*, const size_t)> callback = nullptr, const std::string& if_name = "lo", const uint32_t& block_size = 4096, const uint32_t& block_nr = 1, const uint32_t& frame_size = 128)       ;   
+         PacketReceiver (std::function<void(const uint8_t*, const size_t)> callback = nullptr, const std::string& if_name = "lo", const uint32_t& frame_size = 128, const uint32_t& block_size = 4096, const uint32_t& block_nr = 1)       ;   
          ~PacketReceiver ()       ;   
             /** 
 @brief Continuously reads packets from a socket and processes them.
@@ -42,12 +42,12 @@ If no packets are available for reading, the function sleeps for 4 milliseconds 
         void SetMmapSize (size_t mmap_size)       ;   
         const std::string& GetIfName () const      ;   
         void SetIfName (std::string if_name)       ;   
+        const uint32_t& GetFrameSize () const      ;   
+        void SetFrameSize (uint32_t frame_size)       ;   
         const uint32_t& GetBlockSize () const      ;   
         void SetBlockSize (uint32_t block_size)       ;   
         const uint32_t& GetBlockNr () const      ;   
         void SetBlockNr (uint32_t block_nr)       ;   
-        const uint32_t& GetFrameSize () const      ;   
-        void SetFrameSize (uint32_t frame_size)       ;   
         const uint32_t& GetFrameNr () const      ;   
         void SetFrameNr (uint32_t frame_nr)       ;   
         const uint32_t& GetRxBufferCnt () const      ;   
@@ -58,9 +58,9 @@ If no packets are available for reading, the function sleeps for 4 milliseconds 
         void* mmap_base;
         size_t mmap_size;
         std::string if_name;
+        uint32_t frame_size;
         uint32_t block_size;
         uint32_t block_nr;
-        uint32_t frame_size;
         uint32_t frame_nr;
         uint32_t rx_buffer_cnt;
 };
