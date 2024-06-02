@@ -11,8 +11,11 @@ set(CMAKE_CXX_STANDARD 23)
 # You can use find_package for more complex dependencies.
 #find_package(Threads REQUIRED)
 
+# find sources in src/
+file(GLOB SOURCES "src/*.cpp")
+
 # Add the executable
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 # Link libraries
 #target_link_libraries(packet_listener Threads::Threads) 
