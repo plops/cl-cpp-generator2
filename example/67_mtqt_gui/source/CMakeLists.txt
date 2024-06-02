@@ -1,0 +1,16 @@
+cmake_minimum_required( VERSION 3.4 )
+project( mytest LANGUAGES CXX )
+set( CMAKE_CXX_COMPILER clang++ )
+set( CMAKE_VERBOSE_MAKEFILE ON )
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -O1 -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope  ")
+set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -ggdb -O1 -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope  ")
+find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )
+set( SRCS /home/martin/stage/cl-cpp-generator2/example/67_mtqt_gui/source/main.cpp
+/home/martin/stage/cl-cpp-generator2/example/67_mtqt_gui/source/mtgui.cpp
+/home/martin/stage/cl-cpp-generator2/example/67_mtqt_gui/source/plot.cpp )
+add_executable( mytest ${SRCS} )
+target_compile_features( mytest PUBLIC cxx_std_20 )
+target_include_directories( mytest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} /usr/local/include  )
+target_link_directories( mytest PUBLIC /usr/local/lib )
+find_package (Threads) 
+target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::PrintSupport Qt5::Widgets Threads::Threads JKQTPlotterSharedLib_ )

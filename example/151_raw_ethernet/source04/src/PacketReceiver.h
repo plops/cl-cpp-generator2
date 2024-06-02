@@ -6,10 +6,12 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include <array> 
+#include <array>
+#include <functional> 
 class PacketReceiver  {
         public:
-         PacketReceiver (const std::string& if_name = "lo", const uint32_t& block_size = 4096, const uint32_t& block_nr = 1, const uint32_t& frame_size = 128)       ;   
+        using PacketReceivedCallback = std::function<void(const uint8_t*, const size_t)>
+         PacketReceiver (const std::string& if_name = "lo", const uint32_t& block_size = 4096, const uint32_t& block_nr = 1, const uint32_t& frame_size = 128, const PacketReceivedCallback& callback = std::move(callback))       ;   
          ~PacketReceiver ()       ;   
             /** @brief Receives packets from a socket and stores them in a vector.
 
@@ -24,7 +26,27 @@ This is done to minimize memory allocations if a similar number of packets is re
 
 
     */ 
-        void receive (std::vector<std::vector<uint8_t>>& packets)       ;   
+        void receive ()       ;   
+        const int& GetSockfd () const      ;   
+        void SetSockfd (int sockfd)       ;   
+        void* GetMmapBase ()       ;   
+        void SetMmapBase (void* mmap_base)       ;   
+        const size_t& GetMmapSize () const      ;   
+        void SetMmapSize (size_t mmap_size)       ;   
+        const std::string& GetIfName () const      ;   
+        void SetIfName (std::string if_name)       ;   
+        const uint32_t& GetBlockSize () const      ;   
+        void SetBlockSize (uint32_t block_size)       ;   
+        const uint32_t& GetBlockNr () const      ;   
+        void SetBlockNr (uint32_t block_nr)       ;   
+        const uint32_t& GetFrameSize () const      ;   
+        void SetFrameSize (uint32_t frame_size)       ;   
+        const uint32_t& GetFrameNr () const      ;   
+        void SetFrameNr (uint32_t frame_nr)       ;   
+        const uint32_t& GetRxBufferCnt () const      ;   
+        void SetRxBufferCnt (uint32_t rx_buffer_cnt)       ;   
+        const PacketReceivedCallback& GetCallback () const      ;   
+        void SetCallback (PacketReceivedCallback callback)       ;   
         private:
         int sockfd;
         void* mmap_base;
@@ -35,6 +57,7 @@ This is done to minimize memory allocations if a similar number of packets is re
         uint32_t frame_size;
         uint32_t frame_nr;
         uint32_t rx_buffer_cnt;
+        PacketReceivedCallback callback;
 };
 
 #endif /* !PACKETRECEIVER_H */
