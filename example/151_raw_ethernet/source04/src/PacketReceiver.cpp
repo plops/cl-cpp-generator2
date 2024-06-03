@@ -25,7 +25,7 @@ PacketReceiver::PacketReceiver(
       block_size{block_size}, block_nr{block_nr} {
   std::cout << "PacketReceiver constuctor"
             << " if_name='" << if_name << "' " << std::endl;
-  auto sockfd{socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))};
+  sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
   if (sockfd < 0) {
     throw std::runtime_error("error opening socket. try running as root");
   }
@@ -105,7 +105,8 @@ PacketReceiver::~PacketReceiver() {
   close(sockfd);
 }
 void PacketReceiver::handlePackets() {
-  std::cout << "handlePackets started" << std::endl;
+  std::cout << "handlePackets started"
+            << " sockfd='" << sockfd << "' " << std::endl;
   auto idx{0U};
   auto old_arrival_time64{uint64_t(0)};
   while (true) {
