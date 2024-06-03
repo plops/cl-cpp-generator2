@@ -32,24 +32,36 @@ If no packets are available for reading, the function sleeps for 4 milliseconds 
 
     */ 
         void receive ()       ;   
+        
         const std::function<void(const uint8_t*, size_t)>& GetCallback () const      ;   
         void SetCallback (std::function<void(const uint8_t*, size_t)> callback)       ;   
+        
         const int& GetSockfd () const      ;   
         void SetSockfd (int sockfd)       ;   
+        
         void* GetMmapBase ()       ;   
         void SetMmapBase (void* mmap_base)       ;   
+        
         const size_t& GetMmapSize () const      ;   
         void SetMmapSize (size_t mmap_size)       ;   
+        
         const std::string& GetIfName () const      ;   
         void SetIfName (std::string if_name)       ;   
+        
         const uint32_t& GetFrameSize () const      ;   
         void SetFrameSize (uint32_t frame_size)       ;   
+        
         const uint32_t& GetBlockSize () const      ;   
         void SetBlockSize (uint32_t block_size)       ;   
+        
         const uint32_t& GetBlockNr () const      ;   
         void SetBlockNr (uint32_t block_nr)       ;   
+        
         const uint32_t& GetFrameNr () const      ;   
         void SetFrameNr (uint32_t frame_nr)       ;   
+            /** The number of frames in the RX ring buffer.
+
+    */ 
         const uint32_t& GetRxBufferCnt () const      ;   
         void SetRxBufferCnt (uint32_t rx_buffer_cnt)       ;   
         private:
