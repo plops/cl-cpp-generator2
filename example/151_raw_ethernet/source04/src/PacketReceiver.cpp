@@ -23,13 +23,15 @@ PacketReceiver::PacketReceiver(
     : callback{std::move(callback)}, sockfd{-1}, mmap_base{nullptr},
       mmap_size{0}, if_name{if_name}, frame_size{frame_size},
       block_size{block_size}, block_nr{block_nr} {
+  std::cout << "PacketReceiver constuctor"
+            << " if_name='" << if_name << "' " << std::endl;
   auto sockfd{socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))};
   if (sockfd < 0) {
     throw std::runtime_error("error opening socket. try running as root");
   }
   // bind socket to the hardware interface
 
-  auto ifindex{static_cast<int>(if_nametoindex("wlan0"))};
+  auto ifindex{static_cast<int>(if_nametoindex(if_name.c_str()))};
   auto ll{sockaddr_ll(
       {.sll_family = AF_PACKET,
        .sll_protocol = htons(ETH_P_ALL),
@@ -103,14 +105,19 @@ PacketReceiver::~PacketReceiver() {
   close(sockfd);
 }
 void PacketReceiver::handlePackets() {
+  std::cout << "handlePackets started" << std::endl;
   auto idx{0U};
   auto old_arrival_time64{uint64_t(0)};
   while (true) {
     auto pollfds{pollfd({.fd = sockfd, .events = POLLIN, .revents = 0})};
     auto poll_res{ppoll(&pollfds, 1, nullptr, nullptr)};
     if (poll_res < 0) {
+      std::cout << "error in ppoll"
+                << " poll_res='" << poll_res << "' "
+                << " errno='" << errno << "' " << std::endl;
       throw std::runtime_error("ppoll error");
     } else if (poll_res == 0) {
+      std::cout << "timeout" << std::endl;
       std::this_thread::sleep_for(std::chrono::milliseconds(4));
     } else {
       if (POLLIN & pollfds.revents) {
@@ -120,9 +127,56 @@ void PacketReceiver::handlePackets() {
 
         do {
           if (header->tp_status & TP_STATUS_USER) {
-
+            if (header->tp_status & TP_STATUS_COPY) {
+              std::cout << "copy"
+                        << " idx='" << idx << "' " << std::endl;
+            } else if (header->tp_status & TP_STATUS_LOSING) {
+              auto stats{tpacket_stats()};
+              auto stats_size{static_cast<socklen_t>(sizeof(stats))};
+              getsockopt(sockfd, SOL_PACKET, PACKET_STATISTICS, &stats,
+                         &stats_size);
+              std::cout << "loss"
+                        << " idx='" << idx << "' "
+                        << " stats.tp_drops='" << stats.tp_drops << "' "
+                        << " stats.tp_packets='" << stats.tp_packets << "' "
+                        << std::endl;
+            }
             auto data{reinterpret_cast<uint8_t *>(header) + header->tp_net};
             auto data_len{header->tp_snaplen};
+            auto arrival_time64{1000000000 * header->tp_sec + header->tp_nsec};
+            auto delta64{arrival_time64 - old_arrival_time64};
+            auto delta_ms{static_cast<double>(delta64) / 1.00e+6};
+            auto arrival_timepoint{
+                std::chrono::system_clock::from_time_t(header->tp_sec) +
+                std::chrono::nanoseconds(header->tp_nsec)};
+            auto time{std::chrono::system_clock::to_time_t(arrival_timepoint)};
+            auto local_time{std::localtime(&time)};
+            auto local_time_hr{std::put_time(local_time, "%Y-%m-%d %H:%M:%S")};
+            std::cout << local_time_hr << "." << std::dec << std::setw(6)
+                      << (header->tp_nsec / 1000) << " " << std::setfill(' ')
+                      << std::setw(5 + 6) << std::fixed << std::setprecision(6)
+                      << (delta_ms < 10000 ? std::to_string(delta_ms)
+                                           : "xxxx.xxxxxx")
+                      << " " << std::dec << std::setw(6) << data_len << " "
+                      << std::setw(4) << idx << " ";
+            for (unsigned int i = 0; i < (data_len < 128U ? data_len : 128U);
+                 i += 1) {
+              // color sequence bytes of icmp packet in red
+
+              if (27 == i) {
+                std::cout << "\033[31m";
+              }
+              std::cout << std::hex << std::setw(2) << std::setfill('0')
+                        << static_cast<int>(data[i]);
+              if (27 + 1 == i) {
+                std::cout << "\033[0m";
+              }
+              if (7 == (i % 8)) {
+                std::cout << " ";
+              }
+            }
+            std::cout << std::dec << std::endl;
+            old_arrival_time64 = arrival_time64;
             callback(data, data_len);
             // Hand this entry of the ring buffer (frame) back to kernel
 
@@ -130,6 +184,7 @@ void PacketReceiver::handlePackets() {
           } else {
             // this packet is not tp_status_user, poll again
 
+            std::cout << "poll" << std::endl;
             continue;
           }
           // Go to next frame in ring buffer
