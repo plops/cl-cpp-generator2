@@ -31,7 +31,7 @@ If no packets are available for reading, the function sleeps for 4 milliseconds 
 
 
     */ 
-        void receive ()       ;   
+        void handlePackets ()       ;   
         
         const std::function<void(const uint8_t*, size_t)>& GetCallback () const      ;   
         void SetCallback (std::function<void(const uint8_t*, size_t)> callback)       ;   

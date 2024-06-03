@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     std::cout << ""
               << " block_size='" << block_size << "' " << std::endl;
     auto r{PacketReceiver(cb, name, frame_size, block_size, block_nr)};
-    r.receive();
+    r.handlePackets();
   } catch (const std::system_error &ex) {
     std::cerr << "Error: " << ex.what() << " (" << ex.code() << ")\n";
     return 1;

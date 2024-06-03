@@ -102,7 +102,7 @@ PacketReceiver::~PacketReceiver() {
 
   close(sockfd);
 }
-void PacketReceiver::receive() {
+void PacketReceiver::handlePackets() {
   auto idx{0U};
   auto old_arrival_time64{uint64_t(0)};
   while (true) {
