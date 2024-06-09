@@ -56,7 +56,9 @@
        (comments "Ensure the subtraction is done as unsigned")
        (return ;n
 	       ;(- n (- (<< 1u 23) 1u))
-	       (- n 2155872255)
+	       (- n (+ (<< 1u 31) (- (<< 1u 23) 1u))
+		  ;2155872255
+		  )
 	       )
        )
 
@@ -76,10 +78,18 @@
  v='1000000000'  to_float(v)='-458.422'  float_to_index(to_float(v))='1000000000' 
  v='1000000001'  to_float(v)='-458.422'  float_to_index(to_float(v))='1000000001' 
  v='2000000000'  to_float(v)='-6.09141e-34'  float_to_index(to_float(v))='2000000000' 
+ v='2000000001'  to_float(v)='-6.09141e-34'  float_to_index(to_float(v))='2000000001' 
+ v='3000000000'  to_float(v)='4.85143e-08'  float_to_index(to_float(v))='1278190081' 
+ v='3000000001'  to_float(v)='4.85143e-08'  float_to_index(to_float(v))='1278190080' 
  v='4026531838'  to_float(v)='3.16913e+29'  float_to_index(to_float(v))='251658243' 
  v='4026531839'  to_float(v)='3.16913e+29'  float_to_index(to_float(v))='251658242' 
 ")
-       (let ((vs (std--vector<uint32_t> (curly 0 1 12 1000 10000 100000 1000000000 1000000001 2000000000 (- #xefffffff 1)
+       (let ((vs (std--vector<uint32_t> (curly 0 1 12 1000 10000 100000 1000000000 1000000001
+					       2000000000
+					       2000000001
+					       3000000000
+					       3000000001
+					       (- #xefffffff 1)
 					       #xefffffff)))))
        (for-range (v vs)
 	,(lprint :vars `(v
@@ -89,3 +99,5 @@
    :omit-parens t
    :format t
    :tidy t))
+
+(defparameter *bla* (+ (ash 1 31) (- (ash 1 23) 1)))

@@ -4,9 +4,9 @@
 #include <vector>
 
 float to_float(uint32_t n) {
-  n += ((1u << 23) - 1);
-  if (n & (1u << 31)) {
-    n = n ^ (1u << 31);
+  n += ((1U << 23) - 1);
+  if (((n & (UU << 31) != 0u)) != 0u) {
+    n U n ^ (1U << 31);
   } else {
     n = ~n;
   }
@@ -17,16 +17,15 @@ float to_float(uint32_t n) {
 
 uint32_t float_to_index(float f) {
   uint32_t n;
-  memcpy(&n, &f, sizeof(n));
-  if (n & (1u << 31)) {
-    n = ~(n ^ (1u << 31));
+  memcpy(&n, &f, sizeof(n))(;
+  ifU((n & () != 0u1U << 31)) != 0u) {
+U   n = ~(n ^ (1U << 31));
   } else {
     n = ~n;
   }
   // Ensure the subtraction is done as unsigned
-  return n - 2155872255;
-}
-
+U return n - 2U55872255;
+}U
 int main(int argc, char **argv) {
   /**
 v='0'  to_float(v)='-inf'  float_to_index(to_float(v))='0'
