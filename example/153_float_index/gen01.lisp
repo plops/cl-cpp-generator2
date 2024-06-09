@@ -29,11 +29,12 @@
      (include<>
       iostream
       cstdint
-      cstring
+      cstring 
       vector
       )
+     (comments "This is a mapping between floating point numbers and integer indices that keep order")
 
-     (defun to_float (n)
+     (defun index_to_float (n)
        (declare (values float)
 		(type uint32_t n))
        (incf n (- (<< 1u 23) 1))
@@ -69,20 +70,22 @@
 		(type char** argv)
 		(values int))
        (doc "
- v='0'  to_float(v)='-inf'  float_to_index(to_float(v))='0' 
- v='1'  to_float(v)='-3.40282e+38'  float_to_index(to_float(v))='1' 
- v='12'  to_float(v)='-3.40282e+38'  float_to_index(to_float(v))='12' 
- v='1000'  to_float(v)='-3.40262e+38'  float_to_index(to_float(v))='1000' 
- v='10000'  to_float(v)='-3.4008e+38'  float_to_index(to_float(v))='10000' 
- v='100000'  to_float(v)='-3.38254e+38'  float_to_index(to_float(v))='100000' 
- v='1000000000'  to_float(v)='-458.422'  float_to_index(to_float(v))='1000000000' 
- v='1000000001'  to_float(v)='-458.422'  float_to_index(to_float(v))='1000000001' 
- v='2000000000'  to_float(v)='-6.09141e-34'  float_to_index(to_float(v))='2000000000' 
- v='2000000001'  to_float(v)='-6.09141e-34'  float_to_index(to_float(v))='2000000001' 
- v='3000000000'  to_float(v)='4.85143e-08'  float_to_index(to_float(v))='1278190081' 
- v='3000000001'  to_float(v)='4.85143e-08'  float_to_index(to_float(v))='1278190080' 
- v='4026531838'  to_float(v)='3.16913e+29'  float_to_index(to_float(v))='251658243' 
- v='4026531839'  to_float(v)='3.16913e+29'  float_to_index(to_float(v))='251658242' 
+
+ v='0'  index_to_float(v)='-inf'  float_to_index(index_to_float(v))='0' 
+ v='1'  index_to_float(v)='-3.40282e+38'  float_to_index(index_to_float(v))='1' 
+ v='12'  index_to_float(v)='-3.40282e+38'  float_to_index(index_to_float(v))='12' 
+ v='1000'  index_to_float(v)='-3.40262e+38'  float_to_index(index_to_float(v))='1000' 
+ v='10000'  index_to_float(v)='-3.4008e+38'  float_to_index(index_to_float(v))='10000' 
+ v='100000'  index_to_float(v)='-3.38254e+38'  float_to_index(index_to_float(v))='100000' 
+ v='1000000000'  index_to_float(v)='-458.422'  float_to_index(index_to_float(v))='1000000000' 
+ v='1000000001'  index_to_float(v)='-458.422'  float_to_index(index_to_float(v))='1000000001' 
+ v='2000000000'  index_to_float(v)='-6.09141e-34'  float_to_index(index_to_float(v))='2000000000' 
+ v='2000000001'  index_to_float(v)='-6.09141e-34'  float_to_index(index_to_float(v))='2000000001' 
+ v='3000000000'  index_to_float(v)='4.85143e-08'  float_to_index(index_to_float(v))='1278190081' 
+ v='3000000001'  index_to_float(v)='4.85143e-08'  float_to_index(index_to_float(v))='1278190080' 
+ v='4026531838'  index_to_float(v)='3.16913e+29'  float_to_index(index_to_float(v))='251658243' 
+ v='4026531839'  index_to_float(v)='3.16913e+29'  float_to_index(index_to_float(v))='251658242' 
+
 ")
        (let ((vs (std--vector<uint32_t> (curly 0 1 12 1000 10000 100000 1000000000 1000000001
 					       2000000000
@@ -93,8 +96,8 @@
 					       #xefffffff)))))
        (for-range (v vs)
 	,(lprint :vars `(v
-			 (to_float v)
-			 (float_to_index (to_float v)))))
+			 (index_to_float v)
+			 (float_to_index (index_to_float v)))))
        (return 0)))
    :omit-parens t
    :format t
