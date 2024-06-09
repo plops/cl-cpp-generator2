@@ -1,19 +1,33 @@
-// This C++ code is a low-level network packet sniffer that uses raw sockets and the Linux packet_mmap API to capture packets from a network interface.
+/** This C++ code is a low-level network packet sniffer that uses raw
+sockets and the Linux packet_mmap API to capture packets from a
+network interface.
 
-// The main function starts by creating a raw socket and binding it to the "wlan0" interface. It then sets the socket option to use version 2 of the packet_mmap API (TPACKET_V2).
+The main function starts by creating a raw socket and binding it to
+the `wlan0` interface. It then sets the socket option to use version 2
+of the packet_mmap API (TPACKET_V2).
 
-// Next, it configures a ring buffer for packet capture, ensuring that the block size is a multiple of the system page size and a power of two, and that it is also a multiple of the frame size.
+Next, it configures a ring buffer for packet capture, ensuring that
+the block size is a multiple of the system page size and a power of
+two, and that it is also a multiple of the frame size.
 
-// The ring buffer is then memory-mapped into the process's address space.
+The ring buffer is then memory-mapped into the process's address
+space.
 
-// The main loop of the program polls the socket for incoming packets. When a packet arrives, it iterates through the packets in the ring buffer, printing out information about each packet, including the time of arrival, the length of the packet data, and a hex dump of the first 128 bytes of the packet data.
+The main loop of the program polls the socket for incoming
+packets. When a packet arrives, it iterates through the packets in the
+ring buffer, printing out information about each packet, including the
+time of arrival, the length of the packet data, and a hex dump of the
+first 128 bytes of the packet data.
 
-// If a packet is marked as having been copied or lost, it prints out additional information.
+If a packet is marked as having been copied or lost, it prints out
+additional information.
 
-// After processing a packet, it hands the frame back to the kernel and moves on to the next frame in the ring buffer.
+After processing a packet, it hands the frame back to the kernel and
+moves on to the next frame in the ring buffer.
 
-// If an error occurs during the execution of the program, it catches the exception and prints out an error message.
-
+If an error occurs during the execution of the program, it catches the
+exception and prints out an error message.
+*/
 #include <arpa/inet.h>
 #include <cstdint>
 #include <iomanip>
@@ -39,7 +53,6 @@ int main(int argc, char **argv) {
       return -1;
     }
     // bind socket to the hardware interface
-
     auto ifindex{static_cast<int>(if_nametoindex("wlan0"))};
     auto ll{sockaddr_ll(
         {.sll_family = AF_PACKET,
@@ -56,11 +69,9 @@ int main(int argc, char **argv) {
                 << " errno='" << errno << "' " << std::endl;
     }
     // define version
-
     auto version{TPACKET_V2};
     setsockopt(sockfd, SOL_PACKET, PACKET_VERSION, &version, sizeof(version));
     // configure ring buffer
-
     auto block_size{static_cast<uint32_t>(1 * getpagesize())};
     auto block_nr{8U};
     auto frame_size{256U};
@@ -73,21 +84,9 @@ int main(int argc, char **argv) {
     // buffer
     // in the kernel works with other configurations. but my code to iterate
     // through the blocks of the ring buffer can only handle this
-
     if (0 != (block_size % getpagesize())) {
       throw std::runtime_error(
           "block_size should be a multiple of getpagesize()");
-    }
-    auto factor{block_size / getpagesize()};
-    // if factor is a power of two, it has exactly one bit set to 1 in its
-    // binary representation
-    // when you subtract 1 from factor, all the bits after the bit that was set
-    // to 1 are set to 1 the bitwise AND operation returns a number that has 1s
-    // in the positions where both numbers have 1s if factor is a power of two,
-    // then factor & (factor-1) is zero
-
-    if (!(0 != (factor && (factor - 1)))) {
-      throw std::runtime_error("block_size/pagesize should be  a power of two");
     }
     if (0 != (block_size % frame_size)) {
       throw std::runtime_error("block_size should be a multiple of frame_size");
@@ -97,9 +96,10 @@ int main(int argc, char **argv) {
               << " block_nr='" << block_nr << "' "
               << " frame_size='" << frame_size << "' "
               << " frame_nr='" << frame_nr << "' " << std::endl;
-    setsockopt(sockfd, SOL_PACKET, PACKET_RX_RING, &req, sizeof(req));
+    if (setsockopt(sockfd, SOL_PACKET, PACKET_RX_RING, &req, sizeof(req)) < 0) {
+      throw std::runtime_error("setsockopt");
+    }
     // map the ring buffer
-
     auto mmap_size{block_size * block_nr};
     auto mmap_base{mmap(nullptr, mmap_size, PROT_READ | PROT_WRITE, MAP_SHARED,
                         sockfd, 0)};
@@ -127,7 +127,6 @@ int main(int argc, char **argv) {
           auto header{
               reinterpret_cast<tpacket2_hdr *>(base + idx * frame_size)};
           // Iterate through packets in the ring buffer
-
           do {
             if (header->tp_status & TP_STATUS_USER) {
               if (header->tp_status & TP_STATUS_COPY) {
@@ -146,30 +145,15 @@ int main(int argc, char **argv) {
               }
               auto data{reinterpret_cast<uint8_t *>(header) + header->tp_net};
               auto data_len{header->tp_snaplen};
-              auto arrival_time64{1000000000 * header->tp_sec +
+              auto arrival_time64{uint64_t(1000000000) * header->tp_sec +
                                   header->tp_nsec};
               auto delta64{arrival_time64 - old_arrival_time64};
-              auto delta_ms{static_cast<double>(delta64) / 1.00e+6};
-              auto arrival_timepoint{
-                  std::chrono::system_clock::from_time_t(header->tp_sec) +
-                  std::chrono::nanoseconds(header->tp_nsec)};
-              auto time{
-                  std::chrono::system_clock::to_time_t(arrival_timepoint)};
-              auto local_time{std::localtime(&time)};
-              auto local_time_hr{
-                  std::put_time(local_time, "%Y-%m-%d %H:%M:%S")};
-              std::cout << local_time_hr << "." << std::dec << std::setw(6)
-                        << (header->tp_nsec / 1000) << " " << std::setfill(' ')
-                        << std::setw(5 + 6) << std::fixed
-                        << std::setprecision(6)
-                        << (delta_ms < 10000 ? std::to_string(delta_ms)
-                                             : "xxxx.xxxxxx")
-                        << " " << std::dec << std::setw(6) << data_len << " "
-                        << std::setw(4) << idx << " ";
+              std::cout << std::dec << std::setw(20) << std::setfill(' ')
+                        << arrival_time64 << " " << std::setw(12) << delta64
+                        << " ";
               for (unsigned int i = 0; i < (data_len < 128U ? data_len : 128U);
                    i += 1) {
                 // color sequence bytes of icmp packet in red
-
                 if (27 == i) {
                   std::cout << "\033[31m";
                 }
@@ -185,16 +169,13 @@ int main(int argc, char **argv) {
               std::cout << std::dec << std::endl;
               old_arrival_time64 = arrival_time64;
               // Hand this entry of the ring buffer (frame) back to kernel
-
               header->tp_status = TP_STATUS_KERNEL;
             } else {
               // this packet is not tp_status_user, poll again
-
               std::cout << "poll" << std::endl;
               continue;
             }
             // Go to next frame in ring buffer
-
             idx = ((idx + 1) % rx_buffer_cnt);
             header = reinterpret_cast<tpacket2_hdr *>(base + idx * frame_size);
           } while (header->tp_status & TP_STATUS_USER);
@@ -207,6 +188,5 @@ int main(int argc, char **argv) {
     return 1;
   }
   // unreachable:
-
   return 0;
 }

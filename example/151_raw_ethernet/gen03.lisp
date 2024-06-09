@@ -7,8 +7,10 @@
 
 (progn
   (setf *features* (set-difference *features* (list :more
+						    :ipv6
 						    )))
   (setf *features* (set-exclusive-or *features* (list ;:more
+						 ;:ipv6
 						      ))))
 
 (let ()
@@ -25,30 +27,59 @@
     (merge-pathnames "main.cpp"
 		     *source-dir*))
    `(do0
+     (doc "This C++ code is a low-level network packet sniffer that uses raw
+sockets and the Linux packet_mmap API to capture packets from a
+network interface.
+
+The main function starts by creating a raw socket and binding it to
+the `wlan0` interface. It then sets the socket option to use version 2
+of the packet_mmap API (TPACKET_V2).
+
+Next, it configures a ring buffer for packet capture, ensuring that
+the block size is a multiple of the system page size and a power of
+two, and that it is also a multiple of the frame size.
+
+The ring buffer is then memory-mapped into the process's address
+space.
+
+The main loop of the program polls the socket for incoming
+packets. When a packet arrives, it iterates through the packets in the
+ring buffer, printing out information about each packet, including the
+time of arrival, the length of the packet data, and a hex dump of the
+first 128 bytes of the packet data.
+
+If a packet is marked as having been copied or lost, it prints out
+additional information.
+
+After processing a packet, it hands the frame back to the kernel and
+moves on to the next frame in the ring buffer.
+
+If an error occurs during the execution of the program, it catches the
+exception and prints out an error message.")
      
      (include<>
       arpa/inet.h
       linux/if_packet.h
-      ;linux/ip.h
-      ;linux/udp.h
+					;linux/ip.h
+					;linux/udp.h
  
       net/if.h
       netinet/ether.h
-      ;sys/ioctl.h
+					;sys/ioctl.h
       sys/socket.h
       unistd.h
       sys/mman.h
       poll.h
       
-      ;cstring
+					;cstring
       iostream
-      ;array
-      ;span
+					;array
+					;span
       system_error
-      ;format
+					;format
       cstdint
-      ;cstring
-      ;chrono
+					;cstring
+					;chrono
       thread
       iomanip
       )
@@ -132,7 +163,7 @@
 		
 		(when (!= 0 (% block_size (getpagesize)))
 		  (throw (std--runtime_error (string "block_size should be a multiple of getpagesize()"))))
-		(let ((factor (/ block_size
+		#+nil (let ((factor (/ block_size
 				 (getpagesize))))
 		  (comments "if factor is a power of two, it has exactly one bit set to 1 in its binary representation"
 			    "when you subtract 1 from factor, all the bits after the bit that was set to 1 are set to 1"
@@ -146,10 +177,13 @@
 	       
 
 	       ,(lprint :vars `(block_size block_nr frame_size frame_nr))
-	       (setsockopt sockfd SOL_PACKET
-			   PACKET_RX_RING
-			   &req
-			   (sizeof req))))
+	       (when (< 
+		      (setsockopt sockfd SOL_PACKET
+				  PACKET_RX_RING
+				  &req
+				  (sizeof req))
+		      0)
+		 (throw (std--runtime_error (string "setsockopt"))))))
 
 	    (do0
 	     (comments "map the ring buffer")
@@ -212,37 +246,48 @@
 					  )
 					(let ((data (+ (reinterpret_cast<uint8_t*> header) header->tp_net))
 					      (data_len header->tp_snaplen)
-					      (arrival_time64 (+ (* 1000000000 header->tp_sec)
-								 header->tp_nsec))
+					      (arrival_time64 (+ (* (uint64_t 1000000000) header->tp_sec)
+							       header->tp_nsec))
 					      (delta64 (- arrival_time64 old_arrival_time64 ))
-					      (delta_ms (/ (static_cast<double> delta64) 1000000d0))
-					      (arrival_timepoint (+ (std--chrono--system_clock--from_time_t header->tp_sec)
-								    (std--chrono--nanoseconds  header->tp_nsec)))
-					      (time (std--chrono--system_clock--to_time_t arrival_timepoint))
-					      (local_time (std--localtime &time))
-					      (local_time_hr (std--put_time local_time (string "%Y-%m-%d %H:%M:%S")))))
-					;  ,(lprint :vars `(local_time_hr delta_ms data_len (aref data 0)))
+					      ))
 					(<< std--cout
-					    local_time_hr
-					    (string ".")
 					    std--dec
-					    (std--setw 6) ;; i want 1us granularity
-					    (/ header->tp_nsec 1000)
-					    (string " ")
+					    (std--setw 20)
 					    (std--setfill (char " "))
-					    (std--setw (+ 5 6))
-					    std--fixed
-					    (std--setprecision 6)
-					    (? (< delta_ms 10000) (std--to_string delta_ms) (string "xxxx.xxxxxx"))
+					    arrival_time64
 					    (string " ")
-					    std--dec
-					    (std--setw 6)
-					    data_len
-					    (string " ")
-					    (std--setw 4)
-					    idx
-					    (string " ")
-					    )
+					    (std--setw 12)
+					    delta64
+					    (string " "))
+					;,(lprint :vars `(arrival_time64 delta64))
+					#+nil (let ((delta_ms (/ (static_cast<double> delta64) 1000000d0))
+						    (arrival_timepoint (+ (std--chrono--system_clock--from_time_t header->tp_sec)
+									  (std--chrono--nanoseconds  header->tp_nsec)))
+						    (time (std--chrono--system_clock--to_time_t arrival_timepoint))
+						    (local_time (std--localtime &time))
+						    (local_time_hr (std--put_time local_time (string "%Y-%m-%d %H:%M:%S"))))
+					  
+						(<< std--cout
+						    local_time_hr
+						    (string ".")
+						    std--dec
+						    (std--setw 6) ;; i want 1us granularity
+						    (/ header->tp_nsec 1000)
+						    (string " ")
+						    (std--setfill (char " "))
+						    (std--setw (+ 5 6))
+						    std--fixed
+						    (std--setprecision 6)
+						    (? (< delta_ms 10000) (std--to_string delta_ms) (string "xxxx.xxxxxx"))
+						    (string " ")
+						    std--dec
+						    (std--setw 6)
+						    data_len
+						    (string " ")
+						    (std--setw 4)
+						    idx
+						    (string " ")
+						    ))
 					,(let ((pos-red #+ipv6 `(,(- #x3b 13) 1)
 							#-ipv6 `(,(- 40 13) 1)))
 					   `(dotimes (i (? (< data_len 128U)
