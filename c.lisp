@@ -1050,7 +1050,7 @@ emit-c into a string. Except lists: Those stay lists."
 				    :operator 'space-n)))
 		  (comments (let ((args (cdr code)))
 			      (make-instance 'string-op
-					     :string (format nil "~{// ~a~%~}" args)
+					     :string (format nil "~{// ~a~^~%~}" args)
 					     :operator 'comments)))
 		  (lines (let ((args (cdr code)))
 			   ;; like comments but without the //
@@ -1061,6 +1061,7 @@ emit-c into a string. Except lists: Those stay lists."
 		  (doc ;; java doc comments
 		   (let ((args (cdr code)))
 		     (m 'doc
+			#+nil
 			(format nil "~a"
 				(emit
 				 `(do0
@@ -1068,7 +1069,14 @@ emit-c into a string. Except lists: Those stay lists."
 				   ,@(loop for line in (rest args)
 					   collect
 					   (format nil "* ~a~%" line))
-				   ,(format nil "*/"))))))
+				   ,(format nil "*/"))))
+			(format nil "~{~a~}"
+				`(
+				  ,(format nil "/** ~a~%" (first args))
+				  ,@(loop for line in (rest args)
+					  collect
+					  (format nil "* ~a~%" line))
+				  ,(format nil "*/")))))
 		   )
 		  (paren*
 		   ;; paren* parent-op arg

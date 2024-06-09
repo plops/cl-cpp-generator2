@@ -1,3 +1,19 @@
+// This C++ code is a low-level network packet sniffer that uses raw sockets and the Linux packet_mmap API to capture packets from a network interface.
+
+// The main function starts by creating a raw socket and binding it to the "wlan0" interface. It then sets the socket option to use version 2 of the packet_mmap API (TPACKET_V2).
+
+// Next, it configures a ring buffer for packet capture, ensuring that the block size is a multiple of the system page size and a power of two, and that it is also a multiple of the frame size.
+
+// The ring buffer is then memory-mapped into the process's address space.
+
+// The main loop of the program polls the socket for incoming packets. When a packet arrives, it iterates through the packets in the ring buffer, printing out information about each packet, including the time of arrival, the length of the packet data, and a hex dump of the first 128 bytes of the packet data.
+
+// If a packet is marked as having been copied or lost, it prints out additional information.
+
+// After processing a packet, it hands the frame back to the kernel and moves on to the next frame in the ring buffer.
+
+// If an error occurs during the execution of the program, it catches the exception and prints out an error message.
+
 #include <arpa/inet.h>
 #include <cstdint>
 #include <iomanip>
