@@ -32,9 +32,9 @@ floating-point representation.
 */
 
 float index_to_float(uint32_t n) {
-  n += ((1u << 23) - 1);
-  if (n & (1u << 31)) {
-    n = n ^ (1u << 31);
+  n += ((1U << 23) - 1);
+  if ((n & (1U << 31)) != 0u) {
+    n = n ^ (1U << 31);
   } else {
     n = ~n;
   }
@@ -61,13 +61,13 @@ was added in the `to_float` function to get the original index.
 uint32_t float_to_index(float f) {
   uint32_t n;
   memcpy(&n, &f, sizeof(n));
-  if (n & (1u << 31)) {
-    n = ~(n ^ (1u << 31));
+  if ((n & (1U << 31)) != 0u) {
+    n = ~(n ^ (1U << 31));
   } else {
     n = ~n;
   }
   // Ensure the subtraction is done as unsigned
-  return n - ((1u << 31) + ((1u << 23) - 1u));
+  return n - ((1U << 31) + ((1U << 23) - 1U));
 }
 
 int main(int argc, char **argv) {
