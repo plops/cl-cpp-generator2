@@ -43,6 +43,21 @@ float index_to_float(uint32_t n) {
   return f;
 }
 
+/**
+1. **Bitwise Copy:** We first copy the bit representation of the float `f` into
+a `uint32_t` variable `u`. This is done using `memcpy`.
+
+2. **Reverse Transformation:** We then apply the reverse of the transformation
+used in `to_float`.
+   * If the sign bit (most significant bit) is 1 (negative number), we flip the
+sign bit.
+   * If the sign bit is 0 (positive number or NaN), we complement all the bits.
+
+3. **Subtract Offset:** Finally, we subtract the offset `((1u << 23) - 1)` which
+was added in the `to_float` function to get the original index.
+
+*/
+
 uint32_t float_to_index(float f) {
   uint32_t n;
   memcpy(&n, &f, sizeof(n));

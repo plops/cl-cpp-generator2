@@ -64,6 +64,16 @@
        (memcpy &f &n 4)
        (return f))
 
+     (doc
+      "
+1. **Bitwise Copy:** We first copy the bit representation of the float `f` into a `uint32_t` variable `u`. This is done using `memcpy`.
+
+2. **Reverse Transformation:** We then apply the reverse of the transformation used in `to_float`.
+   * If the sign bit (most significant bit) is 1 (negative number), we flip the sign bit.
+   * If the sign bit is 0 (positive number or NaN), we complement all the bits.
+
+3. **Subtract Offset:** Finally, we subtract the offset `((1u << 23) - 1)` which was added in the `to_float` function to get the original index.
+")
      (defun float_to_index (f)
        (declare (values uint32_t)
 		(type float f))
@@ -74,12 +84,12 @@
 	   (setf n (~ (^ n (paren (<< 1u 31)))))
 	   (setf n ~n))
        (comments "Ensure the subtraction is done as unsigned")
-       (return ;n
-	       ;(- n (- (<< 1u 23) 1u))
-	       (- n (+ (<< 1u 31) (- (<< 1u 23) 1u))
-		  ;2155872255
-		  )
-	       )
+       (return				;n
+					;(- n (- (<< 1u 23) 1u))
+	 (- n (+ (<< 1u 31) (- (<< 1u 23) 1u))
+					;2155872255
+	    )
+	 )
        )
 
      
