@@ -161,6 +161,58 @@ We also check for any packet loss or copying indicators, providing valuable insi
 
 Finally, after processing a packet, we mark the corresponding frame in the ring buffer as available for the kernel to use again. This seamless handover ensures continuous packet capture without interruptions.
 
+
+
+## Video Outline and Transcript: (Updated with Packet Loss Section)
+
+**Intro**
+
+```cpp
+// No code shown in this segment
+```
+
+Hello everyone, and welcome back to the channel! Today, we're diving deep into the world of low-level networking with a fascinating project: building a network packet sniffer from scratch using C++. 
+
+Imagine being able to peek under the hood of your network traffic, seeing the raw data flowing between your computer and the internet. That's exactly what a packet sniffer allows you to do, and we'll explore how to build one step-by-step. 
+
+Get ready to get your hands dirty with raw sockets, ring buffers, and the magic of memory mapping. We'll also discuss how even with these powerful techniques, packet loss can occur and how to gather insights into these losses. Let's get started!
+
+**Understanding Packet Loss: Even with Packet MMAP**
+
+```cpp
+          do {
+            if (header->tp_status & TP_STATUS_USER) {
+              if (header->tp_status & TP_STATUS_COPY) {
+                std::cout << "copy"
+                          << " idx='" << idx << "' " << std::endl;
+              } else if (header->tp_status & TP_STATUS_LOSING) {
+                auto stats{tpacket_stats()};
+                auto stats_size{static_cast<socklen_t>(sizeof(stats))};
+                getsockopt(sockfd, SOL_PACKET, PACKET_STATISTICS, &stats,
+                           &stats_size);
+                std::cout << "loss"
+                          << " idx='" << idx << "' "
+                          << " stats.tp_drops='" << stats.tp_drops << "' "
+                          << " stats.tp_packets='" << stats.tp_packets << "' "
+                          << std::endl;
+              }
+              // ... other packet processing code
+            } 
+            // ... other code
+          } while (header->tp_status & TP_STATUS_USER);
+```
+
+You might wonder, why does packet loss happen even with the efficient packet mmap interface?  
+
+Even though packet mmap reduces overhead, our sniffer still operates in user space. If the network traffic is exceptionally high, and our sniffer can't process packets quickly enough to free up space in the ring buffer, the kernel might be forced to drop incoming packets.
+
+Fortunately, the packet mmap API provides mechanisms to detect and quantify this loss. The `TP_STATUS_LOSING` flag within the packet header signals potential packet loss.
+
+Furthermore, we can use the `PACKET_STATISTICS` socket option to retrieve statistics about the ring buffer's performance. This information, accessible through the `tpacket_stats` structure, reveals valuable metrics like the total number of dropped packets (`tp_drops`) and the total number of packets received (`tp_packets`).
+
+By monitoring these statistics, we can gain insights into the extent of packet loss and potentially adjust our sniffer's configuration or processing logic to minimize it.
+
+
 **Conclusion**
 
 ```cpp
