@@ -83,3 +83,7 @@ Hardware Receive Filter Modes:
 
 - this NIC uses the igc kernel module for this PCIe device: Intel
   Corporation Ethernet Controller I226-LM (rev 04)
+- according to the intel specs this controller should support PTP:
+```
+IEEE 1588, also knows as the Precision Time Protocol (PTP) is a protocol used to synchronize clocks throughout a computer network. On a local area network it achieves clock accuracy in the sub-microsecond range, making it suitable for measurement and control systems.
+```
