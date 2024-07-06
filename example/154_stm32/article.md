@@ -16,3 +16,15 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
   to 3.3v power supply. i guess for best measurement results i should
   supply a very clean supply voltage (not from switched mode
   powersupply).
+
+```
+[ ] STM32G4-WDG_TIMERS-High_Resolution_Timer_HRTIM.pdf
+[3] adc_internals_an2834_en.CD00211314.pdf
+[ ] adc_oversampling_en.DM00722433.pdf
+[1] adc_stm32g4_en.DM00625282.pdf
+[ ] an3116-stm32s-adc-modes-and-their-applications-stmicroelectronics.pdf
+[2] analog_g4_en.DM00607955.pdf
+[ ] stm32g4_hal.pdf
+[ ] stm32g4_opamp_en.DM00605707.pdf
+
+```
