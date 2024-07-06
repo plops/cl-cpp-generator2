@@ -45,3 +45,8 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - they suggest to add noise or triangular sweep to a perfectly
   constant V_in, so that ADC results can be averaged to higher
   precision~
+
+- sampling duration increases with ADC resolutino AN2834 p. 32.
+  - 17.1 ns for 8-bit
+  - 67.1 ns for 16-bit (just the input sampling time to charge the
+    sampling capacitor)
