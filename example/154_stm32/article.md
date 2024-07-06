@@ -121,3 +121,4 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - can i use the dac at 15MHz to mix the signal down into the bandwidth
   of the ADC? i guess not because it is not performing a
   multiplication.
+  - maybe the timer controlled multiplexer mode can be used for that.
