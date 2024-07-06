@@ -1,5 +1,6 @@
 
 ```
+[ ] STM32G4-Analog-DAC.pdf
 [ ] STM32G4-WDG_TIMERS-High_Resolution_Timer_HRTIM.pdf
 [4] adc_internals_an2834_en.CD00211314.pdf
 [ ] adc_oversampling_en.DM00722433.pdf
@@ -104,11 +105,19 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 
 - input offset +/- 3mV
 - bandwidth 13MHz 
-- slew rate 6.5 or 45 V/us
-- gain -63, -31, .., -1, 1, 2, .. 64 (use external resistors or capacitors for other values or filters)  
+- slew rate 6.5 or 45 V/us (high speed uses more power and is typically used to amplify dac)
+- gain -63, -31, .., -1, 1, 2, .. 64 (use external resistors or capacitors for other values or filters, e.g. as anti-alias filter)  
 - gain error 2%
 - open loop gain 95dB (56000x)
 - wakup time 3us
 
-- VINP3 can be internally connected to the dac outputs
+- VINP3 can be internally connected to the dac outputs (use dac 3 or 4)  
 - output can be routed to external pin or to ADC channel 
+
+- offset calibration is documented in reference manual
+
+- inverted configuration with offset works with few external components
+
+- can i use the dac at 15MHz to mix the signal down into the bandwidth
+  of the ADC? i guess not because it is not performing a
+  multiplication.
