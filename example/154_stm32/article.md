@@ -1,4 +1,17 @@
 
+```
+[ ] STM32G4-WDG_TIMERS-High_Resolution_Timer_HRTIM.pdf
+[4] adc_internals_an2834_en.CD00211314.pdf
+[ ] adc_oversampling_en.DM00722433.pdf
+[1] adc_stm32g4_en.DM00625282.pdf
+[3] an3116-stm32s-adc-modes-and-their-applications-stmicroelectronics.pdf
+[ ] an4539_dm00121475-hrtim-cookbook-stmicroelectronics.pdf
+[2] analog_g4_en.DM00607955.pdf
+[ ] stm32g4_hal.pdf
+[ ] stm32g4_opamp_en.DM00605707.pdf
+
+```
+
 - the package contained in weact core board doesn't provide vssa 
 https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardware/WeAct-STM32G474CoreBoard_L_V10_SchDoc.pdf
 
@@ -17,19 +30,12 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
   supply a very clean supply voltage (not from switched mode
   powersupply).
 
-```
-[ ] STM32G4-WDG_TIMERS-High_Resolution_Timer_HRTIM.pdf
-[3] adc_internals_an2834_en.CD00211314.pdf
-[ ] adc_oversampling_en.DM00722433.pdf
-[1] adc_stm32g4_en.DM00625282.pdf
-[ ] an3116-stm32s-adc-modes-and-their-applications-stmicroelectronics.pdf
-[ ] an4539_dm00121475-hrtim-cookbook-stmicroelectronics.pdf
-[2] analog_g4_en.DM00607955.pdf
-[ ] stm32g4_hal.pdf
-[ ] stm32g4_opamp_en.DM00605707.pdf
+# an3116
 
-```
+- don't run adc's at the same time (leave some dead time to prevent
+  cross talk and too much load on vref+).
 
+# an2834
 - v_in must have low impedance
   - on-chip opamps with 13MHz bandwidth can be used as followers (but
     i guess those wouldn't be of benefit for 5GHz signal)
