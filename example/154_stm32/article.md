@@ -1,6 +1,6 @@
 
 ```
-[ ] STM32G4-Analog-DAC.pdf
+[6] STM32G4-Analog-DAC.pdf
 [ ] STM32G4-WDG_TIMERS-High_Resolution_Timer_HRTIM.pdf
 [4] adc_internals_an2834_en.CD00211314.pdf
 [ ] adc_oversampling_en.DM00722433.pdf
@@ -121,4 +121,14 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - can i use the dac at 15MHz to mix the signal down into the bandwidth
   of the ADC? i guess not because it is not performing a
   multiplication.
-  - maybe the timer controlled multiplexer mode can be used for that.
+  - maybe the timer controlled multiplexer mode can be used for
+    that. how fast can the input be switched?
+
+# Dac [6]
+
+- 8 or 12 bit
+- 1Msps (external) or 15Msps (internal, i think it can be routed out using OPAMP)
+- buffered (only for external pin with slow dac) on non-buffered
+- sample and hold (can hold static value in stop mode for low-power)
+- two converters in one DAC module
+- can generate noise
