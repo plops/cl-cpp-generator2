@@ -49,7 +49,7 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - sampling duration increases with ADC resolutino AN2834 p. 32.
   - 17.1 ns for 8-bit
   - 67.1 ns for 16-bit (just the input sampling time to charge the
-    sampling capacitor)
+    sampling capacitor, assuming R_AIN=1kOhm)
   - when ADC resolution is 8-bit or lower and acquisition accuracy is
     allowed to be > +/- 1 LSB then T_SMPL can be minimized to a few
     picoseconds
