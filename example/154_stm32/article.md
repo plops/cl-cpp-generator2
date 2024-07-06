@@ -59,3 +59,7 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
   42ns
   
 - a SAR ADC sampling estimation tool is available on demand
+
+- if external amplifier is used then the ADC sampling time must be
+  chosen to be several times longer than the amplifier propagation
+  delay
