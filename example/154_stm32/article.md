@@ -39,6 +39,7 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
   
 - vref+ must have low impedance
 - match adc dynamic range to input signal amplitude
+- vref+ should be created by a linear supply (not switching-type power supply)
 
 - external vref+ must be at least 2.4V
 
@@ -63,3 +64,36 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - if external amplifier is used then the ADC sampling time must be
   chosen to be several times longer than the amplifier propagation
   delay
+
+- shield should only be grounded at the receiver (using analog ground)
+- signal ground should come in a separate cable
+
+- separate digital lines with ground tracks to minimize cross talk
+
+- also separate crystals using ground tracks/ plane
+
+- adc calibration by using a mathematical model of the adc implementation
+  - offset
+  - gain
+  - bit weight
+
+- use minimum disturbance from microcontroller during adc conversion
+  - minimize i/o pin changes
+  - CPU stop, wait mode
+  - stop clock for unnecessary peripherals (timers, communication)
+
+- for slow measurements on extra high impedance sources you can add a
+  capacitor to the input pin that at least equals the internal
+  capacitor (16pF) times U_max / U_lsb, e.g. 16pF * 4095 / 0.5 =
+  131nF. (i'm not sure i understand this)
+  - for some reason they say that the internal capacitor will charge
+    the external one, strange. i guess this is because during readout
+    the sampling switch connects to Vref and it is not possible to
+    discharge the internal capacitor other than through the external
+    pin
+  - a larger external capacitor decreases the wait time between
+    conversions but limits frqeuency bandwidth
+  - i guess an alternative could be to have two additional switches on
+    the input pin to discharge the internal capacitor to ground for
+    every measurement. perhaps that can be done with on-chip pull-down
+    resistors?
