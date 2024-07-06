@@ -8,7 +8,7 @@
 [ ] an4539_dm00121475-hrtim-cookbook-stmicroelectronics.pdf
 [2] analog_g4_en.DM00607955.pdf
 [ ] stm32g4_hal.pdf
-[ ] stm32g4_opamp_en.DM00605707.pdf
+[5] stm32g4_opamp_en.DM00605707.pdf
 
 ```
 
@@ -30,12 +30,12 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
   supply a very clean supply voltage (not from switched mode
   powersupply).
 
-# an3116
+# an3116 [3]
 
 - don't run adc's at the same time (leave some dead time to prevent
   cross talk and too much load on vref+).
 
-# an2834
+# an2834 [4]
 - v_in must have low impedance
   - on-chip opamps with 13MHz bandwidth can be used as followers (but
     i guess those wouldn't be of benefit for 5GHz signal)
@@ -99,3 +99,16 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
   - the switch itself has parasitic capacitances. the pmos and nmos
     transistors have different capacities so that switching can charge
     sampling capacitor
+
+# an5306 opamp [5]
+
+- input offset +/- 3mV
+- bandwidth 13MHz 
+- slew rate 6.5 or 45 V/us
+- gain -63, -31, .., -1, 1, 2, .. 64 (use external resistors or capacitors for other values or filters)  
+- gain error 2%
+- open loop gain 95dB (56000x)
+- wakup time 3us
+
+- VINP3 can be internally connected to the dac outputs
+- output can be routed to external pin or to ADC channel 
