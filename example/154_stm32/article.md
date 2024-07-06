@@ -23,6 +23,7 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 [ ] adc_oversampling_en.DM00722433.pdf
 [1] adc_stm32g4_en.DM00625282.pdf
 [ ] an3116-stm32s-adc-modes-and-their-applications-stmicroelectronics.pdf
+[ ] an4539_dm00121475-hrtim-cookbook-stmicroelectronics.pdf
 [2] analog_g4_en.DM00607955.pdf
 [ ] stm32g4_hal.pdf
 [ ] stm32g4_opamp_en.DM00605707.pdf
@@ -32,7 +33,9 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - v_in must have low impedance
   - on-chip opamps with 13MHz bandwidth can be used as followers (but
     i guess those wouldn't be of benefit for 5GHz signal)
-  
+  - how long does the charging of the internal sampling capacitor
+    take? what is R_ADC [AN2834 p. 20],? do i need external Sample and
+    hold circuit to sample with 5GHz?
   
 - vref+ must have low impedance
 - match adc dynamic range to input signal amplitude
