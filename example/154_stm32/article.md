@@ -28,3 +28,11 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 [ ] stm32g4_opamp_en.DM00605707.pdf
 
 ```
+
+- v_in must have low impedance
+  - on-chip opamps with 13MHz bandwidth can be used as followers (but
+    i guess those wouldn't be of benefit for 5GHz signal)
+  
+  
+- vref+ must have low impedance
+- match adc dynamic range to input signal amplitude
