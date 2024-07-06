@@ -39,3 +39,9 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
   
 - vref+ must have low impedance
 - match adc dynamic range to input signal amplitude
+
+- external vref+ must be at least 2.4V
+
+- they suggest to add noise or triangular sweep to a perfectly
+  constant V_in, so that ADC results can be averaged to higher
+  precision~
