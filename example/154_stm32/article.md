@@ -87,13 +87,9 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
   capacitor (16pF) times U_max / U_lsb, e.g. 16pF * 4095 / 0.5 =
   131nF. (i'm not sure i understand this)
   - for some reason they say that the internal capacitor will charge
-    the external one, strange. i guess this is because during readout
-    the sampling switch connects to Vref and it is not possible to
-    discharge the internal capacitor other than through the external
-    pin
+    the external one, strange. 
   - a larger external capacitor decreases the wait time between
     conversions but limits frqeuency bandwidth
-  - i guess an alternative could be to have two additional switches on
-    the input pin to discharge the internal capacitor to ground for
-    every measurement. perhaps that can be done with on-chip pull-down
-    resistors?
+  - the switch itself has parasitic capacitances. the pmos and nmos
+    transistors have different capacities so that switching can charge
+    sampling capacitor
