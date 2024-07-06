@@ -53,3 +53,9 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
   - when ADC resolution is 8-bit or lower and acquisition accuracy is
     allowed to be > +/- 1 LSB then T_SMPL can be minimized to a few
     picoseconds
+
+- for STM32G4 the minimum sampling time is 2.5 ADC clock cycles. The
+  maximum ADC clock frequency is 60MHz (i think). this corresponds to
+  42ns
+  
+- a SAR ADC sampling estimation tool is available on demand
