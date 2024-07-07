@@ -1,3 +1,8 @@
+Revise the following draft document. it is a review of references of stm32. i want to understand how to implement equivalent-time sampling using the HRTIM and ADC.
+
+Equivalent-time sampling constructs a picture of the input signal by accumulating the samples over many wave cycles. In theory this should make it possible to get 5.4GSps time resolution with an STM32G4 without external components as long as the input signal can be repeated many times. in practice things will not be so simple. after reading i don't think we can reduce the sampling time sufficiently short to get the time resolution. but a fast external opamp or a simple sample-and-hold circuit might make equivalent-time sampling possible. 
+
+
 
 ```
 [6] STM32G4-Analog-DAC.pdf
@@ -11,6 +16,8 @@
 [2] analog_g4_en.DM00607955.pdf
 [11] stm32g4_hal.pdf
 [5] stm32g4_opamp_en.DM00605707.pdf
+
+all references, excluding [11] take 150k tokens in gemini 1.5 pro
 
 ```
 
