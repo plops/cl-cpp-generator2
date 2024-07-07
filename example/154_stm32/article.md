@@ -9,7 +9,7 @@
 [9] an4539_dm00121475-hrtim-cookbook-stmicroelectronics.pdf
 [7] an4566-extending-the-dac-performance-of-stm32-microcontrollers-stmicroelectronics.pdf
 [2] analog_g4_en.DM00607955.pdf
-[ ] stm32g4_hal.pdf
+[11] stm32g4_hal.pdf
 [5] stm32g4_opamp_en.DM00605707.pdf
 
 ```
@@ -240,3 +240,18 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - signal variation within oversampling period must be < 0.5 LSB 
 - provides 1 bit additional resolution for each doubling of
   oversampling rate
+
+# hal [11]
+
+- stm32cubemx is a graphical software tool to generate c
+  initialization code using graphical wizards
+
+- hal .. stm32 abstraction layer for all peripherals
+- ll .. low-layer apis that are closer to the hardware only for some
+  peripherals that need optimized access
+
+- hal drivers are feature oriented
+
+- strict ansi c, checked with code sonar, compliant misra c 2012 
+
+- this is a huge document and i don't think i need this level of detail right now
