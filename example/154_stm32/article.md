@@ -187,3 +187,6 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 
 - half-mode automatically update compare 1 register when period
   register is changed
+
+- master timer can be used to synchronize the 6 timing units, if more
+  than 2 outputs are required or off-chip synch 
