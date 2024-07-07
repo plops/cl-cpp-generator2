@@ -167,3 +167,19 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 
 - 5.44GHz equivalent clock frequency corresponds to 14.1bit resolution for 300kHz PWM signal
   or a 16.5Hz frequency adjustment step at that center frequency
+
+- delay locked loop divides base frequency (100 .. 170 MHz) into 32 steps
+  - high resolution available for period, duty-cycle, PWM phase
+    adjustment but not for input capture
+
+- asynchronous fault protection feature independent of system clock
+
+- 10 external events and 6 fault signals (typically coming from on-chip comparators)
+
+- links to DMA, ADC and DAC peripherals
+
+- one HRTIM contains 5 identical timing units
+- timing unit has 16 bit counter, 4 compare units, 2 capture units
+
+- repetition counter is decreased on each reset event
+- counter roll-over interrupt can be issued every single, 2nd, .. 256th PWM period
