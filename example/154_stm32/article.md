@@ -154,3 +154,11 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - timers may run faster than ABP clock but DAC captures trigger only
   at its ABP clock, i.e. even with a good timer the DAC output will
   jitter
+
+- change clock to hit the desired frequency exactly
+
+- if using an external opamp, connect the output to adc for offset
+  calibration
+
+- output gain calibration must occur every time temperature changes
+  more than 10degC
