@@ -1,7 +1,7 @@
 
 ```
 [6] STM32G4-Analog-DAC.pdf
-[ ] STM32G4-WDG_TIMERS-High_Resolution_Timer_HRTIM.pdf
+[8] STM32G4-WDG_TIMERS-High_Resolution_Timer_HRTIM.pdf
 [4] adc_internals_an2834_en.CD00211314.pdf
 [ ] adc_oversampling_en.DM00722433.pdf
 [1] adc_stm32g4_en.DM00625282.pdf
@@ -162,3 +162,8 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 
 - output gain calibration must occur every time temperature changes
   more than 10degC
+
+# HRTIM tutorial [8]
+
+- 5.44GHz equivalent clock frequency corresponds to 14.1bit resolution for 300kHz PWM signal
+  or a 16.5Hz frequency adjustment step at that center frequency
