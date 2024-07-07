@@ -207,3 +207,5 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - this document doesn't clarify if the adc can be triggered with the
   hrtimer resolution (or if it will just start with the next closest
   ADC clock cycle)
+
+- CMP2 can step dac (i don't quite understand this)
