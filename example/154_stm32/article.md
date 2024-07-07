@@ -7,6 +7,7 @@
 [1] adc_stm32g4_en.DM00625282.pdf
 [3] an3116-stm32s-adc-modes-and-their-applications-stmicroelectronics.pdf
 [ ] an4539_dm00121475-hrtim-cookbook-stmicroelectronics.pdf
+[7] an4566-extending-the-dac-performance-of-stm32-microcontrollers-stmicroelectronics.pdf
 [2] analog_g4_en.DM00607955.pdf
 [ ] stm32g4_hal.pdf
 [5] stm32g4_opamp_en.DM00605707.pdf
@@ -127,8 +128,17 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 # Dac [6]
 
 - 8 or 12 bit
-- 1Msps (external) or 15Msps (internal, i think it can be routed out using OPAMP)
+- 10-bit guaranteed monotonicity
+- 1Msps (external) or 15Msps (internal, can be routed out using OPAMP)
 - buffered (only for external pin with slow dac) on non-buffered
-- sample and hold (can hold static value in stop mode for low-power)
+- sample and hold (can hold static value in stop mode for low-power,
+  with occasional refreshes)
 - two converters in one DAC module
 - can generate noise
+
+# An4566 DAC [7]
+
+- equivalent circuit
+- voltage source and buffer
+- without buffer impedance (STM32F407) is 15kOhm, i.e. charging the
+  10pF capacitive load of the pad takes 1.8us for full swing
