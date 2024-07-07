@@ -211,3 +211,10 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - CMP2 can step dac (i don't quite understand this)
 
 # an4539 hrtim cookbook [9]
+
+- instructions of how to initialize hrtim
+
+- initializer outputs after HRTIM control registers are configured
+- 6 or 7 DMA channels (one per timing unit)
+- dac comparator thresholds can be updated synchronously with HRTIM
+  operation using the HRTIM dac triggers
