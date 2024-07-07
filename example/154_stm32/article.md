@@ -190,3 +190,20 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 
 - master timer can be used to synchronize the 6 timing units, if more
   than 2 outputs are required or off-chip synch 
+
+- events 6..10 have digital filter to remove spurious transitions at
+  the cost of higher response latency
+  
+
+- chopper unit can superimpose carrier signal on top of the active PWM
+  waveform. this is for isolation transformers, 16 frequencies 1.56 to
+  25MHz
+
+- HRTIM has 10 ADC trigger channels, 2 channels per adc for regular
+  and injected sequencers
+
+- trigger rate can be reduced down to 1 out of 32
+  
+- this document doesn't clarify if the adc can be triggered with the
+  hrtimer resolution (or if it will just start with the next closest
+  ADC clock cycle)
