@@ -222,4 +222,6 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - description of different switched-mode converters
 
 - 7.1 is interesting. it describes how to debug adc operation
-- maybe i could also try this in order to verify the adc sampling time
+- maybe i could also try this in order to verify the adc sampling
+  time, i just have to connect the hrtim output into the adc, and also
+  trigger the adc with a hrtim event
