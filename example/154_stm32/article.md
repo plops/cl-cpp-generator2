@@ -182,4 +182,8 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - timing unit has 16 bit counter, 4 compare units, 2 capture units
 
 - repetition counter is decreased on each reset event
-- counter roll-over interrupt can be issued every single, 2nd, .. 256th PWM period
+- counter roll-over interrupt can be issued every single, 2nd,
+  .. 256th PWM period
+
+- half-mode automatically update compare 1 register when period
+  register is changed
