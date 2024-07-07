@@ -218,3 +218,8 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - 6 or 7 DMA channels (one per timing unit)
 - dac comparator thresholds can be updated synchronously with HRTIM
   operation using the HRTIM dac triggers
+
+- description of different switched-mode converters
+
+- 7.1 is interesting. it describes how to debug adc operation
+- maybe i could also try this in order to verify the adc sampling time
