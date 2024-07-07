@@ -6,7 +6,7 @@
 [ ] adc_oversampling_en.DM00722433.pdf
 [1] adc_stm32g4_en.DM00625282.pdf
 [3] an3116-stm32s-adc-modes-and-their-applications-stmicroelectronics.pdf
-[ ] an4539_dm00121475-hrtim-cookbook-stmicroelectronics.pdf
+[9] an4539_dm00121475-hrtim-cookbook-stmicroelectronics.pdf
 [7] an4566-extending-the-dac-performance-of-stm32-microcontrollers-stmicroelectronics.pdf
 [2] analog_g4_en.DM00607955.pdf
 [ ] stm32g4_hal.pdf
@@ -209,3 +209,5 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
   ADC clock cycle)
 
 - CMP2 can step dac (i don't quite understand this)
+
+# an4539 hrtim cookbook [9]
