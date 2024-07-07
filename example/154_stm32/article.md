@@ -142,3 +142,15 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - voltage source and buffer
 - without buffer impedance (STM32F407) is 15kOhm, i.e. charging the
   10pF capacitive load of the pad takes 1.8us for full swing
+
+- use DMA triggered by timer for high speed conversions
+- takes 4 ABP cycles (in our case 170MHz). does that mean 42.5MSps is
+  possible? not exactly (28.8Msps or 30.9Msps with DMA double data
+  mode)
+
+- DMA double data mode transfers two 12-bit sets at once, resulting in
+  lower bus occupation
+
+- timers may run faster than ABP clock but DAC captures trigger only
+  at its ABP clock, i.e. even with a good timer the DAC output will
+  jitter
