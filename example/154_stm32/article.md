@@ -1,4 +1,4 @@
-
+# Prompt:
 Revise the following draft document. it is a review of references of stm32. suggest a new outline for the document
 
 
@@ -270,3 +270,13 @@ https://github.com/WeActStudio/WeActStudio.STM32G474CoreBoard/blob/master/Hardwa
 - strict ansi c, checked with code sonar, compliant misra c 2012 
 
 - this is a huge document and i don't think i need this level of detail right now
+
+# Result:
+
+Is in 02_outline.md
+
+
+
+# Prompt:
+
+Write section 2.
