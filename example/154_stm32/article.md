@@ -22,8 +22,8 @@ Equivalent-time sampling constructs a picture of the input signal by accumulatin
 [2] analog_g4_en.DM00607955.pdf
 [11] stm32g4_hal.pdf
 [5] stm32g4_opamp_en.DM00605707.pdf
-
-all references, excluding [11] take 150k tokens in gemini 1.5 pro
+[12] https://www.st.com/resource/en/product_training/STM32G4-Analog-ADC.pdf
+all references, excluding [11,12] take 150k tokens in gemini 1.5 pro
 
 ```
 
@@ -280,3 +280,11 @@ Is in 02_outline.md
 # Prompt:
 
 Write section 2.
+
+
+# ADC tutorial [12]
+
+p. 19 states that in sample-time controlled trigger mode the sample
+time is exactly controlled by the external trigger. they don't mention
+registration or quantization of the sample times with the APB bus
+clock.

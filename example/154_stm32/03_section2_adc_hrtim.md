@@ -35,3 +35,43 @@ While the STM32G4 ADC and HRTIM provide a powerful foundation for equivalent-tim
 * **APB Clock Jitter:**  While some timers can operate with frequencies exceeding the APB clock, the DAC captures the trigger signal only at the APB clock frequency ([7]). This can introduce jitter in the DAC output, potentially affecting the timing accuracy of ADC triggers.
 
 These limitations will be addressed in later sections, presenting implementation strategies and practical solutions to mitigate their impact on the overall system performance.
+
+
+
+# Second Version
+
+## II. STM32G4 ADC and HRTIM Capabilities
+
+This section will delve into the specific capabilities of the STM32G4's ADC and HRTIM peripherals relevant to our objective of achieving high-speed equivalent-time sampling. We will also highlight key limitations that need to be addressed for successful implementation.
+
+### 2.1 ADC Overview
+
+The STM32G4 series features high-performance ADCs suitable for a variety of applications. Key specifications from [1, 2, 4, 10] relevant to equivalent-time sampling include:
+
+* **Resolution:** The ADC offers programmable resolution, ranging from 6 to 12 bits. While 12-bit resolution is readily available, higher effective resolutions can be achieved using the built-in hardware oversampling feature [10], accumulating and averaging multiple samples. 
+* **Sampling Rate:** The maximum ADC clock frequency is 60 MHz, translating to a maximum sampling rate of 4 Msps [1]. This poses a significant limitation for our 5.4GSps target, necessitating the use of equivalent-time sampling techniques.
+* **Internal Channels:** The ADC provides access to a number of internal channels, including the temperature sensor, VBAT voltage, and internal reference voltage [1, 2]. These channels can be useful for calibration and system monitoring during equivalent-time sampling.
+* **Triggers:**  The ADC can be triggered by both software and external events [1, 3], including timers and I/Os. The HRTIM peripheral plays a crucial role in generating precise, high-resolution triggers for equivalent-time sampling. 
+
+### 2.2 HRTIM Overview
+
+The HRTIM (High-Resolution Timer) peripheral is the cornerstone of our high-speed sampling strategy. Key features from [8, 9] relevant to our application include:
+
+* **Clock:** The HRTIM can operate from a high-frequency clock source (up to 170 MHz) [8, 9], which is further divided by its internal Delay-Locked Loop (DLL) to achieve high resolution.
+* **Resolution:** The DLL provides a 32-step division of the input clock period, enabling a time resolution as fine as 184 ps at 170 MHz [8, 9].  This resolution is crucial for precise ADC trigger placement across multiple signal cycles.
+* **Timers:** The HRTIM consists of five identical timing units (Timers A to E) and a master timer [8, 9].  Each timing unit can generate two independent PWM outputs, offering a total of 10 outputs. The master timer facilitates synchronization and coordination between the timing units. 
+* **Outputs:**  The HRTIM outputs can be configured in various modes, including single-shot, continuous, push-pull, and deadtime insertion [8, 9], offering flexibility in driving different power converter topologies.
+* **Events:** The HRTIM provides a rich set of internal and external events [8, 9] for triggering actions such as output set/reset, counter reset, and capture events.  These events are essential for implementing complex waveform generation and precise ADC triggering schemes.
+* **DMA:** The HRTIM supports DMA transfers for both output updates and event captures [9].  This offloads the CPU, enabling efficient data transfer and waveform generation.
+* **ADC Triggers:** The HRTIM offers dedicated ADC trigger channels [8, 9] that can be synchronized with its timer events, allowing for precisely timed ADC conversions across multiple signal cycles.
+
+### 2.3 Limitations
+
+While the STM32G4's ADC and HRTIM offer a promising foundation for equivalent-time sampling, certain limitations need careful consideration:
+
+* **Minimum ADC Sampling Time:** The minimum sampling time for the ADC is 2.5 ADC clock cycles, which translates to 42 ns at 60 MHz [4].  This duration might be insufficient for accurately capturing very high-speed signals, requiring signal conditioning or external sample-and-hold circuits.
+* **External OpAmp Bandwidth:** When amplifying high-speed signals for shorter ADC sampling times, external operational amplifiers with bandwidth significantly exceeding the target sampling rate (5.4 GS/s) are necessary to minimize distortion [5]. 
+* **Jitter:**  The DAC, which is used for generating the trigger for the ADC, captures the trigger signal from the APB clock. Even when timers can operate at higher frequencies, the DAC timing is limited by the APB clock. This could introduce jitter in the ADC trigger timing, degrading the effective sampling rate [6]. Estimates for this jitter need to be determined based on the specific APB clock frequency and its impact on the desired time resolution assessed.
+* **VSSA on WeAct Core Board:**  The review uncovered a potential issue with the WeAct Core Board, where the VSSA pin is not directly connected to the chip's bonding pad [review]. This could lead to increased inductance and noise on the analog ground reference. Alternative low-impedance ground connections will need to be considered. 
+
+By understanding these capabilities and limitations, we can develop effective strategies for implementing equivalent-time sampling on the STM32G4, as will be discussed in the next section.
