@@ -27,8 +27,10 @@
    `(do0
      
      (include<>
-      boost/hana/define_struct.hpp
+      ;boost/hana/define_struct.hpp
+      boost/hana.hpp
       string
+      iostream
       )
      "namespace hana = boost::hana;"
      ,(let ((name 'Person)
@@ -49,6 +51,12 @@
 		(values int))
        (let ((john (Person (curly (string "John")
 				  30)))))
+       (hana--for_each john
+		       (hana--fuse
+			(lambda (name member)
+			  (<< std--cout ("hana::to<char const*>" name)
+			      (string ": ")
+			      member (string "\\n")))))
        (return 0)))
    :omit-parens t
    :format t
