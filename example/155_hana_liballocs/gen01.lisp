@@ -31,6 +31,7 @@
       boost/hana.hpp
       string
       iostream
+      iomanip
       )
      "namespace hana = boost::hana;"
      ,(let ((name 'Person)
@@ -54,9 +55,19 @@
        (hana--for_each john
 		       (hana--fuse
 			(lambda (name member)
-			  (<< std--cout ("hana::to<char const*>" name)
+			  (<<
+			   
+			   std--cout
+			   (std--setw 8)
+			   ("hana::to<char const*>" name)
 			      (string ": ")
-			      member (string "\\n")))))
+			      std--dec
+			      (std--setw 8)
+			      member
+			      (string " @ ")
+			      std--hex
+			      &member
+			      (string "\\n")))))
        (return 0)))
    :omit-parens t
    :format t
