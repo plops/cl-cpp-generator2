@@ -28,12 +28,27 @@
      
      (include<>
       boost/hana/define_struct.hpp
+      string
       )
      "namespace hana = boost::hana;"
+     ,(let ((name 'Person)
+	    (members `((:var name :type std--string)
+		       (:var age :type "unsigned short"))))
+       `(space struct
+	      ,name
+	      (progn
+		(BOOST_HANA_DEFINE_STRUCT
+		 ,name
+		 ,@(loop for e in members
+			 collect
+			 (destructuring-bind (&key var type) e
+			   `(paren ,type ,var)))))))
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
 		(values int))
+       (let ((john (Person (curly (string "John")
+				  30)))))
        (return 0)))
    :omit-parens t
    :format t
