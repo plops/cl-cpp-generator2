@@ -1,2 +1,17 @@
 *~
 *.o
+\#*\#
+example/*/{b,build,cmake-build}*/
+example/*/source*/b*/
+example/*/source*/*build*/
+example/**/_deps/
+example/146_mch_mcu/hal/
+example/146_mch_mcu/BLE/
+example/**/{b,build,cmake-build}*/
+**/.idea/
+**/.vscode/
+**/CMakeFiles/
+**/build/
+**/b/
+*.pyc
+example/154*/project/*

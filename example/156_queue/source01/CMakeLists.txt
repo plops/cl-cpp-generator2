@@ -4,6 +4,8 @@ include(FetchContent)
 
 project(main)
 
+set(CMAKE_CXX_STANDARD 23)
+
 # add option for ThreadSanitizer
 option(THREAD_SANITIZER "Enable ThreadSanitizer" OFF)
 if(THREAD_SANITIZER)
