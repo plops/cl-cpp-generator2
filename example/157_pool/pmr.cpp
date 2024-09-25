@@ -31,9 +31,14 @@ struct Point2D {
 int main() {
     // Create a custom memory resource for Point2D arrays
     Point2DMemoryResource point2d_pool;
+    // Use the custom memory resource with std::pmr::vector
+    using Point2DAllocator = std::pmr::polymorphic_allocator<Point2D>;
+    Point2DAllocator allocator(&point2d_pool);
+
+    std::pmr::vector<Point2D, Point2DAllocator> point2ds(allocator);
 
     // Use the custom memory resource with std::pmr::vector
-    std::pmr::vector<Point2D, std::pmr::memory_resource*> point2ds{&point2d_pool};
+    //std::pmr::vector<Point2D, std::pmr::memory_resource*> point2ds{&point2d_pool};
 
     // Allocate and initialize some Point2D objects
     for (int i = 0; i < 5; ++i) {
