@@ -36,6 +36,7 @@ int main() {
     std::pmr::monotonic_buffer_resource
       buffer{raw.data(), raw.size(), std::pmr::null_memory_resource()};
     // std::vector<Point2D, std::pmr::polymorphic_allocator<Point2D> > points{&buffer};
+    // specify the vector size explicitly to prevent running out of memory from the pool
     std::pmr::vector<Point2D> points{3,&buffer};
     points[0] = {.1,.2};
     points[1] = {.3, .4};
