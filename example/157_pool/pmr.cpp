@@ -1,6 +1,7 @@
 //
 // Created by martin on 9/25/24.
 // i used qwen2.5
+// and klaus iglberger: c++ software design
 //
 #include <iostream>
 #include <vector>
