@@ -393,3 +393,81 @@ These libraries and frameworks offer different levels of functionality and perfo
 
 
 list libaries for c++ that provide a method to prevent memory fragmentation in a system that processes many images and allocates repeatedly big and small areas for various computations. the solution should be thread safe.
+
+
+
+>>> show the Point2D example with std::pmr
+Certainly! Using `std::pmr` (Polymorphic Memory Resources) from the C++17 standard library can provide a simpler and more flexible approach to memory management. Below is an example demonstrating how to use `std::pmr` for managing arrays of `Point2D`.
+
+First, let's define the `Point2D` struct:
+
+```cpp
+struct Point2D {
+    float x;
+    float y;
+
+    Point2D(float x = 0.0f, float y = 0.0f) : x(x), y(y) {}
+};
+```
+
+Next, we will create a custom memory resource for managing arrays of `Point2D`:
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <memory_resource>
+#include <cstdlib>
+
+// Custom memory resource for Point2D arrays
+class Point2DMemoryResource : public std::pmr::memory_resource {
+public:
+    void* do_allocate(std::size_t bytes, std::size_t alignment) override {
+        return std::malloc(bytes); // Using malloc for simplicity
+    }
+
+    void do_deallocate(void* ptr, std::size_t bytes, std::size_t alignment) override {
+        std::free(ptr);
+    }
+
+    bool is_equal(const std::pmr::memory_resource& other) const noexcept override {
+        return this == &other;
+    }
+};
+
+int main() {
+    // Create a custom memory resource for Point2D arrays
+    Point2DMemoryResource point2d_pool;
+
+    // Use the custom memory resource with std::pmr::vector
+    std::pmr::vector<Point2D, std::pmr::memory_resource*> point2ds{&point2d_pool};
+
+    // Allocate and initialize some Point2D objects
+    for (int i = 0; i < 5; ++i) {
+        point2ds.push_back({static_cast<float>(i), static_cast<float>(i * 1.1)});
+    }
+
+    // Print the contents of the vector
+    for (const auto& p : point2ds) {
+        std::cout << "Point2D(x=" << p.x << ", y=" << p.y << ")" << std::endl;
+    }
+
+    return 0;
+}
+```
+### Explanation:
+
+1. **Custom Memory Resource**:
+   - We define a custom memory resource class `Point2DMemoryResource` that inherits from `std::pmr::memory_resource`.
+   - The `do_allocate` and `do_deallocate` methods use `malloc` and `free` for simplicity, but you can replace these with more sophisticated allocation strategies if needed.
+   - The `is_equal` method checks if the current resource is equal to another resource.
+
+2. **Using Custom Memory Resource**:
+   - We create an instance of `Point2DMemoryResource`.
+   - We use this custom memory resource with a `std::pmr::vector` to manage arrays of `Point2D`.
+   - The `std::pmr::vector` automatically uses the provided memory resource for allocating and deallocating its elements.
+
+3. **Allocation and Deallocation**:
+   - Elements are added to the `std::pmr::vector`, and they are allocated using our custom memory resource.
+   - When the vector goes out of scope, the elements are automatically deallocated using the custom memory resource.
+
+This example demonstrates how you can use `std::pmr` to manage memory for arrays of custom objects in a more efficient and flexible manner.
