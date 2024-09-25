@@ -345,4 +345,4 @@ int main() {
 This example demonstrates how you can use the `MemoryPool` class to manage memory for different data types and sizes in a multi-threaded environment.
 
 
-Note: The model didn't understand that i want complex numbers
+Note: The model didn't understand that i want complex numbers. at least not entirely. it uses float and tries to store 1.0f + i * 0.2f in it.
