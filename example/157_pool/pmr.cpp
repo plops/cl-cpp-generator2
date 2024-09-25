@@ -36,10 +36,13 @@ int main() {
     std::pmr::monotonic_buffer_resource
       buffer{raw.data(), raw.size(), std::pmr::null_memory_resource()};
     // std::vector<Point2D, std::pmr::polymorphic_allocator<Point2D> > points{&buffer};
-    std::pmr::vector<Point2D> points{&buffer};
-    points.emplace_back(.1, .2);
-    points.emplace_back(.3, .4);
-    points.emplace_back(.5, .6);
+    std::pmr::vector<Point2D> points{3,&buffer};
+    points[0] = {.1,.2};
+    points[1] = {.3, .4};
+    points[2] = {.5, .6};
+//    points.emplace_back(.1, .2);
+//    points.emplace_back(.3, .4);
+//    points.emplace_back(.5, .6);
 
 
 
