@@ -18,15 +18,20 @@ public:
         std::free(ptr);
     }
 
-    bool is_equal(const std::pmr::memory_resource& other) const noexcept override {
+    bool do_is_equal(const std::pmr::memory_resource& other) const noexcept override {
         return this == &other;
     }
 };
+struct Point2D {
+    float x;
+    float y;
 
+    Point2D(float x = 0.0f, float y = 0.0f) : x(x), y(y) {}
+};
 int main() {
     // Create a custom memory resource for Point2D arrays
     Point2DMemoryResource point2d_pool;
-3
+
     // Use the custom memory resource with std::pmr::vector
     std::pmr::vector<Point2D, std::pmr::memory_resource*> point2ds{&point2d_pool};
 
