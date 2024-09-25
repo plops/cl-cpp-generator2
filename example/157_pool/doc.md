@@ -325,3 +325,24 @@ int main() {
     return 0;
 }
 ```
+
+### Explanation:
+
+1. **Memory Pool for Arrays of Complex Single Floats**:
+   - We define a `MemoryPool` for arrays of `float` with a size of 12.
+   - We allocate and deallocate these arrays multiple times to demonstrate the pool's functionality.
+
+2. **Memory Pool for Arrays of Point2D**:
+   - We define a `MemoryPool` for arrays of `Point2D` with a size of 12.
+   - We allocate and deallocate these arrays multiple times to demonstrate the pool's functionality.
+
+### Usage:
+
+- The `MemoryPool` class is used to manage memory efficiently by pre-allocating blocks of memory and reusing them when needed.
+- The `allocate` method returns a unique pointer to the allocated memory block.
+- The `deallocate` method returns the memory block back to the pool for reuse.
+
+This example demonstrates how you can use the `MemoryPool` class to manage memory for different data types and sizes in a multi-threaded environment.
+
+
+Note: The model didn't understand that i want complex numbers
