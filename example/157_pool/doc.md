@@ -346,3 +346,50 @@ This example demonstrates how you can use the `MemoryPool` class to manage memor
 
 
 Note: The model didn't understand that i want complex numbers. at least not entirely. it uses float and tries to store 1.0f + i * 0.2f in it.
+
+>>> list libraries or frameworks that provide this functionality
+There are several libraries and frameworks that provide memory pooling functionality, each designed for different purposes and performance characteristics. Here are some popular ones:
+
+1. **Boost.Pool**:
+   - Part of the Boost C++ Libraries.
+   - Provides a generic object pool template class `boost::object_pool`.
+   - Suitable for managing small objects in large numbers.
+
+2. **TinySTL**:
+   - A lightweight, no-dependency alternative to Standard Template Library (STL).
+   - Includes a memory pool implementation suitable for embedded systems and other constrained environments.
+
+3. **Boost.Interprocess**:
+   - Part of the Boost C++ Libraries.
+   - Provides inter-process communication (IPC) capabilities along with memory management features.
+   - Can be used for shared memory, message queues, etc., but includes a memory pool component.
+
+4. **Ceph Memory Pool**:
+   - Part of the Ceph distributed storage system.
+   - Implements an efficient and scalable memory pooling system.
+   - Useful in high-performance computing environments.
+
+5. **jemalloc** (Just Enough Malloc):
+   - A general-purpose malloc implementation that provides more fine-grained control over memory allocation and reclamation.
+   - Includes a memory pool component for efficient memory management.
+
+6. **Google Performance Tools (gperftools)**:
+   - A set of performance analysis tools, including a fast malloc implementation (`tcmalloc`).
+   - Includes a memory pooling mechanism that can be used to manage memory more efficiently.
+
+7. **Intel TBB** (Threading Building Blocks):
+   - Provides high-level abstractions for parallel programming.
+   - Includes a memory pool component called `task_scheduler_init`, which is useful for managing thread-local data.
+
+8. **jemalloc's Memory Pooling**:
+   - As mentioned, jemalloc includes a memory pooling mechanism that can be used to manage small objects efficiently.
+
+9. **C++ Standard Library (std::pmr)**:
+   - Part of the C++17 standard library.
+   - Provides polymorphic allocators, including a memory resource (`memory_resource`) and an arena allocator (`monotonic_buffer_resource`), which can be used for efficient memory management.
+
+These libraries and frameworks offer different levels of functionality and performance optimizations. The choice depends on your specific requirements, such as the type of objects you are managing, the expected workload, and the target platform.
+
+
+
+list libaries for c++ that provide a method to prevent memory fragmentation in a system that processes many images and allocates repeatedly big and small areas for various computations. the solution should be thread safe.
