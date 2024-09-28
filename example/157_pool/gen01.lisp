@@ -177,7 +177,7 @@
 		(type char** argv)
 		(values int))
 
-       "constexpr int n{300'000};"
+       "constexpr int n{1'000};"
        (let ((raw ("std::array<std::byte,n>"))
 	     (buf0 (pmr--monotonic_buffer_resource (raw.data) (raw.size) (pmr--null_memory_resource)))
 	     (buf (test_resource &buf0))

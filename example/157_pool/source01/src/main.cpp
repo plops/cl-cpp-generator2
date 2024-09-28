@@ -76,7 +76,7 @@ struct point_2d {
 ;
 
 int main(int argc, char **argv) {
-  constexpr int n{300'000};
+  constexpr int n{1'000};
   auto raw{std::array<std::byte, n>()};
   auto buf0{pmr::monotonic_buffer_resource(raw.data(), raw.size(),
                                            pmr::null_memory_resource())};
