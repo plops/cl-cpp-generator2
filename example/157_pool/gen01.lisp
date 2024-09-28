@@ -31,6 +31,7 @@
       string
       iostream
       iomanip
+      algorithm
       )
 
      "using namespace std;"
@@ -48,43 +49,53 @@
 
        (defmethod upstream ()
 	 (declare (const)
-		  (values "pmr::memory_resource*")))
+		  (values "pmr::memory_resource*"))
+	 (return _upstream))
 
        
        
        (defmethod bytes_allocated ()
 	 (declare (const)
-		  (values size_t)))
+		  (values size_t))
+	 (return _bytes_allocated))
 
        (defmethod bytes_deallocated ()
 	 (declare (const)
-		  (values size_t)))
+		  (values size_t))
+	 (return 0))
 
        (defmethod bytes_outstanding ()
 	 (declare (const)
-		  (values size_t)))
+		  (values size_t))
+	 (return _bytes_outstanding))
 
        (defmethod bytes_highwater ()
 	 (declare (const)
-		  (values size_t)))
+		  (values size_t))
+	 (return _bytes_highwater))
 
        (defmethod blocks_outstanding ()
 	 (declare (const)
-		  (values size_t)))
+		  (values size_t))
+	 (return 0))
 
        (comments "We can't throw in the destructor that is why we need the following three functions")
 
        (defmethod leaked_bytes ()
 	 (declare (static)
-		  (values size_t)))
+		  (values size_t))
+	 (return _s_leaked_bytes))
 
        (defmethod leaked_blocks ()
 	 (declare (static)
-		  (values size_t)))
+		  (values size_t))
+	 (return _s_leaked_blocks))
 
        (defmethod clear_leaked ()
 	 (declare (static)
-		  (values void)))
+		  (values void))
+	 (setf _s_leaked_bytes 0
+	       _s_leaked_blocks 0))
 
        "protected:"
 
@@ -94,7 +105,7 @@
 		  (values void*))
 	 (let ((ret (_upstream->allocate bytes alignment))
 	       )
-	   (_blocks.push_back (allocation_rec ret bytes alignment))
+	   (_blocks.push_back (space allocation_rec(curly  ret bytes alignment)))
 	   (incf _bytes_allocated bytes)
 	   (incf _bytes_outstanding bytes)
 	   (when (< _bytes_highwater _bytes_outstanding)
@@ -130,7 +141,8 @@
 		  (const)
 		  (noexcept)
 		  (type "const pmr::memory_resource&" other)
-		  (values bool)))
+		  (values bool))
+	 (return (== this &other)))
 
        "private:"
 
@@ -145,13 +157,15 @@
 			 (:name bytes_outstanding :type size_t)
 			 (:name bytes_highwater :type size_t)
 			 (:name blocks :type "pmr::vector<allocation_rec>")
-			 (:name s_leaked_bytes :type "static size_t")
-			 (:name s_leaked_blocks :type "static size_t"))))
+			 (:name s_leaked_bytes :type "static size_t" :default nil)
+			 (:name s_leaked_blocks :type "static size_t" :default nil))))
 	  `(do0
 	    ,@(loop for e in members
 		  collect
-		    (destructuring-bind (&key name type default) e
-		     (format nil "~a _~a{};" type name))))))
+		    (destructuring-bind (&key name type (default t)) e
+		     (format nil "~a _~a~a;" type name (if default
+							   "{}"
+							   "")))))))
      
      (defun main (argc argv)
        (declare (type int argc)
