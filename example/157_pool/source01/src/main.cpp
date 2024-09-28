@@ -30,7 +30,20 @@ protected:
     }
     return ret;
   }
-  void do_deallocate(void *p, size_t bytes, size_t alignment) override {}
+  void do_deallocate(void *p, size_t bytes, size_t alignment) override {
+    auto i{std::find_if(_blocks.begin(), _blocks.end(),
+                        [p](allocation_rec &r) { return r._ptr == p; })};
+    if (i == _blocks.end()) {
+      throw std::invalid_argument("deallocate: Invalid pointer");
+    } else if (bytes != i->_bytes) {
+      throw std::invalid_argument("deallocate: Size mismatch");
+    } else if (alignment != i->_alignment) {
+      throw std::invalid_argument("deallocate: Alignment mismatch");
+    }
+    _upstream->deallocate(p, i->_bytes, i->_alignment);
+    _blocks.erase(i);
+    _bytes_outstanding -= bytes;
+  }
   bool do_is_equal(const pmr::memory_resource &other) const noexcept override {}
 
 private:
