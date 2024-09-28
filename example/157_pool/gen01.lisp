@@ -104,7 +104,28 @@
 		  (const)
 		  (noexcept)
 		  (type "const pmr::memory_resource&" other)
-		  (values bool))))
+		  (values bool)))
+
+       "private:"
+
+       (defstruct0 allocation_rec
+	   (_ptr void*)
+	 (_bytes size_t)
+	 (_alignment size_t))
+
+
+       ,(let ((members `((:name parent :type "pmr::memory_resource*")
+			 (:name bytes_allocated :type size_t)
+			 (:name bytes_outstanding :type size_t)
+			 (:name bytes_highwater :type size_t)
+			 (:name blocks :type "pmr::vector<allocation_rec>")
+			 (:name s_leaked_bytes :type "static size_t")
+			 (:name s_leaked_blocks :type "static size_t"))))
+	  `(do0
+	    ,@(loop for e in members
+		  collect
+		    (destructuring-bind (&key name type default) e
+		     (format nil "~a _~a{};" type name))))))
      
      (defun main (argc argv)
        (declare (type int argc)
