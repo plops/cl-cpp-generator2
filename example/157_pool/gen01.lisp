@@ -29,6 +29,7 @@
      (include<>
       memory_resource
       string
+      array vector
       iostream
       iomanip
       algorithm
@@ -166,12 +167,26 @@
 		     (format nil "~a _~a~a;" type name (if default
 							   "{}"
 							   "")))))))
+
+     (defstruct0 point_2d
+       (x double)
+       (y double))
      
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
 		(values int))
-     
+
+       "constexpr int n{300'000};"
+       (let ((raw ("std::array<std::byte,n>"))
+	     (buf0 (pmr--monotonic_buffer_resource (raw.data) (raw.size) (pmr--null_memory_resource)))
+	     (buf (test_resource &buf0))
+	     )
+	 "constexpr int nPoints{100};"
+	 (let ((points (pmr--vector<point_2d> nPoints &buf)))
+	   (setf (aref points 0)
+		 (curly .1 .2)))
+	 )
        (return 0)))
    :omit-parens t
    :format t

@@ -1,8 +1,10 @@
 #include <algorithm>
+#include <array>
 #include <iomanip>
 #include <iostream>
 #include <memory_resource>
 #include <string>
+#include <vector>
 using namespace std;
 class test_resource : public pmr::memory_resource {
 public:
@@ -10,22 +12,22 @@ public:
   ~test_resource() {}
   pmr::memory_resource *upstream() const { return _upstream; }
   size_t bytes_allocated() const { return _bytes_allocated; }
-  size_t bytes_deallocated() const { return 0; }
+  static size_t bytes_deallocated() { return 0; }
   size_t bytes_outstanding() const { return _bytes_outstanding; }
   size_t bytes_highwater() const { return _bytes_highwater; }
-  size_t blocks_outstanding() const { return 0; }
+  static size_t blocks_outstanding() { return 0; }
   // We can't throw in the destructor that is why we need the following three
   // functions
-  size_t leaked_bytes() { return _s_leaked_bytes; }
-  size_t leaked_blocks() { return _s_leaked_blocks; }
-  void clear_leaked() {
+  static size_t leaked_bytes() { return _s_leaked_bytes; }
+  static size_t leaked_blocks() { return _s_leaked_blocks; }
+  static void clear_leaked() {
     _s_leaked_bytes = 0;
     _s_leaked_blocks = 0;
   }
 
 protected:
   void *do_allocate(size_t bytes, size_t alignment) override {
-    auto ret{_upstream->allocate(bytes, alignment)};
+    auto *ret{_upstream->allocate(bytes, alignment)};
     _blocks.push_back(allocation_rec{ret, bytes, alignment});
     _bytes_allocated += bytes;
     _bytes_outstanding += bytes;
@@ -39,7 +41,7 @@ protected:
                         [p](allocation_rec &r) { return r._ptr == p; })};
     if (i == _blocks.end()) {
       throw std::invalid_argument("deallocate: Invalid pointer");
-    } else if (bytes != i->_bytes) {
+    } if (bytes != i->_bytes) {
       throw std::invalid_argument("deallocate: Size mismatch");
     } else if (alignment != i->_alignment) {
       throw std::invalid_argument("deallocate: Alignment mismatch");
@@ -63,9 +65,24 @@ private:
   size_t _bytes_allocated{};
   size_t _bytes_outstanding{};
   size_t _bytes_highwater{};
-  pmr::vector<allocation_rec> _blocks{};
+  pmr::vector<allocation_rec> _blocks;
   static size_t _s_leaked_bytes;
   static size_t _s_leaked_blocks;
 };
+struct point_2d {
+  double x;
+  double y;
+};
+;
 
-int main(int argc, char **argv) { return 0; }
+int main(int argc, char **argv) {
+  constexpr int n{300'000};
+  auto raw{std::array<std::byte, n>()};
+  auto buf0{pmr::monotonic_buffer_resource(raw.data(), raw.size(),
+                                           pmr::null_memory_resource())};
+  auto buf{test_resource(&buf0)};
+  constexpr int nPoints{100};
+  auto points{pmr::vector<point_2d>(nPoints, &buf)};
+  points[0] = {0.10F, 0.20F};
+  return 0;
+}
