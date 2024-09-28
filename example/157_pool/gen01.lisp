@@ -91,7 +91,16 @@
        (defmethod do_allocate (bytes alignment)
 	 (declare (override)
 		   (type size_t bytes alignment)
-		  (values void*)))
+		  (values void*))
+	 (let ((ret (_upstream->allocate bytes alignment))
+	       )
+	   (_blocks.push_back (allocation_rec ret bytes alignment))
+	   (incf _bytes_allocated bytes)
+	   (incf _bytes_outstanding bytes)
+	   (when (< _bytes_highwater _bytes_outstanding)
+	     (setf _bytes_highwater _bytes_outstanding))
+	   (return ret))
+	 )
 
        (defmethod do_deallocate (p bytes alignment)
 	 (declare (override)
@@ -114,7 +123,7 @@
 	 (_alignment size_t))
 
 
-       ,(let ((members `((:name parent :type "pmr::memory_resource*")
+       ,(let ((members `((:name upstream :type "pmr::memory_resource*")
 			 (:name bytes_allocated :type size_t)
 			 (:name bytes_outstanding :type size_t)
 			 (:name bytes_highwater :type size_t)

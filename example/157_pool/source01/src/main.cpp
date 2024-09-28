@@ -20,7 +20,16 @@ public:
   void clear_leaked() {}
 
 protected:
-  void *do_allocate(size_t bytes, size_t alignment) override {}
+  void *do_allocate(size_t bytes, size_t alignment) override {
+    auto ret{_upstream->allocate(bytes, alignment)};
+    _blocks.push_back(allocation_rec(ret, bytes, alignment));
+    _bytes_allocated += bytes;
+    _bytes_outstanding += bytes;
+    if (_bytes_highwater < _bytes_outstanding) {
+      _bytes_highwater = _bytes_outstanding;
+    }
+    return ret;
+  }
   void do_deallocate(void *p, size_t bytes, size_t alignment) override {}
   bool do_is_equal(const pmr::memory_resource &other) const noexcept override {}
 
@@ -31,7 +40,7 @@ private:
     size_t _alignment;
   };
   ;
-  pmr::memory_resource *_parent{};
+  pmr::memory_resource *_upstream{};
   size_t _bytes_allocated{};
   size_t _bytes_outstanding{};
   size_t _bytes_highwater{};
