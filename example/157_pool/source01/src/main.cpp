@@ -7,8 +7,10 @@
 #include <string>
 #include <vector>
 using namespace std;
-// cppcon 2017 Pablo Halpern Allocators: The Good Parts timestamp 30:46
-// Klaus Iglberger: C++ Software Design pp. 142
+// cppcon 2017 Pablo Halpern Allocators: The Good Parts, timestamp 30:46
+// Klaus Iglberger: C++ Software Design, pp. 142
+// Stroustroup: A Tour of C++ 20, section 12.7 allocator
+// massive fragmentation with shared_ptr event
 class test_resource : public pmr::memory_resource {
 public:
   test_resource(pmr::memory_resource *upstream) : _upstream{upstream} {

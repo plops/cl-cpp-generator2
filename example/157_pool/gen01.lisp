@@ -61,7 +61,8 @@
 
      (comments "cppcon 2017 Pablo Halpern Allocators: The Good Parts, timestamp 30:46" )
      (comments "Klaus Iglberger: C++ Software Design, pp. 142")
-     (comments "Stroustroup: A Tour of C++ 20, section 12.7 allocator")
+     (comments "Stroustroup: A Tour of C++ 20, section 12.7 allocator"
+	       "how to solve massive fragmentation with shared_ptr event using memory pool")
      (defclass+ test_resource
        "public pmr::memory_resource"
 
