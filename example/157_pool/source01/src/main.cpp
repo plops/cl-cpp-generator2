@@ -1,17 +1,19 @@
 #include <algorithm>
 #include <array>
+#include <condition_variable>
 #include <format>
 #include <iomanip>
 #include <iostream>
 #include <list>
 #include <memory>
 #include <memory_resource>
+#include <mutex>
 #include <string>
 #include <vector>
 using namespace std;
 // cppcon 2017 Pablo Halpern Allocators: The Good Parts, timestamp 30:46
 // Klaus Iglberger: C++ Software Design, pp. 142
-// Stroustroup: A Tour of C++ 20, section 12.7 allocator
+// Stroustroup: A Tour of C++ 20, section 12.7 allocator, pp. 167
 // how to solve massive fragmentation with shared_ptr event using memory pool
 class test_resource : public pmr::memory_resource {
 public:
@@ -97,10 +99,20 @@ struct point_2d {
 ;
 pmr::synchronized_pool_resource pool;
 struct Event {
-  pmr::vector<int> data = pmr::vector<int>(512, &pool);
+  vector<int> data = vector<int>{512, &pool};
 };
+list<shared_ptr<Event>> q{&pool};
+constexpr int LOTS = 100'000;
+mutex m;
+condition_variable cv;
 
-int main(int argc, char **argv) {
-  list<shared_ptr<Event>> q{&pool};
-  return 0;
+void producer() {
+  for (auto n = 0; n < LOTS; n += 1) {
+    auto lk{scoped_lock(m)};
+    q.push_back(
+        allocate_shared<Event, pmr::polymorphic_allocator<Event>>{&pool});
+    cv.notify_one();
+  }
 }
+
+int main(int argc, char **argv) { return 0; }

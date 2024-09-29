@@ -51,6 +51,8 @@
       memory_resource
       string
       array vector list
+      condition_variable
+      mutex
       memory
       iostream
       iomanip
@@ -62,7 +64,7 @@
 
      (comments "cppcon 2017 Pablo Halpern Allocators: The Good Parts, timestamp 30:46" )
      (comments "Klaus Iglberger: C++ Software Design, pp. 142")
-     (comments "Stroustroup: A Tour of C++ 20, section 12.7 allocator"
+     (comments "Stroustroup: A Tour of C++ 20, section 12.7 allocator, pp. 167"
 	       "how to solve massive fragmentation with shared_ptr event using memory pool")
      (defclass+ test_resource
        "public pmr::memory_resource"
@@ -206,19 +208,28 @@
 	 (x double)
        (y double))
 
-     (let ((pool
-	     ))
-       (declare (type "pmr::synchronized_pool_resource" pool))
+     (do0
+      "pmr::synchronized_pool_resource pool;"
        (space struct Event
 	      (progn
-		"pmr::vector<int> data = pmr::vector<int>(512,&pool);")))
+		"vector<int> data = vector<int>{512,&pool};")))
+     "list<shared_ptr<Event> > q{&pool};"
+
+     "constexpr int LOTS = 100'000;"
+     "mutex m;"
+     "condition_variable cv;"
+     (defun producer ()
+       (dotimes (n LOTS)
+	 (let ((lk (scoped_lock m)))
+	   (q.push_back "allocate_shared<Event, pmr::polymorphic_allocator<Event> >{&pool}")
+	   (cv.notify_one))))
      
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
 		(values int))
 
-       "list<shared_ptr<Event> > q{&pool};"
+       
        
        
        #+nil(do0
