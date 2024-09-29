@@ -9,7 +9,11 @@
 using namespace std;
 class test_resource : public pmr::memory_resource {
 public:
-  test_resource(pmr::memory_resource *upstream) : _upstream{upstream} {}
+  test_resource(pmr::memory_resource *upstream) : _upstream{upstream} {
+    auto upstream_ptr{reinterpret_cast<uint64_t>(_upstream)};
+    std::cout << std::format("(make_test_resource :upstream_ptr '{}')\n",
+                             upstream_ptr);
+  }
   ~test_resource() {}
   pmr::memory_resource *upstream() const { return _upstream; }
   size_t bytes_allocated() const { return _bytes_allocated; }

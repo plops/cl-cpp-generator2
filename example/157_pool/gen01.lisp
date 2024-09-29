@@ -66,7 +66,10 @@
        (defmethod test_resource (&key (upstream (pmr--get_default_resource)))
 	 (declare (type pmr--memory_resource* upstream)
 		  (construct (_upstream upstream))
-		  (values :constructor)))
+		  (values :constructor))
+	 (let ((upstream_ptr (reinterpret_cast<uint64_t> _upstream)))
+	  ,(lprint :msg "make_test_resource"
+		   :vars `(upstream_ptr))))
        
        (defmethod ~test_resource ()
 	 (declare (values :constructor)))
