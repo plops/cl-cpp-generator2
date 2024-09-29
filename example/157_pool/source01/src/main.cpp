@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 using namespace std;
+// cppcon 2017 Pablo Halpern Allocators: The Good Parts timestamp 30:46
+// Klaus Iglberger: C++ Software Design pp. 142
 class test_resource : public pmr::memory_resource {
 public:
   test_resource(pmr::memory_resource *upstream) : _upstream{upstream} {

@@ -59,6 +59,9 @@
 
      "using namespace std;"
 
+     (comments "cppcon 2017 Pablo Halpern Allocators: The Good Parts, timestamp 30:46" )
+     (comments "Klaus Iglberger: C++ Software Design, pp. 142")
+     (comments "Stroustroup: A Tour of C++ 20, section 12.7 allocator")
      (defclass+ test_resource
        "public pmr::memory_resource"
 
@@ -68,8 +71,8 @@
 		  (construct (_upstream upstream))
 		  (values :constructor))
 	 (let ((upstream_ptr (reinterpret_cast<uint64_t> _upstream)))
-	  ,(lprint :msg "make_test_resource"
-		   :vars `(upstream_ptr))))
+	   ,(lprint :msg "make_test_resource"
+		    :vars `(upstream_ptr))))
        
        (defmethod ~test_resource ()
 	 (declare (values :constructor)))
