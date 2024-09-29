@@ -41,8 +41,9 @@
        "public pmr::memory_resource"
 
        "public:"
-       (defmethod test_resource (&key (parent (pmr--get_default_resource)))
-	 (declare (type pmr--memory_resource* parent)
+       (defmethod test_resource (&key (upstream (pmr--get_default_resource)))
+	 (declare (type pmr--memory_resource* upstream)
+		  (construct (_upstream upstream))
 		  (values :constructor)))
        
        (defmethod ~test_resource ()
@@ -53,8 +54,6 @@
 		  (values "pmr::memory_resource*"))
 	 (return _upstream))
 
-       
-       
        (defmethod bytes_allocated ()
 	 (declare (const)
 		  (values size_t))

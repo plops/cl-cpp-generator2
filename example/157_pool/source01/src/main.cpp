@@ -8,7 +8,7 @@
 using namespace std;
 class test_resource : public pmr::memory_resource {
 public:
-  test_resource(pmr::memory_resource *parent) {}
+  test_resource(pmr::memory_resource *upstream) : _upstream{upstream} {}
   ~test_resource() {}
   pmr::memory_resource *upstream() const { return _upstream; }
   size_t bytes_allocated() const { return _bytes_allocated; }
