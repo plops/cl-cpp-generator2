@@ -19,6 +19,27 @@
   (ensure-directories-exist *full-source-dir*)
 
   ;(load "util.lisp")
+  (defun lprint (&key (msg "")
+		 (vars nil)
+		 )
+  #-nil `(<< std--cout
+       (std--format
+	(string ,(format nil "(~a~{ :~a '{}'~})\\n"
+			 msg
+			 (loop for e in vars collect (emit-c :code e  :omit-redundant-parentheses t)) ))
+	,@vars))
+  #+nil
+  `(<< std--cout
+       (string ,(format nil "~a"
+			msg
+			
+			))
+       ,@(loop for e in vars
+	       appending
+	       `((string ,(format nil " ~a='" (emit-c :code e :omit-redundant-parentheses t)))
+		 ,e
+		 (string "' ")))   
+       std--endl))
   (write-source 
    (asdf:system-relative-pathname
     'cl-cpp-generator2 
@@ -33,6 +54,7 @@
       iostream
       iomanip
       algorithm
+      format
       )
 
      "using namespace std;"
@@ -101,10 +123,10 @@
 
        (defmethod do_allocate (bytes alignment)
 	 (declare (override)
-		   (type size_t bytes alignment)
+		  (type size_t bytes alignment)
 		  (values void*))
-	 (let ((ret (_upstream->allocate bytes alignment))
-	       )
+	 ,(lprint :msg "do_allocate" :vars `(bytes alignment))
+	 (let ((ret (_upstream->allocate bytes alignment)))
 	   (_blocks.push_back (space allocation_rec(curly  ret bytes alignment)))
 	   (incf _bytes_allocated bytes)
 	   (incf _bytes_outstanding bytes)
@@ -118,6 +140,7 @@
 		  (type void* p)
 		  (type size_t bytes alignment)
 		  (values void))
+	 ,(lprint :msg "do_deallocate" :vars `(p bytes alignment))
 	 (let ((i (std--find_if (_blocks.begin)
 				(_blocks.end)
 				(lambda (r)
@@ -142,6 +165,10 @@
 		  (noexcept)
 		  (type "const pmr::memory_resource&" other)
 		  (values bool))
+	 (comments "convert for printing")
+	 (let ((this_ptr (reinterpret_cast<uint64_t> this))
+	       (other_ptr (reinterpret_cast<uint64_t> &other)))
+	   ,(lprint :msg "do_is_equal" :vars `(this_ptr other_ptr)))
 	 (return (== this &other)))
 
        "private:"
@@ -161,14 +188,14 @@
 			 (:name s_leaked_blocks :type "static size_t" :default nil))))
 	  `(do0
 	    ,@(loop for e in members
-		  collect
+		    collect
 		    (destructuring-bind (&key name type (default t)) e
-		     (format nil "~a _~a~a;" type name (if default
-							   "{}"
-							   "")))))))
+		      (format nil "~a _~a~a;" type name (if default
+							    "{}"
+							    "")))))))
 
      (defstruct0 point_2d
-       (x double)
+	 (x double)
        (y double))
      
      (defun main (argc argv)
@@ -176,12 +203,15 @@
 		(type char** argv)
 		(values int))
 
-       "constexpr int n{1'000};"
-       (let ((raw ("std::array<std::byte,n>"))
+       "constexpr int rawN{1'600};"
+       
+       (let ((raw ("std::array<std::byte,rawN>"))
 	     (buf0 (pmr--monotonic_buffer_resource (raw.data) (raw.size) (pmr--null_memory_resource)))
 	     (buf (test_resource &buf0))
 	     )
 	 "constexpr int nPoints{100};"
+	 (let ((sizeof_point_2d (sizeof point_2d)))
+	  ,(lprint :msg "main" :vars `(rawN nPoints sizeof_point_2d)))
 	 (let ((points (pmr--vector<point_2d> nPoints &buf)))
 	   (setf (aref points 0)
 		 (curly .1 .2)))
@@ -189,4 +219,4 @@
        (return 0)))
    :omit-parens t
    :format t
-   :tidy t))
+   :tidy nil))
