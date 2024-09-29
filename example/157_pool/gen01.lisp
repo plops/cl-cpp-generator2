@@ -50,7 +50,8 @@
      (include<>
       memory_resource
       string
-      array vector
+      array vector list
+      memory
       iostream
       iomanip
       algorithm
@@ -204,25 +205,36 @@
      (defstruct0 point_2d
 	 (x double)
        (y double))
+
+     (let ((pool
+	     ))
+       (declare (type "pmr::synchronized_pool_resource" pool))
+       (space struct Event
+	      (progn
+		"pmr::vector<int> data = pmr::vector<int>(512,&pool);")))
      
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
 		(values int))
 
-       "constexpr int rawN{1'600};"
+       "list<shared_ptr<Event> > q{&pool};"
        
-       (let ((raw ("std::array<std::byte,rawN>"))
-	     (buf0 (pmr--monotonic_buffer_resource (raw.data) (raw.size) (pmr--null_memory_resource)))
-	     (buf (test_resource &buf0))
-	     )
-	 "constexpr int nPoints{100};"
-	 (let ((sizeof_point_2d (sizeof point_2d)))
-	  ,(lprint :msg "main" :vars `(rawN nPoints sizeof_point_2d)))
-	 (let ((points (pmr--vector<point_2d> nPoints &buf)))
-	   (setf (aref points 0)
-		 (curly .1 .2)))
-	 )
+       
+       #+nil(do0
+	     "constexpr int rawN{1'600};"
+	
+	     (let ((raw ("std::array<std::byte,rawN>"))
+		   (buf0 (pmr--monotonic_buffer_resource (raw.data) (raw.size) (pmr--null_memory_resource)))
+		   (buf (test_resource &buf0))
+		   )
+	       "constexpr int nPoints{100};"
+	       (let ((sizeof_point_2d (sizeof point_2d)))
+		 ,(lprint :msg "main" :vars `(rawN nPoints sizeof_point_2d)))
+	       (let ((points (pmr--vector<point_2d> nPoints &buf)))
+		 (setf (aref points 0)
+		       (curly .1 .2)))
+	       ))
        (return 0)))
    :omit-parens t
    :format t

@@ -3,6 +3,8 @@
 #include <format>
 #include <iomanip>
 #include <iostream>
+#include <list>
+#include <memory>
 #include <memory_resource>
 #include <string>
 #include <vector>
@@ -10,7 +12,7 @@ using namespace std;
 // cppcon 2017 Pablo Halpern Allocators: The Good Parts, timestamp 30:46
 // Klaus Iglberger: C++ Software Design, pp. 142
 // Stroustroup: A Tour of C++ 20, section 12.7 allocator
-// massive fragmentation with shared_ptr event
+// how to solve massive fragmentation with shared_ptr event using memory pool
 class test_resource : public pmr::memory_resource {
 public:
   test_resource(pmr::memory_resource *upstream) : _upstream{upstream} {
@@ -93,19 +95,12 @@ struct point_2d {
   double y;
 };
 ;
+pmr::synchronized_pool_resource pool;
+struct Event {
+  pmr::vector<int> data = pmr::vector<int>(512, &pool);
+};
 
 int main(int argc, char **argv) {
-  constexpr int rawN{1'600};
-  auto raw{std::array<std::byte, rawN>()};
-  auto buf0{pmr::monotonic_buffer_resource(raw.data(), raw.size(),
-                                           pmr::null_memory_resource())};
-  auto buf{test_resource(&buf0)};
-  constexpr int nPoints{100};
-  auto sizeof_point_2d{sizeof(point_2d)};
-  std::cout << std::format(
-      "(main :rawN '{}' :nPoints '{}' :sizeof_point_2d '{}')\n", rawN, nPoints,
-      sizeof_point_2d);
-  auto points{pmr::vector<point_2d>(nPoints, &buf)};
-  points[0] = {0.10F, 0.20F};
+  list<shared_ptr<Event>> q{&pool};
   return 0;
 }
