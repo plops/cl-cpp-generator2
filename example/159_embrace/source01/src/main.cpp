@@ -41,19 +41,21 @@ public:
   };
 };
 // emulate named parameters
-class ComputeArgs {
-public:
-  float sigma{1.2};
-  int maxIterations{100};
-  float tol{.001};
-};
-
-float compute(const ComputeArgs &args) {
-  std::cout << std::format(
-      "( :args.sigma '{}' :args.maxIterations '{}' :args.tol '{}')\n",
-      args.sigma, args.maxIterations, args.tol);
-  return args.sigma * args.tol * args.maxIterations;
-}
+auto computeGen{[]() {
+  class ComputeArgs {
+  public:
+    float sigma{1.2};
+    int maxIterations{100};
+    float tol{.001};
+  };
+  return [&](const ComputeArgs &args) -> float {
+    std::cout << std::format(
+        "( :args.sigma '{}' :args.maxIterations '{}' :args.tol '{}')\n",
+        args.sigma, args.maxIterations, args.tol);
+    return args.sigma * args.tol * args.maxIterations;
+  };
+}};
+auto compute{computeGen()};
 
 int main(int argc, char **argv) {
   auto mb{MonotonicBuffer<20>()};

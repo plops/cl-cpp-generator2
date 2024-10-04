@@ -106,17 +106,21 @@
 			  (return alignedAddres)))))))
 
      (comments "emulate named parameters")
-     (defclass+ ComputeArgs () 
-	      "public:"
-       "float sigma{1.2};"
-       "int maxIterations{100};"
-       "float tol{.001};")
-     (defun compute (args)
-       (declare (values float)
-		(type "const ComputeArgs&" args))
-       ,(lprint :vars `(args.sigma args.maxIterations args.tol))
-       (return (* args.sigma args.tol args.maxIterations)))
-     
+     (let ((computeGen (lambda ()
+			 (declare (capture ""))
+			 
+			 (defclass+ ComputeArgs () 
+			   "public:"
+			   "float sigma{1.2};"
+			   "int maxIterations{100};"
+			   "float tol{.001};")
+			 (return
+			   (lambda (args)
+			     (declare (values float)
+				      (type "const ComputeArgs&" args))
+			     ,(lprint :vars `(args.sigma args.maxIterations args.tol))
+			     (return (* args.sigma args.tol args.maxIterations))))))))
+     (let ((compute (computeGen))))
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
@@ -184,3 +188,5 @@
    :omit-parens t
    :format t
    :tidy nil))
+
+243
