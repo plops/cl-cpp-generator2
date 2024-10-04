@@ -1,9 +1,22 @@
-// Some experiments while reading Lakos: Embracing Modern C++ (2021)
+// Some experiments while reading Lakos: Embracing Modern C++ Safely (2021)
+#include <array>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <format>
 #include <iostream>
 #include <vector>
+std::atomic<int64_t> g_allocCount{0};
+
+void *operator new(std::size_t size) {
+  g_allocCount.fetch_add(size, std::memory_order_relaxed);
+  return malloc(size);
+}
+
+void operator delete(void *p, std::size_t size) {
+  g_allocCount.fetch_sub(size, std::memory_order_relaxed);
+  free(p);
+}
 
 std::size_t calculatePadding(const char *address, std::size_t alignment) {
   return ((alignment - reinterpret_cast<std::uintptr_t>(address)) &
@@ -27,6 +40,20 @@ public:
     return alignedAddres;
   };
 };
+// emulate named parameters
+class ComputeArgs {
+public:
+  float sigma{1.2};
+  int maxIterations{100};
+  float tol{.001};
+};
+
+float compute(const ComputeArgs &args) {
+  std::cout << std::format(
+      "( :args.sigma '{}' :args.maxIterations '{}' :args.tol '{}')\n",
+      args.sigma, args.maxIterations, args.tol);
+  return args.sigma * args.tol * args.maxIterations;
+}
 
 int main(int argc, char **argv) {
   auto mb{MonotonicBuffer<20>()};
@@ -57,5 +84,27 @@ int main(int argc, char **argv) {
   for (decltype(3) i = 0; i < 3; i += 1) {
     std::cout << std::format("{}", vec[i]) << std::endl;
   }
+  std::cout << std::format("( :g_allocCount.load() '{}')\n",
+                           g_allocCount.load());
+  constexpr int nVb = 1'000'000;
+  auto vb{std::vector<bool>(nVb)};
+  auto sizeofVb{sizeof(vb)};
+  auto sizeVb{vb.size()};
+  auto bytesVb{0};
+  std::cout << std::format(
+      "(vector<bool> :sizeVb '{}' :sizeofVb '{}' :bytesVb '{}')\n", sizeVb,
+      sizeofVb, bytesVb);
+  std::cout << std::format("( :g_allocCount.load() '{}')\n",
+                           g_allocCount.load());
+  constexpr int nAb = 1'000'000;
+  auto ab{std::array<bool, nAb>()};
+  auto sizeofAb{sizeof(ab)};
+  auto sizeAb{ab.size()};
+  auto bytesAb{&ab.data()[(nAb - 1)] - &ab.data()[0]};
+  std::cout << std::format(
+      "(array<bool> :sizeAb '{}' :sizeofAb '{}' :bytesAb '{}')\n", sizeAb,
+      sizeofAb, bytesAb);
+  std::cout << std::format("( :g_allocCount.load() '{}')\n",
+                           g_allocCount.load());
   return 0;
 }
