@@ -1760,7 +1760,9 @@ emit-c into a string. Except lists: Those stay lists."
 				   (consume-declare body)
 				 (format str "for ( ~a ~a: ~a ) ~a"
 					 (or (lookup-type var :env env)
-					     "const auto&" ; *auto-keyword*
+					     ;"const auto&" ; *auto-keyword*
+					     "auto&&"
+					     ;; auto&& is treated as a forwarding reference by c++, variable declared with auto&& will result in an lvalue reference or an rvalue refrence depending on the value category of its initializer
 					     )
 					 (emit var)
 					 (emit range)
