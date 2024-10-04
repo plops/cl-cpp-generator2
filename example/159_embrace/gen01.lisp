@@ -109,7 +109,7 @@
      (let ((computeGen (lambda ()
 			 (declare (capture ""))
 			 
-			 (defclass+ ComputeArgs () 
+			 (defclass+ Args () 
 			   "public:"
 			   "float sigma{1.2};"
 			   "int maxIterations{100};"
@@ -117,10 +117,31 @@
 			 (return
 			   (lambda (args)
 			     (declare (values float)
-				      (type "const ComputeArgs&" args))
+				      (type "const Args&" args))
 			     ,(lprint :vars `(args.sigma args.maxIterations args.tol))
 			     (return (* args.sigma args.tol args.maxIterations))))))))
-     (let ((compute (computeGen))))
+
+     (let ((storeGen (lambda ()
+			 (declare (capture ""))
+			 
+			 (defclass+ Args () 
+			   "public:"
+			   "std::string fn{\"/dev/shm/o.txt\"};"
+			   "bool debug{false};"
+			   "bool storeImages{false};"
+			   "bool log{false};"
+			   "bool verbose{false};")
+			 (return
+			   (lambda (args)
+			     (declare 
+				      (type "const Args&" args))
+			     ,(lprint :vars `(args.fn args.debug
+						      args.storeImages
+						      args.log
+						      args.verbose))
+			     ))))))
+     (let ((compute (computeGen))
+	   (store (storeGen))))
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
@@ -184,9 +205,10 @@
        (compute (curly )) ;; clion can expand the arguments!
       (compute (curly .maxIterations=10))
       (compute (curly .maxIterations=20))
+       (store (curly ".fn=\"123\""))
        (return 0)))
    :omit-parens t
    :format t
    :tidy nil))
-
 243
+

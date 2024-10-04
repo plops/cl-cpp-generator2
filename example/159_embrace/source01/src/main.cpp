@@ -42,20 +42,37 @@ public:
 };
 // emulate named parameters
 auto computeGen{[]() {
-  class ComputeArgs {
+  class Args {
   public:
     float sigma{1.2};
     int maxIterations{100};
     float tol{.001};
   };
-  return [&](const ComputeArgs &args) -> float {
+  return [&](const Args &args) -> float {
     std::cout << std::format(
         "( :args.sigma '{}' :args.maxIterations '{}' :args.tol '{}')\n",
         args.sigma, args.maxIterations, args.tol);
     return args.sigma * args.tol * args.maxIterations;
   };
 }};
+auto storeGen{[]() {
+  class Args {
+  public:
+    std::string fn{"/dev/shm/o.txt"};
+    bool debug{false};
+    bool storeImages{false};
+    bool log{false};
+    bool verbose{false};
+  };
+  return [&](const Args &args) {
+    std::cout << std::format(
+        "( :args.fn '{}' :args.debug '{}' :args.storeImages '{}' :args.log "
+        "'{}' :args.verbose '{}')\n",
+        args.fn, args.debug, args.storeImages, args.log, args.verbose);
+  };
+}};
 auto compute{computeGen()};
+auto store{storeGen()};
 
 int main(int argc, char **argv) {
   auto mb{MonotonicBuffer<20>()};
@@ -112,5 +129,6 @@ int main(int argc, char **argv) {
   compute({});
   compute({.maxIterations = 10});
   compute({.maxIterations = 20});
+  store({.fn = "123"});
   return 0;
 }
