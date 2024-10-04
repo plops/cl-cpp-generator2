@@ -49,13 +49,41 @@
      
      (include<>
       format
+      iostream
+      cstddef
+      cstdint
       )
+     (defun calculatePadding (address alignment)
+       (declare (type "const char*" address)
+		(type "std::size_t" alignment)
+		(values "std::size_t"))
+       (return (& (- alignment
+		     (reinterpret_cast<std--uintptr_t> address))
+		  (- alignment 1))))
+     
+     (space "template<std::size_t N>"
+	    
+	    (defclass+ MonotonicBuffer ()
+	      "public:"
+	      "char d_buffer[N]; // fixed-size buffer"
+	      "char* d_top_p;    // next available address"
+	      (defmethod MonotonicBuffer ()
+		(declare (values :constructor)
+			 (construct (d_top_p d_buffer))))
+	      (space
+	       template "<typename T>"
+	       (defmethod allocate ()
+		 (declare (values void*)
+			  )
+		 (return 0)))))
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
 		(values int))
        (dotimes (i 100s0)
-	 ())
+	 (<< std--cout (std--format (string "{}")
+				    i)
+	     std--endl))
        (return 0)))
    :omit-parens t
    :format t

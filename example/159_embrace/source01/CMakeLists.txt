@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.14)
 
 # Project name
-project(pmrTest)
+project(embrace)
 
 # Specify C++ standard (e.g., C++17)
 set(CMAKE_CXX_STANDARD 23)
@@ -14,4 +14,4 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
   
 # Add the source file to the project
-add_executable(pmrTest src/main.cpp)
+add_executable(embrace src/main.cpp)
