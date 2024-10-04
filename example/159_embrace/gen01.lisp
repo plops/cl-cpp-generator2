@@ -75,11 +75,28 @@
 	       (defmethod allocate ()
 		 (declare (values void*)
 			  )
-		 (return 0)))))
+		 (let ((padding (calculatePadding d_top_p (alignof T)))
+		       (delta (+ padding (sizeof T))))
+		   (when (< (- (+ d_buffer
+				  N)
+			       d_top_p)
+			    delta)
+		     (comments "not enough properly aligned unused space remaining")
+		     (return 0))
+		    (let ((alignedAddres (+ d_top_p
+						padding)))
+			  (incf d_top_p
+				delta)
+			  (return alignedAddres)))))))
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
 		(values int))
+
+       (let ((mb (MonotonicBuffer<20>))
+	     (cp (static_cast<char*> (mb.allocate<char>)))
+	     (dp (static_cast<double*> (mb.allocate<double>)))))
+       
        (dotimes (i 100s0)
 	 (<< std--cout (std--format (string "{}")
 				    i)
