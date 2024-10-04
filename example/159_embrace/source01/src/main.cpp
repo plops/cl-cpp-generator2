@@ -106,6 +106,7 @@ int main(int argc, char **argv) {
       sizeofAb, bytesAb);
   std::cout << std::format("( :g_allocCount.load() '{}')\n",
                            g_allocCount.load());
+  // i just read section about initializer-lists
   compute({});
   compute({.maxIterations = 10});
   compute({.maxIterations = 20});

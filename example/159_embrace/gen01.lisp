@@ -176,7 +176,8 @@
 	 ,(lprint :msg "array<bool>" :vars `(sizeAb sizeofAb bytesAb)))
        ,(lprint :vars `((g_allocCount.load)))
 
-      (compute (curly ))
+       (comments "i just read section about initializer-lists")
+       (compute (curly ))
       (compute (curly .maxIterations=10))
       (compute (curly .maxIterations=20))
        (return 0)))
