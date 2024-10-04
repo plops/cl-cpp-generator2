@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <format>
+#include <initializer_list>
 #include <iostream>
 #include <vector>
 std::atomic<int64_t> g_allocCount{0};

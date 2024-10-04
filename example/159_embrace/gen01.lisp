@@ -55,6 +55,7 @@
       vector
       array
       atomic
+      initializer_list
       )
      "std::atomic<int64_t> g_allocCount{0};"
 
@@ -132,9 +133,10 @@
 			   "bool log{false};"
 			   "bool verbose{false};")
 			 (return
+			   ;; can i use std::initializer list somehow to get rid of the curly braces in the call?
 			   (lambda (args)
 			     (declare 
-				      (type "const Args&" args))
+			      (type "const Args&" args))
 			     ,(lprint :vars `(args.fn args.debug
 						      args.storeImages
 						      args.log
