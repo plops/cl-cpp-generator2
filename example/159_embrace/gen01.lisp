@@ -52,6 +52,7 @@
       iostream
       cstddef
       cstdint
+      vector
       )
      (defun calculatePadding (address alignment)
        (declare (type "const char*" address)
@@ -110,11 +111,19 @@
 				(ref (aref mb.d_buffer 0)))
 			     std--endl))))
        
-       
+       (let ((vec (std--vector<int> 12))
+	     (count 100))
+	 (for-range (v vec)
+		    (setf v count++)))
        
        (dotimes (i 3s0)
 	 (<< std--cout (std--format (string "{}")
 				    i)
+	     std--endl))
+
+       (dotimes (i 3)
+	 (<< std--cout (std--format (string "{}")
+				    (aref vec i))
 	     std--endl))
        (return 0)))
    :omit-parens t

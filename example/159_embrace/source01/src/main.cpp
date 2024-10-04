@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <format>
 #include <iostream>
+#include <vector>
 
 std::size_t calculatePadding(const char *address, std::size_t alignment) {
   return ((alignment - reinterpret_cast<std::uintptr_t>(address)) &
@@ -44,8 +45,16 @@ int main(int argc, char **argv) {
             << std::endl;
   std::cout << "bool:" << (reinterpret_cast<char *>(boolp) - &mb.d_buffer[0])
             << std::endl;
+  auto vec{std::vector<int>(12)};
+  auto count{100};
+  for (auto &&v : vec) {
+    v = count++;
+  }
   for (decltype(3.0F) i = 0; i < 3.0F; i += 1) {
     std::cout << std::format("{}", i) << std::endl;
+  }
+  for (decltype(3) i = 0; i < 3; i += 1) {
+    std::cout << std::format("{}", vec[i]) << std::endl;
   }
   return 0;
 }
