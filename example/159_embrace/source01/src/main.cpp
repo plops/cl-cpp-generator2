@@ -28,9 +28,23 @@ public:
 
 int main(int argc, char **argv) {
   auto mb{MonotonicBuffer<20>()};
-  auto cp{static_cast<char *>(mb.allocate<char>())};
-  auto dp{static_cast<double *>(mb.allocate<double>())};
-  for (decltype(1.00e+2F) i = 0; i < 1.00e+2F; i += 1) {
+  auto charp{static_cast<char *>(mb.allocate<char>())};
+  auto doublep{static_cast<double *>(mb.allocate<double>())};
+  auto shortp{static_cast<short *>(mb.allocate<short>())};
+  auto intp{static_cast<int *>(mb.allocate<int>())};
+  auto boolp{static_cast<bool *>(mb.allocate<bool>())};
+  std::cout << "char:" << (reinterpret_cast<char *>(charp) - &mb.d_buffer[0])
+            << std::endl;
+  std::cout << "double:"
+            << (reinterpret_cast<char *>(doublep) - &mb.d_buffer[0])
+            << std::endl;
+  std::cout << "short:" << (reinterpret_cast<char *>(shortp) - &mb.d_buffer[0])
+            << std::endl;
+  std::cout << "int:" << (reinterpret_cast<char *>(intp) - &mb.d_buffer[0])
+            << std::endl;
+  std::cout << "bool:" << (reinterpret_cast<char *>(boolp) - &mb.d_buffer[0])
+            << std::endl;
+  for (decltype(3.0F) i = 0; i < 3.0F; i += 1) {
     std::cout << std::format("{}", i) << std::endl;
   }
   return 0;

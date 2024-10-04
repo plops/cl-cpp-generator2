@@ -93,11 +93,26 @@
 		(type char** argv)
 		(values int))
 
-       (let ((mb (MonotonicBuffer<20>))
-	     (cp (static_cast<char*> (mb.allocate<char>)))
-	     (dp (static_cast<double*> (mb.allocate<double>)))))
+       ,(let ((l-vars `(char double short int bool)))
+	    `(let ((mb (MonotonicBuffer<20>))
+		   ,@(loop for e in l-vars
+			   collect
+			   `(,(format nil "~ap" e)
+			     (,(format nil "static_cast<~a *>"
+				       e)
+			      (dot mb
+					    (,(format nil "allocate<~a>" e)))))))
+	       ,@ (loop for e in l-vars
+			collect
+			`(<< std--cout
+			     (string ,(format nil "~a:" e))
+			     (- (reinterpret_cast<char*> ,(format nil "~ap" e))
+				(ref (aref mb.d_buffer 0)))
+			     std--endl))))
        
-       (dotimes (i 100s0)
+       
+       
+       (dotimes (i 3s0)
 	 (<< std--cout (std--format (string "{}")
 				    i)
 	     std--endl))
