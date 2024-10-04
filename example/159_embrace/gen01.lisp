@@ -176,9 +176,9 @@
 	 ,(lprint :msg "array<bool>" :vars `(sizeAb sizeofAb bytesAb)))
        ,(lprint :vars `((g_allocCount.load)))
 
-      ; (compute (curly ))
-      ; (compute (curly .maxIterations=10))
-      ; (compute (curly .maxIterations=20))
+      (compute (curly ))
+      (compute (curly .maxIterations=10))
+      (compute (curly .maxIterations=20))
        (return 0)))
    :omit-parens t
    :format t

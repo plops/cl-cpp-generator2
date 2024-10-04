@@ -106,5 +106,8 @@ int main(int argc, char **argv) {
       sizeofAb, bytesAb);
   std::cout << std::format("( :g_allocCount.load() '{}')\n",
                            g_allocCount.load());
+  compute({});
+  compute({.maxIterations = 10});
+  compute({.maxIterations = 20});
   return 0;
 }
