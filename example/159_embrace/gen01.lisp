@@ -181,7 +181,7 @@
        ,(lprint :vars `((g_allocCount.load)))
 
        (comments "i just read section about initializer-lists")
-       (compute (curly ))
+       (compute (curly )) ;; clion can expand the arguments!
       (compute (curly .maxIterations=10))
       (compute (curly .maxIterations=20))
        (return 0)))
