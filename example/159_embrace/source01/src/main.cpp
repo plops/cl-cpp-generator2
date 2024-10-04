@@ -1,3 +1,4 @@
+// Some experiments while reading Lakos: Embracing Modern C++ (2021)
 #include <cstddef>
 #include <cstdint>
 #include <format>

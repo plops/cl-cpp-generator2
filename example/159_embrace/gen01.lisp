@@ -46,7 +46,7 @@
     (merge-pathnames "main.cpp"
 		     *source-dir*))
    `(do0
-     
+     (comments "Some experiments while reading Lakos: Embracing Modern C++ (2021)")
      (include<>
       format
       iostream
