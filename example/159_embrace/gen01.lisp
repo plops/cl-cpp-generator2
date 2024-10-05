@@ -211,7 +211,8 @@
 
        
        (comments "we can use noexcept to verify that an expression will never throw. i think that could be useful in embedded code. place it into unit tests"
-		 "static_assert(noexcept(sizeof(throw,1)))")
+		 "static_assert(noexcept(sizeof(throw,1)))"
+		 "by default new can throw but there is an overload that takes std::nothrow_t argument and will return null instead")
        
        (return 0)))
    :omit-parens t
