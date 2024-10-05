@@ -212,7 +212,8 @@
        
        (comments "we can use noexcept to verify that an expression will never throw. i think that could be useful in embedded code. place it into unit tests"
 		 "static_assert(noexcept(sizeof(throw,1)))"
-		 "by default new can throw but there is an overload that takes std::nothrow_t argument and will return null instead")
+		 "by default new can throw but there is an overload that takes std::nothrow_t argument and will return null instead"
+		 "It has always been clear that `noexcept` operator was not permitted to infer from the body of an ordinary function if it would throw. So maybe I can't use noexcept.")
 
        (comments "move operations can lead to `memory diffusion`, causing cache misses and page faults. reducing runtime performance")
        
