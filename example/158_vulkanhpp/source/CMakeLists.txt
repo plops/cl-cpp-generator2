@@ -25,5 +25,5 @@ target_link_libraries(VulkanGLFWApp ${GLFW_LIBRARIES} ${GLM_LIBRARIES} Vulkan::V
 
 # Optionally, you can add a command to clean up Vulkan resources on application exit
 set_target_properties(VulkanGLFWApp PROPERTIES
-    CLEAN_DIRECTORIES "${CMAKE_BINARY_DIR}/vulkan"
+        CLEAN_DIRECTORIES "${CMAKE_BINARY_DIR}/vulkan"
 )
