@@ -1,15 +1,4 @@
-############################################################################
-# Copyright (c) Johan Mabille, Sylvain Corlay, Wolf Vollprecht and         #
-# Martin Renou                                                             #
-# Copyright (c) QuantStack                                                 #
-# Copyright (c) Serge Guelton                                              #
-#                                                                          #
-# Distributed under the terms of the BSD 3-Clause License.                 #
-#                                                                          #
-# The full license is in the file LICENSE, distributed with this software. #
-############################################################################
-
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     project(xsimd-examples)
 
@@ -35,10 +24,22 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU"
     endif()
 endif()
 
-add_executable(mandelbrot mandelbrot.cpp ${XSIMD_HEADERS})
-set_property(TARGET mandelbrot PROPERTY CXX_STANDARD 14)
-if(ENABLE_XTL_COMPLEX)
-    target_link_libraries(mandelbrot PRIVATE xtl)
+# Specify C++ standard (e.g., C++17)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Enable AddressSanitizer
+option(ENABLE_ASAN "enable address sanitizer" OFF)
+if(ENABLE_ASAN)
+  add_compile_options(-fsanitize=address)
+  add_link_options(-fsanitize=address)
 endif()
 
-add_custom_target(xmandelbrot COMMAND mandelbrot DEPENDS mandelbrot)
+
+add_executable(meanSimd src/main.cpp ${XSIMD_HEADERS})
+#set_property(TARGET meanSimd PROPERTY CXX_STANDARD 14)
+if(ENABLE_XTL_COMPLEX)
+    target_link_libraries(meanSimd PRIVATE xtl)
+endif()
+
+add_custom_target(xmeanSimd COMMAND meanSimd DEPENDS meanSimd)
