@@ -208,6 +208,11 @@
       (compute (curly .maxIterations=10))
       (compute (curly .maxIterations=20))
        (store (curly ".fn=\"123\""))
+
+       
+       (comments "we can use noexcept to verify that an expression will never throw. i think that could be useful in embedded code. place it into unit tests"
+		 "static_assert(noexcept(sizeof(throw,1)))")
+       
        (return 0)))
    :omit-parens t
    :format t

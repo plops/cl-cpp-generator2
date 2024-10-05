@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
     auto createInfo =
             vk::InstanceCreateInfo()
                     .setPApplicationInfo(&appInfo)
-                    .setPEnabledExtensionNames(seprops)
+                    .setPEnabledExtensionNames(seprops);
 //                    .setPEnabledLayerNames(vk::enumerateInstanceLayerProperties());
 //
 //    auto instance = vk::createInstance(createInfo);
