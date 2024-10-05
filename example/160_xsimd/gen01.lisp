@@ -58,12 +58,12 @@
 
      "using namespace xsimd;"
 
-     "using Voc = std::vector<double,xsimd::default_allocator<double>>;"
+     "using Voc = std::vector<float,xsimd::default_allocator<float>>;"
 
      (defun mean (a b res)
        (declare (type "const Voc&" a b)
 		(type Voc& res))
-       "using Batch = xsimd::batch<double>;"
+       "using Batch = xsimd::batch<float,avx2>;"
        (let ((inc Batch--size)
 	     (size (res.size))
 	     
@@ -90,18 +90,15 @@
        (declare (type int argc)
 		(type char** argv)
 		(values int))
-       (let ((a (Voc (curly 1.5 2.5 3.5 4.5)))
-	     (b (Voc (curly 2.5 3.5 4.5 5.5)))
-	     (r (Voc 4))
+       (let ((a (Voc (curly 1.5 2.5 3.5 4.5 1 2 3 4)))
+	     (b (Voc (curly 2.5 3.5 4.5 5.5 2 3 4 5)))
+	     (r (Voc (b.size)))
 	     )
 	 (mean a b r)
-	 ,(lprint :vars `((aref r 0)
-			  (aref r 1)
-			  (aref r 2)
-			  (aref r 3)))
+	 ,(lprint :vars `(,@(loop for i below 8 collect
+						`(aref r ,i))))
 	 )
        (return 0)))
    :omit-parens t
    :format t
    :tidy nil))
-565

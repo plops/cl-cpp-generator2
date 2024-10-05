@@ -4,10 +4,10 @@
 #include <iostream>
 #include <vector>
 using namespace xsimd;
-using Voc = std::vector<double, xsimd::default_allocator<double>>;
+using Voc = std::vector<float, xsimd::default_allocator<float>>;
 
 void mean(const Voc &a, const Voc &b, Voc &res) {
-  using Batch = xsimd::batch<double>;
+  using Batch = xsimd::batch<float, avx2>;
   auto inc{Batch::size};
   auto size{res.size()};
   auto vec_size{size - (size % inc)};
@@ -25,11 +25,12 @@ void mean(const Voc &a, const Voc &b, Voc &res) {
 }
 
 int main(int argc, char **argv) {
-  auto a{Voc({1.50F, 2.50F, 3.50F, 4.50F})};
-  auto b{Voc({2.50F, 3.50F, 4.50F, 5.50F})};
-  auto r{Voc(4)};
+  auto a{Voc({1.50F, 2.50F, 3.50F, 4.50F, 1, 2, 3, 4})};
+  auto b{Voc({2.50F, 3.50F, 4.50F, 5.50F, 2, 3, 4, 5})};
+  auto r{Voc(b.size())};
   mean(a, b, r);
-  std::cout << std::format("( :r[0] '{}' :r[1] '{}' :r[2] '{}' :r[3] '{}')\n",
-                           r[0], r[1], r[2], r[3]);
+  std::cout << std::format("( :r[0] '{}' :r[1] '{}' :r[2] '{}' :r[3] '{}' "
+                           ":r[4] '{}' :r[5] '{}' :r[6] '{}' :r[7] '{}')\n",
+                           r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7]);
   return 0;
 }
