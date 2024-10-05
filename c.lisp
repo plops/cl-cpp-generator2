@@ -1773,7 +1773,7 @@ emit-c into a string. Except lists: Those stay lists."
 			       (emit `(for (,(format nil "~a ~a = 0"
 
 						     (or (lookup-type i :env env)
-							 (emit `(decltype ,n)) ;*auto-keyword*
+							 (emit `(decltype (+ 0 ,n 1))) ;*auto-keyword*
 							 )
 
 						     (emit i))
