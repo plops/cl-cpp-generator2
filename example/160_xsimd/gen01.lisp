@@ -88,19 +88,22 @@
      (defun transpose (a b)
        (declare (type "const Voc&" a)
 		(type Voc& b))
+       ;; i think i should transpose the NxN matrix using BxB tiles
+       ;; select B such that BxB fits into L2 (or L3) cache and that the rows of the
+       ;; transposed submatrices are long enough to be properly cached and saturating pci-e bus when writing back to dram
        (let ((N (static_cast<std--size_t> (std--sqrt (a.size))))
 	     (inc Batch--size))
 	 (dotimes (i N)
 	   (for ((= "std::size_t j" 0)
 		 (< i N)
 		 (incf i inc))
-	     (let ((block (Batch--load_aligned (ref (aref a (+ (* i N)
-							       j))))))
-	       (dot block
-		    (store_aligned 
-		     (ref (aref b (+ (* j N)
-				   i))))))
-	     ))))
+		(let ((block (Batch--load_aligned (ref (aref a (+ (* i N)
+								  j))))))
+		  (dot block
+		       (store_aligned 
+			(ref (aref b (+ (* j N)
+					i))))))
+		))))
 
      #+nil
      (do0 
