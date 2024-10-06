@@ -88,9 +88,12 @@
      (defun transpose (a b)
        (declare (type "const Voc&" a)
 		(type Voc& b))
-       (let ((N (std--sqrt (a.size))))
+       (let ((N (static_cast<std--size_t> (std--sqrt (a.size))))
+	     (inc Batch--size))
 	 (dotimes (i N)
-	   (dotimes (j N)
+	   (for ((= "std::size_t j" 0)
+		 (< i N)
+		 (incf i inc))
 	     (let ((block (Batch--load_aligned (ref (aref a (+ (* i N)
 							       j))))))
 	       (dot block
@@ -147,22 +150,22 @@
 	   ))
 
        (progn
-	,(let ((l-a (loop for i below 8
+	,(let ((l-a (loop for i below (* 8 8)
 			  appending
-			  (loop for j below 8
+			  (loop for j below (* 8 8)
 				collect
-				(+ (* 8 i)
+				(+ (* (* 8 8) i)
 				   j))))
-	       (l-e (loop for j below 8
+	       (l-e (loop for j below (* 8 8)
 			  appending
-			  (loop for i below 8
+			  (loop for i below (* 8 8)
 				collect
-				(+ (* 8 i)
+				(+ (* (* 8 8) i)
 				   j)))))
 	   `(let ((a (Voc (curly ,@l-a)))
 		
 		  (e (Voc (curly ,@l-e)))
-		  (r (Voc (b.size)))
+		  (r (Voc (a.size)))
 		  )
 	      (transpose a r)
 	   
