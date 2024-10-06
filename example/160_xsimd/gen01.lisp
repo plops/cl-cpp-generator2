@@ -59,11 +59,10 @@
      "using namespace xsimd;"
 
      "using Voc = std::vector<float,xsimd::default_allocator<float>>;"
-
+     "using Batch = xsimd::batch<float,avx2>;"
      (defun mean (a b res)
        (declare (type "const Voc&" a b)
 		(type Voc& res))
-       "using Batch = xsimd::batch<float,avx2>;"
        (let ((inc Batch--size)
 	     (size (res.size))
 	     
@@ -85,19 +84,95 @@
 		    (* (+ (aref a i)
 			  (aref b i))
 		       .5)))))
+
+     (defun transpose (a b)
+       (declare (type "const Voc&" a)
+		(type Voc& b))
+       (let ((N (std--sqrt (a.size))))
+	 (dotimes (i N)
+	   (dotimes (j N)
+	     (let ((block (Batch--load_aligned (ref (aref a (+ (* i N)
+							       j))))))
+	       (dot block
+		    (store_aligned 
+		     (ref (aref b (+ (* j N)
+				   i))))))
+	     ))))
+
+     #+nil
+     (do0 
+      (comments "certainly not working;")
+      (defun matmul (a b res)
+	(declare (type "const Voc&" a b)
+		 (type Voc& res))
+	"constexpr int N = 8;"
+	
+	(let ((m (/ (a.size) (* N N)))
+	      (n (/ (b.size) (* N N)))
+	      (k (/ (res.size) (* N N))))
+	  (dotimes (i m)
+	    (dotimes (j n)
+	      (dotimes (l k)
+		(let ((sum (Batch .0)))
+		  (dotimes (aa N)
+		    (let ((pos (+ (* i N N)
+				  (* aa N)))
+			  (ablock (Batch--load_aligned (ref (aref a pos))))
+			  (bblock (Batch--load_aligned (ref (aref b pos)))))
+		      (incf (aref sum aa) (reduce_add (* ablock bblock)))))
+		  (sum.store_aligned (ref (aref res (+ (* i N n)
+						       (* j N))))
+				     ))))))))
      
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
 		(values int))
-       (let ((a (Voc (curly 1.5 2.5 3.5 4.5 1 2 3 4)))
-	     (b (Voc (curly 2.5 3.5 4.5 5.5 2 3 4 5)))
-	     (r (Voc (b.size)))
-	     )
-	 (mean a b r)
-	 ,(lprint :vars `(,@(loop for i below 8 collect
-						`(aref r ,i))))
-	 )
+
+       ,(let ((l-a `(1.5 2.5 3.5 4.5 1 2 3 4))
+	      (l-b `(2.5 3.5 4.5 5.5 2 3 4 5)))
+	 `(let ((a (Voc (curly ,@l-a)))
+	       (b (Voc (curly ,@l-b)))
+	       (e (Voc (curly ,@(loop for a in l-a and b in l-b collect (* .5 (+ a b))))))
+	       (r (Voc (b.size)))
+	       )
+	   (mean a b r)
+	   
+	   ,(lprint :vars `(,@(loop for i below 8 collect
+				    `(aref r ,i))
+			    ,@(loop for i below 8 collect
+				    `(-
+				      (aref r ,i)
+				      (aref e ,i)))))
+	   ))
+
+       (progn
+	,(let ((l-a (loop for i below 8
+			  appending
+			  (loop for j below 8
+				collect
+				(+ (* 8 i)
+				   j))))
+	       (l-e (loop for j below 8
+			  appending
+			  (loop for i below 8
+				collect
+				(+ (* 8 i)
+				   j)))))
+	   `(let ((a (Voc (curly ,@l-a)))
+		
+		  (e (Voc (curly ,@l-e)))
+		  (r (Voc (b.size)))
+		  )
+	      (transpose a r)
+	   
+	      ,(lprint :vars `(,@(loop for i below 8 collect
+				       `(aref r ,i))
+			       ,@(loop for i below 8 collect
+				       `(-
+					 (aref r ,i)
+					 (aref e ,i)))))
+	      )))
        (return 0)))
    :omit-parens t
    :format t
