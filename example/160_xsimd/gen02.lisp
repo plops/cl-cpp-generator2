@@ -130,6 +130,7 @@
 
        (let ((gen (std--mt19937 ;42
 				"std::random_device{}()"))
+	     (dis (std--normal_distribution<float> 0s0 1s0))
 	     #+nil
 	     (gauss (lambda (		;mu
 			     sig)
@@ -165,10 +166,14 @@
 			 (y (Vec n)))
 		     (std--iota (x.begin) (x.end) 0s0)
 		     (dotimes (i n)
-		       (setf (aref y i) (+ (gauss sig)
+		       (setf (aref y i) (+ (dis gen)
 					   b (* a (aref x i)))))
 		     (let ((f (Fitab x y))))))))
-	 (lin 8 (gen) (gen) (gen)))
+	 (dotimes (i 30)
+	   (let ((a (+ .3 (* .01 (dis gen))))
+		 (b (+ 17 (* .1 (dis gen))))
+		 (sig (+ 3 (* .1 (dis gen))))))
+	   (lin 18 a b sig)))
 
 
        (return 0)))

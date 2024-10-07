@@ -57,28 +57,21 @@ private:
 
 int main(int argc, char **argv) {
   auto gen{std::mt19937(std::random_device{}())};
-  auto gauss{[&](Scalar sig) -> Scalar {
-    // Leva Gaussian Noise with ratio of uniforms
-    Scalar u, v, x, y, q;
-    do {
-      u = 2 * (gen() / RAND_MAX);
-      v = 1.71560F * ((2 * (gen() / RAND_MAX)) - 0.50F);
-      x = (u - 0.4498710F);
-      y = std::abs(v) + 0.3865950F;
-      q = x * x + y * ((0.1960F * y) - (0.254720F * x));
-    } while (0.275970F < q &&
-             (0.278460F < q || -4.0F * std::log(u) * u * u < v * v));
-    return sig * (v / u);
-  }};
+  auto dis{std::normal_distribution<float>(0.F, 1.0F)};
   auto lin{[&](auto n, auto a, auto b, auto sig) {
     auto x{Vec(n)};
     auto y{Vec(n)};
     std::iota(x.begin(), x.end(), 0.F);
     for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
-      y[i] = gauss(sig) + b + a * x[i];
+      y[i] = dis(gen) + b + a * x[i];
     }
     auto f{Fitab(x, y)};
   }};
-  lin(8, gen(), gen(), gen());
+  for (decltype(0 + 30 + 1) i = 0; i < 30; i += 1) {
+    auto a{0.30F + 1.00e-2F * dis(gen)};
+    auto b{17 + 0.10F * dis(gen)};
+    auto sig{3 + 0.10F * dis(gen)};
+    lin(18, a, b, sig);
+  }
   return 0;
 }
