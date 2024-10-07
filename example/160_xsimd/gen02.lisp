@@ -128,8 +128,11 @@
 		(type char** argv)
 		(values int))
 
-       (let ((gen (std--mt19937 42))
-	     (gauss (lambda (mu sig)
+       (let ((gen (std--mt19937 ;42
+				"std::random_device{}()"))
+	     #+nil
+	     (gauss (lambda (		;mu
+			     sig)
 		      (declare (type Scalar mu sig)
 			       (values Scalar))
 		      (comments "Leva Gaussian Noise with ratio of uniforms")
@@ -137,8 +140,8 @@
 		      (space
 		       do
 		       (progn
-			 (setf u (gen)
-			       v (* 1.7156s0 (- (gen) .5s0))
+			 (setf u (* 2 (/ (gen) RAND_MAX))
+			       v (* 1.7156s0 (- (* 2 (/ (gen) RAND_MAX)) .5s0))
 			       x (- u .449871s0)
 			       y (+ (std--abs v)
 				    .386595s0)
@@ -152,8 +155,20 @@
 							   (std--log u)
 							   u u)
 							(* v v)))))))
-		      (return (+ mu (* sig (/ v u))))
+		      (return (+	;mu
+			       (* sig (/ v u))))
 		      ))))
+
+       (let ((lin (lambda (n a b sig)
+		   (let (;(n 8)
+			 (x (Vec n))
+			 (y (Vec n)))
+		     (std--iota (x.begin) (x.end) 0s0)
+		     (dotimes (i n)
+		       (setf (aref y i) (+ (gauss sig)
+					   b (* a (aref x i)))))
+		     (let ((f (Fitab x y))))))))
+	 (lin 8 (gen) (gen) (gen)))
 
 
        (return 0)))
