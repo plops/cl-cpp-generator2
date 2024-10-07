@@ -51,6 +51,7 @@
       cstddef
       vector
       cmath
+      random
       )
 
      (include "xsimd/xsimd.hpp")
@@ -126,6 +127,32 @@
        (declare (type int argc)
 		(type char** argv)
 		(values int))
+
+       (let ((gen (std--mt19937 42))
+	     (gauss (lambda (mu sig)
+		      (declare (type Scalar mu sig)
+			       (values Scalar))
+		      "Scalar u,v,x,y,q; "
+		      (space
+		       do
+		       (progn
+			 (setf u (gen)
+			       v (* 1.7156s0 (- (gen) .5s0))
+			       x (- u .449871s0)
+			       y (+ (std--abs v)
+				    .386595s0)
+			       q (+ (* x x)
+				    (* y (- (* .196 y)
+					    (* .25472 x))))))
+		       while (paren (logand (< .27597 q)
+					    (paren
+					     (logior (< .27846 q)
+						     (< (* -4s0
+							   (std--log u)
+							   u u)
+							(* v v)))))))
+		      (return (+ mu (* sig (/ v u))))
+		      ))))
 
 
        (return 0)))

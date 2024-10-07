@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <format>
 #include <iostream>
+#include <random>
 #include <vector>
 using namespace xsimd;
 using Scalar = float;
@@ -54,4 +55,19 @@ private:
   VecI &x, &y;
 };
 
-int main(int argc, char **argv) { return 0; }
+int main(int argc, char **argv) {
+  auto gen{std::mt19937(42)};
+  auto gauss{[&](Scalar mu, Scalar sig) -> Scalar {
+    Scalar u, v, x, y, q;
+    do {
+      u = gen();
+      v = 1.71560F * (gen() - 0.50F);
+      x = (u - 0.4498710F);
+      y = std::abs(v) + 0.3865950F;
+      q = x * x + y * ((0.1960F * y) - (0.254720F * x));
+    } while (0.275970F < q &&
+             (0.278460F < q || -4.0F * std::log(u) * u * u < v * v));
+    return mu + sig * (v / u);
+  }};
+  return 0;
+}
