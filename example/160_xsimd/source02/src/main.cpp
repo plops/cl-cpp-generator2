@@ -58,6 +58,7 @@ private:
 int main(int argc, char **argv) {
   auto gen{std::mt19937(42)};
   auto gauss{[&](Scalar mu, Scalar sig) -> Scalar {
+    // Leva Gaussian Noise with ratio of uniforms
     Scalar u, v, x, y, q;
     do {
       u = gen();

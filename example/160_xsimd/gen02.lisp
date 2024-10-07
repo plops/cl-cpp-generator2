@@ -132,6 +132,7 @@
 	     (gauss (lambda (mu sig)
 		      (declare (type Scalar mu sig)
 			       (values Scalar))
+		      (comments "Leva Gaussian Noise with ratio of uniforms")
 		      "Scalar u,v,x,y,q; "
 		      (space
 		       do
