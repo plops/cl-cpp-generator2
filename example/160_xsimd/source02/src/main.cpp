@@ -14,7 +14,8 @@ using VecI = const Vec;
 class Fitab {
 public:
   Fitab(VecI &xx, VecI &yy)
-      : ndata{xx.size()}, x{xx}, y{yy}, chi2{.0f}, sigdat{.0f} {
+      : ndata{static_cast<int>(xx.size())}, x{xx}, y{yy}, b{.0f}, chi2{.0f},
+        sigdat{.0f} {
     auto sx{.0f};
     auto sy{.0f};
     for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
@@ -23,7 +24,6 @@ public:
     }
     auto ss{static_cast<Scalar>(ndata)};
     auto sxoss{sx / ss};
-    auto ss{.0f};
     auto st2{.0f};
     auto tt{.0f};
     for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
@@ -42,7 +42,7 @@ public:
       chi2 += p * p;
     }
     if (2 < ndata) {
-      sigdat = std::sqrt(chi2 / (ndata - 2));
+      sigdat = std::sqrt(chi2 / (static_cast<Scalar>(ndata) - 2.0F));
     }
     siga *= sigdat;
     sigb *= sigdat;
