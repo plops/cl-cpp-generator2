@@ -76,10 +76,9 @@ int getSignificantDigits(Scalar num) {
 
 std::string printStat(std::pair<Scalar, Scalar> md) {
   auto [m, d]{md};
-  auto precision{getSignificantDigits(d)};
-  auto fmtm{std::string("{:.") + std::to_string(1 + precision) + "f}"};
-  auto fmtd{std::string("{:.") + std::to_string(precision) + "f}"};
-  const std::string format_str{fmtm + " ± " + fmtd};
+  const auto precision{getSignificantDigits(d)};
+  const auto fmtm{std::string("{:.") + std::to_string(1 + precision) + "f}"};
+  const auto format_str{fmtm + " ± " + fmtm};
   return std::vformat(format_str, std::make_format_args(m, d));
 }
 
@@ -122,12 +121,16 @@ int main(int argc, char **argv) {
     auto B{0.30F + 1.00e-2F * dis(gen)};
     auto Sig{10.F};
     auto [a, b, siga, sigb, chi2, sigdat]{lin(133, A, B, Sig, 117)};
+    const auto pa{printStat(a)};
+    const auto pb{printStat(b)};
+    const auto psiga{printStat(siga)};
+    const auto psigb{printStat(sigb)};
+    const auto pchi2{printStat(chi2)};
+    const auto psigdat{printStat(sigdat)};
     std::cout << std::format(
-        "( :A '{}' :B '{}' :Sig '{}' :printStat(a) '{}' :printStat(b) '{}' "
-        ":printStat(siga) '{}' :printStat(sigb) '{}' :printStat(chi2) '{}' "
-        ":printStat(sigdat) '{}')\n",
-        A, B, Sig, printStat(a), printStat(b), printStat(siga), printStat(sigb),
-        printStat(chi2), printStat(sigdat));
+        "( :A '{}' :B '{}' :Sig '{}' :pa '{}' :pb '{}' :psiga '{}' :psigb '{}' "
+        ":pchi2 '{}' :psigdat '{}')\n",
+        A, B, Sig, pa, pb, psiga, psigb, pchi2, psigdat);
   }
   return 0;
 }
