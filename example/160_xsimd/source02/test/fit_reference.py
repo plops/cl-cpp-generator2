@@ -8,6 +8,9 @@ sig = array([1,1,1])
 N = len(x) # 3
 
 bb,aa = polyfit(x,y,1) # 1.83 .249
+# 1.83333333 .2499999999999
+
+
 
 S = sum(1/sig**2) #3
 Sx = sum(x/sig**2) #6

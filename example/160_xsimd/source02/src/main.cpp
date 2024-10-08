@@ -31,7 +31,8 @@ public:
         })};
     auto tt{0.F};
     for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
-      tt += ((x[i]) - sxoss);
+      const auto tt{(x[i]) - sxoss};
+      ;
       b += tt * y[i];
     };
     // solve for a, b, sigma_a and sigma_b
@@ -88,7 +89,7 @@ int main(int argc, char **argv) {
   auto lin{[&](auto n, auto A, auto B, auto Sig, auto repeat) {
     auto x{Vec(n)};
     auto y{Vec(n)};
-    auto fill_x{[&]() { std::iota(x.begin(), x.end(), 0.F); }};
+    auto fill_x{[&]() { std::iota(x.begin(), x.end(), 1.0F); }};
     fill_x();
     auto stat{[&](auto fitres, auto filter) {
       auto data{Vec(fitres.size())};
@@ -101,8 +102,7 @@ int main(int argc, char **argv) {
       return std::make_pair(mean, stdev);
     }};
     auto generate_fit{[&]() {
-      std::transform(x.begin(), x.end(), y.begin(),
-                     [&](Scalar xi) { return Sig * dis(gen) + A + B * xi; });
+      y = {2.10F, 2.30F, 2.60F};
       return Fitab(x, y);
     }};
     auto fitres{std::vector<Fitab>()};
@@ -116,8 +116,8 @@ int main(int argc, char **argv) {
     auto sigdat{stat(fitres, [&](const Fitab &f) { return f.sigdat; })};
     return std::make_tuple(a, b, siga, sigb, chi2, sigdat);
   }};
-  auto A{2.0F};
-  auto B{1.0F};
+  auto A{0.250F};
+  auto B{1.8333334F};
   auto Sig{0.F};
   auto [a, b, siga, sigb, chi2, sigdat]{lin(3, A, B, Sig, 1)};
   std::cout << std::format(
