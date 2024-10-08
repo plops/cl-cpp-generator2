@@ -103,21 +103,13 @@
 				      (lambda (accum xi)
 					(return (+ accum (std--pow (- xi sxoss) 2s0))))) ; .0f
 		     )
-		#+nil (tt  (std--accumulate (x.begin)
-					    (x.end)
-					    0s0
-					    (lambda (accum xi)
-					      (return (+ accum (- xi sxoss) )))))
 		)
-	       (let ((tt 0s0)))
-	       #+nil (for-range (xi x)
-				(incf st2 (std--pow (- xi sxoss)
-						    2)))
-	       #-nil (dotimes (i ndata)
+	      
+	        (dotimes (i ndata)
 		   
 		       (letc ((tt (- (aref x i)
 				     sxoss))))
-					;(incf st2 (* tt tt))
+		  
 		       (incf b (* tt (aref y i)))
 					;,(lprint :vars `(i tt b))
 		       ))

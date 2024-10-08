@@ -13,22 +13,17 @@ class Fitab {
 public:
   Fitab(VecI &xx, VecI &yy) : ndata{static_cast<int>(xx.size())}, x{xx}, y{yy} {
     const auto sx{std::accumulate(x.begin(), x.end(), 0.F)};
-    ;
     const auto sy{std::accumulate(y.begin(), y.end(), 0.F)};
-    ;
     const auto ss{static_cast<Scalar>(ndata)};
     const auto sxoss{sx / ss};
-    ;
     const auto st2{
         std::accumulate(x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
           return accum + std::pow(xi - sxoss, 2.0F);
         })};
-    auto tt{0.F};
     for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
       const auto tt{(x[i]) - sxoss};
-      ;
       b += tt * y[i];
-    };
+    }
     // solve for a, b, sigma_a and sigma_b
     b /= st2;
     a = ((sy - (b * sx)) / ss);
