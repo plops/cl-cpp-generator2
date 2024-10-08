@@ -102,7 +102,8 @@ int main(int argc, char **argv) {
       return std::make_pair(mean, stdev);
     }};
     auto generate_fit{[&]() {
-      y = {2.10F, 2.30F, 2.60F};
+      std::transform(x.begin(), x.end(), y.begin(),
+                     [&](Scalar xi) { return Sig * dis(gen) + A + B * xi; });
       return Fitab(x, y);
     }};
     auto fitres{std::vector<Fitab>()};
@@ -116,15 +117,17 @@ int main(int argc, char **argv) {
     auto sigdat{stat(fitres, [&](const Fitab &f) { return f.sigdat; })};
     return std::make_tuple(a, b, siga, sigb, chi2, sigdat);
   }};
-  auto A{0.250F};
-  auto B{1.8333334F};
-  auto Sig{0.F};
-  auto [a, b, siga, sigb, chi2, sigdat]{lin(3, A, B, Sig, 1)};
-  std::cout << std::format(
-      "( :A '{}' :B '{}' :Sig '{}' :printStat(a) '{}' :printStat(b) '{}' "
-      ":printStat(siga) '{}' :printStat(sigb) '{}' :printStat(chi2) '{}' "
-      ":printStat(sigdat) '{}')\n",
-      A, B, Sig, printStat(a), printStat(b), printStat(siga), printStat(sigb),
-      printStat(chi2), printStat(sigdat));
+  for (decltype(0 + 30 + 1) i = 0; i < 30; i += 1) {
+    auto A{17 + 0.10F * dis(gen)};
+    auto B{0.30F + 1.00e-2F * dis(gen)};
+    auto Sig{10.F};
+    auto [a, b, siga, sigb, chi2, sigdat]{lin(133, A, B, Sig, 1)};
+    std::cout << std::format(
+        "( :A '{}' :B '{}' :Sig '{}' :printStat(a) '{}' :printStat(b) '{}' "
+        ":printStat(siga) '{}' :printStat(sigb) '{}' :printStat(chi2) '{}' "
+        ":printStat(sigdat) '{}')\n",
+        A, B, Sig, printStat(a), printStat(b), printStat(siga), printStat(sigb),
+        printStat(chi2), printStat(sigdat));
+  }
   return 0;
 }

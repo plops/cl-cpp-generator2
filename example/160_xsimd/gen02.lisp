@@ -242,8 +242,8 @@
 								 (* mean mean))))))
 				      (return (std--make_pair mean stdev)))))))
 		      (let ((generate_fit (lambda ()
-					    (setf y (curly 2.1s0 2.3s0 2.6s0))
-					    #+nil
+					    ;(setf y (curly 2.1s0 2.3s0 2.6s0))
+					    
 					    (std--transform (x.begin)
 							    (x.end)
 							    (y.begin)
@@ -274,14 +274,21 @@
 		     
 					
 		      (return (std--make_tuple ,@l-fit))))))
-	 (do0 ;dotimes (i 30)
-	   (let ((A .249999999999s0 ;(+ 17 (* .1 (dis gen)))
-		    )
-		 (B 1.833333333333s0 ;(+ .3 (* .01 (dis gen)))
-		    )
-		 (Sig 0s0 ;(+ .003 (* .001 (dis gen)))
-		      )))
-	   (let (((bracket ,@l-fit) (lin 3 A B Sig 1)))
+	 (dotimes (i 30)
+	   (let #+nil
+	     ((A .249999999999s0	;(+ 17 (* .1 (dis gen)))
+		 )
+	      (B 1.833333333333s0	;(+ .3 (* .01 (dis gen)))
+		 )
+	      (Sig 0s0 #+nil (+ .003 (* .001 (dis gen)))
+		   ))
+	     ((A (+ 17 (* .1 (dis gen)))
+		 )
+	      (B (+ .3 (* .01 (dis gen)))
+		 )
+	      (Sig 10s0 ;(+ .3 (* .001 (dis gen)))
+		   )))
+	   (let (((bracket ,@l-fit) (lin 133 A B Sig 1)))
 	     ,(lprint :vars `(A B Sig ,@(loop for e in l-fit collect `(printStat ,e)))))))
 
 
