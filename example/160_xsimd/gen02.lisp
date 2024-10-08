@@ -263,7 +263,7 @@
 		     
 					
 		      (return (std--make_tuple ,@l-fit))))))
-	 (dotimes (i 30)
+	 (dotimes (i 3)
 	   (let #+nil
 	     ((A .249999999999s0	;(+ 17 (* .1 (dis gen)))
 		 )
@@ -277,7 +277,7 @@
 		 )
 	      (Sig 10s0 ;(+ .3 (* .001 (dis gen)))
 		   )))
-	   (let (((bracket ,@l-fit) (lin 133 A B Sig 117)))
+	   (let (((bracket ,@l-fit) (lin 8133 A B Sig 7117)))
 	     (letc (,@(loop for e in l-fit collect `(,(format nil "p~a" e) (printStat ,e))))
 	      ,(lprint :vars `(A B Sig ,@(loop for e in l-fit collect (format nil "p~a" e))))))))
 

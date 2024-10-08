@@ -106,11 +106,11 @@ int main(int argc, char **argv) {
     auto sigdat{stat(fitres, [&](const Fitab &f) { return f.sigdat; })};
     return std::make_tuple(a, b, siga, sigb, chi2, sigdat);
   }};
-  for (decltype(0 + 30 + 1) i = 0; i < 30; i += 1) {
+  for (decltype(0 + 3 + 1) i = 0; i < 3; i += 1) {
     auto A{17 + 0.10F * dis(gen)};
     auto B{0.30F + 1.00e-2F * dis(gen)};
     auto Sig{10.F};
-    auto [a, b, siga, sigb, chi2, sigdat]{lin(133, A, B, Sig, 117)};
+    auto [a, b, siga, sigb, chi2, sigdat]{lin(8133, A, B, Sig, 7117)};
     const auto pa{printStat(a)};
     const auto pb{printStat(b)};
     const auto psiga{printStat(siga)};
