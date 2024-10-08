@@ -20,19 +20,17 @@ public:
   Fitab(VecI &xx, VecI &yy)
       : ndata{static_cast<int>(xx.size())}, x{xx}, y{yy}, a{.0f}, b{.0f},
         chi2{.0f}, sigdat{.0f} {
-    auto sx{.0f};
-    auto sy{.0f};
-    for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
-      sx += x[i];
-      sy += y[i];
-    }
+    auto sx{std::accumulate(x.begin(), x.end(), 0.F)};
+    auto sy{std::accumulate(y.begin(), y.end(), 0.F)};
     auto ss{static_cast<Scalar>(ndata)};
     auto sxoss{sx / ss};
     auto st2{.0f};
     auto tt{.0f};
+    for (auto &&xi : x) {
+      st2 += std::pow(xi - sxoss, 2);
+    }
     for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
       tt += ((x[i]) - sxoss);
-      st2 += tt * tt;
       b += tt * y[i];
     }
     // solve for a, b, sigma_a and sigma_b
