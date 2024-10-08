@@ -52,6 +52,8 @@
       vector
       cmath
       random
+      numeric
+      memory
       )
 
      (include "xsimd/xsimd.hpp")
@@ -118,7 +120,7 @@
 	 (*= sigb sigdat)
 	 
 	 )
-       "private:"
+      ; "private:"
        "int ndata;"
        "Scalar a, b, siga, sigb, chi2, sigdat;"
        "VecI &x, &y;")
@@ -130,50 +132,49 @@
 
        (let ((gen (std--mt19937 ;42
 				"std::random_device{}()"))
-	     (dis (std--normal_distribution<float> 0s0 1s0))
-	     #+nil
-	     (gauss (lambda (		;mu
-			     sig)
-		      (declare (type Scalar mu sig)
-			       (values Scalar))
-		      (comments "Leva Gaussian Noise with ratio of uniforms")
-		      "Scalar u,v,x,y,q; "
-		      (space
-		       do
-		       (progn
-			 (setf u (* 2 (/ (gen) RAND_MAX))
-			       v (* 1.7156s0 (- (* 2 (/ (gen) RAND_MAX)) .5s0))
-			       x (- u .449871s0)
-			       y (+ (std--abs v)
-				    .386595s0)
-			       q (+ (* x x)
-				    (* y (- (* .196 y)
-					    (* .25472 x))))))
-		       while (paren (logand (< .27597 q)
-					    (paren
-					     (logior (< .27846 q)
-						     (< (* -4s0
-							   (std--log u)
-							   u u)
-							(* v v)))))))
-		      (return (+	;mu
-			       (* sig (/ v u))))
-		      ))))
+	     (dis (std--normal_distribution<float> 0s0 1s0))))
 
-       (let ((lin (lambda (n a b sig)
+       (let ((lin (lambda (n a b sig repeat)
 		   (let (;(n 8)
 			 (x (Vec n))
-			 (y (Vec n)))
-		     (std--iota (x.begin) (x.end) 0s0)
-		     (dotimes (i n)
-		       (setf (aref y i) (+ (dis gen)
-					   b (* a (aref x i)))))
-		     (let ((f (Fitab x y))))))))
+			 (y (Vec n))
+			 (fill_x (lambda ()
+				   (std--iota (x.begin) (x.end) 0s0)))
+			 (fill_y (lambda ()
+				   (dotimes (i n)
+	      			     (setf (aref y i) (+ (dis gen)
+       	       						 b
+							 (* a (aref x i))))))))
+		     (fill_x)
+
+		     (let ((ares (Vec repeat))
+			   (bres (Vec repeat))
+			   (stat (lambda (res)
+				   (let ((mean 0s0)
+					 (std 0s0))
+				     (for-range (r res)
+						(incf mean r))
+				     (/= mean repeat)
+				     (for-range (r res)
+						(let ((d (- mean r))))
+						(incf std (* d d)))
+				     (/= std (- repeat 1s0))
+				     (setf std (std--sqrt std))
+				     (return (std--make_shared<Vec> (curly mean std))))))))
+
+		     (dotimes (j repeat)
+		       (fill_y)
+		       (let ((f (Fitab x y)))
+			 (setf (aref ares j) f.a)
+			 (setf (aref bres j) f.b))
+		       )
+		     (stat ares)
+		     (stat bres)))))
 	 (dotimes (i 30)
 	   (let ((a (+ .3 (* .01 (dis gen))))
 		 (b (+ 17 (* .1 (dis gen))))
 		 (sig (+ 3 (* .1 (dis gen))))))
-	   (lin 18 a b sig)))
+	   (lin 18 a b sig 100)))
 
 
        (return 0)))

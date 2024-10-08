@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <format>
 #include <iostream>
+#include <memory>
 #include <random>
 #include <vector>
 using namespace xsimd;
@@ -48,8 +49,6 @@ public:
     siga *= sigdat;
     sigb *= sigdat;
   }
-
-private:
   int ndata;
   Scalar a, b, siga, sigb, chi2, sigdat;
   VecI &x, &y;
@@ -58,20 +57,47 @@ private:
 int main(int argc, char **argv) {
   auto gen{std::mt19937(std::random_device{}())};
   auto dis{std::normal_distribution<float>(0.F, 1.0F)};
-  auto lin{[&](auto n, auto a, auto b, auto sig) {
+  auto lin{[&](auto n, auto a, auto b, auto sig, auto repeat) {
     auto x{Vec(n)};
     auto y{Vec(n)};
-    std::iota(x.begin(), x.end(), 0.F);
-    for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
-      y[i] = dis(gen) + b + a * x[i];
+    auto fill_x{[&]() { std::iota(x.begin(), x.end(), 0.F); }};
+    auto fill_y{[&]() {
+      for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
+        y[i] = dis(gen) + b + a * x[i];
+      }
+    }};
+    fill_x();
+    auto ares{Vec(repeat)};
+    auto bres{Vec(repeat)};
+    auto stat{[&](auto res) {
+      auto mean{0.F};
+      auto std{0.F};
+      for (auto &&r : res) {
+        mean += r;
+      }
+      mean /= repeat;
+      for (auto &&r : res) {
+        auto d{mean - r};
+        std += d * d;
+      }
+      std /= (repeat - 1.0F);
+      std = std::sqrt(std);
+      return std::make_shared<Vec>({mean, std});
+    }};
+    for (decltype(0 + repeat + 1) j = 0; j < repeat; j += 1) {
+      fill_y();
+      auto f{Fitab(x, y)};
+      ares[j] = f.a;
+      bres[j] = f.b;
     }
-    auto f{Fitab(x, y)};
+    stat(ares);
+    stat(bres);
   }};
   for (decltype(0 + 30 + 1) i = 0; i < 30; i += 1) {
     auto a{0.30F + 1.00e-2F * dis(gen)};
     auto b{17 + 0.10F * dis(gen)};
     auto sig{3 + 0.10F * dis(gen)};
-    lin(18, a, b, sig);
+    lin(18, a, b, sig, 100);
   }
   return 0;
 }
