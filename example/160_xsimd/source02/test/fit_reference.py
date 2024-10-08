@@ -7,10 +7,7 @@ y = array([2.1, 2.3, 2.6])
 sig = array([1,1,1])
 N = len(x) # 3
 
-bb,aa = polyfit(x,y,1) # 1.83 .249
-# 1.83333333 .2499999999999
-
-
+bb,aa = polyfit(x,y,1) # 1.83333333 .2499999999999
 
 S = sum(1/sig**2) #3
 Sx = sum(x/sig**2) #6
@@ -26,8 +23,10 @@ a = (Sy - Sx * b) / S # 1.83
 
 chi2 = sum(((y-a-b*x)/sig)**2) # .0017
 fac = sqrt(chi2/(N-2)) # .04
-siga = Sxx / Delta * fac # .09
-sigb = S / Delta * fac #.02
+siga_ = (1+Sx**2/(S*Stt))/S # 2.333
+sigb_ = 1/Stt # .5
+siga = siga_ * fac # .09
+sigb = sigb_ * fac #.02
 # uncertainties of a and b estimated by assuming equal errors
 # and that line is a good model
 
