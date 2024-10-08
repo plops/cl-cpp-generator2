@@ -335,7 +335,7 @@ A string representing the variable declaration."
 			  )
 		      (funcall emit name)))
 
-(defun parse-let (code emit)
+(defun parse-let (code emit &key const)
   "Parse a Common Lisp LET form and emit similar C++ code.
 
   This function takes a Common Lisp LET form and generates equivalent
@@ -352,7 +352,7 @@ A string representing the variable declaration."
   Parameters:
     - code: The Common Lisp LET form to parse.
     - emit: The function used to emit child forms below the LET form as C++ code.
-
+    - const: Write const in front of every definition (this is used in letc)
   Returns:
     The generated C++ code as a string."
   (destructuring-bind (decls &rest body) (cdr code)
@@ -366,7 +366,8 @@ A string representing the variable declaration."
 							 (destructuring-bind (name &optional value) decl
 							   ;; FIXME: introducing initializer lists is better for C++ but not working with GLSL (and possibly C)
 							   (format nil ;"~a ~@[ = ~a~];"
-								   "~a ~@[{~a}~];"
+								   "~a~a ~@[{~a}~];"
+								   (if const "const " "")
 								   (variable-declaration :name name :env env :emit emit)
 
 								   (when value
@@ -1534,6 +1535,7 @@ emit-c into a string. Except lists: Those stay lists."
 				     (emit value)))))
 
 		  (let (parse-let code #'emit))
+		  (letc (parse-let code #'emit :const t))
 		  (setf
 		   (let ((args (cdr code)))
 		     ;; "setf {pair}*"

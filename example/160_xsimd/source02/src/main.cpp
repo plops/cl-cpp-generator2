@@ -17,19 +17,23 @@ using Vec = std::vector<Scalar>;
 using VecI = const Vec;
 class Fitab {
 public:
-  Fitab(VecI &xx, VecI &yy)
-      : ndata{static_cast<int>(xx.size())}, x{xx}, y{yy}, a{.0f}, b{.0f},
-        chi2{.0f}, sigdat{.0f} {
-    auto sx{std::accumulate(x.begin(), x.end(), 0.F)};
-    auto sy{std::accumulate(y.begin(), y.end(), 0.F)};
-    auto ss{static_cast<Scalar>(ndata)};
-    auto sxoss{sx / ss};
-    auto st2{std::accumulate(x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
-      return accum + std::pow(xi - sxoss, 2.0F);
-    })};
-    auto tt{std::accumulate(x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
-      return accum + (xi - sxoss);
-    })};
+  Fitab(VecI &xx, VecI &yy) : ndata{static_cast<int>(xx.size())}, x{xx}, y{yy} {
+    const auto sx{std::accumulate(x.begin(), x.end(), 0.F)};
+    ;
+    const auto sy{std::accumulate(y.begin(), y.end(), 0.F)};
+    ;
+    const auto ss{static_cast<Scalar>(ndata)};
+    const auto sxoss{sx / ss};
+    ;
+    const auto st2{
+        std::accumulate(x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
+          return accum + std::pow(xi - sxoss, 2.0F);
+        })};
+    const auto tt{
+        std::accumulate(x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
+          return accum + (xi - sxoss);
+        })};
+    ;
     b = std::inner_product(
         x.begin(), x.end(), y.begin(), 0.F,
         [&](auto accum, auto value) { return accum + value; },
@@ -54,7 +58,7 @@ public:
     sigb *= sigdat;
   }
   int ndata;
-  Scalar a, b, siga, sigb, chi2, sigdat;
+  Scalar a{.0f}, b{.0f}, siga{.0f}, sigb{.0f}, chi2{.0f}, sigdat{.0f};
   VecI &x, &y;
 };
 
@@ -116,17 +120,15 @@ int main(int argc, char **argv) {
     auto sigdat{stat(fitres, [&](const Fitab &f) { return f.sigdat; })};
     return std::make_tuple(a, b, siga, sigb, chi2, sigdat);
   }};
-  for (decltype(0 + 30 + 1) i = 0; i < 30; i += 1) {
-    auto A{17 + 0.10F * dis(gen)};
-    auto B{0.30F + 1.00e-2F * dis(gen)};
-    auto Sig{3.00e-3F + 1.00e-3F * dis(gen)};
-    auto [a, b, siga, sigb, chi2, sigdat]{lin(8, A, B, Sig, 1)};
-    std::cout << std::format(
-        "( :A '{}' :B '{}' :Sig '{}' :printStat(a) '{}' :printStat(b) '{}' "
-        ":printStat(siga) '{}' :printStat(sigb) '{}' :printStat(chi2) '{}' "
-        ":printStat(sigdat) '{}')\n",
-        A, B, Sig, printStat(a), printStat(b), printStat(siga), printStat(sigb),
-        printStat(chi2), printStat(sigdat));
-  }
+  auto A{2.0F};
+  auto B{1.0F};
+  auto Sig{0.F};
+  auto [a, b, siga, sigb, chi2, sigdat]{lin(3, A, B, Sig, 1)};
+  std::cout << std::format(
+      "( :A '{}' :B '{}' :Sig '{}' :printStat(a) '{}' :printStat(b) '{}' "
+      ":printStat(siga) '{}' :printStat(sigb) '{}' :printStat(chi2) '{}' "
+      ":printStat(sigdat) '{}')\n",
+      A, B, Sig, printStat(a), printStat(b), printStat(siga), printStat(sigb),
+      printStat(chi2), printStat(sigdat));
   return 0;
 }
