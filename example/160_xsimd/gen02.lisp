@@ -11,7 +11,7 @@
   (setf *features* (set-exclusive-or *features* (list ;:more
 						      ))))
 
-(let ()
+(let ((l-fit `(a b siga sigb chi2 sigdat)))
   (defparameter *source-dir* #P"example/160_xsimd/source02/src/")
   (defparameter *full-source-dir* (asdf:system-relative-pathname
 				   'cl-cpp-generator2
@@ -53,6 +53,7 @@
       cmath
       random
       numeric
+      algorithm
       memory
       )
 
@@ -122,7 +123,7 @@
 	 )
       ; "private:"
        "int ndata;"
-       "Scalar a, b, siga, sigb, chi2, sigdat;"
+       ,(format nil "Scalar ~{~a~^, ~};" l-fit)
        "VecI &x, &y;")
      
      (defun main (argc argv)
@@ -147,34 +148,51 @@
 							 (* a (aref x i))))))))
 		     (fill_x)
 
-		     (let ((ares (Vec repeat))
-			   (bres (Vec repeat))
-			   (stat (lambda (res)
-				   (let ((mean 0s0)
-					 (std 0s0))
-				     (for-range (r res)
-						(incf mean r))
-				     (/= mean repeat)
-				     (for-range (r res)
-						(let ((d (- mean r))))
-						(incf std (* d d)))
-				     (/= std (- repeat 1s0))
-				     (setf std (std--sqrt std))
-				     (return (std--make_shared<Vec> (curly mean std))))))))
-
-		     (dotimes (j repeat)
-		       (fill_y)
-		       (let ((f (Fitab x y)))
-			 (setf (aref ares j) f.a)
-			 (setf (aref bres j) f.b))
-		       )
-		     (stat ares)
-		     (stat bres)))))
+		     (let ((stat (lambda (fitres filter)
+				   (let ((data (Vec (fitres.size)))))
+				   (std--transform (fitres.begin)
+						   (fitres.end)
+						   (data.begin)
+						   filter)
+				   (let ((mean (std--accumulate (data.begin)
+								(data.end)
+								0s0)))
+				     
+				     (/= mean (data.size))
+				     (let ((sq_sum (std--inner_product (data.begin)
+								       (data.end)
+								       (data.begin)
+								       0s0))
+					   (stdev (std--sqrt (- (/ sq_sum
+								   (data.size))
+								(* mean mean))))))
+				     (return (std--make_pair mean stdev)))))))
+		     (let ((generate_fit (lambda ()
+					   (fill_y)
+					   (return (Fitab x y))))
+			   (fitres (std--vector<Fitab>))
+			   
+			   ))
+		     (fitres.reserve repeat)
+		     #+nil (dotimes (rep repeat)
+		       (fitres.push_back (generate_fit)))
+		     (std--generate_n (std--back_inserter fitres)
+				      repeat
+				      generate_fit)
+		     (let (((bracket am ad) (stat fitres (lambda (f)
+							   (declare (type "const  Fitab&" f))
+							   (return f.a))))))
+		     (let (((bracket bm bd) (stat fitres (lambda (f)
+							   (declare (type "const  Fitab&" f))
+							   (return f.b))))))
+					
+		     (return (std--make_tuple am ad bm bd))))))
 	 (dotimes (i 30)
 	   (let ((a (+ .3 (* .01 (dis gen))))
 		 (b (+ 17 (* .1 (dis gen))))
 		 (sig (+ 3 (* .1 (dis gen))))))
-	   (lin 18 a b sig 100)))
+	   (let (((bracket am ad bm bd) (lin 18 a b sig 100)))
+	     ,(lprint :vars `(a b sig am ad bm bd)))))
 
 
        (return 0)))

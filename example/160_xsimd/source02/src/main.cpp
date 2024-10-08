@@ -1,9 +1,11 @@
 #include "xsimd/xsimd.hpp"
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <format>
 #include <iostream>
 #include <memory>
+#include <numeric>
 #include <random>
 #include <vector>
 using namespace xsimd;
@@ -67,37 +69,35 @@ int main(int argc, char **argv) {
       }
     }};
     fill_x();
-    auto ares{Vec(repeat)};
-    auto bres{Vec(repeat)};
-    auto stat{[&](auto res) {
-      auto mean{0.F};
-      auto std{0.F};
-      for (auto &&r : res) {
-        mean += r;
-      }
-      mean /= repeat;
-      for (auto &&r : res) {
-        auto d{mean - r};
-        std += d * d;
-      }
-      std /= (repeat - 1.0F);
-      std = std::sqrt(std);
-      return std::make_shared<Vec>({mean, std});
+    auto stat{[&](auto fitres, auto filter) {
+      auto data{Vec(fitres.size())};
+      std::transform(fitres.begin(), fitres.end(), data.begin(), filter);
+      auto mean{std::accumulate(data.begin(), data.end(), 0.F)};
+      mean /= data.size();
+      auto sq_sum{
+          std::inner_product(data.begin(), data.end(), data.begin(), 0.F)};
+      auto stdev{std::sqrt((sq_sum / data.size()) - (mean * mean))};
+      return std::make_pair(mean, stdev);
     }};
-    for (decltype(0 + repeat + 1) j = 0; j < repeat; j += 1) {
+    auto generate_fit{[&]() {
       fill_y();
-      auto f{Fitab(x, y)};
-      ares[j] = f.a;
-      bres[j] = f.b;
-    }
-    stat(ares);
-    stat(bres);
+      return Fitab(x, y);
+    }};
+    auto fitres{std::vector<Fitab>()};
+    fitres.reserve(repeat);
+    std::generate_n(std::back_inserter(fitres), repeat, generate_fit);
+    auto [am, ad]{stat(fitres, [&](const Fitab &f) { return f.a; })};
+    auto [bm, bd]{stat(fitres, [&](const Fitab &f) { return f.b; })};
+    return std::make_tuple(am, ad, bm, bd);
   }};
   for (decltype(0 + 30 + 1) i = 0; i < 30; i += 1) {
     auto a{0.30F + 1.00e-2F * dis(gen)};
     auto b{17 + 0.10F * dis(gen)};
     auto sig{3 + 0.10F * dis(gen)};
-    lin(18, a, b, sig, 100);
+    auto [am, ad, bm, bd]{lin(18, a, b, sig, 100)};
+    std::cout << std::format(
+        "( :a '{}' :b '{}' :sig '{}' :am '{}' :ad '{}' :bm '{}' :bd '{}')\n", a,
+        b, sig, am, ad, bm, bd);
   }
   return 0;
 }
