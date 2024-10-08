@@ -29,15 +29,11 @@ public:
         std::accumulate(x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
           return accum + std::pow(xi - sxoss, 2.0F);
         })};
-    const auto tt{
-        std::accumulate(x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
-          return accum + (xi - sxoss);
-        })};
-    ;
-    b = std::inner_product(
-        x.begin(), x.end(), y.begin(), 0.F,
-        [&](auto accum, auto value) { return accum + value; },
-        [&](auto xi, auto yi) { return tt * yi; });
+    auto tt{0.F};
+    for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
+      tt += ((x[i]) - sxoss);
+      b += tt * y[i];
+    };
     // solve for a, b, sigma_a and sigma_b
     b /= st2;
     a = ((sy - (b * sx)) / ss);
