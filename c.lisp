@@ -1309,7 +1309,7 @@ emit-c into a string. Except lists: Those stay lists."
 										while
 										include include<> case
 										when if unless cond
-										let pragma
+										let letc pragma
 										split-header-and-code
 										defun defun* defmethod defclass
 										comments comment doc

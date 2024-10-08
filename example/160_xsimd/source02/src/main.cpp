@@ -6,9 +6,9 @@
 #include <random>
 #include <vector>
 using Scalar = float;
-using ScalarI = const Scalar;
 using Vec = std::vector<Scalar>;
 using VecI = const Vec;
+// From Numerical Recipes
 class Fitab {
 public:
   Fitab(VecI &xx, VecI &yy) : ndata{static_cast<int>(xx.size())}, x{xx}, y{yy} {
