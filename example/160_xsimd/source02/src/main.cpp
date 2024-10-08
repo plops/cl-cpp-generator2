@@ -18,8 +18,8 @@ using VecI = const Vec;
 class Fitab {
 public:
   Fitab(VecI &xx, VecI &yy)
-      : ndata{static_cast<int>(xx.size())}, x{xx}, y{yy}, b{.0f}, chi2{.0f},
-        sigdat{.0f} {
+      : ndata{static_cast<int>(xx.size())}, x{xx}, y{yy}, a{.0f}, b{.0f},
+        chi2{.0f}, sigdat{.0f} {
     auto sx{.0f};
     auto sy{.0f};
     for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
@@ -121,8 +121,8 @@ int main(int argc, char **argv) {
   for (decltype(0 + 30 + 1) i = 0; i < 30; i += 1) {
     auto A{17 + 0.10F * dis(gen)};
     auto B{0.30F + 1.00e-2F * dis(gen)};
-    auto Sig{3 + 0.10F * dis(gen)};
-    auto [a, b, siga, sigb, chi2, sigdat]{lin(18, A, B, Sig, 100)};
+    auto Sig{3.00e-3F + 1.00e-3F * dis(gen)};
+    auto [a, b, siga, sigb, chi2, sigdat]{lin(9118, A, B, Sig, 1)};
     std::cout << std::format(
         "( :A '{}' :B '{}' :Sig '{}' :printStat(a) '{}' :printStat(b) '{}' "
         ":printStat(siga) '{}' :printStat(sigb) '{}' :printStat(chi2) '{}' "
