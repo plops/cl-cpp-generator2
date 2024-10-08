@@ -15,9 +15,10 @@ Sxx = sum((x/sig)**2) # 14
 Delta = S*Sxx - Sx**2 # 6
 Sy = sum(y/sig**2) #7
 t = (x-Sx/S)/sig # -1 0 1
-St = sum(t**2) # 2
+Stt = sum(t**2) # 2
+
+b = sum(t * y  / sig) / Stt # .25
 a = (Sy - Sx * b) / S # 1.83
-b = sum(t * y  / sig) / St # .25
 
 
 chi2 = sum(((y-a-b*x)/sig)**2) # .0017
