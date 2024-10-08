@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
     auto fill_x{[&]() { std::iota(x.begin(), x.end(), 0.F); }};
     auto fill_y{[&]() {
       for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
-        y[i] = Sig * dis(gen) + B + A * x[i];
+        y[i] = Sig * dis(gen) + A + B * x[i];
       }
     }};
     fill_x();
@@ -119,8 +119,8 @@ int main(int argc, char **argv) {
     return std::make_tuple(a, b, siga, sigb, chi2, sigdat);
   }};
   for (decltype(0 + 30 + 1) i = 0; i < 30; i += 1) {
-    auto A{0.30F + 1.00e-2F * dis(gen)};
-    auto B{17 + 0.10F * dis(gen)};
+    auto A{17 + 0.10F * dis(gen)};
+    auto B{0.30F + 1.00e-2F * dis(gen)};
     auto Sig{3 + 0.10F * dis(gen)};
     auto [a, b, siga, sigb, chi2, sigdat]{lin(18, A, B, Sig, 100)};
     std::cout << std::format(

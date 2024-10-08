@@ -173,8 +173,8 @@
 			  (fill_y (lambda ()
 				    (dotimes (i n)
 	      			      (setf (aref y i) (+ (* Sig (dis gen))
-       	       						  B
-							  (* A (aref x i))))))))
+       	       						  A
+							  (* B (aref x i))))))))
 		      (fill_x)
 
 		      (let ((stat (lambda (fitres filter)
@@ -218,8 +218,8 @@
 					
 		      (return (std--make_tuple ,@l-fit))))))
 	 (dotimes (i 30)
-	   (let ((A (+ .3 (* .01 (dis gen))))
-		 (B (+ 17 (* .1 (dis gen))))
+	   (let ((A (+ 17 (* .1 (dis gen))))
+		 (B (+ .3 (* .01 (dis gen))))
 		 (Sig (+ 3 (* .1 (dis gen))))))
 	   (let (((bracket ,@l-fit) (lin 18 A B Sig 100)))
 	     ,(lprint :vars `(A B Sig ,@(loop for e in l-fit collect `(printStat ,e)))))))
