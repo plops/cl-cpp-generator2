@@ -24,25 +24,29 @@ public:
     auto sy{std::accumulate(y.begin(), y.end(), 0.F)};
     auto ss{static_cast<Scalar>(ndata)};
     auto sxoss{sx / ss};
-    auto st2{.0f};
-    auto tt{.0f};
-    for (auto &&xi : x) {
-      st2 += std::pow(xi - sxoss, 2);
-    }
-    for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
-      tt += ((x[i]) - sxoss);
-      b += tt * y[i];
-    }
+    auto st2{std::accumulate(x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
+      return accum + std::pow(xi - sxoss, 2.0F);
+    })};
+    auto tt{std::accumulate(x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
+      return accum + (xi - sxoss);
+    })};
+    b = std::inner_product(
+        x.begin(), x.end(), y.begin(), 0.F,
+        [&](auto accum, auto value) { return accum + value; },
+        [&](auto xi, auto yi) { return tt * yi; });
     // solve for a, b, sigma_a and sigma_b
     b /= st2;
     a = ((sy - (b * sx)) / ss);
     siga = std::sqrt((1.0F + ((sx * sx) / (ss * st2))) / ss);
     sigb = std::sqrt(1.0F / st2);
     // compute chi2
-    for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
-      auto p{(y[i]) - a - (b * x[i])};
-      chi2 += p * p;
-    }
+    chi2 = std::inner_product(
+        x.begin(), x.end(), y.begin(), 0.F,
+        [&](auto accum, auto value) { return accum + value; },
+        [this](auto xi, auto yi) {
+          auto p{yi - a - (b * xi)};
+          return p * p;
+        });
     if (2 < ndata) {
       sigdat = std::sqrt(chi2 / (static_cast<Scalar>(ndata) - 2.0F));
     }
@@ -85,11 +89,6 @@ int main(int argc, char **argv) {
     auto x{Vec(n)};
     auto y{Vec(n)};
     auto fill_x{[&]() { std::iota(x.begin(), x.end(), 0.F); }};
-    auto fill_y{[&]() {
-      for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
-        y[i] = Sig * dis(gen) + A + B * x[i];
-      }
-    }};
     fill_x();
     auto stat{[&](auto fitres, auto filter) {
       auto data{Vec(fitres.size())};
@@ -102,7 +101,8 @@ int main(int argc, char **argv) {
       return std::make_pair(mean, stdev);
     }};
     auto generate_fit{[&]() {
-      fill_y();
+      std::transform(x.begin(), x.end(), y.begin(),
+                     [&](Scalar xi) { return Sig * dis(gen) + A + B * xi; });
       return Fitab(x, y);
     }};
     auto fitres{std::vector<Fitab>()};
@@ -120,7 +120,7 @@ int main(int argc, char **argv) {
     auto A{17 + 0.10F * dis(gen)};
     auto B{0.30F + 1.00e-2F * dis(gen)};
     auto Sig{3.00e-3F + 1.00e-3F * dis(gen)};
-    auto [a, b, siga, sigb, chi2, sigdat]{lin(9118, A, B, Sig, 1)};
+    auto [a, b, siga, sigb, chi2, sigdat]{lin(8, A, B, Sig, 1)};
     std::cout << std::format(
         "( :A '{}' :B '{}' :Sig '{}' :printStat(a) '{}' :printStat(b) '{}' "
         ":printStat(siga) '{}' :printStat(sigb) '{}' :printStat(chi2) '{}' "

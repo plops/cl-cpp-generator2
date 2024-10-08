@@ -99,17 +99,32 @@
 	       (sxoss (/ sx ss)))
 	   )
 	 
-	 (let ((st2 .0f)
-	       (tt .0f)
+	 (let ((st2 (std--accumulate (x.begin)
+				     (x.end)
+				     0s0
+				     (lambda (accum xi)
+				       (return (+ accum (std--pow (- xi sxoss) 2s0)))))			; .0f
+		    )
+	       (tt (std--accumulate (x.begin)
+				     (x.end)
+				     0s0
+				     (lambda (accum xi)
+				       (return (+ accum (- xi sxoss) )))))
 	       )
-	   (for-range (xi x)
+	   #+nil (for-range (xi x)
 		      (incf st2 (std--pow (- xi sxoss)
 					 2)))
-	   (dotimes (i ndata)
+	   #+nil (dotimes (i ndata)
 	     (incf tt (- (aref x i)
 			 sxoss))
 	     ;(incf st2 (* tt tt))
 	     (incf b (* tt (aref y i)))))
+	 (setf b (std--inner_product (x.begin)
+				   (x.end)
+				   (y.begin)
+				   0s0
+				   (lambda (accum value) (return (+ accum value)))
+				   (lambda (xi yi) (return (* tt yi)))))
 	 (comments "solve for a, b, sigma_a and sigma_b")
 	 (/= b st2)
 	 (setf a (/ (- sy (* b sx))
@@ -119,6 +134,24 @@
 				  ss))
 	       sigb (std--sqrt (/ 1s0 st2)))
 	 (comments "compute chi2")
+	 (setf chi2 (std--inner_product
+		     (x.begin)
+		     (x.end)
+		     (y.begin)
+		     0s0
+		     (lambda (accum value)
+		       (return (+ accum value)))
+		     (lambda (xi yi)
+		       (declare (capture this))
+		       (let ((p (- yi a (* b xi))))
+			 (return (* p p))))
+		     ))
+	 #+nil (setf chi2 (std--accumulate (x.begin)
+					   (x.end)
+					   0s0
+					   (lambda (accum xi)
+					     ())))
+	 #+nil
 	 (dotimes (i ndata)
 	   (let ((p (- (aref y i)
 		       a
@@ -180,13 +213,14 @@
 			  (y (Vec n))
 			  (fill_x (lambda ()
 				    (std--iota (x.begin) (x.end) 0s0)))
-			  (fill_y (lambda ()
+			  #+nil (fill_y
+			    (lambda ()
 				    (dotimes (i n)
 	      			      (setf (aref y i) (+ (* Sig (dis gen))
        	       						  A
 							  (* B (aref x i))))))))
 		      (fill_x)
-
+		      
 		      (let ((stat (lambda (fitres filter)
 				    (let ((data (Vec (fitres.size)))))
 				    (std--transform (fitres.begin)
@@ -207,7 +241,17 @@
 								 (* mean mean))))))
 				      (return (std--make_pair mean stdev)))))))
 		      (let ((generate_fit (lambda ()
-					    (fill_y)
+					    (std--transform (x.begin)
+					    (x.end)
+					    (y.begin)
+					    
+					    (lambda (xi)
+					      (declare (type Scalar xi))
+					      (return (+ (* Sig (dis gen))
+       	       						 A
+							 (* B xi))))
+					    )
+					    #+nil (fill_y)
 					    (return (Fitab x y))))
 			    (fitres (std--vector<Fitab>))
 			   
@@ -231,7 +275,7 @@
 	   (let ((A (+ 17 (* .1 (dis gen))))
 		 (B (+ .3 (* .01 (dis gen))))
 		 (Sig (+ .003 (* .001 (dis gen))))))
-	   (let (((bracket ,@l-fit) (lin 9118 A B Sig 1)))
+	   (let (((bracket ,@l-fit) (lin 8 A B Sig 1)))
 	     ,(lprint :vars `(A B Sig ,@(loop for e in l-fit collect `(printStat ,e)))))))
 
 
