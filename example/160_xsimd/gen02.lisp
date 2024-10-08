@@ -48,30 +48,31 @@
      (include<>
       iostream
       format
-      cstddef
+      ;cstddef
       vector
       cmath
       random
       numeric
       algorithm
-      memory
+      ;memory
       )
 
-     (include "xsimd/xsimd.hpp")
+     ;(include "xsimd/xsimd.hpp")
 
-     "using namespace xsimd;"
+     ;"using namespace xsimd;"
 
      "using Scalar = float;"
-     "using ScalarI = const Scalar;"
+     ;"using ScalarI = const Scalar;"
      
-     "using XVec = std::vector<Scalar,xsimd::default_allocator<Scalar>>;"
-     "using XBatch = xsimd::batch<Scalar,avx2>;"
+     ;"using XVec = std::vector<Scalar,xsimd::default_allocator<Scalar>>;"
+     ;"using XBatch = xsimd::batch<Scalar,avx2>;"
 
 
      "using Vec = std::vector<Scalar>;"
      "using VecI = const Vec;"
   
 
+     (comments "From Numerical Recipes")
      (defclass+ Fitab ()
        "public:"
        (defmethod Fitab (xx yy)
@@ -82,50 +83,50 @@
 			     (y yy)
 			     ))
 	 #+nil (let ((sx .0f)
-	       (sy .0f))
-	   (dotimes (i ndata)
-	     (incf sx (aref x i))
-	     (incf sy (aref y i))))
+		     (sy .0f))
+		 (dotimes (i ndata)
+		   (incf sx (aref x i))
+		   (incf sy (aref y i))))
 	 (letc ((sx (std--accumulate (x.begin)
-				    (x.end)
-				    0s0))))
+				     (x.end)
+				     0s0))))
 	 (letc ((sy (std--accumulate (y.begin)
-				    (y.end)
-				    0s0))))
+				     (y.end)
+				     0s0))))
 	 (letc ((ss (static_cast<Scalar> ndata))
-	       (sxoss (/ sx ss)))
-	   )
+		(sxoss (/ sx ss)))
+	       )
 	 
 	 (letc ((st2 (std--accumulate (x.begin)
-				     (x.end)
-				     0s0
-				     (lambda (accum xi)
-				       (return (+ accum (std--pow (- xi sxoss) 2s0)))))			; .0f
-		    )
+				      (x.end)
+				      0s0
+				      (lambda (accum xi)
+					(return (+ accum (std--pow (- xi sxoss) 2s0))))) ; .0f
+		     )
 		#+nil (tt  (std--accumulate (x.begin)
-				     (x.end)
-				     0s0
-				     (lambda (accum xi)
-				       (return (+ accum (- xi sxoss) )))))
-	       )
+					    (x.end)
+					    0s0
+					    (lambda (accum xi)
+					      (return (+ accum (- xi sxoss) )))))
+		)
 	       (let ((tt 0s0)))
 	       #+nil (for-range (xi x)
 				(incf st2 (std--pow (- xi sxoss)
 						    2)))
-	   #-nil (dotimes (i ndata)
+	       #-nil (dotimes (i ndata)
 		   
-		   (letc ((tt (- (aref x i)
-				  sxoss))))
-	     ;(incf st2 (* tt tt))
-	     (incf b (* tt (aref y i)))
-		   ;,(lprint :vars `(i tt b))
-		   ))
-	#+nil  (setf b (std--inner_product (x.begin)
-				   (x.end)
-				   (y.begin)
-				   0s0
-				   (lambda (accum value) (return (+ accum value)))
-				   (lambda (xi yi) (return (* tt yi)))))
+		       (letc ((tt (- (aref x i)
+				     sxoss))))
+					;(incf st2 (* tt tt))
+		       (incf b (* tt (aref y i)))
+					;,(lprint :vars `(i tt b))
+		       ))
+	 #+nil  (setf b (std--inner_product (x.begin)
+					    (x.end)
+					    (y.begin)
+					    0s0
+					    (lambda (accum value) (return (+ accum value)))
+					    (lambda (xi yi) (return (* tt yi)))))
 	 (comments "solve for a, b, sigma_a and sigma_b")
 	 (/= b st2)
 	 (setf a (/ (- sy (* b sx))
@@ -165,7 +166,7 @@
 	 (*= sigb sigdat)
 	 
 	 )
-      ; "private:"
+					; "private:"
        "int ndata;"
        ,(format nil "Scalar ~{~a{.0f}~^, ~};" l-fit)
        "VecI &x, &y;")
@@ -231,13 +232,13 @@
 								 (data.end)
 								 0s0)))
 				     
-				      (/= mean (data.size))
+				      (/= mean (static_cast<Scalar> (data.size)))
 				      (let ((sq_sum (std--inner_product (data.begin)
 									(data.end)
 									(data.begin)
 									0s0))
 					    (stdev (std--sqrt (- (/ sq_sum
-								    (data.size))
+								    (static_cast<Scalar> (data.size)))
 								 (* mean mean))))))
 				      (return (std--make_pair mean stdev)))))))
 		      (let ((generate_fit (lambda ()

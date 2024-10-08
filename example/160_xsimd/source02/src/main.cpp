@@ -1,18 +1,12 @@
-#include "xsimd/xsimd.hpp"
 #include <algorithm>
 #include <cmath>
-#include <cstddef>
 #include <format>
 #include <iostream>
-#include <memory>
 #include <numeric>
 #include <random>
 #include <vector>
-using namespace xsimd;
 using Scalar = float;
 using ScalarI = const Scalar;
-using XVec = std::vector<Scalar, xsimd::default_allocator<Scalar>>;
-using XBatch = xsimd::batch<Scalar, avx2>;
 using Vec = std::vector<Scalar>;
 using VecI = const Vec;
 class Fitab {
@@ -94,10 +88,11 @@ int main(int argc, char **argv) {
       auto data{Vec(fitres.size())};
       std::transform(fitres.begin(), fitres.end(), data.begin(), filter);
       auto mean{std::accumulate(data.begin(), data.end(), 0.F)};
-      mean /= data.size();
+      mean /= static_cast<Scalar>(data.size());
       auto sq_sum{
           std::inner_product(data.begin(), data.end(), data.begin(), 0.F)};
-      auto stdev{std::sqrt((sq_sum / data.size()) - (mean * mean))};
+      auto stdev{std::sqrt((sq_sum / static_cast<Scalar>(data.size())) -
+                           (mean * mean))};
       return std::make_pair(mean, stdev);
     }};
     auto generate_fit{[&]() {
