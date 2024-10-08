@@ -56,16 +56,40 @@ public:
   VecI &x, &y;
 };
 
+int getSignificantDigits(Scalar num) {
+  if (num == 0.F) {
+    return 1;
+  }
+  if (num < 0) {
+    num = -num;
+  }
+  auto significantDigits{0};
+  while (num <= 1.0F) {
+    num *= 10.F;
+    significantDigits++;
+  }
+  return significantDigits;
+}
+
+std::string printStat(std::pair<Scalar, Scalar> md) {
+  auto [m, d]{md};
+  auto precision{getSignificantDigits(d)};
+  auto fmtm{std::string("{:.") + std::to_string(1 + precision) + "f}"};
+  auto fmtd{std::string("{:.") + std::to_string(precision) + "f}"};
+  const std::string format_str{fmtm + " ± " + fmtd};
+  return std::vformat(format_str, std::make_format_args(m, d));
+}
+
 int main(int argc, char **argv) {
   auto gen{std::mt19937(std::random_device{}())};
   auto dis{std::normal_distribution<float>(0.F, 1.0F)};
-  auto lin{[&](auto n, auto a, auto b, auto sig, auto repeat) {
+  auto lin{[&](auto n, auto A, auto B, auto Sig, auto repeat) {
     auto x{Vec(n)};
     auto y{Vec(n)};
     auto fill_x{[&]() { std::iota(x.begin(), x.end(), 0.F); }};
     auto fill_y{[&]() {
       for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
-        y[i] = dis(gen) + b + a * x[i];
+        y[i] = Sig * dis(gen) + B + A * x[i];
       }
     }};
     fill_x();
@@ -86,18 +110,25 @@ int main(int argc, char **argv) {
     auto fitres{std::vector<Fitab>()};
     fitres.reserve(repeat);
     std::generate_n(std::back_inserter(fitres), repeat, generate_fit);
-    auto [am, ad]{stat(fitres, [&](const Fitab &f) { return f.a; })};
-    auto [bm, bd]{stat(fitres, [&](const Fitab &f) { return f.b; })};
-    return std::make_tuple(am, ad, bm, bd);
+    auto a{stat(fitres, [&](const Fitab &f) { return f.a; })};
+    auto b{stat(fitres, [&](const Fitab &f) { return f.b; })};
+    auto siga{stat(fitres, [&](const Fitab &f) { return f.siga; })};
+    auto sigb{stat(fitres, [&](const Fitab &f) { return f.sigb; })};
+    auto chi2{stat(fitres, [&](const Fitab &f) { return f.chi2; })};
+    auto sigdat{stat(fitres, [&](const Fitab &f) { return f.sigdat; })};
+    return std::make_tuple(a, b, siga, sigb, chi2, sigdat);
   }};
   for (decltype(0 + 30 + 1) i = 0; i < 30; i += 1) {
-    auto a{0.30F + 1.00e-2F * dis(gen)};
-    auto b{17 + 0.10F * dis(gen)};
-    auto sig{3 + 0.10F * dis(gen)};
-    auto [am, ad, bm, bd]{lin(18, a, b, sig, 100)};
+    auto A{0.30F + 1.00e-2F * dis(gen)};
+    auto B{17 + 0.10F * dis(gen)};
+    auto Sig{3 + 0.10F * dis(gen)};
+    auto [a, b, siga, sigb, chi2, sigdat]{lin(18, A, B, Sig, 100)};
     std::cout << std::format(
-        "( :a '{}' :b '{}' :sig '{}' :am '{}' :ad '{}' :bm '{}' :bd '{}')\n", a,
-        b, sig, am, ad, bm, bd);
+        "( :A '{}' :B '{}' :Sig '{}' :printStat(a) '{}' :printStat(b) '{}' "
+        ":printStat(siga) '{}' :printStat(sigb) '{}' :printStat(chi2) '{}' "
+        ":printStat(sigdat) '{}')\n",
+        A, B, Sig, printStat(a), printStat(b), printStat(siga), printStat(sigb),
+        printStat(chi2), printStat(sigdat));
   }
   return 0;
 }
