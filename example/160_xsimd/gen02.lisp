@@ -265,12 +265,9 @@
 				       generate_fit)
 		      ,@(loop for e in l-fit
 			      collect
-			      (let ((am (format nil "~am" e))
-				    (ad (format nil "~ad" e))
-				    (amd (format nil "~amd" e)))
-				`(let ((,e (stat fitres (lambda (f)
-									 (declare (type "const  Fitab&" f))
-									 (return (dot f ,e)))))))))
+			      `(let ((,e (stat fitres (lambda (f)
+							(declare (type "const  Fitab&" f))
+							(return (dot f ,e))))))))
 		     
 					
 		      (return (std--make_tuple ,@l-fit))))))
@@ -288,7 +285,7 @@
 		 )
 	      (Sig 10s0 ;(+ .3 (* .001 (dis gen)))
 		   )))
-	   (let (((bracket ,@l-fit) (lin 133 A B Sig 1)))
+	   (let (((bracket ,@l-fit) (lin 133 A B Sig 117)))
 	     ,(lprint :vars `(A B Sig ,@(loop for e in l-fit collect `(printStat ,e)))))))
 
 

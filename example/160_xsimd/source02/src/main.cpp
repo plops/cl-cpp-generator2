@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
     auto A{17 + 0.10F * dis(gen)};
     auto B{0.30F + 1.00e-2F * dis(gen)};
     auto Sig{10.F};
-    auto [a, b, siga, sigb, chi2, sigdat]{lin(133, A, B, Sig, 1)};
+    auto [a, b, siga, sigb, chi2, sigdat]{lin(133, A, B, Sig, 117)};
     std::cout << std::format(
         "( :A '{}' :B '{}' :Sig '{}' :printStat(a) '{}' :printStat(b) '{}' "
         ":printStat(siga) '{}' :printStat(sigb) '{}' :printStat(chi2) '{}' "
