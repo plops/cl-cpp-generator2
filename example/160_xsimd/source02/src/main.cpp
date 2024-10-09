@@ -4,6 +4,7 @@
 #include <format>
 #include <iostream>
 #include <numeric>
+#include <popl.hpp>
 #include <random>
 #include <thread>
 #include <vector>
@@ -90,6 +91,24 @@ Scalar select(const int k, Vec &arr) {
 }
 
 int main(int argc, char **argv) {
+  auto op{popl::OptionParser("allowed options")};
+  auto numberRepeats{int(64)};
+  auto numberPoints{int(1024)};
+  auto numberTrials{int(3)};
+  auto helpOption{op.add<popl::Switch>("h", "help", "produce help message")};
+  auto verboseOption{
+      op.add<popl::Switch>("v", "verbose", "produce verbose output")};
+  auto numberRepeatsOption{op.add<popl::Value<int>>(
+      "r", "numberRepeats", "parameter", 64, &numberRepeats)};
+  auto numberPointsOption{op.add<popl::Value<int>>(
+      "p", "numberPoints", "parameter", 1024, &numberPoints)};
+  auto numberTrialsOption{op.add<popl::Value<int>>(
+      "d", "numberTrials", "parameter", 3, &numberTrials)};
+  op.parse(argc, argv);
+  if (helpOption->count()) {
+    std::cout << op << std::endl;
+    exit(0);
+  }
   std::cout << std::format("(:std::thread::hardware_concurrency() '{}')\n",
                            std::thread::hardware_concurrency());
   auto gen{std::mt19937(std::random_device{}())};
