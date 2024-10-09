@@ -75,8 +75,10 @@ std::string printStat(std::tuple<Scalar, Scalar, Scalar, Scalar> m_md_d_dd) {
 
 Scalar select(const int k, Vec &arr) {
   // Numerical Recipes 8.5: select a random partitioning element `a`  and
-  // iterate through array. move smaller elements to the left and larger to the
-  // right.
+  // iterate through array.
+  // move smaller elements to the left and larger to the right. (this is like
+  // quicksort) sentinels at either end of the subarray reduce work in the inner
+  // loop. leftmost sentienel is <= a, rightmost sentinel is>=a
   const auto n{static_cast<int>(arr.size())};
   Scalar a;
   auto ir{n - 1};
@@ -157,7 +159,7 @@ int main(int argc, char **argv) {
       data.resize(fitres.size());
       std::transform(fitres.begin(), fitres.end(), data.begin(), filter);
       const auto N{static_cast<Scalar>(data.size())};
-      const auto median{select((N - 1) / 2, data)};
+      const auto median{select((static_cast<int>(data.size()) - 1) / 2, data)};
       const auto adev{std::accumulate(data.begin(), data.end(), 0.F,
                                       [median](auto acc, auto xi) {
                                         return acc + std::abs(xi - median);

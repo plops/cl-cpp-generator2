@@ -292,7 +292,7 @@
 							   (data.begin)
 							   filter)
 					   (letc ((N (static_cast<Scalar> (data.size)))
-						  (median (select (/ (- N 1) 2)
+						  (median (select (/ (- (static_cast<int> (data.size)) 1) 2)
 								  data))
 						  (adev
 						   (/ (std--accumulate
