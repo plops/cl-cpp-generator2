@@ -43,7 +43,7 @@ public:
     siga *= sigdat;
     sigb *= sigdat;
   }
-  int ndata;
+  int ndata{0};
   Scalar a{.0f}, b{.0f}, siga{.0f}, sigb{.0f}, chi2{.0f}, sigdat{.0f};
   VecI &x, &y;
 };
@@ -80,14 +80,15 @@ int main(int argc, char **argv) {
     auto fill_x{[&]() { std::iota(x.begin(), x.end(), 1.0F); }};
     fill_x();
     auto stat{[&](auto fitres, auto filter) {
-      auto data{Vec(fitres.size())};
+      // Numerical Recipes 14.1.2
+      const auto data{Vec(fitres.size())};
       std::transform(fitres.begin(), fitres.end(), data.begin(), filter);
-      auto mean{std::accumulate(data.begin(), data.end(), 0.F)};
-      mean /= static_cast<Scalar>(data.size());
-      auto sq_sum{
+      const auto mean{std::accumulate(data.begin(), data.end(), 0.F) /
+                      static_cast<Scalar>(data.size())};
+      const auto sq_sum{
           std::inner_product(data.begin(), data.end(), data.begin(), 0.F)};
-      auto stdev{std::sqrt((sq_sum / static_cast<Scalar>(data.size())) -
-                           (mean * mean))};
+      const auto stdev{std::sqrt((sq_sum / static_cast<Scalar>(data.size())) -
+                                 (mean * mean))};
       return std::make_pair(mean, stdev);
     }};
     auto generate_fit{[&]() {

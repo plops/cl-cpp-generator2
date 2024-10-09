@@ -159,7 +159,7 @@
 	 
 	 )
 					; "private:"
-       "int ndata;"
+       "int ndata{0};"
        ,(format nil "Scalar ~{~a{.0f}~^, ~};" l-fit)
        "VecI &x, &y;")
      (defun getSignificantDigits (num)
@@ -215,17 +215,17 @@
 		      (fill_x)
 		      
 		      (let ((stat (lambda (fitres filter)
-				    (let ((data (Vec (fitres.size)))))
+				    (comments "Numerical Recipes 14.1.2")
+				    (letc ((data (Vec (fitres.size)))))
 				    (std--transform (fitres.begin)
 						    (fitres.end)
 						    (data.begin)
 						    filter)
-				    (let ((mean (std--accumulate (data.begin)
-								 (data.end)
-								 0s0)))
-				     
-				      (/= mean (static_cast<Scalar> (data.size)))
-				      (let ((sq_sum (std--inner_product (data.begin)
+				    (letc ((mean (/ (std--accumulate (data.begin)
+								   (data.end)
+								   0s0)
+						    (static_cast<Scalar> (data.size)))))
+					  (letc ((sq_sum (std--inner_product (data.begin)
 									(data.end)
 									(data.begin)
 									0s0))
