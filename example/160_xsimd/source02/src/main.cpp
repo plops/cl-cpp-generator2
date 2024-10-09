@@ -95,9 +95,11 @@ int main(int argc, char **argv) {
   auto numberRepeats{int(64)};
   auto numberPoints{int(1024)};
   auto numberTrials{int(3)};
-  auto generatorSlope{int(0.30F)};
-  auto generatorIntercept{int(17)};
-  auto generatorSigma{int(10)};
+  auto generatorSlope{Scalar(0.30F)};
+  auto generatorDeltaSlope{Scalar(1.00e-2F)};
+  auto generatorIntercept{Scalar(17.F)};
+  auto generatorDeltaIntercept{Scalar(0.10F)};
+  auto generatorSigma{Scalar(10.F)};
   auto helpOption{op.add<popl::Switch>("h", "help", "produce help message")};
   auto verboseOption{
       op.add<popl::Switch>("v", "verbose", "produce verbose output")};
@@ -111,14 +113,19 @@ int main(int argc, char **argv) {
       "p", "numberPoints", "parameter", 1024, &numberPoints)};
   auto numberTrialsOption{op.add<popl::Value<int>>(
       "d", "numberTrials", "parameter", 3, &numberTrials)};
-  auto generatorSlopeOption{op.add<popl::Value<int>>(
-      "b", "generatorSlope", "parameter", 0.30F, &generatorSlope)};
-  auto generatorInterceptOption{op.add<popl::Value<int>>(
-      "a", "generatorIntercept", "parameter", 17, &generatorIntercept)};
-  auto generatorSigmaOption{op.add<popl::Value<int>>(
-      "s", "generatorSigma", "parameter", 10, &generatorSigma)};
+  auto generatorSlopeOption{op.add<popl::Value<Scalar>>(
+      "B", "generatorSlope", "parameter", 0.30F, &generatorSlope)};
+  auto generatorDeltaSlopeOption{op.add<popl::Value<Scalar>>(
+      "b", "generatorDeltaSlope", "parameter", 1.00e-2F, &generatorDeltaSlope)};
+  auto generatorInterceptOption{op.add<popl::Value<Scalar>>(
+      "A", "generatorIntercept", "parameter", 17.F, &generatorIntercept)};
+  auto generatorDeltaInterceptOption{
+      op.add<popl::Value<Scalar>>("a", "generatorDeltaIntercept", "parameter",
+                                  0.10F, &generatorDeltaIntercept)};
+  auto generatorSigmaOption{op.add<popl::Value<Scalar>>(
+      "s", "generatorSigma", "parameter", 10.F, &generatorSigma)};
   op.parse(argc, argv);
-  if (helpOption->count()) {
+  if (helpOption->is_set()) {
     std::cout << op << std::endl;
     exit(0);
   }
@@ -172,10 +179,10 @@ int main(int argc, char **argv) {
       return std::make_tuple(mean, mean_stdev, stdev, stdev_stdev);
     }};
     auto stat{[&](auto fitres, auto filter) {
-      if (meanOption) {
-        stat_mean(fitres, filter);
+      if (meanOption->is_set()) {
+        return stat_mean(fitres, filter);
       } else {
-        stat_median(fitres, filter);
+        return stat_median(fitres, filter);
       }
     }};
     auto generate_fit{[&]() {
@@ -186,18 +193,18 @@ int main(int argc, char **argv) {
     auto fitres{std::vector<Fitab>()};
     fitres.reserve(repeat);
     std::generate_n(std::back_inserter(fitres), repeat, generate_fit);
-    auto a{stat_median(fitres, [&](const Fitab &f) { return f.a; })};
-    auto siga{stat_median(fitres, [&](const Fitab &f) { return f.siga; })};
-    auto b{stat_median(fitres, [&](const Fitab &f) { return f.b; })};
-    auto sigb{stat_median(fitres, [&](const Fitab &f) { return f.sigb; })};
-    auto chi2{stat_median(fitres, [&](const Fitab &f) { return f.chi2; })};
-    auto sigdat{stat_median(fitres, [&](const Fitab &f) { return f.sigdat; })};
+    auto a{stat(fitres, [&](const Fitab &f) { return f.a; })};
+    auto siga{stat(fitres, [&](const Fitab &f) { return f.siga; })};
+    auto b{stat(fitres, [&](const Fitab &f) { return f.b; })};
+    auto sigb{stat(fitres, [&](const Fitab &f) { return f.sigb; })};
+    auto chi2{stat(fitres, [&](const Fitab &f) { return f.chi2; })};
+    auto sigdat{stat(fitres, [&](const Fitab &f) { return f.sigdat; })};
     return std::make_tuple(a, siga, b, sigb, chi2, sigdat);
   }};
   for (decltype(0 + numberTrials + 1) i = 0; i < numberTrials; i += 1) {
-    const auto dA{0.10F};
+    const auto dA{generatorDeltaIntercept};
     const auto A{generatorIntercept + dA * dis(gen)};
-    const auto dB{1.00e-2F};
+    const auto dB{generatorDeltaSlope};
     const auto B{generatorSlope + dB * dis(gen)};
     const auto Sig{generatorSigma};
     auto [a, siga, b, sigb, chi2,

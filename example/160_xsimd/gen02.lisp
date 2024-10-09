@@ -299,24 +299,27 @@
 		   (:name numberRepeats :default 64 :short r)
 		   (:name numberPoints :default 1024 :short p)
 		   (:name numberTrials :default 3 :short d)
-		   (:name generatorSlope :default .3 :short b)
-		   (:name generatorIntercept :default 17 :short a)
-		   (:name generatorSigma :default 10 :short s)
+		   (:name generatorSlope :default .3s0 :short B :type Scalar)
+		   (:name generatorDeltaSlope :default .01s0 :short b :type Scalar)
+		   (:name generatorIntercept :default 17s0 :short A :type Scalar)
+		   (:name generatorDeltaIntercept :default .1s0 :short a :type Scalar)
+		   (:name generatorSigma :default 10s0 :short s :type Scalar
+			  )
 		   
 		   )))
 	  `(let ((op (popl--OptionParser (string "allowed options")))
 		 ,@(loop for e in l collect
-				    (destructuring-bind (&key name default short) e
-				      `(,name (int ,default))))
+				    (destructuring-bind (&key name default short (type 'int)) e
+				      `(,name (,type ,default))))
 		 ,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
 				    (:long verbose :short v :type Switch :msg "produce verbose output")
 				    (:long mean :short m :type Switch :msg "Print mean and standard deviation statistics, otherwise print median and mean absolute deviation from it")
 				    ,@(loop for f in l
 					    collect
-					    (destructuring-bind (&key name default short) f
+					    (destructuring-bind (&key name default short (type 'int)) f
 					      `(:long ,name
 						:short ,short
-						:type int :msg "parameter"
+						:type ,type :msg "parameter"
 						:default ,default :out ,(format nil "&~a" name))))
 
 				    )
@@ -340,7 +343,7 @@
 				 ))))
 			 ))
 	     (op.parse argc argv)
-	     (when (helpOption->count)
+	     (when (helpOption->is_set)
 	       (<< std--cout
 		   op
 		   std--endl)
@@ -396,7 +399,7 @@
 						 (return (std--make_tuple median mean_stdev adev stdev_stdev)))
 					   ))
 			    (stat_mean (lambda (fitres filter)
-					      (comments "compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8")
+					 (comments "compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8")
 					      (let ((data (Vec (fitres.size)))))
 					      (data.resize (fitres.size))
 					      (std--transform (fitres.begin)
@@ -436,9 +439,9 @@
 					  
 						    (return (std--make_tuple mean mean_stdev stdev stdev_stdev)))))
 			    (stat (lambda (fitres filter)
-				    (if meanOption
-					(stat_mean fitres filter)
-					(stat_median fitres filter))))))
+				    (if (meanOption->is_set)
+					(return (stat_mean fitres filter))
+					(return (stat_median fitres filter)))))))
 		      (let ((generate_fit (lambda ()
 					;(setf y (curly 2.1s0 2.3s0 2.6s0))
 					    
@@ -463,9 +466,9 @@
 				       generate_fit)
 		      ,@(loop for e in l-fit
 			      collect
-			      `(let ((,e (stat_median fitres (lambda (f)
-							       (declare (type "const  Fitab&" f))
-							       (return (dot f ,e))))))))
+			      `(let ((,e (stat fitres (lambda (f)
+							(declare (type "const  Fitab&" f))
+							(return (dot f ,e))))))))
 		     
 					
 		      (return (std--make_tuple ,@l-fit))))))
@@ -477,10 +480,10 @@
 		     )
 		  (Sig 0s0 #+nil (+ .003 (* .001 (dis gen)))
 			   ))
-		 ((dA .1s0)
+		 ((dA generatorDeltaIntercept)
 		  (A (+ generatorIntercept (* dA (dis gen)))
 		     )
-		  (dB .01s0)
+		  (dB generatorDeltaSlope)
 		  (B (+ generatorSlope (* dB (dis gen)))
 		     )
 	      
