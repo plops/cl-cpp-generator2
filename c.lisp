@@ -1712,7 +1712,9 @@ emit-c into a string. Except lists: Those stay lists."
 		  (aref (m 'aref
 			   (destructuring-bind (name &rest indices) (cdr code)
 					;(format t "aref: ~a ~a~%" (emit name) (mapcar #'emit indices))
-			     (format nil "~a~{[~a]~}" (emit `(paren* aref ,name))
+			     (format nil #+nil "~a~{[~a]~}"
+					 "~a.at(~{~a~})"
+					 (emit `(paren* aref ,name))
 				     ;; i think the second argument should feel like it is already surrounded by parens
 				     (mapcar #'(lambda (x) (emit `(paren* paren ,x))) indices)))))
 

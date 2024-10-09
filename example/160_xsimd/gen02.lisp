@@ -225,7 +225,7 @@
 		     (setf mid (>> (paren (+ l ir))
 				   1))
 		     (std--swap (aref arr mid)
-				(aref arr (+ l i)))
+				(aref arr (+ l 1)))
 		     ,@(loop for (e f) in `((ir l) (ir (+ l 1)) ((+ l 1) l))
 			     collect
 			     `(when (< (aref arr ,e)

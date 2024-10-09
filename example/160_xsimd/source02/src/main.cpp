@@ -21,8 +21,8 @@ public:
           return accum + std::pow(xi - sxoss, 2.0F);
         })};
     for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
-      const auto tt{(x[i]) - sxoss};
-      b += tt * y[i];
+      const auto tt{(x.at(i)) - sxoss};
+      b += tt * y.at(i);
     }
     // solve for a, b, sigma_a and sigma_b
     b /= st2;
@@ -89,50 +89,50 @@ Scalar select(const int k, Vec &arr) {
   while (true) {
     if (ir <= l + 1) {
       // Active partition contains 1 or 2 elements
-      if (ir == l + 1 && arr[ir] < arr[l]) {
+      if (ir == l + 1 && arr.at(ir) < arr.at(l)) {
         // Case of two elements
-        std::swap(arr[l], arr[ir]);
+        std::swap(arr.at(l), arr.at(ir));
       }
-      return arr[k];
+      return arr.at(k);
     } else {
       // Choose median of left, center and right elements as partitioning
       // element a
       // Also rearrange so that arr[l] <= arr[l+1], arr[ir]>=arr[l+1]
       mid = (l + ir) >> 1;
-      std::swap(arr[mid], arr[(l + i)]);
-      if (arr[ir] < arr[l]) {
-        std::swap(arr[ir], arr[l]);
+      std::swap(arr.at(mid), arr.at((l + 1)));
+      if (arr.at(ir) < arr.at(l)) {
+        std::swap(arr.at(ir), arr.at(l));
       }
-      if (arr[ir] < arr[(l + 1)]) {
-        std::swap(arr[ir], arr[(l + 1)]);
+      if (arr.at(ir) < arr.at((l + 1))) {
+        std::swap(arr.at(ir), arr.at((l + 1)));
       }
-      if (arr[(l + 1)] < arr[l]) {
-        std::swap(arr[(l + 1)], arr[l]);
+      if (arr.at((l + 1)) < arr.at(l)) {
+        std::swap(arr.at((l + 1)), arr.at(l));
       }
       // Initialize pointers for partitioning
       i = l + 1;
       j = ir;
-      a = arr[(l + 1)];
+      a = arr.at((l + 1));
       // Inner loop
       while (true) {
         // Scan up to find element > a
         do {
           i++;
-        } while (arr[i] < a);
+        } while (arr.at(i) < a);
         // Scan down to find element < a
         do {
           j--;
-        } while (a < arr[j]);
+        } while (a < arr.at(j));
         if (j < i) {
           // Pointers crossed. Partitioning complete
           break;
         }
         // Insert partitioning element
-        std::swap(arr[i], arr[j]);
+        std::swap(arr.at(i), arr.at(j));
       }
       // Insert partitioning element
-      arr[(l + 1)] = arr[j];
-      arr[j] = a;
+      arr.at((l + 1)) = arr.at(j);
+      arr.at(j) = a;
       // Keep active the partition that contains the kth element
       if (k <= j) {
         ir = (j - 1);
