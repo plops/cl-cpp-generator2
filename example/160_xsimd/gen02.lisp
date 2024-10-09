@@ -196,7 +196,9 @@
        (declare (type "const int" k)
 		(type "Vec&" arr)
 		(values Scalar))
-       (comments "Numerical Recipes 8.5")
+       (comments "Numerical Recipes 8.5: select a random partitioning element `a`  and iterate through array."
+		 "move smaller elements to the left and larger to the right. (this is like quicksort)"
+		 "sentinels at either end of the subarray reduce work in the inner loop. leftmost sentienel is <= a, rightmost sentinel is>=a")
        (letc ((n (static_cast<int> (arr.size))))
 	     )
        "Scalar a;"

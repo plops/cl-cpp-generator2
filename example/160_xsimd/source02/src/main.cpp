@@ -74,7 +74,9 @@ std::string printStat(std::tuple<Scalar, Scalar, Scalar, Scalar> m_md_d_dd) {
 }
 
 Scalar select(const int k, Vec &arr) {
-  // Numerical Recipes 8.5
+  // Numerical Recipes 8.5: select a random partitioning element `a`  and
+  // iterate through array. move smaller elements to the left and larger to the
+  // right.
   const auto n{static_cast<int>(arr.size())};
   Scalar a;
   auto ir{n - 1};
