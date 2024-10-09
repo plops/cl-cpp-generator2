@@ -1712,8 +1712,8 @@ emit-c into a string. Except lists: Those stay lists."
 		  (aref (m 'aref
 			   (destructuring-bind (name &rest indices) (cdr code)
 					;(format t "aref: ~a ~a~%" (emit name) (mapcar #'emit indices))
-			     (format nil #+nil "~a~{[~a]~}"
-					 "~a.at(~{~a~})"
+			     (format nil #-nil "~a~{[~a]~}"
+					 #+nil "~a.at(~{~a~})" ;; I sometimes use this to debug (use a.at(i) instead of a[i] to have vector length check)
 					 (emit `(paren* aref ,name))
 				     ;; i think the second argument should feel like it is already surrounded by parens
 				     (mapcar #'(lambda (x) (emit `(paren* paren ,x))) indices)))))
