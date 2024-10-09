@@ -77,74 +77,13 @@ std::string printStat(std::tuple<Scalar, Scalar, Scalar, Scalar> m_md_d_dd) {
 }
 
 Scalar select(const int k, Vec &arr) {
-  // Numerical Recipes 8.5: select a random partitioning element `a`  and
-  // iterate through array.
-  // move smaller elements to the left and larger to the right. (this is like
-  // quicksort) sentinels at either end of the subarray reduce work in the inner
-  // loop. leftmost sentienel is <= a, rightmost sentinel is>=a
-  const auto n{static_cast<int>(arr.size())};
-  Scalar a;
-  auto ir{n - 1};
-  auto l{0};
-  auto i{0};
-  auto j{0};
-  auto mid{0};
-  while (true) {
-    if (ir <= l + 1) {
-      // Active partition contains 1 or 2 elements
-      if (ir == l + 1 && arr[ir] < arr[l]) {
-        // Case of two elements
-        std::swap(arr[l], arr[ir]);
-      }
-      return arr[k];
-    } else {
-      // Choose median of left, center and right elements as partitioning
-      // element a
-      // Also rearrange so that arr[l] <= arr[l+1], arr[ir]>=arr[l+1]
-      mid = (l + ir) >> 1;
-      std::swap(arr[mid], arr[(l + 1)]);
-      if (arr[ir] < arr[l]) {
-        std::swap(arr[ir], arr[l]);
-      }
-      if (arr[ir] < arr[(l + 1)]) {
-        std::swap(arr[ir], arr[(l + 1)]);
-      }
-      if (arr[(l + 1)] < arr[l]) {
-        std::swap(arr[(l + 1)], arr[l]);
-      }
-      // Initialize pointers for partitioning
-      i = l + 1;
-      j = ir;
-      a = arr[(l + 1)];
-      // Inner loop
-      while (true) {
-        // Scan up to find element > a
-        do {
-          i++;
-        } while (arr[i] < a);
-        // Scan down to find element < a
-        do {
-          j--;
-        } while (a < arr[j]);
-        if (j < i) {
-          // Pointers crossed. Partitioning complete
-          break;
-        }
-        // Insert partitioning element
-        std::swap(arr[i], arr[j]);
-      }
-      // Insert partitioning element
-      arr[(l + 1)] = arr[j];
-      arr[j] = a;
-      // Keep active the partition that contains the kth element
-      if (k <= j) {
-        ir = (j - 1);
-      }
-      if (j <= k) {
-        l = i;
-      }
-    }
+  // This implementation uses the STL and will not fall under the strict license
+  // of Numerical Recipes
+  if (0 <= k && k < arr.size()) {
+    std::nth_element(arr.begin(), arr.begin() + k, arr.end());
+    return arr[k];
   }
+  throw std::out_of_range("Invalid index for selection");
 }
 
 int main(int argc, char **argv) {
@@ -194,7 +133,7 @@ int main(int argc, char **argv) {
     const auto dB{1.00e-2F};
     const auto B{0.30F + dB * dis(gen)};
     const auto Sig{10.F};
-    auto [a, siga, b, sigb, chi2, sigdat]{lin(133, A, B, Sig, 97)};
+    auto [a, siga, b, sigb, chi2, sigdat]{lin(133, A, B, Sig, 17)};
     const auto pa{printStat(a)};
     const auto psiga{printStat(siga)};
     const auto pb{printStat(b)};

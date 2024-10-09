@@ -199,6 +199,18 @@
 	     )
 	 (return (std--vformat format_str (std--make_format_args m d rel)))
 	 ))
+
+     (defun select (k arr)
+       (declare (type "const int" k)
+		(type "Vec&" arr)
+		(values Scalar))
+       (comments "This implementation uses the STL and will not fall under the strict license of Numerical Recipes")
+       (when (logand (<= 0 k)
+		     (< k (arr.size)))
+	 (std--nth_element (arr.begin) (+ (arr.begin) k) (arr.end))
+	 (return (aref arr k)))
+       (throw (std--out_of_range (string "Invalid index for selection"))))
+     #+nil
      (defun select (k arr)
        (declare (type "const int" k)
 		(type "Vec&" arr)
