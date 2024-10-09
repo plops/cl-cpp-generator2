@@ -63,11 +63,13 @@ int getSignificantDigits(Scalar num) {
   return significantDigits;
 }
 
-std::string printStat(std::pair<Scalar, Scalar> md) {
-  auto [m, d]{md};
-  const auto precision{getSignificantDigits(d)};
-  const auto fmtm{std::string("{:.") + std::to_string(1 + precision) + "f}"};
-  const auto format_str{fmtm + " ± " + fmtm};
+std::string printStat(std::tuple<Scalar, Scalar, Scalar, Scalar> m_md_d_dd) {
+  auto [m, md, d, dd]{m_md_d_dd};
+  const auto mprecision{getSignificantDigits(md)};
+  const auto dprecision{getSignificantDigits(dd)};
+  const auto fmtm{std::string("{:.") + std::to_string(mprecision) + "f}"};
+  const auto fmtd{std::string("{:.") + std::to_string(dprecision) + "f}"};
+  const auto format_str{fmtm + "±" + fmtd};
   return std::vformat(format_str, std::make_format_args(m, d));
 }
 
@@ -92,7 +94,7 @@ int main(int argc, char **argv) {
                                  (mean * mean))};
       const auto mean_stdev{stdev / std::sqrt(N)};
       const auto stdev_stdev{stdev / std::sqrt(2 * N)};
-      return std::make_pair(mean, stdev);
+      return std::make_tuple(mean, mean_stdev, stdev, stdev_stdev);
     }};
     auto generate_fit{[&]() {
       std::transform(x.begin(), x.end(), y.begin(),
