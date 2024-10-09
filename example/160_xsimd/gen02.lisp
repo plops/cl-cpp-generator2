@@ -228,13 +228,21 @@
 								     (data.end)
 								     0s0)
 						    N))
-					   (sq_sum (std--inner_product (data.begin)
+					   #+nil (sq_sum (std--inner_product (data.begin)
 								       (data.end)
 								       (data.begin)
 								       0s0))
-					   (stdev (std--sqrt (- (/ sq_sum
+					   (stdev #+nil (std--sqrt (- (/ sq_sum
 								   (static_cast<Scalar> (data.size)))
-								(* mean mean))))
+								(* mean mean)))
+						  (std--sqrt (/ (std--accumulate
+								 (data.begin)
+								 (data.end)
+								 0s0
+								 (lambda (acc xi)
+								   (declare (capture "mean"))
+								   (return (+ acc (std--pow (- xi mean) 2)))))
+								(- N 1s0))))
 					   ;; error in the mean due to sampling
 					   (mean_stdev (/ stdev (std--sqrt N)))
 					   ;; error in the standard deviation due to sampling
@@ -285,7 +293,7 @@
 		 )
 	      (Sig 10s0 ;(+ .3 (* .001 (dis gen)))
 		   )))
-	   (let (((bracket ,@l-fit) (lin 8133 A B Sig 7117)))
+	   (let (((bracket ,@l-fit) (lin 133 A B Sig 17)))
 	     (letc (,@(loop for e in l-fit collect `(,(format nil "p~a" e) (printStat ,e))))
 	      ,(lprint :vars `(A B Sig ,@(loop for e in l-fit collect (format nil "p~a" e))))))))
 

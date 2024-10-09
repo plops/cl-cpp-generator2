@@ -88,10 +88,12 @@ int main(int argc, char **argv) {
       std::transform(fitres.begin(), fitres.end(), data.begin(), filter);
       const auto N{static_cast<Scalar>(data.size())};
       const auto mean{std::accumulate(data.begin(), data.end(), 0.F) / N};
-      const auto sq_sum{
-          std::inner_product(data.begin(), data.end(), data.begin(), 0.F)};
-      const auto stdev{std::sqrt((sq_sum / static_cast<Scalar>(data.size())) -
-                                 (mean * mean))};
+      const auto stdev{
+          std::sqrt(std::accumulate(data.begin(), data.end(), 0.F,
+                                    [mean](auto acc, auto xi) {
+                                      return acc + std::pow(xi - mean, 2);
+                                    }) /
+                    (N - 1.0F))};
       const auto mean_stdev{stdev / std::sqrt(N)};
       const auto stdev_stdev{stdev / std::sqrt(2 * N)};
       return std::make_tuple(mean, mean_stdev, stdev, stdev_stdev);
@@ -116,7 +118,7 @@ int main(int argc, char **argv) {
     auto A{17 + 0.10F * dis(gen)};
     auto B{0.30F + 1.00e-2F * dis(gen)};
     auto Sig{10.F};
-    auto [a, b, siga, sigb, chi2, sigdat]{lin(8133, A, B, Sig, 7117)};
+    auto [a, b, siga, sigb, chi2, sigdat]{lin(133, A, B, Sig, 17)};
     const auto pa{printStat(a)};
     const auto pb{printStat(b)};
     const auto psiga{printStat(siga)};
