@@ -54,6 +54,7 @@
       random
       numeric
       algorithm
+      execution
       ;memory
       )
 
@@ -87,24 +88,32 @@
 		 (dotimes (i ndata)
 		   (incf sx (aref x i))
 		   (incf sy (aref y i))))
-	 (letc ((sx (std--accumulate (x.begin)
+	 (letc ((sx #+Nil (std--accumulate (x.begin)
+				     (x.end)
+				     0s0)
+		    (std--reduce std--execution--par
+				 (x.begin)
 				     (x.end)
 				     0s0))))
-	 (letc ((sy (std--accumulate (y.begin)
+	 (letc ((sy (;std--accumulate
+		     std--reduce std--execution--par
+		     (y.begin)
 				     (y.end)
 				     0s0))))
 	 (letc ((ss (static_cast<Scalar> ndata))
 		(sxoss (/ sx ss)))
 	       )
 	 
-	 (letc ((st2 (std--accumulate (x.begin)
+	 (letc ((st2 (;std--accumulate
+		      std--reduce std--execution--par
+		      (x.begin)
 				      (x.end)
 				      0s0
 				      (lambda (accum xi)
 					(return (+ accum (std--pow (- xi sxoss) 2s0))))) ; .0f
 		     )
 		)
-	      
+	      "#pragma omp parallel for reduction(+:b)"
 	        (dotimes (i ndata)
 		   
 		       (letc ((tt (- (aref x i)
@@ -416,7 +425,7 @@
 	      
 	      (Sig 10s0			;(+ .3 (* .001 (dis gen)))
 		   )))
-	   (let (((bracket ,@l-fit) (lin 133 A B Sig 17)))
+	   (let (((bracket ,@l-fit) (lin 8133 A B Sig 8917)))
 	     (letc (,@(loop for e in l-fit collect `(,(format nil "p~a" e) (printStat ,e))))
 		   ,(lprint :vars `(A dA B dB Sig ,@(loop for e in l-fit collect (format nil "p~a" e))))))))
 

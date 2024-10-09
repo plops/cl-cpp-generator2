@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+#include <execution>
 #include <format>
 #include <iostream>
 #include <numeric>
@@ -12,14 +13,15 @@ using VecI = const Vec;
 class Fitab {
 public:
   Fitab(VecI &xx, VecI &yy) : ndata{static_cast<int>(xx.size())}, x{xx}, y{yy} {
-    const auto sx{std::accumulate(x.begin(), x.end(), 0.F)};
-    const auto sy{std::accumulate(y.begin(), y.end(), 0.F)};
+    const auto sx{std::reduce(std::execution::par, x.begin(), x.end(), 0.F)};
+    const auto sy{std::reduce(std::execution::par, y.begin(), y.end(), 0.F)};
     const auto ss{static_cast<Scalar>(ndata)};
     const auto sxoss{sx / ss};
-    const auto st2{
-        std::accumulate(x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
-          return accum + std::pow(xi - sxoss, 2.0F);
-        })};
+    const auto st2{std::reduce(std::execution::par, x.begin(), x.end(), 0.F,
+                               [&](auto accum, auto xi) {
+                                 return accum + std::pow(xi - sxoss, 2.0F);
+                               })};
+#pragma omp parallel for reduction(+ : b)
     for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
       const auto tt{(x[i]) - sxoss};
       b += tt * y[i];
@@ -133,7 +135,7 @@ int main(int argc, char **argv) {
     const auto dB{1.00e-2F};
     const auto B{0.30F + dB * dis(gen)};
     const auto Sig{10.F};
-    auto [a, siga, b, sigb, chi2, sigdat]{lin(133, A, B, Sig, 17)};
+    auto [a, siga, b, sigb, chi2, sigdat]{lin(8133, A, B, Sig, 8917)};
     const auto pa{printStat(a)};
     const auto psiga{printStat(siga)};
     const auto pb{printStat(b)};
