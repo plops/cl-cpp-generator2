@@ -21,8 +21,8 @@ public:
           return accum + std::pow(xi - sxoss, 2.0F);
         })};
     for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
-      const auto tt{(x.at(i)) - sxoss};
-      b += tt * y.at(i);
+      const auto tt{(x[i]) - sxoss};
+      b += tt * y[i];
     }
     // solve for a, b, sigma_a and sigma_b
     b /= st2;
@@ -44,7 +44,7 @@ public:
     sigb *= sigdat;
   }
   int ndata{0};
-  Scalar a{.0f}, b{.0f}, siga{.0f}, sigb{.0f}, chi2{.0f}, sigdat{.0f};
+  Scalar a{.0f}, siga{.0f}, b{.0f}, sigb{.0f}, chi2{.0f}, sigdat{.0f};
   VecI &x, &y;
 };
 
@@ -89,50 +89,50 @@ Scalar select(const int k, Vec &arr) {
   while (true) {
     if (ir <= l + 1) {
       // Active partition contains 1 or 2 elements
-      if (ir == l + 1 && arr.at(ir) < arr.at(l)) {
+      if (ir == l + 1 && arr[ir] < arr[l]) {
         // Case of two elements
-        std::swap(arr.at(l), arr.at(ir));
+        std::swap(arr[l], arr[ir]);
       }
-      return arr.at(k);
+      return arr[k];
     } else {
       // Choose median of left, center and right elements as partitioning
       // element a
       // Also rearrange so that arr[l] <= arr[l+1], arr[ir]>=arr[l+1]
       mid = (l + ir) >> 1;
-      std::swap(arr.at(mid), arr.at((l + 1)));
-      if (arr.at(ir) < arr.at(l)) {
-        std::swap(arr.at(ir), arr.at(l));
+      std::swap(arr[mid], arr[(l + 1)]);
+      if (arr[ir] < arr[l]) {
+        std::swap(arr[ir], arr[l]);
       }
-      if (arr.at(ir) < arr.at((l + 1))) {
-        std::swap(arr.at(ir), arr.at((l + 1)));
+      if (arr[ir] < arr[(l + 1)]) {
+        std::swap(arr[ir], arr[(l + 1)]);
       }
-      if (arr.at((l + 1)) < arr.at(l)) {
-        std::swap(arr.at((l + 1)), arr.at(l));
+      if (arr[(l + 1)] < arr[l]) {
+        std::swap(arr[(l + 1)], arr[l]);
       }
       // Initialize pointers for partitioning
       i = l + 1;
       j = ir;
-      a = arr.at((l + 1));
+      a = arr[(l + 1)];
       // Inner loop
       while (true) {
         // Scan up to find element > a
         do {
           i++;
-        } while (arr.at(i) < a);
+        } while (arr[i] < a);
         // Scan down to find element < a
         do {
           j--;
-        } while (a < arr.at(j));
+        } while (a < arr[j]);
         if (j < i) {
           // Pointers crossed. Partitioning complete
           break;
         }
         // Insert partitioning element
-        std::swap(arr.at(i), arr.at(j));
+        std::swap(arr[i], arr[j]);
       }
       // Insert partitioning element
-      arr.at((l + 1)) = arr.at(j);
-      arr.at(j) = a;
+      arr[(l + 1)] = arr[j];
+      arr[j] = a;
       // Keep active the partition that contains the kth element
       if (k <= j) {
         ir = (j - 1);
@@ -178,28 +178,30 @@ int main(int argc, char **argv) {
     fitres.reserve(repeat);
     std::generate_n(std::back_inserter(fitres), repeat, generate_fit);
     auto a{stat_median(fitres, [&](const Fitab &f) { return f.a; })};
-    auto b{stat_median(fitres, [&](const Fitab &f) { return f.b; })};
     auto siga{stat_median(fitres, [&](const Fitab &f) { return f.siga; })};
+    auto b{stat_median(fitres, [&](const Fitab &f) { return f.b; })};
     auto sigb{stat_median(fitres, [&](const Fitab &f) { return f.sigb; })};
     auto chi2{stat_median(fitres, [&](const Fitab &f) { return f.chi2; })};
     auto sigdat{stat_median(fitres, [&](const Fitab &f) { return f.sigdat; })};
-    return std::make_tuple(a, b, siga, sigb, chi2, sigdat);
+    return std::make_tuple(a, siga, b, sigb, chi2, sigdat);
   }};
   for (decltype(0 + 3 + 1) i = 0; i < 3; i += 1) {
-    auto A{17 + 0.10F * dis(gen)};
-    auto B{0.30F + 1.00e-2F * dis(gen)};
-    auto Sig{10.F};
-    auto [a, b, siga, sigb, chi2, sigdat]{lin(133, A, B, Sig, 17)};
+    const auto dA{0.10F};
+    const auto A{17.F + dA * dis(gen)};
+    const auto dB{1.00e-2F};
+    const auto B{0.30F + dB * dis(gen)};
+    const auto Sig{10.F};
+    auto [a, siga, b, sigb, chi2, sigdat]{lin(133, A, B, Sig, 17)};
     const auto pa{printStat(a)};
-    const auto pb{printStat(b)};
     const auto psiga{printStat(siga)};
+    const auto pb{printStat(b)};
     const auto psigb{printStat(sigb)};
     const auto pchi2{printStat(chi2)};
     const auto psigdat{printStat(sigdat)};
     std::cout << std::format(
-        "( :A '{}' :B '{}' :Sig '{}' :pa '{}' :pb '{}' :psiga '{}' :psigb '{}' "
-        ":pchi2 '{}' :psigdat '{}')\n",
-        A, B, Sig, pa, pb, psiga, psigb, pchi2, psigdat);
+        "( :A '{}' :dA '{}' :B '{}' :dB '{}' :Sig '{}' :pa '{}' :psiga '{}' "
+        ":pb '{}' :psigb '{}' :pchi2 '{}' :psigdat '{}')\n",
+        A, dA, B, dB, Sig, pa, psiga, pb, psigb, pchi2, psigdat);
   }
   return 0;
 }

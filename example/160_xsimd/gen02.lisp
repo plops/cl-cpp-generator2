@@ -11,7 +11,7 @@
   (setf *features* (set-exclusive-or *features* (list ;:more
 						      ))))
 
-(let ((l-fit `(a b siga sigb chi2 sigdat)))
+(let ((l-fit `(a siga b sigb chi2 sigdat)))
   (defparameter *source-dir* #P"example/160_xsimd/source02/src/")
   (defparameter *full-source-dir* (asdf:system-relative-pathname
 				   'cl-cpp-generator2
@@ -381,22 +381,25 @@
 					
 		      (return (std--make_tuple ,@l-fit))))))
 	 (dotimes (i 3)
-	   (let #+nil
+	   (letc #+nil
 	     ((A .249999999999s0	;(+ 17 (* .1 (dis gen)))
 		 )
 	      (B 1.833333333333s0	;(+ .3 (* .01 (dis gen)))
 		 )
 	      (Sig 0s0 #+nil (+ .003 (* .001 (dis gen)))
 		       ))
-	     ((A (+ 17 (* .1 (dis gen)))
+	     ((dA .1s0)
+	      (A (+ 17s0 (* dA (dis gen)))
 		 )
-	      (B (+ .3 (* .01 (dis gen)))
+	      (dB .01s0)
+	      (B (+ .3s0 (* dB (dis gen)))
 		 )
+	      
 	      (Sig 10s0			;(+ .3 (* .001 (dis gen)))
 		   )))
 	   (let (((bracket ,@l-fit) (lin 133 A B Sig 17)))
 	     (letc (,@(loop for e in l-fit collect `(,(format nil "p~a" e) (printStat ,e))))
-		   ,(lprint :vars `(A B Sig ,@(loop for e in l-fit collect (format nil "p~a" e))))))))
+		   ,(lprint :vars `(A dA B dB Sig ,@(loop for e in l-fit collect (format nil "p~a" e))))))))
 
 
        (return 0)))
