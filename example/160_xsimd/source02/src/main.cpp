@@ -65,12 +65,15 @@ int getSignificantDigits(Scalar num) {
 
 std::string printStat(std::tuple<Scalar, Scalar, Scalar, Scalar> m_md_d_dd) {
   auto [m, md, d, dd]{m_md_d_dd};
+  const auto rel{1.00e+2F * (d / m)};
   const auto mprecision{getSignificantDigits(md)};
   const auto dprecision{getSignificantDigits(dd)};
+  const auto rprecision{getSignificantDigits(rel)};
   const auto fmtm{std::string("{:.") + std::to_string(mprecision) + "f}"};
   const auto fmtd{std::string("{:.") + std::to_string(dprecision) + "f}"};
-  const auto format_str{fmtm + "±" + fmtd};
-  return std::vformat(format_str, std::make_format_args(m, d));
+  const auto fmtr{std::string(" ({:.") + std::to_string(rprecision) + "f}%)"};
+  const auto format_str{fmtm + "±" + fmtd + fmtr};
+  return std::vformat(format_str, std::make_format_args(m, d, rel));
 }
 
 Scalar select(const int k, Vec &arr) {
@@ -191,7 +194,7 @@ int main(int argc, char **argv) {
     const auto dB{1.00e-2F};
     const auto B{0.30F + dB * dis(gen)};
     const auto Sig{10.F};
-    auto [a, siga, b, sigb, chi2, sigdat]{lin(133, A, B, Sig, 17)};
+    auto [a, siga, b, sigb, chi2, sigdat]{lin(133, A, B, Sig, 97)};
     const auto pa{printStat(a)};
     const auto psiga{printStat(siga)};
     const auto pb{printStat(b)};
