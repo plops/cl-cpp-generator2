@@ -23,7 +23,7 @@
 		 )
     `(<< std--cout
        (std--format
-	(string ,(format nil "(~a~{ :~a '{}'~})\\n"
+	(string ,(format nil "(~a~{:~a '{}'~^ ~})\\n"
 			 msg
 			 (loop for e in vars collect (emit-c :code e  :omit-redundant-parentheses t)) ))
 	,@vars))
@@ -56,6 +56,7 @@
       algorithm
       execution
       ;memory
+      thread
       )
 
      ;(include "xsimd/xsimd.hpp")
@@ -88,15 +89,13 @@
 		 (dotimes (i ndata)
 		   (incf sx (aref x i))
 		   (incf sy (aref y i))))
-	 (letc ((sx #+Nil (std--accumulate (x.begin)
+	 (letc ((sx (std--accumulate  ;std--execution--par
+					    (x.begin)
 				     (x.end)
 				     0s0)
-		    (std--reduce std--execution--par
-				 (x.begin)
-				     (x.end)
-				     0s0))))
-	 (letc ((sy (;std--accumulate
-		     std--reduce std--execution--par
+		    )))
+	 (letc ((sy (std--accumulate
+		      ;std--execution--par
 		     (y.begin)
 				     (y.end)
 				     0s0))))
@@ -104,8 +103,8 @@
 		(sxoss (/ sx ss)))
 	       )
 	 
-	 (letc ((st2 (;std--accumulate
-		      std--reduce std--execution--par
+	 (letc ((st2 (std--accumulate
+		     ; std--execution--par
 		      (x.begin)
 				      (x.end)
 				      0s0
@@ -216,7 +215,8 @@
        (comments "This implementation uses the STL and will not fall under the strict license of Numerical Recipes")
        (when (logand (<= 0 k)
 		     (< k (arr.size)))
-	 (std--nth_element (arr.begin) (+ (arr.begin) k) (arr.end))
+	 (std--nth_element ;(std--execution--par_unseq 6)
+			   (arr.begin) (+ (arr.begin) k) (arr.end))
 	 (return (aref arr k)))
        (throw (std--out_of_range (string "Invalid index for selection"))))
      #+nil
@@ -292,6 +292,7 @@
        (declare (type int argc)
 		(type char** argv)
 		(values int))
+       ,(lprint :vars `((std--thread--hardware_concurrency)))
 
        (let ((gen (std--mt19937		;42
 		   "std::random_device{}()"))

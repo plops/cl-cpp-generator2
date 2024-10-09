@@ -5,6 +5,7 @@
 #include <iostream>
 #include <numeric>
 #include <random>
+#include <thread>
 #include <vector>
 using Scalar = float;
 using Vec = std::vector<Scalar>;
@@ -13,14 +14,14 @@ using VecI = const Vec;
 class Fitab {
 public:
   Fitab(VecI &xx, VecI &yy) : ndata{static_cast<int>(xx.size())}, x{xx}, y{yy} {
-    const auto sx{std::reduce(std::execution::par, x.begin(), x.end(), 0.F)};
-    const auto sy{std::reduce(std::execution::par, y.begin(), y.end(), 0.F)};
+    const auto sx{std::accumulate(x.begin(), x.end(), 0.F)};
+    const auto sy{std::accumulate(y.begin(), y.end(), 0.F)};
     const auto ss{static_cast<Scalar>(ndata)};
     const auto sxoss{sx / ss};
-    const auto st2{std::reduce(std::execution::par, x.begin(), x.end(), 0.F,
-                               [&](auto accum, auto xi) {
-                                 return accum + std::pow(xi - sxoss, 2.0F);
-                               })};
+    const auto st2{
+        std::accumulate(x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
+          return accum + std::pow(xi - sxoss, 2.0F);
+        })};
 #pragma omp parallel for reduction(+ : b)
     for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
       const auto tt{(x[i]) - sxoss};
@@ -89,6 +90,8 @@ Scalar select(const int k, Vec &arr) {
 }
 
 int main(int argc, char **argv) {
+  std::cout << std::format("(:std::thread::hardware_concurrency() '{}')\n",
+                           std::thread::hardware_concurrency());
   auto gen{std::mt19937(std::random_device{}())};
   auto dis{std::normal_distribution<float>(0.F, 1.0F)};
   auto lin{[&](auto n, auto A, auto B, auto Sig, auto repeat) {
@@ -143,8 +146,8 @@ int main(int argc, char **argv) {
     const auto pchi2{printStat(chi2)};
     const auto psigdat{printStat(sigdat)};
     std::cout << std::format(
-        "( :A '{}' :dA '{}' :B '{}' :dB '{}' :Sig '{}' :pa '{}' :psiga '{}' "
-        ":pb '{}' :psigb '{}' :pchi2 '{}' :psigdat '{}')\n",
+        "(:A '{}' :dA '{}' :B '{}' :dB '{}' :Sig '{}' :pa '{}' :psiga '{}' :pb "
+        "'{}' :psigb '{}' :pchi2 '{}' :psigdat '{}')\n",
         A, dA, B, dB, Sig, pa, psiga, pb, psigb, pchi2, psigdat);
   }
   return 0;

@@ -7,6 +7,7 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 endif ()
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 include_directories(${XSIMD_INCLUDE_DIR})
+#find_package(popl)
 
 if (NOT CMAKE_BUILD_TYPE)
     message(STATUS "Setting examples build type to Release")
