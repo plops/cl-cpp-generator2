@@ -73,6 +73,73 @@ std::string printStat(std::tuple<Scalar, Scalar, Scalar, Scalar> m_md_d_dd) {
   return std::vformat(format_str, std::make_format_args(m, d));
 }
 
+Scalar select(const int k, Vec &arr) {
+  // Numerical Recipes 8.5
+  const auto n{static_cast<int>(arr.size())};
+  Scalar a;
+  auto ir{n - 1};
+  auto l{0};
+  auto i{0};
+  auto j{0};
+  auto mid{0};
+  while (true) {
+    if (ir <= l + 1) {
+      // Active partition contains 1 or 2 elements
+      if (ir == l + 1 && arr[ir] < arr[l]) {
+        // Case of two elements
+        std::swap(arr[l], arr[ir]);
+      }
+      return arr[k];
+    } else {
+      // Choose median of left, center and right elements as paritioning element
+      // a
+      // Also rearrange so that arr[l] <= arr[l+1], arr[ir]>=arr[l+1]
+      mid = (l + ir) >> 1;
+      std::swap(arr[mid], arr[(l + i)]);
+      if (arr[ir] < arr[l]) {
+        std::swap(arr[ir], arr[l]);
+      }
+      if (arr[ir] < arr[(l + 1)]) {
+        std::swap(arr[ir], arr[(l + 1)]);
+      }
+      if (arr[(l + 1)] < arr[l]) {
+        std::swap(arr[(l + 1)], arr[l]);
+      }
+      // Initialize pointers for partitioning
+      i = l + 1;
+      j = ir;
+      a = arr[(l + 1)];
+      // Inner loop
+      while (true) {
+        // Scan up to find element > a
+        do {
+          i++;
+        } while (arr[i] < a);
+        // Scan down to find element < a
+        do {
+          j--;
+        } while (a < arr[j]);
+        if (j < i) {
+          // Pointers crossed. Partitioning complete
+          break;
+        }
+        // Insert partitioning element
+        std::swap(arr[i], arr[j]);
+      }
+      // Insert partitioning element
+      arr[(l + 1)] = arr[j];
+      arr[j] = a;
+      // Keep active the partition that contains the kth element
+      if (k <= j) {
+        ir = (j - 1);
+      }
+      if (j <= k) {
+        l = i;
+      }
+    }
+  }
+}
+
 int main(int argc, char **argv) {
   auto gen{std::mt19937(std::random_device{}())};
   auto dis{std::normal_distribution<float>(0.F, 1.0F)};
@@ -81,28 +148,22 @@ int main(int argc, char **argv) {
     auto y{Vec(n)};
     auto fill_x{[&]() { std::iota(x.begin(), x.end(), 1.0F); }};
     fill_x();
-    auto stat{[&](auto fitres, auto filter) {
-      // Numerical Recipes 14.1.2
+    auto stat_median{[&](auto fitres, auto filter) {
+      // compute median and median absolute deviation Numerical recipes 8.5
+      // and 14.1.4
       auto data{Vec(fitres.size())};
       data.resize(fitres.size());
       std::transform(fitres.begin(), fitres.end(), data.begin(), filter);
       const auto N{static_cast<Scalar>(data.size())};
-      const auto mean{std::accumulate(data.begin(), data.end(), 0.F) / N};
-      const auto stdev{
-          std::sqrt((std::accumulate(data.begin(), data.end(), 0.F,
-                                     [mean](auto acc, auto xi) {
-                                       return acc + std::pow(xi - mean, 2.0F);
-                                     }) -
-                     (std::pow(std::accumulate(data.begin(), data.end(), 0.F,
-                                               [mean](auto acc, auto xi) {
-                                                 return acc + (xi - mean);
-                                               }),
-                               2.0F) /
-                      N)) /
-                    (N - 1.0F))};
-      const auto mean_stdev{stdev / std::sqrt(N)};
-      const auto stdev_stdev{stdev / std::sqrt(2 * N)};
-      return std::make_tuple(mean, mean_stdev, stdev, stdev_stdev);
+      const auto median{select((N - 1) / 2, data)};
+      const auto adev{std::accumulate(data.begin(), data.end(), 0.F,
+                                      [median](auto acc, auto xi) {
+                                        return acc + std::abs(xi - median);
+                                      }) /
+                      N};
+      const auto mean_stdev{adev / std::sqrt(N)};
+      const auto stdev_stdev{adev / std::sqrt(2 * N)};
+      return std::make_tuple(median, mean_stdev, adev, stdev_stdev);
     }};
     auto generate_fit{[&]() {
       std::transform(x.begin(), x.end(), y.begin(),
@@ -112,12 +173,12 @@ int main(int argc, char **argv) {
     auto fitres{std::vector<Fitab>()};
     fitres.reserve(repeat);
     std::generate_n(std::back_inserter(fitres), repeat, generate_fit);
-    auto a{stat(fitres, [&](const Fitab &f) { return f.a; })};
-    auto b{stat(fitres, [&](const Fitab &f) { return f.b; })};
-    auto siga{stat(fitres, [&](const Fitab &f) { return f.siga; })};
-    auto sigb{stat(fitres, [&](const Fitab &f) { return f.sigb; })};
-    auto chi2{stat(fitres, [&](const Fitab &f) { return f.chi2; })};
-    auto sigdat{stat(fitres, [&](const Fitab &f) { return f.sigdat; })};
+    auto a{stat_median(fitres, [&](const Fitab &f) { return f.a; })};
+    auto b{stat_median(fitres, [&](const Fitab &f) { return f.b; })};
+    auto siga{stat_median(fitres, [&](const Fitab &f) { return f.siga; })};
+    auto sigb{stat_median(fitres, [&](const Fitab &f) { return f.sigb; })};
+    auto chi2{stat_median(fitres, [&](const Fitab &f) { return f.chi2; })};
+    auto sigdat{stat_median(fitres, [&](const Fitab &f) { return f.sigdat; })};
     return std::make_tuple(a, b, siga, sigb, chi2, sigdat);
   }};
   for (decltype(0 + 3 + 1) i = 0; i < 3; i += 1) {

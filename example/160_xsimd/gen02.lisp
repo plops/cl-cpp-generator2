@@ -192,6 +192,72 @@
 	     )
 	 (return (std--vformat format_str (std--make_format_args m d)))
 	 ))
+     (defun select (k arr)
+       (declare (type "const int" k)
+		(type "Vec&" arr)
+		(values Scalar))
+       (comments "Numerical Recipes 8.5")
+       (letc ((n (static_cast<int> (arr.size))))
+	     )
+       "Scalar a;"
+       (let ((ir (- n 1))
+	     (l 0)
+	     (i 0)
+	     (j 0)
+	     (mid 0)
+	     )
+	 (while true
+		(if (<= ir (+ l 1))
+		    (do0
+		     (comments "Active partition contains 1 or 2 elements")
+		     (when (logand (== ir (+ l 1))
+				   (< (aref arr ir)
+				      (aref arr l)))
+		       (comments "Case of two elements")
+		       (std--swap (aref arr l)
+				  (aref arr ir)))
+		     (return (aref arr k)))
+		    (do0
+		     (comments "Choose median of left, center and right elements as paritioning element a"
+			       "Also rearrange so that arr[l] <= arr[l+1], arr[ir]>=arr[l+1]")
+		     (setf mid (>> (paren (+ l ir))
+				   1))
+		     (std--swap (aref arr mid)
+				(aref arr (+ l i)))
+		     ,@(loop for (e f) in `((ir l) (ir (+ l 1)) ((+ l 1) l))
+			     collect
+			     `(when (< (aref arr ,e)
+				       (aref arr ,f))
+				(std--swap (aref arr ,e)
+					   (aref arr ,f))))
+		     (comments "Initialize pointers for partitioning")
+		     (setf i (+ l 1)
+			   j ir
+			   a (aref arr (+ l 1)))
+		     (comments "Inner loop")
+		     (while true
+			    (comments "Scan up to find element > a")
+			    (space do (progn (incf i) )
+				   while (paren (< (aref arr i) a)))
+			    (comments "Scan down to find element < a")
+			    (space do (progn (decf j) )
+				   while (paren (< a (aref arr j))))
+			    (when (< j i)
+			      (comments "Pointers crossed. Partitioning complete")
+			      break)
+			    (comments "Insert partitioning element")
+			    (std--swap (aref arr i)
+				       (aref arr j)))
+		     (comments "Insert partitioning element")
+		     (setf (aref arr (+ l 1))
+			   (aref arr j))
+		     (setf (aref arr j) a)
+		     (comments "Keep active the partition that contains the kth element")
+		     (when (<= k j)
+		       (setf ir (- j 1)))
+		     (when (<= j k)
+		       (setf l i))
+		     )))))
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
@@ -208,15 +274,42 @@
 			  (fill_x (lambda ()
 				    (std--iota (x.begin) (x.end) 1s0)))
 			  #+nil (fill_y
-			    (lambda ()
+				  (lambda ()
 				    (dotimes (i n)
 	      			      (setf (aref y i) (+ (* Sig (dis gen))
        	       						  A
 							  (* B (aref x i))))))))
 		      (fill_x)
 		      
-		      (let ((stat (lambda (fitres filter)
-				    (comments "Numerical Recipes 14.1.2")
+		      (let ((stat_median (lambda (fitres filter)
+					   (comments "compute median and median absolute deviation Numerical recipes 8.5 and 14.1.4")
+					   (let ((data (Vec (fitres.size)))))
+					   (data.resize (fitres.size))
+					   (std--transform (fitres.begin)
+							   (fitres.end)
+							   (data.begin)
+							   filter)
+					   (letc ((N (static_cast<Scalar> (data.size)))
+						  (median (select (/ (- N 1) 2)
+								  data))
+						  (adev
+						   (/ (std--accumulate
+						       (data.begin)
+						       (data.end)
+						       0s0
+						       (lambda (acc xi)
+							 (declare (capture "median"))
+							 (return (+ acc (std--abs (- xi median))))))
+						      N))
+						  ;; error in the mean due to sampling
+						  (mean_stdev (/ adev (std--sqrt N)))
+						  ;; error in the standard deviation due to sampling
+						  (stdev_stdev (/ adev (std--sqrt (* 2 N)))))
+					  
+						 (return (std--make_tuple median mean_stdev adev stdev_stdev)))
+					   ))
+			    #+nil(stat_mean (lambda (fitres filter)
+				    (comments "compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8")
 				    (let ((data (Vec (fitres.size)))))
 				    (data.resize (fitres.size))
 				    (std--transform (fitres.begin)
@@ -231,32 +324,32 @@
 					
 					   ;; 14.1.8 corrected two-pass algorithm from bevington 2002
 					   (stdev
-						  (std--sqrt (/ (- (std--accumulate
+					    (std--sqrt (/ (- (std--accumulate
+							      (data.begin)
+							      (data.end)
+							      0s0
+							      (lambda (acc xi)
+								(declare (capture "mean"))
+								(return (+ acc (std--pow (- xi mean) 2s0)))))
+							     (/ (std--pow
+								 (std--accumulate
 								  (data.begin)
 								  (data.end)
 								  0s0
 								  (lambda (acc xi)
 								    (declare (capture "mean"))
-								    (return (+ acc (std--pow (- xi mean) 2s0)))))
-								   (/ (std--pow
-								       (std--accumulate
-									(data.begin)
-									(data.end)
-									0s0
-									(lambda (acc xi)
-									  (declare (capture "mean"))
-									  (return (+ acc (- xi mean)))))
-								       2s0)
-								      N))
-								(- N 1s0))))
+								    (return (+ acc (- xi mean)))))
+								 2s0)
+								N))
+							  (- N 1s0))))
 					   ;; error in the mean due to sampling
 					   (mean_stdev (/ stdev (std--sqrt N)))
 					   ;; error in the standard deviation due to sampling
 					   (stdev_stdev (/ stdev (std--sqrt (* 2 N)))))
 					  
-				      (return (std--make_tuple mean mean_stdev stdev stdev_stdev)))))))
+					  (return (std--make_tuple mean mean_stdev stdev stdev_stdev)))))))
 		      (let ((generate_fit (lambda ()
-					    ;(setf y (curly 2.1s0 2.3s0 2.6s0))
+					;(setf y (curly 2.1s0 2.3s0 2.6s0))
 					    
 					    (std--transform (x.begin)
 							    (x.end)
@@ -279,7 +372,7 @@
 				       generate_fit)
 		      ,@(loop for e in l-fit
 			      collect
-			      `(let ((,e (stat fitres (lambda (f)
+			      `(let ((,e (stat_median fitres (lambda (f)
 							(declare (type "const  Fitab&" f))
 							(return (dot f ,e))))))))
 		     
@@ -292,16 +385,16 @@
 	      (B 1.833333333333s0	;(+ .3 (* .01 (dis gen)))
 		 )
 	      (Sig 0s0 #+nil (+ .003 (* .001 (dis gen)))
-		   ))
+		       ))
 	     ((A (+ 17 (* .1 (dis gen)))
 		 )
 	      (B (+ .3 (* .01 (dis gen)))
 		 )
-	      (Sig 10s0 ;(+ .3 (* .001 (dis gen)))
+	      (Sig 10s0			;(+ .3 (* .001 (dis gen)))
 		   )))
 	   (let (((bracket ,@l-fit) (lin 133 A B Sig 17)))
 	     (letc (,@(loop for e in l-fit collect `(,(format nil "p~a" e) (printStat ,e))))
-	      ,(lprint :vars `(A B Sig ,@(loop for e in l-fit collect (format nil "p~a" e))))))))
+		   ,(lprint :vars `(A B Sig ,@(loop for e in l-fit collect (format nil "p~a" e))))))))
 
 
        (return 0)))
