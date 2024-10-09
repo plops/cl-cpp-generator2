@@ -299,6 +299,10 @@
 		   (:name numberRepeats :default 64 :short r)
 		   (:name numberPoints :default 1024 :short p)
 		   (:name numberTrials :default 3 :short d)
+		   (:name generatorSlope :default .3 :short b)
+		   (:name generatorIntercept :default 17 :short a)
+		   (:name generatorSigma :default 10 :short s)
+		   
 		   )))
 	  `(let ((op (popl--OptionParser (string "allowed options")))
 		 ,@(loop for e in l collect
@@ -306,6 +310,7 @@
 				      `(,name (int ,default))))
 		 ,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
 				    (:long verbose :short v :type Switch :msg "produce verbose output")
+				    (:long mean :short m :type Switch :msg "Print mean and standard deviation statistics, otherwise print median and mean absolute deviation from it")
 				    ,@(loop for f in l
 					    collect
 					    (destructuring-bind (&key name default short) f
@@ -390,7 +395,7 @@
 					  
 						 (return (std--make_tuple median mean_stdev adev stdev_stdev)))
 					   ))
-			    #+nil(stat_mean (lambda (fitres filter)
+			    (stat_mean (lambda (fitres filter)
 					      (comments "compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8")
 					      (let ((data (Vec (fitres.size)))))
 					      (data.resize (fitres.size))
@@ -429,7 +434,11 @@
 						     ;; error in the standard deviation due to sampling
 						     (stdev_stdev (/ stdev (std--sqrt (* 2 N)))))
 					  
-						    (return (std--make_tuple mean mean_stdev stdev stdev_stdev)))))))
+						    (return (std--make_tuple mean mean_stdev stdev stdev_stdev)))))
+			    (stat (lambda (fitres filter)
+				    (if meanOption
+					(stat_mean fitres filter)
+					(stat_median fitres filter))))))
 		      (let ((generate_fit (lambda ()
 					;(setf y (curly 2.1s0 2.3s0 2.6s0))
 					    
@@ -460,7 +469,7 @@
 		     
 					
 		      (return (std--make_tuple ,@l-fit))))))
-	 (dotimes (i 3)
+	 (dotimes (i numberTrials)
 	   (letc #+nil
 		 ((A .249999999999s0	;(+ 17 (* .1 (dis gen)))
 		     )
@@ -469,15 +478,15 @@
 		  (Sig 0s0 #+nil (+ .003 (* .001 (dis gen)))
 			   ))
 		 ((dA .1s0)
-		  (A (+ 17s0 (* dA (dis gen)))
+		  (A (+ generatorIntercept (* dA (dis gen)))
 		     )
 		  (dB .01s0)
-		  (B (+ .3s0 (* dB (dis gen)))
+		  (B (+ generatorSlope (* dB (dis gen)))
 		     )
 	      
-		  (Sig 10s0		;(+ .3 (* .001 (dis gen)))
+		  (Sig generatorSigma		;(+ .3 (* .001 (dis gen)))
 		       )))
-	   (let (((bracket ,@l-fit) (lin 8133 A B Sig 8917)))
+	   (let (((bracket ,@l-fit) (lin numberPoints A B Sig numberRepeats)))
 	     (letc (,@(loop for e in l-fit collect `(,(format nil "p~a" e) (printStat ,e))))
 		   ,(lprint :vars `(A dA B dB Sig ,@(loop for e in l-fit collect (format nil "p~a" e))))))))
 

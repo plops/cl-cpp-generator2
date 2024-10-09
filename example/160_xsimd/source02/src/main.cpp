@@ -95,15 +95,28 @@ int main(int argc, char **argv) {
   auto numberRepeats{int(64)};
   auto numberPoints{int(1024)};
   auto numberTrials{int(3)};
+  auto generatorSlope{int(0.30F)};
+  auto generatorIntercept{int(17)};
+  auto generatorSigma{int(10)};
   auto helpOption{op.add<popl::Switch>("h", "help", "produce help message")};
   auto verboseOption{
       op.add<popl::Switch>("v", "verbose", "produce verbose output")};
+  auto meanOption{op.add<popl::Switch>(
+      "m", "mean",
+      "Print mean and standard deviation statistics, otherwise print median "
+      "and mean absolute deviation from it")};
   auto numberRepeatsOption{op.add<popl::Value<int>>(
       "r", "numberRepeats", "parameter", 64, &numberRepeats)};
   auto numberPointsOption{op.add<popl::Value<int>>(
       "p", "numberPoints", "parameter", 1024, &numberPoints)};
   auto numberTrialsOption{op.add<popl::Value<int>>(
       "d", "numberTrials", "parameter", 3, &numberTrials)};
+  auto generatorSlopeOption{op.add<popl::Value<int>>(
+      "b", "generatorSlope", "parameter", 0.30F, &generatorSlope)};
+  auto generatorInterceptOption{op.add<popl::Value<int>>(
+      "a", "generatorIntercept", "parameter", 17, &generatorIntercept)};
+  auto generatorSigmaOption{op.add<popl::Value<int>>(
+      "s", "generatorSigma", "parameter", 10, &generatorSigma)};
   op.parse(argc, argv);
   if (helpOption->count()) {
     std::cout << op << std::endl;
@@ -135,6 +148,36 @@ int main(int argc, char **argv) {
       const auto stdev_stdev{adev / std::sqrt(2 * N)};
       return std::make_tuple(median, mean_stdev, adev, stdev_stdev);
     }};
+    auto stat_mean{[&](auto fitres, auto filter) {
+      // compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8
+      auto data{Vec(fitres.size())};
+      data.resize(fitres.size());
+      std::transform(fitres.begin(), fitres.end(), data.begin(), filter);
+      const auto N{static_cast<Scalar>(data.size())};
+      const auto mean{std::accumulate(data.begin(), data.end(), 0.F) / N};
+      const auto stdev{
+          std::sqrt((std::accumulate(data.begin(), data.end(), 0.F,
+                                     [mean](auto acc, auto xi) {
+                                       return acc + std::pow(xi - mean, 2.0F);
+                                     }) -
+                     (std::pow(std::accumulate(data.begin(), data.end(), 0.F,
+                                               [mean](auto acc, auto xi) {
+                                                 return acc + (xi - mean);
+                                               }),
+                               2.0F) /
+                      N)) /
+                    (N - 1.0F))};
+      const auto mean_stdev{stdev / std::sqrt(N)};
+      const auto stdev_stdev{stdev / std::sqrt(2 * N)};
+      return std::make_tuple(mean, mean_stdev, stdev, stdev_stdev);
+    }};
+    auto stat{[&](auto fitres, auto filter) {
+      if (meanOption) {
+        stat_mean(fitres, filter);
+      } else {
+        stat_median(fitres, filter);
+      }
+    }};
     auto generate_fit{[&]() {
       std::transform(x.begin(), x.end(), y.begin(),
                      [&](Scalar xi) { return Sig * dis(gen) + A + B * xi; });
@@ -151,13 +194,14 @@ int main(int argc, char **argv) {
     auto sigdat{stat_median(fitres, [&](const Fitab &f) { return f.sigdat; })};
     return std::make_tuple(a, siga, b, sigb, chi2, sigdat);
   }};
-  for (decltype(0 + 3 + 1) i = 0; i < 3; i += 1) {
+  for (decltype(0 + numberTrials + 1) i = 0; i < numberTrials; i += 1) {
     const auto dA{0.10F};
-    const auto A{17.F + dA * dis(gen)};
+    const auto A{generatorIntercept + dA * dis(gen)};
     const auto dB{1.00e-2F};
-    const auto B{0.30F + dB * dis(gen)};
-    const auto Sig{10.F};
-    auto [a, siga, b, sigb, chi2, sigdat]{lin(8133, A, B, Sig, 8917)};
+    const auto B{generatorSlope + dB * dis(gen)};
+    const auto Sig{generatorSigma};
+    auto [a, siga, b, sigb, chi2,
+          sigdat]{lin(numberPoints, A, B, Sig, numberRepeats)};
     const auto pa{printStat(a)};
     const auto psiga{printStat(siga)};
     const auto pb{printStat(b)};
