@@ -89,10 +89,16 @@ int main(int argc, char **argv) {
       const auto N{static_cast<Scalar>(data.size())};
       const auto mean{std::accumulate(data.begin(), data.end(), 0.F) / N};
       const auto stdev{
-          std::sqrt(std::accumulate(data.begin(), data.end(), 0.F,
-                                    [mean](auto acc, auto xi) {
-                                      return acc + std::pow(xi - mean, 2);
-                                    }) /
+          std::sqrt((std::accumulate(data.begin(), data.end(), 0.F,
+                                     [mean](auto acc, auto xi) {
+                                       return acc + std::pow(xi - mean, 2.0F);
+                                     }) -
+                     (std::pow(std::accumulate(data.begin(), data.end(), 0.F,
+                                               [mean](auto acc, auto xi) {
+                                                 return acc + (xi - mean);
+                                               }),
+                               2.0F) /
+                      N)) /
                     (N - 1.0F))};
       const auto mean_stdev{stdev / std::sqrt(N)};
       const auto stdev_stdev{stdev / std::sqrt(2 * N)};

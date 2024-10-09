@@ -228,20 +228,26 @@
 								     (data.end)
 								     0s0)
 						    N))
-					   #+nil (sq_sum (std--inner_product (data.begin)
-								       (data.end)
-								       (data.begin)
-								       0s0))
-					   (stdev #+nil (std--sqrt (- (/ sq_sum
-								   (static_cast<Scalar> (data.size)))
-								(* mean mean)))
-						  (std--sqrt (/ (std--accumulate
-								 (data.begin)
-								 (data.end)
-								 0s0
-								 (lambda (acc xi)
-								   (declare (capture "mean"))
-								   (return (+ acc (std--pow (- xi mean) 2)))))
+					
+					   ;; 14.1.8
+					   (stdev
+						  (std--sqrt (/ (- (std--accumulate
+								  (data.begin)
+								  (data.end)
+								  0s0
+								  (lambda (acc xi)
+								    (declare (capture "mean"))
+								    (return (+ acc (std--pow (- xi mean) 2s0)))))
+								   (/ (std--pow
+								       (std--accumulate
+									(data.begin)
+									(data.end)
+									0s0
+									(lambda (acc xi)
+									  (declare (capture "mean"))
+									  (return (+ acc (- xi mean)))))
+								       2s0)
+								      N))
 								(- N 1s0))))
 					   ;; error in the mean due to sampling
 					   (mean_stdev (/ stdev (std--sqrt N)))
