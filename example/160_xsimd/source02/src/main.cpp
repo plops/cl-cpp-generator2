@@ -91,8 +91,8 @@ Scalar select(const int k, Vec &arr) {
       }
       return arr[k];
     } else {
-      // Choose median of left, center and right elements as paritioning element
-      // a
+      // Choose median of left, center and right elements as partitioning
+      // element a
       // Also rearrange so that arr[l] <= arr[l+1], arr[ir]>=arr[l+1]
       mid = (l + ir) >> 1;
       std::swap(arr[mid], arr[(l + i)]);

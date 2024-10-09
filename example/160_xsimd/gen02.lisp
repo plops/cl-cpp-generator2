@@ -218,7 +218,7 @@
 				  (aref arr ir)))
 		     (return (aref arr k)))
 		    (do0
-		     (comments "Choose median of left, center and right elements as paritioning element a"
+		     (comments "Choose median of left, center and right elements as partitioning element a"
 			       "Also rearrange so that arr[l] <= arr[l+1], arr[ir]>=arr[l+1]")
 		     (setf mid (>> (paren (+ l ir))
 				   1))
