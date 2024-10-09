@@ -229,7 +229,7 @@
 								     0s0)
 						    N))
 					
-					   ;; 14.1.8
+					   ;; 14.1.8 corrected two-pass algorithm from bevington 2002
 					   (stdev
 						  (std--sqrt (/ (- (std--accumulate
 								  (data.begin)
