@@ -81,14 +81,17 @@ int main(int argc, char **argv) {
     fill_x();
     auto stat{[&](auto fitres, auto filter) {
       // Numerical Recipes 14.1.2
-      const auto data{Vec(fitres.size())};
+      auto data{Vec(fitres.size())};
+      data.resize(fitres.size());
       std::transform(fitres.begin(), fitres.end(), data.begin(), filter);
-      const auto mean{std::accumulate(data.begin(), data.end(), 0.F) /
-                      static_cast<Scalar>(data.size())};
+      const auto N{static_cast<Scalar>(data.size())};
+      const auto mean{std::accumulate(data.begin(), data.end(), 0.F) / N};
       const auto sq_sum{
           std::inner_product(data.begin(), data.end(), data.begin(), 0.F)};
       const auto stdev{std::sqrt((sq_sum / static_cast<Scalar>(data.size())) -
                                  (mean * mean))};
+      const auto mean_stdev{stdev / std::sqrt(N)};
+      const auto stdev_stdev{stdev / std::sqrt(2 * N)};
       return std::make_pair(mean, stdev);
     }};
     auto generate_fit{[&]() {
