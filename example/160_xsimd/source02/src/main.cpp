@@ -14,16 +14,17 @@ using namespace std::execution;
 using Scalar = float;
 using Vec = vector<Scalar>;
 using VecI = const Vec;
+constexpr auto Pol = std::execution::par_unseq;
 // From Numerical Recipes
 class Fitab {
 public:
   Fitab(VecI &xx, VecI &yy) : ndata{static_cast<int>(xx.size())}, x{xx}, y{yy} {
-    const auto sx{accumulate(x.begin(), x.end(), 0.F)};
-    const auto sy{accumulate(y.begin(), y.end(), 0.F)};
+    const auto sx{reduce(Pol, x.begin(), x.end(), 0.F)};
+    const auto sy{reduce(Pol, y.begin(), y.end(), 0.F)};
     const auto ss{static_cast<Scalar>(ndata)};
     const auto sxoss{sx / ss};
     const auto st2{
-        accumulate(x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
+        reduce(Pol, x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
           return accum + pow(xi - sxoss, 2.0F);
         })};
 #pragma omp parallel for reduction(+ : b)
@@ -76,9 +77,9 @@ string printStat(tuple<Scalar, Scalar, Scalar, Scalar> m_md_d_dd) {
   const auto mprecision{getSignificantDigits(md)};
   const auto dprecision{getSignificantDigits(dd)};
   const auto rprecision{getSignificantDigits(rel)};
-  const auto fmtm{"(string {:.)" + to_string(mprecision) + "f}"};
-  const auto fmtd{"(string {:.)" + to_string(dprecision) + "f}"};
-  const auto fmtr{"(string  ({:.)" + to_string(rprecision) + "f}%)"};
+  const auto fmtm{std::string("{:.") + to_string(mprecision) + "f}"};
+  const auto fmtd{std::string("{:.") + to_string(dprecision) + "f}"};
+  const auto fmtr{std::string(" ({:.") + to_string(rprecision) + "f}%)"};
   const auto format_str{fmtm + "±" + fmtd + fmtr};
   return vformat(format_str, make_format_args(m, d, rel));
 }
@@ -149,10 +150,10 @@ int main(int argc, char **argv) {
       transform(fitres.begin(), fitres.end(), data.begin(), filter);
       const auto N{static_cast<Scalar>(data.size())};
       const auto median{select((static_cast<int>(data.size()) - 1) / 2, data)};
-      const auto adev{accumulate(data.begin(), data.end(), 0.F,
-                                 [median](auto acc, auto xi) {
-                                   return acc + abs(xi - median);
-                                 }) /
+      const auto adev{reduce(Pol, data.begin(), data.end(), 0.F,
+                             [median](auto acc, auto xi) {
+                               return acc + abs(xi - median);
+                             }) /
                       N};
       const auto mean_stdev{adev / sqrt(N)};
       const auto stdev_stdev{adev / sqrt(2 * N)};
@@ -164,18 +165,17 @@ int main(int argc, char **argv) {
       data.resize(fitres.size());
       transform(fitres.begin(), fitres.end(), data.begin(), filter);
       const auto N{static_cast<Scalar>(data.size())};
-      const auto mean{accumulate(data.begin(), data.end(), 0.F) / N};
-      const auto stdev{sqrt((accumulate(data.begin(), data.end(), 0.F,
-                                        [mean](auto acc, auto xi) {
-                                          return acc + pow(xi - mean, 2.0F);
-                                        }) -
-                             (pow(accumulate(data.begin(), data.end(), 0.F,
-                                             [mean](auto acc, auto xi) {
-                                               return acc + (xi - mean);
-                                             }),
-                                  2.0F) /
-                              N)) /
-                            (N - 1.0F))};
+      const auto mean{reduce(Pol, data.begin(), data.end(), 0.F) / N};
+      const auto stdev{sqrt(
+          (reduce(Pol, data.begin(), data.end(), 0.F,
+                  [mean](auto acc, auto xi) {
+                    return acc + pow(xi - mean, 2.0F);
+                  }) -
+           (pow(reduce(Pol, data.begin(), data.end(), 0.F,
+                       [mean](auto acc, auto xi) { return acc + (xi - mean); }),
+                2.0F) /
+            N)) /
+          (N - 1.0F))};
       const auto mean_stdev{stdev / sqrt(N)};
       const auto stdev_stdev{stdev / sqrt(2 * N)};
       return make_tuple(mean, mean_stdev, stdev, stdev_stdev);

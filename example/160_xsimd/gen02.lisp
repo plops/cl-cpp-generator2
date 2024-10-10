@@ -78,6 +78,7 @@
 
      "using Vec = vector<Scalar>;"
      "using VecI = const Vec;"
+     "constexpr auto Pol = std::execution::par_unseq;"
 
      (comments "From Numerical Recipes")
      (defclass+ Fitab ()
@@ -95,13 +96,12 @@
 		 (dotimes (i ndata)
 		   (incf sx (aref x i))
 		   (incf sy (aref y i))))
-	 (letc ((sx (accumulate	;execution--par
+	 (letc ((sx (reduce Pol
 		     (x.begin)
 		     (x.end)
 		     0s0)
 		    )))
-	 (letc ((sy (accumulate
-					;execution--par
+	 (letc ((sy (reduce Pol
 		     (y.begin)
 		     (y.end)
 		     0s0))))
@@ -109,8 +109,7 @@
 		(sxoss (/ sx ss)))
 	       )
 	 
-	 (letc ((st2 (accumulate
-					; execution--par
+	 (letc ((st2 (reduce Pol
 		      (x.begin)
 		      (x.end)
 		      0s0
@@ -199,13 +198,13 @@
 	      (dprecision  (getSignificantDigits dd))
 	      (rprecision  (getSignificantDigits rel))
 
-	      (fmtm (+ (string (string "{:."))
+	      (fmtm (+ (std--string (string "{:."))
 		       (to_string mprecision)
 		       (string "f}")))
-	      (fmtd (+ (string (string "{:."))
+	      (fmtd (+ (std--string (string "{:."))
 		       (to_string dprecision)
 		       (string "f}")))
-	      (fmtr (+ (string (string " ({:."))
+	      (fmtr (+ (std--string (string " ({:."))
 		       (to_string rprecision)
 		       (string "f}%)")))
 	      (format_str (+  fmtm (string "±") fmtd fmtr))
@@ -388,7 +387,7 @@
 						  (median (select (/ (- (static_cast<int> (data.size)) 1) 2)
 								  data))
 						  (adev
-						   (/ (accumulate
+						   (/ (reduce Pol
 						       (data.begin)
 						       (data.end)
 						       0s0
@@ -413,14 +412,15 @@
 							      (data.begin)
 							      filter)
 					      (letc ((N (static_cast<Scalar> (data.size)))
-						     (mean (/ (accumulate (data.begin)
-									       (data.end)
-									       0s0)
+						     (mean (/ (reduce Pol
+								      (data.begin)
+								      (data.end)
+								      0s0)
 							      N))
 					
 						     ;; 14.1.8 corrected two-pass algorithm from bevington 2002
 						     (stdev
-						      (sqrt (/ (- (accumulate
+						      (sqrt (/ (- (reduce Pol
 									(data.begin)
 									(data.end)
 									0s0
@@ -428,7 +428,7 @@
 									  (declare (capture "mean"))
 									  (return (+ acc (pow (- xi mean) 2s0)))))
 								       (/ (pow
-									   (accumulate
+									   (reduce Pol
 									    (data.begin)
 									    (data.end)
 									    0s0
