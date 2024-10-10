@@ -360,7 +360,7 @@
 					  
 						 (return (make_tuple median mean_stdev adev stdev_stdev)))
 					   ))
-			    (stat_mean (lambda (fitres filter)
+			    (stat_mean (lambda (fitres filter) 
 					 (declare (type "const auto&" fitres)
 						  (values "tuple<Scalar,Scalar,Scalar,Scalar>"))
 					 (comments "compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8")
