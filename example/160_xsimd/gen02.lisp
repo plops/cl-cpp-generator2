@@ -55,12 +55,16 @@
       numeric
       algorithm
       execution
+      valarray
 					;memory
       thread
       popl.hpp
       )
    
+     "using namespace std;"
+     "using namespace std::execution;"
 
+     
 					;(include "xsimd/xsimd.hpp")
 
 					;"using namespace xsimd;"
@@ -68,16 +72,16 @@
      "using Scalar = float;"
 					;"using ScalarI = const Scalar;"
      
-					;"using XVec = std::vector<Scalar,xsimd::default_allocator<Scalar>>;"
+					;"using XVec = vector<Scalar,xsimd::default_allocator<Scalar>>;"
 					;"using XBatch = xsimd::batch<Scalar,avx2>;"
 
 
-     "using Vec = std::vector<Scalar>;"
+     "using Vec = vector<Scalar>;"
      "using VecI = const Vec;"
-  
 
      (comments "From Numerical Recipes")
      (defclass+ Fitab ()
+      
        "public:"
        (defmethod Fitab (xx yy)
 	 (declare (type VecI& xx yy)
@@ -91,13 +95,13 @@
 		 (dotimes (i ndata)
 		   (incf sx (aref x i))
 		   (incf sy (aref y i))))
-	 (letc ((sx (std--accumulate	;std--execution--par
+	 (letc ((sx (accumulate	;execution--par
 		     (x.begin)
 		     (x.end)
 		     0s0)
 		    )))
-	 (letc ((sy (std--accumulate
-					;std--execution--par
+	 (letc ((sy (accumulate
+					;execution--par
 		     (y.begin)
 		     (y.end)
 		     0s0))))
@@ -105,13 +109,13 @@
 		(sxoss (/ sx ss)))
 	       )
 	 
-	 (letc ((st2 (std--accumulate
-					; std--execution--par
+	 (letc ((st2 (accumulate
+					; execution--par
 		      (x.begin)
 		      (x.end)
 		      0s0
 		      (lambda (accum xi)
-			(return (+ accum (std--pow (- xi sxoss) 2s0))))) ; .0f
+			(return (+ accum (pow (- xi sxoss) 2s0))))) ; .0f
 		     )
 		)
 	       "#pragma omp parallel for reduction(+:b)"
@@ -123,7 +127,7 @@
 		 (incf b (* tt (aref y i)))
 					;,(lprint :vars `(i tt b))
 		 ))
-	 #+nil  (setf b (std--inner_product (x.begin)
+	 #+nil  (setf b (inner_product (x.begin)
 					    (x.end)
 					    (y.begin)
 					    0s0
@@ -133,12 +137,12 @@
 	 (/= b st2)
 	 (setf a (/ (- sy (* b sx))
 		    ss))
-	 (setf siga (std--sqrt (/ (+ 1s0 (/ (* sx sx)
+	 (setf siga (sqrt (/ (+ 1s0 (/ (* sx sx)
 					    (* ss st2)) )
 				  ss))
-	       sigb (std--sqrt (/ 1s0 st2)))
+	       sigb (sqrt (/ 1s0 st2)))
 	 (comments "compute chi2")
-	 (setf chi2 (std--inner_product
+	 (setf chi2 (inner_product
 		     (x.begin)
 		     (x.end)
 		     (y.begin)
@@ -150,7 +154,7 @@
 		       (let ((p (- yi a (* b xi))))
 			 (return (* p p))))
 		     ))
-	 #+nil (setf chi2 (std--accumulate (x.begin)
+	 #+nil (setf chi2 (accumulate (x.begin)
 					   (x.end)
 					   0s0
 					   (lambda (accum xi)
@@ -162,7 +166,7 @@
 		       (* b (aref x i))))))
 	   (incf chi2 (* p p)))
 	 (when (< 2 ndata)
-	   (setf sigdat (std--sqrt (/ chi2
+	   (setf sigdat (sqrt (/ chi2
 				      (- (static_cast<Scalar> ndata) 2s0)))))
 	 (*= siga sigdat)
 	 (*= sigb sigdat)
@@ -187,27 +191,27 @@
      (defun printStat (m_md_d_dd	;m d
 		       )
        (declare				;(type Scalar m d)
-	(type "std::tuple<Scalar,Scalar,Scalar,Scalar>" m_md_d_dd)
-	(values "std::string"))
+	(type "tuple<Scalar,Scalar,Scalar,Scalar>" m_md_d_dd)
+	(values "string"))
        (let (((bracket m md d dd) m_md_d_dd)))
        (letc ((rel (* 100s0 (/ d m)))
 	      (mprecision  (getSignificantDigits md))
 	      (dprecision  (getSignificantDigits dd))
 	      (rprecision  (getSignificantDigits rel))
 
-	      (fmtm (+ (std--string (string "{:."))
-		       (std--to_string mprecision)
+	      (fmtm (+ (string (string "{:."))
+		       (to_string mprecision)
 		       (string "f}")))
-	      (fmtd (+ (std--string (string "{:."))
-		       (std--to_string dprecision)
+	      (fmtd (+ (string (string "{:."))
+		       (to_string dprecision)
 		       (string "f}")))
-	      (fmtr (+ (std--string (string " ({:."))
-		       (std--to_string rprecision)
+	      (fmtr (+ (string (string " ({:."))
+		       (to_string rprecision)
 		       (string "f}%)")))
 	      (format_str (+  fmtm (string "±") fmtd fmtr))
 	      
 	      )
-	     (return (std--vformat format_str (std--make_format_args m d rel)))
+	     (return (vformat format_str (make_format_args m d rel)))
 	     ))
 
      (defun select (k arr)
@@ -217,10 +221,10 @@
        (comments "This implementation uses the STL and will not fall under the strict license of Numerical Recipes")
        (when (logand (<= 0 k)
 		     (< k (arr.size)))
-	 (std--nth_element		;(std--execution--par_unseq 6)
+	 (nth_element		;(execution--par_unseq 6)
 	  (arr.begin) (+ (arr.begin) k) (arr.end))
 	 (return (aref arr k)))
-       (throw (std--out_of_range (string "Invalid index for selection"))))
+       (throw (out_of_range (string "Invalid index for selection"))))
      #+nil
      (defun select (k arr)
        (declare (type "const int" k)
@@ -246,7 +250,7 @@
 				   (< (aref arr ir)
 				      (aref arr l)))
 		       (comments "Case of two elements")
-		       (std--swap (aref arr l)
+		       (swap (aref arr l)
 				  (aref arr ir)))
 		     (return (aref arr k)))
 		    (do0
@@ -254,13 +258,13 @@
 			       "Also rearrange so that arr[l] <= arr[l+1], arr[ir]>=arr[l+1]")
 		     (setf mid (>> (paren (+ l ir))
 				   1))
-		     (std--swap (aref arr mid)
+		     (swap (aref arr mid)
 				(aref arr (+ l 1)))
 		     ,@(loop for (e f) in `((ir l) (ir (+ l 1)) ((+ l 1) l))
 			     collect
 			     `(when (< (aref arr ,e)
 				       (aref arr ,f))
-				(std--swap (aref arr ,e)
+				(swap (aref arr ,e)
 					   (aref arr ,f))))
 		     (comments "Initialize pointers for partitioning")
 		     (setf i (+ l 1)
@@ -278,7 +282,7 @@
 			      (comments "Pointers crossed. Partitioning complete")
 			      break)
 			    (comments "Insert partitioning element")
-			    (std--swap (aref arr i)
+			    (swap (aref arr i)
 				       (aref arr j)))
 		     (comments "Insert partitioning element")
 		     (setf (aref arr (+ l 1))
@@ -294,7 +298,7 @@
        (declare (type int argc)
 		(type char** argv)
 		(values int))
-
+      
        ,(let ((l `(
 		   (:name numberRepeats :default 64 :short r)
 		   (:name numberPoints :default 1024 :short p)
@@ -344,25 +348,25 @@
 			 ))
 	     (op.parse argc argv)
 	     (when (helpOption->is_set)
-	       (<< std--cout
+	       (<< cout
 		   op
-		   std--endl)
+		   endl)
 	       (exit 0))
 
 	     ))
 
-       ,(lprint :vars `((std--thread--hardware_concurrency)))
+       ,(lprint :vars `((thread--hardware_concurrency)))
 
-       (let ((gen (std--mt19937		;42
-		   "std::random_device{}()"))
-	     (dis (std--normal_distribution<float> 0s0 1s0))))
+       (let ((gen (mt19937		;42
+		   "random_device{}()"))
+	     (dis (normal_distribution<float> 0s0 1s0))))
 
        (let ((lin (lambda (n A B Sig repeat)
 		    (let (		;(n 8)
 			  (x (Vec n))
 			  (y (Vec n))
 			  (fill_x (lambda ()
-				    (std--iota (x.begin) (x.end) 1s0)))
+				    (iota (x.begin) (x.end) 1s0)))
 			  #+nil (fill_y
 				  (lambda ()
 				    (dotimes (i n)
@@ -372,10 +376,11 @@
 		      (fill_x)
 		      
 		      (let ((stat_median (lambda (fitres filter)
+					   (declare (type "const auto&" fitres))
 					   (comments "compute median and median absolute deviation Numerical recipes 8.5 and 14.1.4")
 					   (let ((data (Vec (fitres.size)))))
 					   (data.resize (fitres.size))
-					   (std--transform (fitres.begin)
+					   (transform (fitres.begin)
 							   (fitres.end)
 							   (data.begin)
 							   filter)
@@ -383,46 +388,47 @@
 						  (median (select (/ (- (static_cast<int> (data.size)) 1) 2)
 								  data))
 						  (adev
-						   (/ (std--accumulate
+						   (/ (accumulate
 						       (data.begin)
 						       (data.end)
 						       0s0
 						       (lambda (acc xi)
 							 (declare (capture "median"))
-							 (return (+ acc (std--abs (- xi median))))))
+							 (return (+ acc (abs (- xi median))))))
 						      N))
 						  ;; error in the mean due to sampling
-						  (mean_stdev (/ adev (std--sqrt N)))
+						  (mean_stdev (/ adev (sqrt N)))
 						  ;; error in the standard deviation due to sampling
-						  (stdev_stdev (/ adev (std--sqrt (* 2 N)))))
+						  (stdev_stdev (/ adev (sqrt (* 2 N)))))
 					  
-						 (return (std--make_tuple median mean_stdev adev stdev_stdev)))
+						 (return (make_tuple median mean_stdev adev stdev_stdev)))
 					   ))
 			    (stat_mean (lambda (fitres filter)
+					(declare (type "const auto&" fitres))
 					 (comments "compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8")
 					      (let ((data (Vec (fitres.size)))))
 					      (data.resize (fitres.size))
-					      (std--transform (fitres.begin)
+					      (transform (fitres.begin)
 							      (fitres.end)
 							      (data.begin)
 							      filter)
 					      (letc ((N (static_cast<Scalar> (data.size)))
-						     (mean (/ (std--accumulate (data.begin)
+						     (mean (/ (accumulate (data.begin)
 									       (data.end)
 									       0s0)
 							      N))
 					
 						     ;; 14.1.8 corrected two-pass algorithm from bevington 2002
 						     (stdev
-						      (std--sqrt (/ (- (std--accumulate
+						      (sqrt (/ (- (accumulate
 									(data.begin)
 									(data.end)
 									0s0
 									(lambda (acc xi)
 									  (declare (capture "mean"))
-									  (return (+ acc (std--pow (- xi mean) 2s0)))))
-								       (/ (std--pow
-									   (std--accumulate
+									  (return (+ acc (pow (- xi mean) 2s0)))))
+								       (/ (pow
+									   (accumulate
 									    (data.begin)
 									    (data.end)
 									    0s0
@@ -433,19 +439,20 @@
 									  N))
 								    (- N 1s0))))
 						     ;; error in the mean due to sampling
-						     (mean_stdev (/ stdev (std--sqrt N)))
+						     (mean_stdev (/ stdev (sqrt N)))
 						     ;; error in the standard deviation due to sampling
-						     (stdev_stdev (/ stdev (std--sqrt (* 2 N)))))
+						     (stdev_stdev (/ stdev (sqrt (* 2 N)))))
 					  
-						    (return (std--make_tuple mean mean_stdev stdev stdev_stdev)))))
+						    (return (make_tuple mean mean_stdev stdev stdev_stdev)))))
 			    (stat (lambda (fitres filter)
+				    (declare (type "const auto&" fitres))
 				    (if (meanOption->is_set)
 					(return (stat_mean fitres filter))
 					(return (stat_median fitres filter)))))))
 		      (let ((generate_fit (lambda ()
 					;(setf y (curly 2.1s0 2.3s0 2.6s0))
 					    
-					    (std--transform (x.begin)
+					    (transform (x.begin)
 							    (x.end)
 							    (y.begin)
 					    
@@ -457,21 +464,21 @@
 							    )
 					    #+nil (fill_y)
 					    (return (Fitab x y))))
-			    (fitres (std--vector<Fitab>))
+			    (fitres (vector<Fitab>))
 			   
 			    ))
 		      (fitres.reserve repeat)
-		      (std--generate_n (std--back_inserter fitres)
+		      (generate_n (back_inserter fitres)
 				       repeat
 				       generate_fit)
 		      ,@(loop for e in l-fit
 			      collect
-			      `(let ((,e (stat fitres (lambda (f)
+			      `(letc ((,e (stat fitres (lambda (f)
 							(declare (type "const  Fitab&" f))
 							(return (dot f ,e))))))))
 		     
 					
-		      (return (std--make_tuple ,@l-fit))))))
+		      (return (make_tuple ,@l-fit))))))
 	 (dotimes (i numberTrials)
 	   (letc #+nil
 		 ((A .249999999999s0	;(+ 17 (* .1 (dis gen)))
