@@ -39,6 +39,10 @@
 		   ,e
 		   (string "' ")))   
 	 std--endl))
+  (defun begin (arr)
+   `(ref (aref ,arr 0)) )
+  (defun end (arr)
+   `(+ (ref (aref ,arr 0)) (dot ,arr (size))))
   (write-source 
    (asdf:system-relative-pathname
     'cl-cpp-generator2 
@@ -76,7 +80,7 @@
 					;"using XBatch = xsimd::batch<Scalar,avx2>;"
 
 
-     "using Vec = vector<Scalar>;"
+     "using Vec = valarray<Scalar>;"
      "using VecI = const Vec;"
      "constexpr auto Pol = std::execution::par_unseq;"
 
@@ -91,82 +95,35 @@
 			     (x xx)
 			     (y yy)
 			     ))
-	 #+nil (let ((sx .0f)
-		     (sy .0f))
-		 (dotimes (i ndata)
-		   (incf sx (aref x i))
-		   (incf sy (aref y i))))
-	 (letc ((sx (reduce Pol
-		     (x.begin)
-		     (x.end)
-		     0s0)
+	 (letc ((sx (x.sum)
 		    )))
-	 (letc ((sy (reduce Pol
-		     (y.begin)
-		     (y.end)
-		     0s0))))
+	 (letc ((sy (y.sum))))
 	 (letc ((ss (static_cast<Scalar> ndata))
 		(sxoss (/ sx ss)))
 	       )
 	 
-	 (letc ((st2 (reduce Pol
-		      (x.begin)
-		      (x.end)
-		      0s0
-		      (lambda (accum xi)
-			(return (+ accum (pow (- xi sxoss) 2s0))))) ; .0f
-		     )
+	 (letc ((tt (- x sxoss))
+		(st2 (dot (pow tt 2)
+			  (sum)))
 		)
-	       "#pragma omp parallel for reduction(+:b)"
-	       (dotimes (i ndata)
-		   
-		 (letc ((tt (- (aref x i)
-			       sxoss))))
-		  
-		 (incf b (* tt (aref y i)))
-					;,(lprint :vars `(i tt b))
-		 ))
-	 #+nil  (setf b (inner_product (x.begin)
-					    (x.end)
-					    (y.begin)
-					    0s0
-					    (lambda (accum value) (return (+ accum value)))
-					    (lambda (xi yi) (return (* tt yi)))))
-	 (comments "solve for a, b, sigma_a and sigma_b")
-	 (/= b st2)
+	       )
+	 (setf b (dot (paren
+		       (/ (* tt y)
+			  st2))
+		      (sum)))
 	 (setf a (/ (- sy (* b sx))
 		    ss))
 	 (setf siga (sqrt (/ (+ 1s0 (/ (* sx sx)
-					    (* ss st2)) )
-				  ss))
+				       (* ss st2)) )
+			     ss))
 	       sigb (sqrt (/ 1s0 st2)))
 	 (comments "compute chi2")
-	 (setf chi2 (inner_product
-		     (x.begin)
-		     (x.end)
-		     (y.begin)
-		     0s0
-		     (lambda (accum value)
-		       (return (+ accum value)))
-		     (lambda (xi yi)
-		       (declare (capture this))
-		       (let ((p (- yi a (* b xi))))
-			 (return (* p p))))
-		     ))
-	 #+nil (setf chi2 (accumulate (x.begin)
-					   (x.end)
-					   0s0
-					   (lambda (accum xi)
-					     ())))
-	 #+nil
-	 (dotimes (i ndata)
-	   (let ((p (- (aref y i)
-		       a
-		       (* b (aref x i))))))
-	   (incf chi2 (* p p)))
+	 (setf chi2 (dot (pow (- y a (* b x))
+			      2)
+			 (sum)))
 	 (when (< 2 ndata)
 	   (setf sigdat (sqrt (/ chi2
-				      (- (static_cast<Scalar> ndata) 2s0)))))
+				 (- (static_cast<Scalar> ndata) 2s0)))))
 	 (*= siga sigdat)
 	 (*= sigb sigdat)
 	 
@@ -220,8 +177,11 @@
        (comments "This implementation uses the STL and will not fall under the strict license of Numerical Recipes")
        (when (logand (<= 0 k)
 		     (< k (arr.size)))
-	 (nth_element		;(execution--par_unseq 6)
-	  (arr.begin) (+ (arr.begin) k) (arr.end))
+	 (nth_element			;(execution--par_unseq 6)
+	  (ref (aref arr 0 ))
+	  (+ (ref (aref arr 0)) k)
+	  (+ (ref (aref arr 0)) (arr.size))
+	  )
 	 (return (aref arr k)))
        (throw (out_of_range (string "Invalid index for selection"))))
      #+nil
@@ -250,7 +210,7 @@
 				      (aref arr l)))
 		       (comments "Case of two elements")
 		       (swap (aref arr l)
-				  (aref arr ir)))
+			     (aref arr ir)))
 		     (return (aref arr k)))
 		    (do0
 		     (comments "Choose median of left, center and right elements as partitioning element a"
@@ -258,13 +218,13 @@
 		     (setf mid (>> (paren (+ l ir))
 				   1))
 		     (swap (aref arr mid)
-				(aref arr (+ l 1)))
+			   (aref arr (+ l 1)))
 		     ,@(loop for (e f) in `((ir l) (ir (+ l 1)) ((+ l 1) l))
 			     collect
 			     `(when (< (aref arr ,e)
 				       (aref arr ,f))
 				(swap (aref arr ,e)
-					   (aref arr ,f))))
+				      (aref arr ,f))))
 		     (comments "Initialize pointers for partitioning")
 		     (setf i (+ l 1)
 			   j ir
@@ -282,7 +242,7 @@
 			      break)
 			    (comments "Insert partitioning element")
 			    (swap (aref arr i)
-				       (aref arr j)))
+				  (aref arr j)))
 		     (comments "Insert partitioning element")
 		     (setf (aref arr (+ l 1))
 			   (aref arr j))
@@ -365,7 +325,7 @@
 			  (x (Vec n))
 			  (y (Vec n))
 			  (fill_x (lambda ()
-				    (iota (x.begin) (x.end) 1s0)))
+				    (iota ,(begin 'x) ,(end 'x) 1s0)))
 			  #+nil (fill_y
 				  (lambda ()
 				    (dotimes (i n)
@@ -375,25 +335,23 @@
 		      (fill_x)
 		      
 		      (let ((stat_median (lambda (fitres filter)
-					   (declare (type "const auto&" fitres))
+					   (declare (type "const auto&" fitres)
+						    (values "tuple<Scalar,Scalar,Scalar,Scalar>"))
 					   (comments "compute median and median absolute deviation Numerical recipes 8.5 and 14.1.4")
 					   (let ((data (Vec (fitres.size)))))
 					   (data.resize (fitres.size))
 					   (transform (fitres.begin)
-							   (fitres.end)
-							   (data.begin)
-							   filter)
+						      (fitres.end)
+						      ,(begin 'data)
+						      filter)
 					   (letc ((N (static_cast<Scalar> (data.size)))
 						  (median (select (/ (- (static_cast<int> (data.size)) 1) 2)
 								  data))
 						  (adev
-						   (/ (reduce Pol
-						       (data.begin)
-						       (data.end)
-						       0s0
-						       (lambda (acc xi)
-							 (declare (capture "median"))
-							 (return (+ acc (abs (- xi median))))))
+						   (/ (dot (abs (- data median))
+							   
+							   (sum))
+						    
 						      N))
 						  ;; error in the mean due to sampling
 						  (mean_stdev (/ adev (sqrt N)))
@@ -403,79 +361,63 @@
 						 (return (make_tuple median mean_stdev adev stdev_stdev)))
 					   ))
 			    (stat_mean (lambda (fitres filter)
-					(declare (type "const auto&" fitres))
+					 (declare (type "const auto&" fitres)
+						  (values "tuple<Scalar,Scalar,Scalar,Scalar>"))
 					 (comments "compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8")
-					      (let ((data (Vec (fitres.size)))))
-					      (data.resize (fitres.size))
-					      (transform (fitres.begin)
-							      (fitres.end)
-							      (data.begin)
-							      filter)
-					      (letc ((N (static_cast<Scalar> (data.size)))
-						     (mean (/ (reduce Pol
-								      (data.begin)
-								      (data.end)
-								      0s0)
-							      N))
+					 (let ((data (Vec (fitres.size)))))
+					 (data.resize (fitres.size))
+					 (transform (fitres.begin)
+						    (fitres.end)
+						    ,(begin 'data)
+						    filter)
+					 (letc ((N (static_cast<Scalar> (data.size)))
+						(mean (/ (data.sum)
+							 N))
 					
-						     ;; 14.1.8 corrected two-pass algorithm from bevington 2002
-						     (stdev
-						      (sqrt (/ (- (reduce Pol
-									(data.begin)
-									(data.end)
-									0s0
-									(lambda (acc xi)
-									  (declare (capture "mean"))
-									  (return (+ acc (pow (- xi mean) 2s0)))))
-								       (/ (pow
-									   (reduce Pol
-									    (data.begin)
-									    (data.end)
-									    0s0
-									    (lambda (acc xi)
-									      (declare (capture "mean"))
-									      (return (+ acc (- xi mean)))))
-									   2s0)
-									  N))
-								    (- N 1s0))))
-						     ;; error in the mean due to sampling
-						     (mean_stdev (/ stdev (sqrt N)))
-						     ;; error in the standard deviation due to sampling
-						     (stdev_stdev (/ stdev (sqrt (* 2 N)))))
+						;; 14.1.8 corrected two-pass algorithm from bevington 2002
+						(stdev
+						 (sqrt (/ (- (dot (pow (- data mean) 2)
+								  (sum))
+							     (/ (pow
+								 (dot (paren (- data mean))
+								      (sum))
+								 2)
+								N))
+							  (- N 1s0))))
+						;; error in the mean due to sampling
+						(mean_stdev (/ stdev (sqrt N)))
+						;; error in the standard deviation due to sampling
+						(stdev_stdev (/ stdev (sqrt (* 2 N)))))
 					  
-						    (return (make_tuple mean mean_stdev stdev stdev_stdev)))))
+					       (return (make_tuple mean mean_stdev stdev stdev_stdev)))))
 			    (stat (lambda (fitres filter)
 				    (declare (type "const auto&" fitres))
 				    (if (meanOption->is_set)
 					(return (stat_mean fitres filter))
 					(return (stat_median fitres filter)))))))
-		      (let ((generate_fit (lambda ()
-					;(setf y (curly 2.1s0 2.3s0 2.6s0))
-					    
-					    (transform (x.begin)
-							    (x.end)
-							    (y.begin)
-					    
-							    (lambda (xi)
-							      (declare (type Scalar xi))
-							      (return (+ (* Sig (dis gen))
-       	       								 A
-									 (* B xi))))
-							    )
-					    #+nil (fill_y)
+		      (let ((generate_fit (lambda ()					    
+					    (transform ,(begin 'x)
+						       ,(end 'x)
+						       ,(begin 'y)					    
+						       (lambda (xi)
+							 (declare (type Scalar xi))
+							 (return (+ (* Sig (dis gen))
+       	       							    A
+								    (* B xi))))
+						       )
 					    (return (Fitab x y))))
 			    (fitres (vector<Fitab>))
 			   
 			    ))
 		      (fitres.reserve repeat)
 		      (generate_n (back_inserter fitres)
-				       repeat
-				       generate_fit)
+				  repeat
+				  generate_fit)
 		      ,@(loop for e in l-fit
 			      collect
 			      `(letc ((,e (stat fitres (lambda (f)
-							(declare (type "const  Fitab&" f))
-							(return (dot f ,e))))))))
+							 (declare (type "const  Fitab&" f))
+							 (return (dot f ,e))))))))
 		     
 					
 		      (return (make_tuple ,@l-fit))))))
@@ -494,7 +436,7 @@
 		  (B (+ generatorSlope (* dB (dis gen)))
 		     )
 	      
-		  (Sig generatorSigma		;(+ .3 (* .001 (dis gen)))
+		  (Sig generatorSigma	;(+ .3 (* .001 (dis gen)))
 		       )))
 	   (let (((bracket ,@l-fit) (lin numberPoints A B Sig numberRepeats)))
 	     (letc (,@(loop for e in l-fit collect `(,(format nil "p~a" e) (printStat ,e))))

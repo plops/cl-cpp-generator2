@@ -12,39 +12,25 @@
 using namespace std;
 using namespace std::execution;
 using Scalar = float;
-using Vec = vector<Scalar>;
+using Vec = valarray<Scalar>;
 using VecI = const Vec;
 constexpr auto Pol = std::execution::par_unseq;
 // From Numerical Recipes
 class Fitab {
 public:
   Fitab(VecI &xx, VecI &yy) : ndata{static_cast<int>(xx.size())}, x{xx}, y{yy} {
-    const auto sx{reduce(Pol, x.begin(), x.end(), 0.F)};
-    const auto sy{reduce(Pol, y.begin(), y.end(), 0.F)};
+    const auto sx{x.sum()};
+    const auto sy{y.sum()};
     const auto ss{static_cast<Scalar>(ndata)};
     const auto sxoss{sx / ss};
-    const auto st2{
-        reduce(Pol, x.begin(), x.end(), 0.F, [&](auto accum, auto xi) {
-          return accum + pow(xi - sxoss, 2.0F);
-        })};
-#pragma omp parallel for reduction(+ : b)
-    for (decltype(0 + ndata + 1) i = 0; i < ndata; i += 1) {
-      const auto tt{(x[i]) - sxoss};
-      b += tt * y[i];
-    }
-    // solve for a, b, sigma_a and sigma_b
-    b /= st2;
+    const auto tt{x - sxoss};
+    const auto st2{pow(tt, 2).sum()};
+    b = ((tt * y) / st2).sum();
     a = ((sy - (b * sx)) / ss);
     siga = sqrt((1.0F + ((sx * sx) / (ss * st2))) / ss);
     sigb = sqrt(1.0F / st2);
     // compute chi2
-    chi2 = inner_product(
-        x.begin(), x.end(), y.begin(), 0.F,
-        [&](auto accum, auto value) { return accum + value; },
-        [this](auto xi, auto yi) {
-          auto p{yi - a - (b * xi)};
-          return p * p;
-        });
+    chi2 = pow(y - a - (b * x), 2).sum();
     if (2 < ndata) {
       sigdat = sqrt(chi2 / (static_cast<Scalar>(ndata) - 2.0F));
     }
@@ -88,7 +74,7 @@ Scalar select(const int k, Vec &arr) {
   // This implementation uses the STL and will not fall under the strict license
   // of Numerical Recipes
   if (0 <= k && k < arr.size()) {
-    nth_element(arr.begin(), arr.begin() + k, arr.end());
+    nth_element(&arr[0], &arr[0] + k, &arr[0] + arr.size());
     return arr[k];
   }
   throw out_of_range("Invalid index for selection");
@@ -140,41 +126,32 @@ int main(int argc, char **argv) {
   auto lin{[&](auto n, auto A, auto B, auto Sig, auto repeat) {
     auto x{Vec(n)};
     auto y{Vec(n)};
-    auto fill_x{[&]() { iota(x.begin(), x.end(), 1.0F); }};
+    auto fill_x{[&]() { iota(&x[0], &x[0] + x.size(), 1.0F); }};
     fill_x();
-    auto stat_median{[&](const auto &fitres, auto filter) {
+    auto stat_median{[&](const auto &fitres,
+                         auto filter) -> tuple<Scalar, Scalar, Scalar, Scalar> {
       // compute median and median absolute deviation Numerical recipes 8.5
       // and 14.1.4
       auto data{Vec(fitres.size())};
       data.resize(fitres.size());
-      transform(fitres.begin(), fitres.end(), data.begin(), filter);
+      transform(fitres.begin(), fitres.end(), &data[0], filter);
       const auto N{static_cast<Scalar>(data.size())};
       const auto median{select((static_cast<int>(data.size()) - 1) / 2, data)};
-      const auto adev{reduce(Pol, data.begin(), data.end(), 0.F,
-                             [median](auto acc, auto xi) {
-                               return acc + abs(xi - median);
-                             }) /
-                      N};
+      const auto adev{(abs(data - median).sum()) / N};
       const auto mean_stdev{adev / sqrt(N)};
       const auto stdev_stdev{adev / sqrt(2 * N)};
       return make_tuple(median, mean_stdev, adev, stdev_stdev);
     }};
-    auto stat_mean{[&](const auto &fitres, auto filter) {
+    auto stat_mean{[&](const auto &fitres,
+                       auto filter) -> tuple<Scalar, Scalar, Scalar, Scalar> {
       // compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8
       auto data{Vec(fitres.size())};
       data.resize(fitres.size());
-      transform(fitres.begin(), fitres.end(), data.begin(), filter);
+      transform(fitres.begin(), fitres.end(), &data[0], filter);
       const auto N{static_cast<Scalar>(data.size())};
-      const auto mean{reduce(Pol, data.begin(), data.end(), 0.F) / N};
+      const auto mean{data.sum() / N};
       const auto stdev{sqrt(
-          (reduce(Pol, data.begin(), data.end(), 0.F,
-                  [mean](auto acc, auto xi) {
-                    return acc + pow(xi - mean, 2.0F);
-                  }) -
-           (pow(reduce(Pol, data.begin(), data.end(), 0.F,
-                       [mean](auto acc, auto xi) { return acc + (xi - mean); }),
-                2.0F) /
-            N)) /
+          ((pow(data - mean, 2).sum()) - (pow((data - mean).sum(), 2) / N)) /
           (N - 1.0F))};
       const auto mean_stdev{stdev / sqrt(N)};
       const auto stdev_stdev{stdev / sqrt(2 * N)};
@@ -188,7 +165,7 @@ int main(int argc, char **argv) {
       }
     }};
     auto generate_fit{[&]() {
-      transform(x.begin(), x.end(), y.begin(),
+      transform(&x[0], &x[0] + x.size(), &y[0],
                 [&](Scalar xi) { return Sig * dis(gen) + A + B * xi; });
       return Fitab(x, y);
     }};
