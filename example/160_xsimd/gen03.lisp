@@ -49,6 +49,8 @@
     (merge-pathnames "main.cpp"
 		     *source-dir*))
    `(do0
+
+     "#define EIGEN_VECTORIZE_AVX2"
      (include<>
       iostream
       format

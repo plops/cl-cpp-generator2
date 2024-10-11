@@ -1,3 +1,4 @@
+#define EIGEN_VECTORIZE_AVX2
 #include <Eigen/Dense>
 #include <algorithm>
 #include <cmath>
