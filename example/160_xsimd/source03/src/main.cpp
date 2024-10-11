@@ -1,8 +1,10 @@
 #define EIGEN_VECTORIZE_AVX2
-#include <Eigen/Dense>
+#define EIGEN_VECTORIZE_AVX
+#define EIGEN_VECTORIZE
+#define EIGEN_VECTORIZE_FMA
+#include <Eigen/Core>
 #include <algorithm>
 #include <cmath>
-#include <execution>
 #include <format>
 #include <iostream>
 #include <numeric>
@@ -13,9 +15,8 @@
 using namespace std;
 using namespace Eigen;
 using Scalar = float;
-using Vec = Matrix<Scalar, Dynamic, 1, 0, 8192, 1>;
+using Vec = Matrix<Scalar, 1, Dynamic, RowMajor, 1, 8192>;
 using VecI = const Vec;
-constexpr auto Pol = std::execution::par_unseq;
 // From Numerical Recipes
 class Fitab {
 public:

@@ -51,6 +51,9 @@
    `(do0
 
      "#define EIGEN_VECTORIZE_AVX2"
+     "#define EIGEN_VECTORIZE_AVX"
+     "#define EIGEN_VECTORIZE"
+     "#define EIGEN_VECTORIZE_FMA"
      (include<>
       iostream
       format
@@ -60,8 +63,8 @@
       random
       numeric
       algorithm
-      execution
-      Eigen/Dense
+      ;execution
+      Eigen/Core ;Dense
 					;memory
       thread
       popl.hpp
@@ -82,9 +85,10 @@
 					;"using XBatch = xsimd::batch<Scalar,avx2>;"
 
 
-     "using Vec = Matrix<Scalar,Dynamic,1,0,8192,1>;"
+     ;"using Vec = Matrix<Scalar,Dynamic,1,0,8192,1>;"
+     "using Vec = Matrix<Scalar,1,Dynamic,RowMajor,1,8192>;"
      "using VecI = const Vec;"
-     "constexpr auto Pol = std::execution::par_unseq;"
+    ; "constexpr auto Pol = std::execution::par_unseq;"
 
      (comments "From Numerical Recipes")
      (defclass+ Fitab ()
