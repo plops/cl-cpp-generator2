@@ -86,7 +86,8 @@
 
 
      ;"using Vec = Matrix<Scalar,Dynamic,1,0,8192,1>;"
-     "using Vec = Matrix<Scalar,1,Dynamic,RowMajor,1,8192>;"
+     "using Vec = Matrix<Scalar,8192,1,0,8192,1>;"
+					;"using Vec = Matrix<Scalar,1,Dynamic,RowMajor,1,8192>;"
      "using VecI = const Vec;"
     ; "constexpr auto Pol = std::execution::par_unseq;"
 
