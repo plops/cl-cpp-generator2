@@ -104,7 +104,8 @@
 		(st2 (dot (pow tt 2)
 			  (sum)))))
 	 (setf b (dot (paren
-		       (/ (* (tt.array) y)
+		       (/ (* (tt.array)
+			     (y.array))
 			  st2))
 		      (sum)))
 	 (setf a (/ (- sy (* b sx))
@@ -114,7 +115,7 @@
 			     ss))
 	       sigb (sqrt (/ 1s0 st2)))
 	 (comments "compute chi2")
-	 (setf chi2 (dot (pow (- y a (* b x))
+	 (setf chi2 (dot (pow (- (y.array) a (* b (x.array)))
 			      2)
 			 (sum)))
 	 (when (< 2 ndata)
@@ -122,7 +123,7 @@
 				 (- (static_cast<Scalar> ndata) 2s0)))))
 	 (*= siga sigdat)
 	 (*= sigb sigdat))       
-       "private:"
+       ;"private:"
        "int ndata{0};"
        ,(format nil "Scalar ~{~a{.0f}~^, ~};" l-fit)
        "VecI &x, &y;")
@@ -264,8 +265,8 @@
 						  (median (select (/ (- (static_cast<int> (data.size)) 1) 2)
 								  data))
 						  (adev
-						   (/ (dot (abs (- data median))
-							   
+						   (/ (dot (abs (- (data.array)
+								   median))
 							   (sum))
 						    
 						      N))
@@ -292,10 +293,12 @@
 					
 						;; 14.1.8 corrected two-pass algorithm from bevington 2002
 						(stdev
-						 (sqrt (/ (- (dot (pow (- data mean) 2)
+						 (sqrt (/ (- (dot (pow (- (data.array)
+									  mean) 2)
 								  (sum))
 							     (/ (pow
-								 (dot (paren (- data mean))
+								 (dot (paren (- (data.array)
+										mean))
 								      (sum))
 								 2)
 								N))

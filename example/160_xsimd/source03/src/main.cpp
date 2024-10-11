@@ -37,7 +37,6 @@ public:
     siga *= sigdat;
     sigb *= sigdat;
   }
-
   int ndata{0};
   Scalar a{.0f}, siga{.0f}, b{.0f}, sigb{.0f}, chi2{.0f}, sigdat{.0f};
   VecI &x, &y;
@@ -151,9 +150,9 @@ int main(int argc, char **argv) {
       transform(fitres.begin(), fitres.end(), &data[0], filter);
       const auto N{static_cast<Scalar>(data.size())};
       const auto mean{data.sum() / N};
-      const auto stdev{sqrt(
-          ((pow(data.array() - mean, 2).sum()) - (pow((data.array() - mean).sum(), 2) / N)) /
-          (N - 1.0F))};
+      const auto stdev{sqrt(((pow(data.array() - mean, 2).sum()) -
+                             (pow((data.array() - mean).sum(), 2) / N)) /
+                            (N - 1.0F))};
       const auto mean_stdev{stdev / sqrt(N)};
       const auto stdev_stdev{stdev / sqrt(2 * N)};
       return make_tuple(mean, mean_stdev, stdev, stdev_stdev);
