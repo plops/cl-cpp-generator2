@@ -15,7 +15,7 @@
 using namespace std;
 using namespace Eigen;
 using Scalar = float;
-using Vec = Matrix<Scalar, 8192, 1, 0, 8192, 1>;
+using Vec = Matrix<Scalar, Dynamic, 1, 0, 8192, 1>;
 using VecI = const Vec;
 // From Numerical Recipes
 class Fitab {
