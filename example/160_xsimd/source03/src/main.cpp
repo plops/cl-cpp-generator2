@@ -23,14 +23,14 @@ public:
     const auto sy{y.sum()};
     const auto ss{static_cast<Scalar>(ndata)};
     const auto sxoss{sx / ss};
-    const auto tt{x - sxoss};
+    const auto tt{x.array() - sxoss};
     const auto st2{pow(tt, 2).sum()};
-    b = ((tt * y) / st2).sum();
+    b = ((tt.array() * y.array()) / st2).sum();
     a = ((sy - (b * sx)) / ss);
     siga = sqrt((1.0F + ((sx * sx) / (ss * st2))) / ss);
     sigb = sqrt(1.0F / st2);
     // compute chi2
-    chi2 = pow(y - a - (b * x), 2).sum();
+    chi2 = pow(y.array() - a - (b * x.array()), 2).sum();
     if (2 < ndata) {
       sigdat = sqrt(chi2 / (static_cast<Scalar>(ndata) - 2.0F));
     }
@@ -38,7 +38,6 @@ public:
     sigb *= sigdat;
   }
 
-private:
   int ndata{0};
   Scalar a{.0f}, siga{.0f}, b{.0f}, sigb{.0f}, chi2{.0f}, sigdat{.0f};
   VecI &x, &y;
@@ -139,7 +138,7 @@ int main(int argc, char **argv) {
       transform(fitres.begin(), fitres.end(), &data[0], filter);
       const auto N{static_cast<Scalar>(data.size())};
       const auto median{select((static_cast<int>(data.size()) - 1) / 2, data)};
-      const auto adev{(abs(data - median).sum()) / N};
+      const auto adev{(abs(data.array() - median).sum()) / N};
       const auto mean_stdev{adev / sqrt(N)};
       const auto stdev_stdev{adev / sqrt(2 * N)};
       return make_tuple(median, mean_stdev, adev, stdev_stdev);
@@ -153,7 +152,7 @@ int main(int argc, char **argv) {
       const auto N{static_cast<Scalar>(data.size())};
       const auto mean{data.sum() / N};
       const auto stdev{sqrt(
-          ((pow(data - mean, 2).sum()) - (pow((data - mean).sum(), 2) / N)) /
+          ((pow(data.array() - mean, 2).sum()) - (pow((data.array() - mean).sum(), 2) / N)) /
           (N - 1.0F))};
       const auto mean_stdev{stdev / sqrt(N)};
       const auto stdev_stdev{stdev / sqrt(2 * N)};

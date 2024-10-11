@@ -100,11 +100,11 @@
 	 (letc ((ss (static_cast<Scalar> ndata))
 		(sxoss (/ sx ss))))
 	 
-	 (letc ((tt (- x sxoss))
+	 (letc ((tt (- (x.array) sxoss))
 		(st2 (dot (pow tt 2)
 			  (sum)))))
 	 (setf b (dot (paren
-		       (/ (* tt y)
+		       (/ (* (tt.array) y)
 			  st2))
 		      (sum)))
 	 (setf a (/ (- sy (* b sx))
