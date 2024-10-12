@@ -52,6 +52,7 @@
       format
       cstddef
       vector
+      chrono
       cmath
       valarray
       )
@@ -59,6 +60,8 @@
      (include "xsimd/xsimd.hpp")
 
      "using namespace std;"
+     "using namespace std::chrono;"
+    ; "using namespace std::chrono::high_resolution_clock;"
      "using namespace xsimd;"
      "using Scalar = float;"
 
@@ -71,16 +74,20 @@
      "using VecI = const Vec;"
      "using Batch = xsimd::batch<Scalar,avx2>;"
 
+     "using Timebase = std::chrono::milliseconds;"
+     
      "constexpr int N = 8*1024;"
 
-     (defun fun_valarray (a b)
+     (defun fun_valarray (a b c)
        (declare (type AVecI& a b)
+		(type Scalar c)
 		(values Scalar))
-       (return (dot (std--pow (* a b) 2)
+       (return (dot (std--pow (* a (+ b c)) 2)
 		    (sum))))
      
-     (defun fun_simd (a b)
+     (defun fun_simd (a b c)
        (declare (type VecI& a b)
+		(type Scalar c)
 		(values Scalar))
        (let ((inc Batch--size)
 	     (size (a.size))
@@ -92,7 +99,7 @@
 	       (incf i inc))
 	      (let ((avec (Batch--load_aligned (ref (aref a i))))
 		    (bvec (Batch--load_aligned (ref (aref b i))))
-		    (rvec (pow (* avec bvec)
+		    (rvec (pow (* avec (+ c bvec))
 			       2))
 		    )
 		(incf sum (reduce_add rvec))
@@ -104,22 +111,27 @@
        (declare (type int argc)
 		(type char** argv)
 		(values int))
-       (let ((aa (AVec N))
-	      (ab (AVec N)))
-	     (dotimes (i N)
-	       (setf (aref aa i) (sin (* .1s0 i))
-		     )
-	       (setf (aref ab i) 2s0 ;(+ (cos (* .3s0 i)) (/ 1s0 i))
-		     ))
-	     ,(lprint :vars `(
-			      (fun_valarray aa ab))))
-       (let ((a (Vec N))
-	     (b (Vec N)))
-	 (dotimes (i N)
-	       (setf (aref a i) (sin (* .1s0 i)))
-	       (setf (aref b i) 2s0))
-	 
-	 ,(lprint :vars `((fun_simd  a b))))
+       ,@(loop for (e f) in `((valarray AVec) (simd Vec))
+	       collect
+	       (let ((fun (format nil "fun_~a" e)))
+		 `(progn
+		    (let ((a (,f N))
+			  (b (,f N)))
+		      (dotimes (i N)
+			(setf (aref a i) (sin (* .1s0 i)))
+			(setf (aref b i) 2s0))
+		      (letc ((start  ("high_resolution_clock::now")
+				     ))
+			    (let ((res 0s0))
+			     (dotimes (i 10000)
+			       (let ((c (* 1s-4 i)))
+				 (incf res (,fun a b c)))))
+			    (letc ((end ("high_resolution_clock::now"))
+				   (duration (duration_cast<Timebase> (- end start))))))
+		      ,(lprint :vars `((,fun  a b .1s0)
+				       duration))
+		      ))))
+      
        (return 0)))
    :omit-parens t
    :format t
