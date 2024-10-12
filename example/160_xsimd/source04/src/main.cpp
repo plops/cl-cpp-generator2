@@ -43,11 +43,11 @@ int main(int argc, char **argv) {
     auto b{AVec(N)};
     for (decltype(0 + N + 1) i = 0; i < N; i += 1) {
       a[i] = sin(0.10F * i);
-      b[i] = 2.0F;
+      b[i] = sin(1.00e-2F * i) + 2.0F;
     }
     const auto start{high_resolution_clock::now()};
     auto res{0.F};
-    for (decltype(0 + 1'000'000 + 1) i = 0; i < 1'000'000; i += 1) {
+    for (decltype(0 + 100'000 + 1) i = 0; i < 100'000; i += 1) {
       auto c{1.00e-4F * i};
       res += fun_valarray(a, b, c);
     }
@@ -62,11 +62,11 @@ int main(int argc, char **argv) {
     auto b{Vec(N)};
     for (decltype(0 + N + 1) i = 0; i < N; i += 1) {
       a[i] = sin(0.10F * i);
-      b[i] = 2.0F;
+      b[i] = sin(1.00e-2F * i) + 2.0F;
     }
     const auto start{high_resolution_clock::now()};
     auto res{0.F};
-    for (decltype(0 + 1'000'000 + 1) i = 0; i < 1'000'000; i += 1) {
+    for (decltype(0 + 100'000 + 1) i = 0; i < 100'000; i += 1) {
       auto c{1.00e-4F * i};
       res += fun_simd(a, b, c);
     }

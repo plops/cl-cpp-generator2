@@ -61,14 +61,14 @@
 
      "using namespace std;"
      "using namespace std::chrono;"
-    ; "using namespace std::chrono::high_resolution_clock;"
+					; "using namespace std::chrono::high_resolution_clock;"
      "using namespace xsimd;"
      "using Scalar = float;"
 
 
      
      "using AVec = valarray<Scalar>;"
-      "using AVecI = const AVec;"
+     "using AVecI = const AVec;"
      
      "using Vec = std::vector<Scalar,xsimd::default_allocator<Scalar>>;"
      "using VecI = const Vec;"
@@ -119,13 +119,13 @@
 			  (b (,f N)))
 		      (dotimes (i N)
 			(setf (aref a i) (sin (* .1s0 i)))
-			(setf (aref b i) 2s0))
+			(setf (aref b i) (+ (sin (* .01s0 i)) 2s0)))
 		      (letc ((start  ("high_resolution_clock::now")
 				     ))
 			    (let ((res 0s0))
-			     (dotimes (i "1'000'000")
-			       (let ((c (* 1s-4 i)))
-				 (incf res (,fun a b c)))))
+			      (dotimes (i "100'000")
+				(let ((c (* 1s-4 i)))
+				  (incf res (,fun a b c)))))
 			    (letc ((end ("high_resolution_clock::now"))
 				   (duration (duration_cast<Timebase> (- end start))))))
 		      ,(lprint :vars `((,fun  a b .1s0)

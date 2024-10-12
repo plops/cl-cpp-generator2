@@ -17,9 +17,9 @@ using Vec = std::vector<Scalar, xsimd::default_allocator<Scalar>>;
 using VecI = const Vec;
 using Batch = xsimd::batch<Scalar, avx2>;
 constexpr auto Pol = std::execution::par_unseq;
-auto sum{[&](auto arr) -> Scalar {
-  const auto inc{Batch::size()};
-  const auto size{x.size()};
+auto sum{[](VecI &arr) -> Scalar {
+  const auto inc{Batch::size};
+  const auto size{arr.size()};
   const auto vec_size{size - (size % inc)};
   auto sum{0.F};
   for (decltype(0 + vec_size + 1) i = 0; i < vec_size; i += inc) {
@@ -27,20 +27,55 @@ auto sum{[&](auto arr) -> Scalar {
   }
   return sum;
 }};
+auto asub{[](Vec &res, VecI &arr, Scalar s) {
+  const auto inc{Batch::size};
+  const auto size{arr.size()};
+  const auto vec_size{size - (size % inc)};
+  for (decltype(0 + vec_size + 1) i = 0; i < vec_size; i += inc) {
+    const auto a{Batch::load_aligned(&arr[i]) - s};
+    a.store_aligned(&res[i]);
+  }
+}};
+auto squaredsum{[](VecI &arr) -> Scalar {
+  const auto inc{Batch::size};
+  const auto size{arr.size()};
+  const auto vec_size{size - (size % inc)};
+  auto sum{0.F};
+  for (decltype(0 + vec_size + 1) i = 0; i < vec_size; i += inc) {
+    sum += reduce_add(pow(Batch::load_aligned(&arr[i]), 2));
+  }
+  return sum;
+}};
+auto compute_b{[](VecI &tt, VecI &y, Scalar st2) -> Scalar {
+  const auto inc{Batch::size};
+  const auto size{arr.size()};
+  const auto vec_size{size - (size % inc)};
+  auto sum{0.F};
+  for (decltype(0 + vec_size + 1) i = 0; i < vec_size; i += inc) {
+    auto att{Batch::load_aligned(&tt[i])};
+    auto ay{Batch::load_aligned(&y[i])};
+    sum += reduce_add((att * ay) / st2);
+  }
+  return sum;
+}};
 // From Numerical Recipes
 class Fitab {
 public:
   Fitab(VecI &xx, VecI &yy) : ndata{static_cast<int>(xx.size())}, x{xx}, y{yy} {
-    const auto inc{Batch::size()};
+    const auto inc{Batch::size};
     const auto size{x.size()};
     const auto vec_size{size - (size % inc)};
     const auto sx{sum(x)};
     const auto sy{sum(y)};
     const auto ss{static_cast<Scalar>(ndata)};
     const auto sxoss{sx / ss};
-    const auto tt{x - sxoss};
-    const auto st2{pow(tt, 2).sum()};
-    b = ((tt * y) / st2).sum();
+    const auto tt{([&]() {
+      auto res{Vec(size)};
+      asub(x, sxoss, res);
+      return res;
+    })()};
+    const auto st2{squaredsum(tt)};
+    b = compute_b(tt, y, st2);
     a = ((sy - (b * sx)) / ss);
     siga = sqrt((1.0F + ((sx * sx) / (ss * st2))) / ss);
     sigb = sqrt(1.0F / st2);

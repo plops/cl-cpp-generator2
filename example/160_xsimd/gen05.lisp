@@ -12,7 +12,7 @@
 						      ))))
 
 (let ((l-fit `(a siga b sigb chi2 sigdat)))
-  (defparameter *source-dir* #P"example/160_xsimd/source02/src/")
+  (defparameter *source-dir* #P"example/160_xsimd/source05/src/")
   (defparameter *full-source-dir* (asdf:system-relative-pathname
 				   'cl-cpp-generator2
 				   *source-dir*))
@@ -64,26 +64,92 @@
       thread
       popl.hpp
       )
+     (include "xsimd/xsimd.hpp")
    
      "using namespace std;"
-     "using namespace std::execution;"
 
-     
-					;(include "xsimd/xsimd.hpp")
 
-					;"using namespace xsimd;"
-
+     "using namespace xsimd;"
      "using Scalar = float;"
-					;"using ScalarI = const Scalar;"
-     
-					;"using XVec = vector<Scalar,xsimd::default_allocator<Scalar>>;"
-					;"using XBatch = xsimd::batch<Scalar,avx2>;"
 
 
-     "using Vec = valarray<Scalar>;"
+          
+     "using Vec = std::vector<Scalar,xsimd::default_allocator<Scalar>>;"
      "using VecI = const Vec;"
+     "using Batch = xsimd::batch<Scalar,avx2>;"
+
+
+     
+
+
+
      "constexpr auto Pol = std::execution::par_unseq;"
 
+     
+     (let ((sum (lambda (arr)
+		  ;; = sum(arr)
+		  (declare (capture "")
+			   (type VecI& arr)
+			   (values Scalar))
+		   (letc ((inc Batch--size)
+			  (size (arr.size))
+			  (vec_size (- size
+				       (% size inc)))))
+		   (let ((sum 0s0))
+		     (dotimes (i vec_size inc)
+		       (incf sum (reduce_add (Batch--load_aligned (ref (aref arr i)))))))
+		   (return sum)))
+	   (asub (lambda (res arr s)
+		   ;; res = arr - s
+		   (declare (capture "")
+			    (type VecI& arr)
+			    (type Vec& res)
+			    (type Scalar s)
+			    )
+		   (letc ((inc Batch--size)
+			  (size (arr.size))
+			  (vec_size (- size
+				       (% size inc)))))
+		   (dotimes (i vec_size inc)
+		     (letc ((a (- (Batch--load_aligned (ref (aref arr i)))
+				  s)))
+			   (a.store_aligned
+			    (ref (aref res i)))))))
+	   (squaredsum (lambda (arr)
+		     ;; = sum(arr**2)
+		     (declare (capture "")
+			      (type VecI& arr)
+			      (values Scalar))
+		   (letc ((inc Batch--size)
+			  (size (arr.size))
+			  (vec_size (- size
+				       (% size inc)))))
+		   (let ((sum 0s0))
+		     (dotimes (i vec_size inc)
+		       (incf sum (reduce_add (pow
+					      (Batch--load_aligned
+					       (ref (aref arr i)))
+					      2)))))
+		   (return sum)))
+	   (compute_b (lambda (tt y st2)
+		     ;; = sum( tt*y / st2 ) 
+		     (declare (capture "")
+			      (type VecI& tt y)
+			      (type Scalar st2)
+			      (values Scalar))
+		   (letc ((inc Batch--size)
+			  (size (arr.size))
+			  (vec_size (- size
+				       (% size inc)))))
+		   (let ((sum 0s0))
+		     (dotimes (i vec_size inc)
+		       (let ((att (Batch--load_aligned
+				   (ref (aref tt i))))
+			     (ay (Batch--load_aligned
+				   (ref (aref y i)))))
+			(incf sum (reduce_add (/ (* att ay) st2))))))
+		   (return sum)))))
+     
      (comments "From Numerical Recipes")
      (defclass+ Fitab ()
       
@@ -95,22 +161,28 @@
 			     (x xx)
 			     (y yy)
 			     ))
-	 (letc ((sx (x.sum)
-		    )))
-	 (letc ((sy (y.sum))))
+	 (letc ((inc Batch--size)
+		(size (x.size))
+		(vec_size (- size
+			     (% size inc)))))
+	 (letc ((sx (sum x))
+		(sy (sum y))))
+	 
 	 (letc ((ss (static_cast<Scalar> ndata))
 		(sxoss (/ sx ss)))
 	       )
 	 
-	 (letc ((tt (- x sxoss))
-		(st2 (dot (pow tt 2)
-			  (sum)))
+	 (letc ((tt ((lambda ()
+		       (let ((res (Vec size)
+				  
+					;(- x sxoss)
+				  ))
+			 (asub x sxoss res))
+		       (return res))))
+		(st2 (squaredsum tt))
 		)
 	       )
-	 (setf b (dot (paren
-		       (/ (* tt y)
-			  st2))
-		      (sum)))
+	 (setf b (compute_b tt y st2))
 	 (setf a (/ (- sy (* b sx))
 		    ss))
 	 (setf siga (sqrt (/ (+ 1s0 (/ (* sx sx)
