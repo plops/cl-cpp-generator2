@@ -17,6 +17,7 @@ using Vec = std::vector<Scalar, xsimd::default_allocator<Scalar>>;
 using VecI = const Vec;
 using Batch = xsimd::batch<Scalar, avx2>;
 constexpr auto Pol = std::execution::par_unseq;
+// = sum(arr)
 auto sum{[](VecI &arr) -> Scalar {
   const auto inc{Batch::size};
   const auto size{arr.size()};
@@ -27,6 +28,7 @@ auto sum{[](VecI &arr) -> Scalar {
   }
   return sum;
 }};
+// res = arr - s
 auto asub{[](Vec &res, VecI &arr, Scalar s) {
   const auto inc{Batch::size};
   const auto size{arr.size()};
@@ -36,6 +38,7 @@ auto asub{[](Vec &res, VecI &arr, Scalar s) {
     a.store_aligned(&res[i]);
   }
 }};
+// = sum(arr**2)
 auto squaredsum{[](VecI &arr) -> Scalar {
   const auto inc{Batch::size};
   const auto size{arr.size()};
@@ -46,15 +49,29 @@ auto squaredsum{[](VecI &arr) -> Scalar {
   }
   return sum;
 }};
+// = sum( tt*y / st2 )
 auto compute_b{[](VecI &tt, VecI &y, Scalar st2) -> Scalar {
   const auto inc{Batch::size};
-  const auto size{arr.size()};
+  const auto size{tt.size()};
   const auto vec_size{size - (size % inc)};
   auto sum{0.F};
   for (decltype(0 + vec_size + 1) i = 0; i < vec_size; i += inc) {
     auto att{Batch::load_aligned(&tt[i])};
     auto ay{Batch::load_aligned(&y[i])};
     sum += reduce_add((att * ay) / st2);
+  }
+  return sum;
+}};
+// = sum((y-a-b*x)**2)
+auto compute_chi2{[](VecI &y, Scalar a, Scalar b, VecI &x) -> Scalar {
+  const auto inc{Batch::size};
+  const auto size{y.size()};
+  const auto vec_size{size - (size % inc)};
+  auto sum{0.F};
+  for (decltype(0 + vec_size + 1) i = 0; i < vec_size; i += inc) {
+    auto ax{Batch::load_aligned(&x[i])};
+    auto ay{Batch::load_aligned(&y[i])};
+    sum += reduce_add(pow(ay - a - (ax * b), 2));
   }
   return sum;
 }};
@@ -71,7 +88,7 @@ public:
     const auto sxoss{sx / ss};
     const auto tt{([&]() {
       auto res{Vec(size)};
-      asub(x, sxoss, res);
+      asub(res, x, sxoss);
       return res;
     })()};
     const auto st2{squaredsum(tt)};
@@ -79,8 +96,7 @@ public:
     a = ((sy - (b * sx)) / ss);
     siga = sqrt((1.0F + ((sx * sx) / (ss * st2))) / ss);
     sigb = sqrt(1.0F / st2);
-    // compute chi2
-    chi2 = pow(y - a - (b * x), 2).sum();
+    chi2 = compute_chi2(y, a, b, x);
     if (2 < ndata) {
       sigdat = sqrt(chi2 / (static_cast<Scalar>(ndata) - 2.0F));
     }

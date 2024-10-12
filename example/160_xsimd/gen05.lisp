@@ -85,70 +85,96 @@
 
      "constexpr auto Pol = std::execution::par_unseq;"
 
-     
+
+     (comments "= sum(arr)")
      (let ((sum (lambda (arr)
 		  ;; = sum(arr)
 		  (declare (capture "")
 			   (type VecI& arr)
 			   (values Scalar))
-		   (letc ((inc Batch--size)
-			  (size (arr.size))
-			  (vec_size (- size
-				       (% size inc)))))
-		   (let ((sum 0s0))
-		     (dotimes (i vec_size inc)
-		       (incf sum (reduce_add (Batch--load_aligned (ref (aref arr i)))))))
-		   (return sum)))
-	   (asub (lambda (res arr s)
-		   ;; res = arr - s
-		   (declare (capture "")
-			    (type VecI& arr)
-			    (type Vec& res)
-			    (type Scalar s)
-			    )
-		   (letc ((inc Batch--size)
-			  (size (arr.size))
-			  (vec_size (- size
-				       (% size inc)))))
-		   (dotimes (i vec_size inc)
-		     (letc ((a (- (Batch--load_aligned (ref (aref arr i)))
-				  s)))
-			   (a.store_aligned
-			    (ref (aref res i)))))))
-	   (squaredsum (lambda (arr)
-		     ;; = sum(arr**2)
+		  (letc ((inc Batch--size)
+			 (size (arr.size))
+			 (vec_size (- size
+				      (% size inc)))))
+		  (let ((sum 0s0))
+		    (dotimes (i vec_size inc)
+		      (incf sum (reduce_add (Batch--load_aligned (ref (aref arr i)))))))
+		  (return sum)))))
+     (do0
+      (comments "res = arr - s")
+      (let ( (asub (lambda (res arr s)
+		     ;; res = arr - s
 		     (declare (capture "")
 			      (type VecI& arr)
-			      (values Scalar))
-		   (letc ((inc Batch--size)
-			  (size (arr.size))
-			  (vec_size (- size
-				       (% size inc)))))
-		   (let ((sum 0s0))
+			      (type Vec& res)
+			      (type Scalar s)
+			      )
+		     (letc ((inc Batch--size)
+			    (size (arr.size))
+			    (vec_size (- size
+					 (% size inc)))))
 		     (dotimes (i vec_size inc)
-		       (incf sum (reduce_add (pow
-					      (Batch--load_aligned
-					       (ref (aref arr i)))
-					      2)))))
-		   (return sum)))
-	   (compute_b (lambda (tt y st2)
-		     ;; = sum( tt*y / st2 ) 
-		     (declare (capture "")
-			      (type VecI& tt y)
-			      (type Scalar st2)
-			      (values Scalar))
-		   (letc ((inc Batch--size)
-			  (size (arr.size))
-			  (vec_size (- size
-				       (% size inc)))))
-		   (let ((sum 0s0))
-		     (dotimes (i vec_size inc)
-		       (let ((att (Batch--load_aligned
-				   (ref (aref tt i))))
-			     (ay (Batch--load_aligned
-				   (ref (aref y i)))))
-			(incf sum (reduce_add (/ (* att ay) st2))))))
-		   (return sum)))))
+		       (letc ((a (- (Batch--load_aligned (ref (aref arr i)))
+				    s)))
+			     (a.store_aligned
+			      (ref (aref res i))))))))))
+     (do0 (comments "= sum(arr**2)")
+      (let ( (squaredsum (lambda (arr)
+			   ;; = sum(arr**2)
+			   (declare (capture "")
+				    (type VecI& arr)
+				    (values Scalar))
+			   (letc ((inc Batch--size)
+				  (size (arr.size))
+				  (vec_size (- size
+					       (% size inc)))))
+			   (let ((sum 0s0))
+			     (dotimes (i vec_size inc)
+			       (incf sum (reduce_add (pow
+						      (Batch--load_aligned
+						       (ref (aref arr i)))
+						      2)))))
+			   (return sum))))))
+     (do0
+      (comments "= sum( tt*y / st2 ) ")
+      (let (  (compute_b (lambda (tt y st2)
+			   ;; = sum( tt*y / st2 ) 
+			   (declare (capture "")
+				    (type VecI& tt y)
+				    (type Scalar st2)
+				    (values Scalar))
+			   (letc ((inc Batch--size)
+				  (size (tt.size))
+				  (vec_size (- size
+					       (% size inc)))))
+			   (let ((sum 0s0))
+			     (dotimes (i vec_size inc)
+			       (let ((att (Batch--load_aligned
+					   (ref (aref tt i))))
+				     (ay (Batch--load_aligned
+					  (ref (aref y i)))))
+				 (incf sum (reduce_add (/ (* att ay) st2))))))
+			   (return sum))))))
+
+     (do0
+      (comments "= sum((y-a-b*x)**2)")
+      (let (  (compute_chi2 (lambda (y a b x)
+			      (declare (capture "")
+				       (type VecI& x y)
+				       (type Scalar a b)
+				       (values Scalar))
+			   (letc ((inc Batch--size)
+				  (size (y.size))
+				  (vec_size (- size
+					       (% size inc)))))
+			   (let ((sum 0s0))
+			     (dotimes (i vec_size inc)
+			       (let ((ax (Batch--load_aligned
+					   (ref (aref x i))))
+				     (ay (Batch--load_aligned
+					  (ref (aref y i)))))
+				 (incf sum (reduce_add (pow (- ay a (* ax b)) 2))))))
+			   (return sum))))))
      
      (comments "From Numerical Recipes")
      (defclass+ Fitab ()
@@ -177,7 +203,7 @@
 				  
 					;(- x sxoss)
 				  ))
-			 (asub x sxoss res))
+			 (asub res x sxoss))
 		       (return res))))
 		(st2 (squaredsum tt))
 		)
@@ -189,10 +215,7 @@
 				       (* ss st2)) )
 			     ss))
 	       sigb (sqrt (/ 1s0 st2)))
-	 (comments "compute chi2")
-	 (setf chi2 (dot (pow (- y a (* b x))
-			      2)
-			 (sum)))
+	 (setf chi2 (compute_chi2 y a b x) )
 	 (when (< 2 ndata)
 	   (setf sigdat (sqrt (/ chi2
 				 (- (static_cast<Scalar> ndata) 2s0)))))
