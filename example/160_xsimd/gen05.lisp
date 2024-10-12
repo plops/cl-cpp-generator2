@@ -40,9 +40,9 @@
 		   (string "' ")))   
 	 std--endl))
   (defun begin (arr)
-   `(ref (aref ,arr 0)) )
+    `(ref (aref ,arr 0)) )
   (defun end (arr)
-   `(+ (ref (aref ,arr 0)) (dot ,arr (size))))
+    `(+ (ref (aref ,arr 0)) (dot ,arr (size))))
   (write-source 
    (asdf:system-relative-pathname
     'cl-cpp-generator2 
@@ -124,22 +124,22 @@
       (comments "= sum(| arr - s |) .. subtract scalar, compute absolute value, sum")
       (let ( (subabssum (lambda (arr s)
 		    
-		     (declare (capture "")
-			      (type VecI& arr)
-			      (type Vec& res)
-			      (type Scalar s)
-			      )
-		     (letc ((inc Batch--size)
-			    (size (arr.size))
-			    (vec_size (- size
-					 (% size inc)))))
-		     (let ((sum 0s0)))
-		     (dotimes (i vec_size inc)
-		       (incf sum
-			     (reduce_add
-			      (abs (- (Batch--load_aligned (ref (aref arr i)))
-				      s)))))
-		     (return sum))))))
+			  (declare (capture "")
+				   (type VecI& arr)
+				   (type Scalar s)
+				   (values Scalar)
+				   )
+			  (letc ((inc Batch--size)
+				 (size (arr.size))
+				 (vec_size (- size
+					      (% size inc)))))
+			  (let ((sum 0s0)))
+			  (dotimes (i vec_size inc)
+			    (incf sum
+				  (reduce_add
+				   (abs (- (Batch--load_aligned (ref (aref arr i)))
+					   s)))))
+			  (return sum))))))
      (do0 (comments "= sum(arr**2)")
 	  (let ( (squaredsum (lambda (arr)
 			       ;; = sum(arr**2)
@@ -185,18 +185,18 @@
 				       (type VecI& x y)
 				       (type Scalar a b)
 				       (values Scalar))
-			   (letc ((inc Batch--size)
-				  (size (y.size))
-				  (vec_size (- size
-					       (% size inc)))))
-			   (let ((sum 0s0))
-			     (dotimes (i vec_size inc)
-			       (let ((ax (Batch--load_aligned
-					   (ref (aref x i))))
-				     (ay (Batch--load_aligned
-					  (ref (aref y i)))))
-				 (incf sum (reduce_add (pow (- ay a (* ax b)) 2))))))
-			   (return sum))))))
+			      (letc ((inc Batch--size)
+				     (size (y.size))
+				     (vec_size (- size
+						  (% size inc)))))
+			      (let ((sum 0s0))
+				(dotimes (i vec_size inc)
+				  (let ((ax (Batch--load_aligned
+					     (ref (aref x i))))
+					(ay (Batch--load_aligned
+					     (ref (aref y i)))))
+				    (incf sum (reduce_add (pow (- ay a (* ax b)) 2))))))
+			      (return sum))))))
      
      (comments "From Numerical Recipes")
      (defclass+ Fitab ()
@@ -465,9 +465,9 @@
 						  (median (select (/ (- (static_cast<int> (data.size)) 1) 2)
 								  data))
 						  (adev 
-							(/ (subabssum data median)
+						   (/ (subabssum data median)
 						    
-							   N))
+						      N))
 						  ;; error in the mean due to sampling
 						  (mean_stdev (/ adev (sqrt N)))
 						  ;; error in the standard deviation due to sampling
@@ -485,19 +485,60 @@
 						    (fitres.end)
 						    ,(begin 'data)
 						    filter)
+					 (do0
+					  (comments " = sum( (data-s) ** 2 )")
+					  (let ((var_pass1 (lambda (arr s)
+		    
+							     (declare (capture "")
+								      (type VecI& arr)
+								      
+								      (type Scalar s)
+								      (values Scalar))
+							     (letc ((inc Batch--size)
+								    (size (arr.size))
+								    (vec_size (- size
+										 (% size inc)))))
+							     (let ((sum 0s0)))
+							     (dotimes (i vec_size inc)
+							       (incf sum
+								     (reduce_add
+								      (pow (- (Batch--load_aligned (ref (aref arr i)))
+									      s)
+									   2))))
+							     (return sum))))))
+					 (do0
+					  (comments " = sum( data-s )")
+					  (let ((var_pass2 (lambda (arr s)
+		    
+							     (declare (capture "")
+								      (type VecI& arr)
+								      
+								      (type Scalar s)
+								      (values Scalar))
+							     (letc ((inc Batch--size)
+								    (size (arr.size))
+								    (vec_size (- size
+										 (% size inc)))))
+							     (let ((sum 0s0)))
+							     (dotimes (i vec_size inc)
+							       (incf sum
+								     (reduce_add
+								      (- (Batch--load_aligned (ref (aref arr i)))
+									 s)
+								      )))
+							     (return sum))))))
 					 (letc ((N (static_cast<Scalar> (data.size)))
 						(mean (/ (sum data)
 							 N))
 					
 						;; 14.1.8 corrected two-pass algorithm from bevington 2002
+						
 						(stdev
-						 (sqrt (/ (- (dot (pow (- data mean) 2)
-								  (sum))
-							     (/ (pow
-								 (dot (paren (- data mean))
-								      (sum))
-								 2)
-								N))
+						 (sqrt (/ (- (var_pass1 data mean)
+							      (/ (pow
+								  (var_pass2 data mean)
+								  2s0)
+								 N))
 							  (- N 1s0))))
 						;; error in the mean due to sampling
 						(mean_stdev (/ stdev (sqrt N)))

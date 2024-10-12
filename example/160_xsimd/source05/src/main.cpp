@@ -39,7 +39,7 @@ auto asub{[](Vec &res, VecI &arr, Scalar s) {
   }
 }};
 // = sum(| arr - s |) .. subtract scalar, compute absolute value, sum
-auto subabssum{[](VecI &arr, Scalar s) {
+auto subabssum{[](VecI &arr, Scalar s) -> Scalar {
   const auto inc{Batch::size};
   const auto size{arr.size()};
   const auto vec_size{size - (size % inc)};
@@ -225,10 +225,32 @@ int main(int argc, char **argv) {
       auto data{Vec(fitres.size())};
       data.resize(fitres.size());
       transform(fitres.begin(), fitres.end(), &data[0], filter);
+      //  = sum( (data-s) ** 2 )
+      auto var_pass1{[](VecI &arr, Scalar s) -> Scalar {
+        const auto inc{Batch::size};
+        const auto size{arr.size()};
+        const auto vec_size{size - (size % inc)};
+        auto sum{0.F};
+        for (decltype(0 + vec_size + 1) i = 0; i < vec_size; i += inc) {
+          sum += reduce_add(pow(Batch::load_aligned(&arr[i]) - s, 2));
+        }
+        return sum;
+      }};
+      //  = sum( data-s )
+      auto var_pass2{[](VecI &arr, Scalar s) -> Scalar {
+        const auto inc{Batch::size};
+        const auto size{arr.size()};
+        const auto vec_size{size - (size % inc)};
+        auto sum{0.F};
+        for (decltype(0 + vec_size + 1) i = 0; i < vec_size; i += inc) {
+          sum += reduce_add(Batch::load_aligned(&arr[i]) - s);
+        }
+        return sum;
+      }};
       const auto N{static_cast<Scalar>(data.size())};
       const auto mean{sum(data) / N};
       const auto stdev{sqrt(
-          ((pow(data - mean, 2).sum()) - (pow((data - mean).sum(), 2) / N)) /
+          (var_pass1(data, mean) - (pow(var_pass2(data, mean), 2.0F) / N)) /
           (N - 1.0F))};
       const auto mean_stdev{stdev / sqrt(N)};
       const auto stdev_stdev{stdev / sqrt(2 * N)};
