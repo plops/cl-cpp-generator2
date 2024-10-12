@@ -71,7 +71,7 @@
      "using VecI = const Vec;"
      "using Batch = xsimd::batch<Scalar,avx2>;"
 
-     "constexpr int N = 8192;"
+     "constexpr int N = 8*1024;"
 
      (defun fun_valarray (a b)
        (declare (type AVecI& a b)
@@ -104,12 +104,21 @@
        (declare (type int argc)
 		(type char** argv)
 		(values int))
-       (letc ((aa (AVec N))
-	     (ab (AVec N)))
-	 ,(lprint :vars `(
-			  (fun_valarray aa ab))))
+       (let ((aa (AVec N))
+	      (ab (AVec N)))
+	     (dotimes (i N)
+	       (setf (aref aa i) (sin (* .1s0 i))
+		     )
+	       (setf (aref ab i) 2s0 ;(+ (cos (* .3s0 i)) (/ 1s0 i))
+		     ))
+	     ,(lprint :vars `(
+			      (fun_valarray aa ab))))
        (let ((a (Vec N))
 	     (b (Vec N)))
+	 (dotimes (i N)
+	       (setf (aref a i) (sin (* .1s0 i)))
+	       (setf (aref b i) 2s0))
+	 
 	 ,(lprint :vars `((fun_simd  a b))))
        (return 0)))
    :omit-parens t

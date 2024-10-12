@@ -13,7 +13,7 @@ using AVecI = const AVec;
 using Vec = std::vector<Scalar, xsimd::default_allocator<Scalar>>;
 using VecI = const Vec;
 using Batch = xsimd::batch<Scalar, avx2>;
-constexpr int N = 8192;
+constexpr int N = 8 * 1024;
 
 Scalar fun_valarray(AVecI &a, AVecI &b) { return std::pow(a * b, 2).sum(); }
 
@@ -33,12 +33,20 @@ Scalar fun_simd(VecI &a, VecI &b) {
 }
 
 int main(int argc, char **argv) {
-  const auto aa{AVec(N)};
-  const auto ab{AVec(N)};
+  auto aa{AVec(N)};
+  auto ab{AVec(N)};
+  for (decltype(0 + N + 1) i = 0; i < N; i += 1) {
+    aa[i] = sin(0.10F * i);
+    ab[i] = 2.0F;
+  }
   std::cout << std::format("( :fun_valarray(aa, ab) '{}')\n",
                            fun_valarray(aa, ab));
   auto a{Vec(N)};
   auto b{Vec(N)};
+  for (decltype(0 + N + 1) i = 0; i < N; i += 1) {
+    a[i] = sin(0.10F * i);
+    b[i] = 2.0F;
+  }
   std::cout << std::format("( :fun_simd(a, b) '{}')\n", fun_simd(a, b));
   return 0;
 }
