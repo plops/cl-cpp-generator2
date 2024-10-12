@@ -123,12 +123,13 @@
 		      (letc ((start  ("high_resolution_clock::now")
 				     ))
 			    (let ((res 0s0))
-			     (dotimes (i 10000)
+			     (dotimes (i 100000)
 			       (let ((c (* 1s-4 i)))
 				 (incf res (,fun a b c)))))
 			    (letc ((end ("high_resolution_clock::now"))
 				   (duration (duration_cast<Timebase> (- end start))))))
 		      ,(lprint :vars `((,fun  a b .1s0)
+				       res
 				       duration))
 		      ))))
       

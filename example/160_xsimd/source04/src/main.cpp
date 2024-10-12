@@ -47,15 +47,15 @@ int main(int argc, char **argv) {
     }
     const auto start{high_resolution_clock::now()};
     auto res{0.F};
-    for (decltype(0 + 10000 + 1) i = 0; i < 10000; i += 1) {
+    for (decltype(0 + 100000 + 1) i = 0; i < 100000; i += 1) {
       auto c{1.00e-4F * i};
       res += fun_valarray(a, b, c);
     }
     const auto end{high_resolution_clock::now()};
     const auto duration{duration_cast<Timebase>(end - start)};
     std::cout << std::format(
-        "( :fun_valarray(a, b, 0.10F) '{}' :duration '{}')\n",
-        fun_valarray(a, b, 0.10F), duration);
+        "( :fun_valarray(a, b, 0.10F) '{}' :res '{}' :duration '{}')\n",
+        fun_valarray(a, b, 0.10F), res, duration);
   }
   {
     auto a{Vec(N)};
@@ -66,14 +66,15 @@ int main(int argc, char **argv) {
     }
     const auto start{high_resolution_clock::now()};
     auto res{0.F};
-    for (decltype(0 + 10000 + 1) i = 0; i < 10000; i += 1) {
+    for (decltype(0 + 100000 + 1) i = 0; i < 100000; i += 1) {
       auto c{1.00e-4F * i};
       res += fun_simd(a, b, c);
     }
     const auto end{high_resolution_clock::now()};
     const auto duration{duration_cast<Timebase>(end - start)};
-    std::cout << std::format("( :fun_simd(a, b, 0.10F) '{}' :duration '{}')\n",
-                             fun_simd(a, b, 0.10F), duration);
+    std::cout << std::format(
+        "( :fun_simd(a, b, 0.10F) '{}' :res '{}' :duration '{}')\n",
+        fun_simd(a, b, 0.10F), res, duration);
   }
   return 0;
 }
