@@ -438,6 +438,8 @@
 	     (dis (normal_distribution<float> 0s0 1s0))))
 
        (let ((lin (lambda (n A B Sig repeat)
+		    (comments "number points must be divisible by 8 (avx2 batch size)")
+		    (assert (== (% n Batch--size) 0) )
 		    (let (		;(n 8)
 			  (x (Vec n))
 			  (y (Vec n))
@@ -535,10 +537,10 @@
 						
 						(stdev
 						 (sqrt (/ (- (var_pass1 data mean)
-							      (/ (pow
-								  (var_pass2 data mean)
-								  2s0)
-								 N))
+							     (/ (pow
+								 (var_pass2 data mean)
+								 2s0)
+								N))
 							  (- N 1s0))))
 						;; error in the mean due to sampling
 						(mean_stdev (/ stdev (sqrt N)))
@@ -562,9 +564,9 @@
 								    (* B xi))))
 						       )
 					    (return (Fitab x y))))
-			    (fitres (vector<Fitab>))
-			   
+			    
 			    ))
+		      (let ((fitres (vector<Fitab>))))
 		      (fitres.reserve repeat)
 		      (generate_n (back_inserter fitres)
 				  repeat

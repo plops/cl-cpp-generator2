@@ -201,6 +201,8 @@ int main(int argc, char **argv) {
   auto gen{mt19937(random_device{}())};
   auto dis{normal_distribution<float>(0.F, 1.0F)};
   auto lin{[&](auto n, auto A, auto B, auto Sig, auto repeat) {
+    // number points must be divisible by 8 (avx2 batch size)
+    assert((n % Batch::size) == 0);
     auto x{Vec(n)};
     auto y{Vec(n)};
     auto fill_x{[&]() { iota(&x[0], &x[0] + x.size(), 1.0F); }};
