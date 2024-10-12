@@ -86,7 +86,7 @@
      "constexpr auto Pol = std::execution::par_unseq;"
 
 
-     (comments "= sum(arr)")
+     (comments "= sum(arr) ")
      (let ((sum (lambda (arr)
 		  ;; = sum(arr)
 		  (declare (capture "")
@@ -100,8 +100,9 @@
 		    (dotimes (i vec_size inc)
 		      (incf sum (reduce_add (Batch--load_aligned (ref (aref arr i)))))))
 		  (return sum)))))
+     
      (do0
-      (comments "res = arr - s")
+      (comments "res = arr - s .. array subtract")
       (let ( (asub (lambda (res arr s)
 		     ;; res = arr - s
 		     (declare (capture "")
@@ -118,23 +119,44 @@
 				    s)))
 			     (a.store_aligned
 			      (ref (aref res i))))))))))
+
+     (do0
+      (comments "= sum(| arr - s |) .. subtract scalar, compute absolute value, sum")
+      (let ( (subabssum (lambda (arr s)
+		    
+		     (declare (capture "")
+			      (type VecI& arr)
+			      (type Vec& res)
+			      (type Scalar s)
+			      )
+		     (letc ((inc Batch--size)
+			    (size (arr.size))
+			    (vec_size (- size
+					 (% size inc)))))
+		     (let ((sum 0s0)))
+		     (dotimes (i vec_size inc)
+		       (incf sum
+			     (reduce_add
+			      (abs (- (Batch--load_aligned (ref (aref arr i)))
+				      s)))))
+		     (return sum))))))
      (do0 (comments "= sum(arr**2)")
-      (let ( (squaredsum (lambda (arr)
-			   ;; = sum(arr**2)
-			   (declare (capture "")
-				    (type VecI& arr)
-				    (values Scalar))
-			   (letc ((inc Batch--size)
-				  (size (arr.size))
-				  (vec_size (- size
-					       (% size inc)))))
-			   (let ((sum 0s0))
-			     (dotimes (i vec_size inc)
-			       (incf sum (reduce_add (pow
-						      (Batch--load_aligned
-						       (ref (aref arr i)))
-						      2)))))
-			   (return sum))))))
+	  (let ( (squaredsum (lambda (arr)
+			       ;; = sum(arr**2)
+			       (declare (capture "")
+					(type VecI& arr)
+					(values Scalar))
+			       (letc ((inc Batch--size)
+				      (size (arr.size))
+				      (vec_size (- size
+						   (% size inc)))))
+			       (let ((sum 0s0))
+				 (dotimes (i vec_size inc)
+				   (incf sum (reduce_add (pow
+							  (Batch--load_aligned
+							   (ref (aref arr i)))
+							  2)))))
+			       (return sum))))))
      (do0
       (comments "= sum( tt*y / st2 ) ")
       (let (  (compute_b (lambda (tt y st2)
@@ -442,12 +464,10 @@
 					   (letc ((N (static_cast<Scalar> (data.size)))
 						  (median (select (/ (- (static_cast<int> (data.size)) 1) 2)
 								  data))
-						  (adev
-						   (/ (dot (abs (- data median))
-							   
-							   (sum))
+						  (adev 
+							(/ (subabssum data median)
 						    
-						      N))
+							   N))
 						  ;; error in the mean due to sampling
 						  (mean_stdev (/ adev (sqrt N)))
 						  ;; error in the standard deviation due to sampling
@@ -466,7 +486,7 @@
 						    ,(begin 'data)
 						    filter)
 					 (letc ((N (static_cast<Scalar> (data.size)))
-						(mean (/ (data.sum)
+						(mean (/ (sum data)
 							 N))
 					
 						;; 14.1.8 corrected two-pass algorithm from bevington 2002

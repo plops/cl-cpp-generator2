@@ -28,7 +28,7 @@ auto sum{[](VecI &arr) -> Scalar {
   }
   return sum;
 }};
-// res = arr - s
+// res = arr - s .. array subtract
 auto asub{[](Vec &res, VecI &arr, Scalar s) {
   const auto inc{Batch::size};
   const auto size{arr.size()};
@@ -37,6 +37,17 @@ auto asub{[](Vec &res, VecI &arr, Scalar s) {
     const auto a{Batch::load_aligned(&arr[i]) - s};
     a.store_aligned(&res[i]);
   }
+}};
+// = sum(| arr - s |) .. subtract scalar, compute absolute value, sum
+auto subabssum{[](VecI &arr, Scalar s) {
+  const auto inc{Batch::size};
+  const auto size{arr.size()};
+  const auto vec_size{size - (size % inc)};
+  auto sum{0.F};
+  for (decltype(0 + vec_size + 1) i = 0; i < vec_size; i += inc) {
+    sum += reduce_add(abs(Batch::load_aligned(&arr[i]) - s));
+  }
+  return sum;
 }};
 // = sum(arr**2)
 auto squaredsum{[](VecI &arr) -> Scalar {
@@ -203,7 +214,7 @@ int main(int argc, char **argv) {
       transform(fitres.begin(), fitres.end(), &data[0], filter);
       const auto N{static_cast<Scalar>(data.size())};
       const auto median{select((static_cast<int>(data.size()) - 1) / 2, data)};
-      const auto adev{(abs(data - median).sum()) / N};
+      const auto adev{subabssum(data, median) / N};
       const auto mean_stdev{adev / sqrt(N)};
       const auto stdev_stdev{adev / sqrt(2 * N)};
       return make_tuple(median, mean_stdev, adev, stdev_stdev);
@@ -215,7 +226,7 @@ int main(int argc, char **argv) {
       data.resize(fitres.size());
       transform(fitres.begin(), fitres.end(), &data[0], filter);
       const auto N{static_cast<Scalar>(data.size())};
-      const auto mean{data.sum() / N};
+      const auto mean{sum(data) / N};
       const auto stdev{sqrt(
           ((pow(data - mean, 2).sum()) - (pow((data - mean).sum(), 2) / N)) /
           (N - 1.0F))};
