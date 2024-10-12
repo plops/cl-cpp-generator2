@@ -17,10 +17,28 @@ constexpr int N = 8192;
 
 Scalar fun_valarray(AVecI &a, AVecI &b) { return std::pow(a * b, 2).sum(); }
 
+Scalar fun_simd(VecI &a, VecI &b) {
+  auto inc{Batch::size};
+  auto size{a.size()};
+  auto sum{Scalar(0.F)};
+  auto vec_size{size - (size % inc)};
+  // size for which vecotorization is possible
+  for (std::size_t i = 0; i < vec_size; i += inc) {
+    auto avec{Batch::load_aligned(&a[i])};
+    auto bvec{Batch::load_aligned(&b[i])};
+    auto rvec{pow(avec * bvec, 2)};
+    sum += reduce_add(rvec);
+  }
+  return sum;
+}
+
 int main(int argc, char **argv) {
   const auto aa{AVec(N)};
   const auto ab{AVec(N)};
   std::cout << std::format("( :fun_valarray(aa, ab) '{}')\n",
                            fun_valarray(aa, ab));
+  auto a{Vec(N)};
+  auto b{Vec(N)};
+  std::cout << std::format("( :fun_simd(a, b) '{}')\n", fun_simd(a, b));
   return 0;
 }
