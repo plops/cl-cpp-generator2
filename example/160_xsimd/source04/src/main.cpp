@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
     }
     const auto start{high_resolution_clock::now()};
     auto res{0.F};
-    for (decltype(0 + 100000 + 1) i = 0; i < 100000; i += 1) {
+    for (decltype(0 + 1'000'000 + 1) i = 0; i < 1'000'000; i += 1) {
       auto c{1.00e-4F * i};
       res += fun_valarray(a, b, c);
     }
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
     }
     const auto start{high_resolution_clock::now()};
     auto res{0.F};
-    for (decltype(0 + 100000 + 1) i = 0; i < 100000; i += 1) {
+    for (decltype(0 + 1'000'000 + 1) i = 0; i < 1'000'000; i += 1) {
       auto c{1.00e-4F * i};
       res += fun_simd(a, b, c);
     }

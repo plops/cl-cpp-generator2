@@ -123,7 +123,7 @@
 		      (letc ((start  ("high_resolution_clock::now")
 				     ))
 			    (let ((res 0s0))
-			     (dotimes (i 100000)
+			     (dotimes (i "1'000'000")
 			       (let ((c (* 1s-4 i)))
 				 (incf res (,fun a b c)))))
 			    (letc ((end ("high_resolution_clock::now"))
