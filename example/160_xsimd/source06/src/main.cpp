@@ -257,11 +257,11 @@ int main(int argc, char **argv) {
     }};
     auto fitres{
         vector<tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar>>(repeat)};
-    const auto numThreads{1};
+    const auto numThreads{8};
     const auto elements_per_thread{repeat / numThreads};
     auto threads{vector<jthread>(numThreads)};
     for (decltype(0 + numThreads + 1) j = 0; j < numThreads; j += 1) {
-      threads[j] = jthread([&]() {
+      threads[j] = jthread([elements_per_thread, j, &fitres, &generate_fit]() {
         for (decltype(0 + elements_per_thread + 1) i = 0;
              i < elements_per_thread; i += 1) {
           fitres[(j * elements_per_thread + i)] = generate_fit();
