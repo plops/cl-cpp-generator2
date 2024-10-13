@@ -156,6 +156,65 @@ Scalar select(const int k, Vec &arr) {
   throw out_of_range("Invalid index for selection");
 }
 
+auto stat_median{[](const auto &fitres,
+                    auto filter) -> tuple<Scalar, Scalar, Scalar, Scalar> {
+  // compute median and median absolute deviation Numerical recipes 8.5
+  // and 14.1.4
+  auto data{Vec(fitres.size())};
+  data.resize(fitres.size());
+  transform(fitres.begin(), fitres.end(), &data[0], filter);
+  const auto N{static_cast<Scalar>(data.size())};
+  const auto median{select((static_cast<int>(data.size()) - 1) / 2, data)};
+  const auto adev{subabssum(data, median) / N};
+  const auto mean_stdev{adev / sqrt(N)};
+  const auto stdev_stdev{adev / sqrt(2 * N)};
+  return make_tuple(median, mean_stdev, adev, stdev_stdev);
+}};
+auto stat_mean{[](const auto &fitres,
+                  auto filter) -> tuple<Scalar, Scalar, Scalar, Scalar> {
+  // compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8
+  auto data{Vec(fitres.size())};
+  data.resize(fitres.size());
+  transform(fitres.begin(), fitres.end(), &data[0], filter);
+  //  = sum( (data-s) ** 2 )
+  auto var_pass1{[](VecI &arr, Scalar s) -> Scalar {
+    const auto inc{Batch::size};
+    const auto size{arr.size()};
+    const auto vec_size{size - (size % inc)};
+    auto sum{0.F};
+    for (decltype(0 + vec_size + 1) i = 0; i < vec_size; i += inc) {
+      sum += reduce_add(pow(Batch::load_aligned(&arr[i]) - s, 2));
+    }
+    return sum;
+  }};
+  //  = sum( data-s )
+  auto var_pass2{[](VecI &arr, Scalar s) -> Scalar {
+    const auto inc{Batch::size};
+    const auto size{arr.size()};
+    const auto vec_size{size - (size % inc)};
+    auto sum{0.F};
+    for (decltype(0 + vec_size + 1) i = 0; i < vec_size; i += inc) {
+      sum += reduce_add(Batch::load_aligned(&arr[i]) - s);
+    }
+    return sum;
+  }};
+  const auto N{static_cast<Scalar>(data.size())};
+  const auto mean{sum(data) / N};
+  const auto stdev{
+      sqrt((var_pass1(data, mean) - (pow(var_pass2(data, mean), 2.0F) / N)) /
+           (N - 1.0F))};
+  const auto mean_stdev{stdev / sqrt(N)};
+  const auto stdev_stdev{stdev / sqrt(2 * N)};
+  return make_tuple(mean, mean_stdev, stdev, stdev_stdev);
+}};
+auto stat{[](const auto &fitres, auto filter, auto meanOption) {
+  if (meanOption->is_set()) {
+    return stat_mean(fitres, filter);
+  } else {
+    return stat_median(fitres, filter);
+  }
+}};
+
 int main(int argc, char **argv) {
   auto op{popl::OptionParser("allowed options")};
   auto numberRepeats{int(64)};
@@ -208,78 +267,26 @@ int main(int argc, char **argv) {
       return x;
     })()};
     auto y{Vec(n)};
-    auto stat_median{[&](const auto &fitres,
-                         auto filter) -> tuple<Scalar, Scalar, Scalar, Scalar> {
-      // compute median and median absolute deviation Numerical recipes 8.5
-      // and 14.1.4
-      auto data{Vec(fitres.size())};
-      data.resize(fitres.size());
-      transform(fitres.begin(), fitres.end(), &data[0], filter);
-      const auto N{static_cast<Scalar>(data.size())};
-      const auto median{select((static_cast<int>(data.size()) - 1) / 2, data)};
-      const auto adev{subabssum(data, median) / N};
-      const auto mean_stdev{adev / sqrt(N)};
-      const auto stdev_stdev{adev / sqrt(2 * N)};
-      return make_tuple(median, mean_stdev, adev, stdev_stdev);
-    }};
-    auto stat_mean{[&](const auto &fitres,
-                       auto filter) -> tuple<Scalar, Scalar, Scalar, Scalar> {
-      // compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8
-      auto data{Vec(fitres.size())};
-      data.resize(fitres.size());
-      transform(fitres.begin(), fitres.end(), &data[0], filter);
-      //  = sum( (data-s) ** 2 )
-      auto var_pass1{[](VecI &arr, Scalar s) -> Scalar {
-        const auto inc{Batch::size};
-        const auto size{arr.size()};
-        const auto vec_size{size - (size % inc)};
-        auto sum{0.F};
-        for (decltype(0 + vec_size + 1) i = 0; i < vec_size; i += inc) {
-          sum += reduce_add(pow(Batch::load_aligned(&arr[i]) - s, 2));
-        }
-        return sum;
-      }};
-      //  = sum( data-s )
-      auto var_pass2{[](VecI &arr, Scalar s) -> Scalar {
-        const auto inc{Batch::size};
-        const auto size{arr.size()};
-        const auto vec_size{size - (size % inc)};
-        auto sum{0.F};
-        for (decltype(0 + vec_size + 1) i = 0; i < vec_size; i += inc) {
-          sum += reduce_add(Batch::load_aligned(&arr[i]) - s);
-        }
-        return sum;
-      }};
-      const auto N{static_cast<Scalar>(data.size())};
-      const auto mean{sum(data) / N};
-      const auto stdev{sqrt(
-          (var_pass1(data, mean) - (pow(var_pass2(data, mean), 2.0F) / N)) /
-          (N - 1.0F))};
-      const auto mean_stdev{stdev / sqrt(N)};
-      const auto stdev_stdev{stdev / sqrt(2 * N)};
-      return make_tuple(mean, mean_stdev, stdev, stdev_stdev);
-    }};
-    auto stat{[&](const auto &fitres, auto filter) {
-      if (meanOption->is_set()) {
-        return stat_mean(fitres, filter);
-      } else {
-        return stat_median(fitres, filter);
-      }
-    }};
-    auto generate_fit{[&]() {
+    auto generate_fit{[&x, &y, Sig, &dis, &gen, A, B]() {
       transform(&x[0], &x[0] + x.size(), &y[0],
-                [&](Scalar xi) { return Sig * dis(gen) + A + B * xi; });
+                [Sig, &dis, &gen, A, B](Scalar xi) {
+                  return Sig * dis(gen) + A + B * xi;
+                });
       return Fitab(x, y);
     }};
     auto fitres{vector<Fitab>()};
     fitres.reserve(repeat);
     generate_n(back_inserter(fitres), repeat, generate_fit);
-    const auto a{stat(fitres, [&](const Fitab &f) { return f.a; })};
-    const auto siga{stat(fitres, [&](const Fitab &f) { return f.siga; })};
-    const auto b{stat(fitres, [&](const Fitab &f) { return f.b; })};
-    const auto sigb{stat(fitres, [&](const Fitab &f) { return f.sigb; })};
-    const auto chi2{stat(fitres, [&](const Fitab &f) { return f.chi2; })};
-    const auto sigdat{stat(fitres, [&](const Fitab &f) { return f.sigdat; })};
+    const auto a{stat(fitres, [&](const Fitab &f) { return f.a; }, meanOption)};
+    const auto siga{
+        stat(fitres, [&](const Fitab &f) { return f.siga; }, meanOption)};
+    const auto b{stat(fitres, [&](const Fitab &f) { return f.b; }, meanOption)};
+    const auto sigb{
+        stat(fitres, [&](const Fitab &f) { return f.sigb; }, meanOption)};
+    const auto chi2{
+        stat(fitres, [&](const Fitab &f) { return f.chi2; }, meanOption)};
+    const auto sigdat{
+        stat(fitres, [&](const Fitab &f) { return f.sigdat; }, meanOption)};
     return make_tuple(a, siga, b, sigb, chi2, sigdat);
   }};
   for (decltype(0 + numberTrials + 1) i = 0; i < numberTrials; i += 1) {

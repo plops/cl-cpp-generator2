@@ -4,4 +4,5 @@
 | 03 |   | try eigen, half speed of valarray                              |
 | 04 |   | more small experiments with xsimd and comparison with valarray |
 | 05 |   | 02 using xsimd                                                 |
+| 06 |   | 05 with multiple threads                                       |
 |    |   |                                                                |
