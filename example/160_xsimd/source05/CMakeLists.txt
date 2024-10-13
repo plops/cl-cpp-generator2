@@ -1,13 +1,16 @@
 cmake_minimum_required(VERSION 3.5)
-if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-    project(xsimd-examples)
-
-    find_package(xsimd REQUIRED CONFIG)
-    set(XSIMD_INCLUDE_DIR ${xsimd_INCLUDE_DIR})
-endif ()
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+project(xsimd-examples)
 
-include_directories(${XSIMD_INCLUDE_DIR})
+# if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+#     set(CMAKE_PREFIX_PATH "/home/martin/xsimd")
+#     find_package(xsimd REQUIRED CONFIG)
+#     set(XSIMD_INCLUDE_DIR ${xsimd_INCLUDE_DIR})
+# endif ()
+
+include_directories(/home/martin/xsimd/include)
+#include_directories(${XSIMD_INCLUDE_DIR})
+
 #include_directories(/usr/include/eigen3)
 #find_package(popl)
 #find_package(Eigen3)
