@@ -257,8 +257,21 @@ int main(int argc, char **argv) {
     }};
     auto fitres{
         vector<tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar>>(repeat)};
-    for (decltype(0 + repeat + 1) i = 0; i < repeat; i += 1) {
-      fitres[i] = generate_fit();
+    const auto numThreads{1};
+    const auto elements_per_thread{repeat / numThreads};
+    auto threads{vector<jthread>(numThreads)};
+    for (decltype(0 + numThreads + 1) j = 0; j < numThreads; j += 1) {
+      threads[j] = jthread([&]() {
+        for (decltype(0 + elements_per_thread + 1) i = 0;
+             i < elements_per_thread; i += 1) {
+          fitres[(j * elements_per_thread + i)] = generate_fit();
+        }
+      });
+    }
+    for (auto &&th : threads) {
+      if (th.joinable()) {
+        th.join();
+      }
     }
     const auto a{
         stat(fitres, [&](const auto &f) { return get<0>(f); }, meanOption)};
