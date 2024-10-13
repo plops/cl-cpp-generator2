@@ -273,18 +273,37 @@ int main(int argc, char **argv) {
         th.join();
       }
     }
-    const auto a{
-        stat(fitres, [&](const auto &f) { return get<0>(f); }, meanOption)};
-    const auto siga{
-        stat(fitres, [&](const auto &f) { return get<1>(f); }, meanOption)};
-    const auto b{
-        stat(fitres, [&](const auto &f) { return get<2>(f); }, meanOption)};
-    const auto sigb{
-        stat(fitres, [&](const auto &f) { return get<3>(f); }, meanOption)};
-    const auto chi2{
-        stat(fitres, [&](const auto &f) { return get<4>(f); }, meanOption)};
-    const auto sigdat{
-        stat(fitres, [&](const auto &f) { return get<5>(f); }, meanOption)};
+    auto threads_stat{vector<jthread>(6)};
+    auto a{tuple<Scalar, Scalar, Scalar, Scalar>()};
+    threads_stat[0] = jthread([&a, &fitres, &meanOption]() {
+      a = stat(fitres, [&](const auto &f) { return get<0>(f); }, meanOption);
+    });
+    auto siga{tuple<Scalar, Scalar, Scalar, Scalar>()};
+    threads_stat[1] = jthread([&siga, &fitres, &meanOption]() {
+      siga = stat(fitres, [&](const auto &f) { return get<1>(f); }, meanOption);
+    });
+    auto b{tuple<Scalar, Scalar, Scalar, Scalar>()};
+    threads_stat[2] = jthread([&b, &fitres, &meanOption]() {
+      b = stat(fitres, [&](const auto &f) { return get<2>(f); }, meanOption);
+    });
+    auto sigb{tuple<Scalar, Scalar, Scalar, Scalar>()};
+    threads_stat[3] = jthread([&sigb, &fitres, &meanOption]() {
+      sigb = stat(fitres, [&](const auto &f) { return get<3>(f); }, meanOption);
+    });
+    auto chi2{tuple<Scalar, Scalar, Scalar, Scalar>()};
+    threads_stat[4] = jthread([&chi2, &fitres, &meanOption]() {
+      chi2 = stat(fitres, [&](const auto &f) { return get<4>(f); }, meanOption);
+    });
+    auto sigdat{tuple<Scalar, Scalar, Scalar, Scalar>()};
+    threads_stat[5] = jthread([&sigdat, &fitres, &meanOption]() {
+      sigdat =
+          stat(fitres, [&](const auto &f) { return get<5>(f); }, meanOption);
+    });
+    for (auto &&th : threads_stat) {
+      if (th.joinable()) {
+        th.join();
+      }
+    }
     return make_tuple(a, siga, b, sigb, chi2, sigdat);
   }};
   for (decltype(0 + numberTrials + 1) i = 0; i < numberTrials; i += 1) {
