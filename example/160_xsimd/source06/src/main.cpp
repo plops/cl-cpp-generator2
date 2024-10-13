@@ -231,8 +231,7 @@ int main(int argc, char **argv) {
                            thread::hardware_concurrency());
   auto gen{mt19937(random_device{}())};
   auto dis{normal_distribution<float>(0.F, 1.0F)};
-  auto lin{[](auto n, auto A, auto B, auto Sig, auto repeat, auto &meanOption,
-              auto &dis, auto &gen) {
+  auto lin{[](auto n, auto A, auto B, auto Sig, auto repeat, auto &meanOption) {
     // number points must be divisible by 8 (avx2 batch size)
     assert((n % Batch::size) == 0);
     const auto x{([&]() {
@@ -241,11 +240,12 @@ int main(int argc, char **argv) {
       return x;
     })()};
     auto y{Vec(n)};
-    auto generate_fit{[&x, &y, Sig, &dis, &gen, A, B]() {
-      transform(&x[0], &x[0] + x.size(), &y[0],
-                [Sig, &dis, &gen, A, B](Scalar xi) {
-                  return Sig * dis(gen) + A + B * xi;
-                });
+    auto generate_fit{[&x, &y, Sig, A, B]() {
+      transform(&x[0], &x[0] + x.size(), &y[0], [Sig, A, B](Scalar xi) {
+        auto gen{mt19937(random_device{}())};
+        auto dis{normal_distribution<float>(0.F, 1.0F)};
+        return Sig * dis(gen) + A + B * xi;
+      });
       const auto f{Fitab(x, y)};
       const auto a{f.a};
       const auto siga{f.siga};
@@ -257,7 +257,7 @@ int main(int argc, char **argv) {
     }};
     auto fitres{
         vector<tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar>>(repeat)};
-    const auto numThreads{8};
+    const auto numThreads{1};
     const auto elements_per_thread{repeat / numThreads};
     auto threads{vector<jthread>(numThreads)};
     for (decltype(0 + numThreads + 1) j = 0; j < numThreads; j += 1) {
@@ -312,8 +312,8 @@ int main(int argc, char **argv) {
     const auto dB{generatorDeltaSlope};
     const auto B{generatorSlope + dB * dis(gen)};
     const auto Sig{generatorSigma};
-    auto [a, siga, b, sigb, chi2, sigdat]{
-        lin(numberPoints, A, B, Sig, numberRepeats, meanOption, dis, gen)};
+    auto [a, siga, b, sigb, chi2,
+          sigdat]{lin(numberPoints, A, B, Sig, numberRepeats, meanOption)};
     const auto pa{printStat(a)};
     const auto psiga{printStat(siga)};
     const auto pb{printStat(b)};
