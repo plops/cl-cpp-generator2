@@ -231,7 +231,8 @@ int main(int argc, char **argv) {
                            thread::hardware_concurrency());
   auto gen{mt19937(random_device{}())};
   auto dis{normal_distribution<float>(0.F, 1.0F)};
-  auto lin{[&](auto n, auto A, auto B, auto Sig, auto repeat) {
+  auto lin{[](auto n, auto A, auto B, auto Sig, auto repeat, auto &meanOption,
+              auto &dis, auto &gen) {
     // number points must be divisible by 8 (avx2 batch size)
     assert((n % Batch::size) == 0);
     const auto x{([&]() {
@@ -255,9 +256,10 @@ int main(int argc, char **argv) {
       return make_tuple(a, siga, b, sigb, chi2, sigdat);
     }};
     auto fitres{
-        vector<tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar>>()};
-    fitres.reserve(repeat);
-    generate_n(back_inserter(fitres), repeat, generate_fit);
+        vector<tuple<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar>>(repeat)};
+    for (decltype(0 + repeat + 1) i = 0; i < repeat; i += 1) {
+      fitres[i] = generate_fit();
+    }
     const auto a{
         stat(fitres, [&](const auto &f) { return get<0>(f); }, meanOption)};
     const auto siga{
@@ -278,8 +280,8 @@ int main(int argc, char **argv) {
     const auto dB{generatorDeltaSlope};
     const auto B{generatorSlope + dB * dis(gen)};
     const auto Sig{generatorSigma};
-    auto [a, siga, b, sigb, chi2,
-          sigdat]{lin(numberPoints, A, B, Sig, numberRepeats)};
+    auto [a, siga, b, sigb, chi2, sigdat]{
+        lin(numberPoints, A, B, Sig, numberRepeats, meanOption, dis, gen)};
     const auto pa{printStat(a)};
     const auto psiga{printStat(siga)};
     const auto pb{printStat(b)};
