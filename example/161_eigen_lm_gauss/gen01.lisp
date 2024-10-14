@@ -1,0 +1,235 @@
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (ql:quickload "cl-cpp-generator2")
+  (ql:quickload "cl-ppcre")
+  (ql:quickload "cl-change-case"))
+
+(in-package :cl-cpp-generator2)
+
+(progn
+  (setf *features* (set-difference *features* (list :more
+						    )))
+  (setf *features* (set-exclusive-or *features* (list ;:more
+						      ))))
+
+(let ((l-par `(amplitude mean sigma)))
+  (defparameter *source-dir* #P"example/161_eigen_lm_gauss/source01/src/")
+  (defparameter *full-source-dir* (asdf:system-relative-pathname
+				   'cl-cpp-generator2
+				   *source-dir*))
+  (ensure-directories-exist *full-source-dir*)
+
+  (defun lprint (&key (msg "")
+		   (vars nil)
+		   )
+    `(<< std--cout
+	 (std--format
+	  (string ,(format nil "(~a~{:~a '{}'~^ ~})\\n"
+			   msg
+			   (loop for e in vars collect (emit-c :code e  :omit-redundant-parentheses t)) ))
+	  ,@vars))
+    #+nil
+    `(<< std--cout
+	 (string ,(format nil "~a"
+			  msg
+			
+			  ))
+	 ,@(loop for e in vars
+		 appending
+		 `((string ,(format nil " ~a='" (emit-c :code e :omit-redundant-parentheses t)))
+		   ,e
+		   (string "' ")))   
+	 std--endl))
+  (defun begin (arr)
+   `(ref (aref ,arr 0)) )
+  (defun end (arr)
+   `(+ (ref (aref ,arr 0)) (dot ,arr (size))))
+  (write-source 
+   (asdf:system-relative-pathname
+    'cl-cpp-generator2 
+    (merge-pathnames "main.cpp"
+		     *source-dir*))
+   `(do0
+
+     "#define EIGEN_VECTORIZE_AVX2"
+     "#define EIGEN_VECTORIZE_AVX"
+     "#define EIGEN_VECTORIZE"
+     "#define EIGEN_VECTORIZE_FMA"
+     (include<>
+      iostream
+      format
+					;cstddef
+      vector
+      cmath
+      random
+      numeric
+      algorithm
+      ;execution
+      Eigen/Core ;Dense
+					;memory
+      thread
+      popl.hpp
+      )
+   
+     "using namespace std;"
+     "using namespace Eigen;"
+
+     
+					;(include "xsimd/xsimd.hpp")
+
+					;"using namespace xsimd;"
+
+     "using Scalar = float;"
+					;"using ScalarI = const Scalar;"
+     
+					;"using XVec = vector<Scalar,xsimd::default_allocator<Scalar>>;"
+					;"using XBatch = xsimd::batch<Scalar,avx2>;"
+
+
+     "using Vec = Matrix<Scalar,Dynamic,1,0,8192,1>;"
+     "using Mat = Matrix<Scalar,Dynamic,3,0,8192,1>;"
+					;"using Vec = Matrix<Scalar,8192,1,0,8192,1>;"
+					
+     "using VecI = const Vec;"
+     "using MatI = const Mat;"
+					; "constexpr auto Pol = std::execution::par_unseq;"
+
+     (defun gaussian (x ,@l-par)
+       (declare (type Scalar x ,@l-par)
+		(values Scalar)
+		)
+       (let ((x0 (- x mean)))
+	(return (* amplitude
+		   (exp (/ (* x0 x0)
+			   (* -2s0 sigam sigma)))))))
+     
+     (defclass+ GaussianModel ()
+       "public:"
+       (defmethod GaussianModel (xx yy)
+	 (declare (type VecI& xx yy)
+		  (values :constructor)
+		  (construct 
+			     (x xx)
+			     (y yy)
+			     )))
+       (defmethod "operator()" (parameters residuals)
+	 (declare (type VecI& parameters)
+		  (type Vec& residuals))
+	 ,@(loop for e in l-par
+		 and e-i from 0
+		 collect
+		 `(letc ((,e (parameters ,e-i)))))
+	 (letc ((guassian_values
+		 (* amplitude (exp (/ (exp (dot (paren (- x mean)
+						       (array)
+						       (square))))
+				      (* -2s0 sigma sigma)))))
+		)
+	       (setf residuals (- y gaussian_values)))
+	 )
+
+       (defmethod jacobian (parameters jac)
+	 (declare (type VecI& parameters)
+		  (type Mat& jac))
+	 ,@(loop for e in l-par
+		 and e-i from 0
+		 collect
+		 `(letc ((,e (parameters ,e-i)))))
+	 (letc ((guassian_values
+		 (* amplitude (exp (/ (exp (dot (paren (- x mean)
+						       (array)
+						       (square))))
+				      (* -2s0 sigma sigma)))))
+		))
+	 (comments "Derivative with respect to amplitude")
+	 (setf (jac.col 0)
+	       gaussian_values)
+	 (letc ((diff_x (- x mean))
+		(exp_term_matrix (dot (exp (/ (dot x (array)
+					       (square)
+					       (colwise))
+					      (* -2s0 sigma sigm)))
+				      (matrix)))
+		(denominator (* sigma sigma)))
+	       (comments "Derivative with respect to mean")
+	       (setf (jac.col 1)
+		     (* amplitude
+			(dot diff_x (array) (rowwise))
+			(/ (exp_term_matrix.rowwise)
+			   denominator)))
+	       (comments "Derivative with respect to sigma")
+	       (setf (jac.col 2)
+		     (* amplitude
+			(dot diff_x (array) (square) (rowwise))
+			(/ (exp_term_matrix.rowwise)
+			   (* denominator sigma sigma)))))
+	 )
+					;"private:"
+
+       "Vec x, y;")
+
+     
+    
+     (defun main (argc argv)
+       (declare (type int argc)
+		(type char** argv)
+		(values int))
+      
+       ,(let ((l `(
+		   (:name numberPoints :default 1024 :short p)
+		   )))
+	  `(let ((op (popl--OptionParser (string "allowed options")))
+		 ,@(loop for e in l collect
+				    (destructuring-bind (&key name default short (type 'int)) e
+				      `(,name (,type ,default))))
+		 ,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
+				    (:long verbose :short v :type Switch :msg "produce verbose output")
+				    (:long mean :short m :type Switch :msg "Print mean and standard deviation statistics, otherwise print median and mean absolute deviation from it")
+				    ,@(loop for f in l
+					    collect
+					    (destructuring-bind (&key name default short (type 'int)) f
+					      `(:long ,name
+						:short ,short
+						:type ,type :msg "parameter"
+						:default ,default :out ,(format nil "&~a" name))))
+
+				    )
+			 appending
+			 (destructuring-bind (&key long short type msg default out) e
+			   `((,(format nil "~aOption" long)
+			      ,(let ((cmd `(,(format nil "add<~a>"
+						     (if (eq type 'Switch)
+							 "popl::Switch"
+							 (format nil "popl::Value<~a>" type)))
+					    (string ,short)
+					    (string ,long)
+					    (string ,msg))))
+				 (when default
+				   (setf cmd (append cmd `(,default)))
+				   )
+				 (when out
+				   (setf cmd (append cmd `(,out)))
+				   )
+				 `(dot op ,cmd)
+				 ))))
+			 ))
+	     (op.parse argc argv)
+	     (when (helpOption->is_set)
+	       (<< cout
+		   op
+		   endl)
+	       (exit 0))
+	     ))
+
+       ,(lprint :vars `((thread--hardware_concurrency)))
+
+       (let ((gen (mt19937		; 42	
+		   "random_device{}()"))
+	     (dis (normal_distribution<float> 0s0 1s0))))
+
+       
+
+
+       (return 0)))
+   :omit-parens t
+   :format t
+   :tidy nil))
