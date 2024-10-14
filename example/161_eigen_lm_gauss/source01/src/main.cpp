@@ -60,6 +60,34 @@ public:
   Vec x, y;
 };
 
+Vec &lm(const GaussianModel &model, VecI &initial_guess, Scalar lambda) {
+  const auto maxIter{100};
+  const auto tolerance{1.00e-4F};
+  auto parameters{initial_guess};
+  auto residuals{Vec(model.x.size())};
+  auto jacobian{Mat(model.x.size(), 3)};
+  for (decltype(0 + maxIter + 1) iter = 0; iter < maxIter; iter += 1) {
+    model(residuals, model.jacobian(parameters, jacobian));
+    auto residual_norm{residuals.norm()};
+    if (residual_norm < tolerance) {
+      break;
+    }
+    auto jTj{jacobian.transpose() * jacobian +
+             lambda * MatrixXd::Identity(3, 3)};
+    auto delta{-jacobian.transpose() * residuals};
+    auto parameters_new{parameters + delta};
+    auto residual_norm_new{
+        model(parameters_new, model.jacobian(parameters_new, jacobian)).norm()};
+    if (residual_norm_new < residual_norm) {
+      parameters = parameters_new;
+      lambda /= 10.F;
+    } else {
+      lambda *= 10.F;
+    }
+  }
+  return parameters;
+}
+
 int main(int argc, char **argv) {
   auto op{popl::OptionParser("allowed options")};
   auto numberPoints{int(1024)};
@@ -81,5 +109,11 @@ int main(int argc, char **argv) {
                            thread::hardware_concurrency());
   auto gen{mt19937(random_device{}())};
   auto dis{normal_distribution<float>(0.F, 1.0F)};
+  auto x{Vec(-2(-1.50F, -1, -0.50F, 0, 0.50F, 1, 1.50F, 2))};
+  auto y{Vec(6.740e-2F(0.13580F, 0.28650F, 0.49330F, 1, 0.49330F, 0.28650F,
+                       0.13580F, 6.740e-2F))};
+  auto initial_guess{Vec(1.0F, 0.F, 1.0F)};
+  auto lamb{0.10F};
+  auto parameters{lm(GaussianModel(x, y), initial_guess, lamb)};
   return 0;
 }

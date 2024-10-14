@@ -168,7 +168,42 @@
        "Vec x, y;")
 
      
-    
+
+     (defun lm (model initial_guess lambda)
+       (declare (type "const GaussianModel&" model)
+		(type "VecI&" initial_guess)
+		(type Scalar lambda)
+		(values Vec&))
+       (letc ((maxIter 100)
+	      (tolerance 1e-4)))
+       (let ((parameters initial_guess)
+	     (residuals (Vec (model.x.size)))
+	     (jacobian (Mat (model.x.size) 3)))
+	 (dotimes (iter maxIter)
+	   (model residuals
+		  (model.jacobian parameters jacobian))
+	   (let ((residual_norm (residuals.norm)))
+	     (when (< residual_norm tolerance)
+	       break)
+	     (let ((jTj (+ (* (jacobian.transpose)
+			      jacobian)
+			   (* lambda (MatrixXd--Identity 3 3))))
+		   (delta (* (-jacobian.transpose)
+			     residuals))
+		   (parameters_new (+ parameters delta))
+		   (residual_norm_new (dot (model parameters_new
+						  (model.jacobian parameters_new jacobian))
+					   (norm))))
+	       (if (< residual_norm_new residual_norm)
+		   (do0
+		    (setf parameters parameters_new)
+		    (/= lambda 10s0))
+		   (do0
+		    (*= lambda 10s0))))))
+	 (return parameters))
+
+       )
+     
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
@@ -227,7 +262,12 @@
 	     (dis (normal_distribution<float> 0s0 1s0))))
 
        
-
+       (let ((x (Vec (-2 -1.5 -1 -.5 0 .5 1 1.5 2)))
+	     (y (Vec (.0674 .1358 .2865 .4933 1. .4933 .2865 .1358 .0674)))
+	     (initial_guess (Vec 1s0 0s0 1s0))
+	     (lamb .1s0)
+	     (parameters (lm (GaussianModel x y)
+			     initial_guess lamb))))
 
        (return 0)))
    :omit-parens t
