@@ -15,7 +15,9 @@
 using namespace std;
 using namespace Eigen;
 using Scalar = float;
+// dynamic rows, 1 column
 using Vec = Matrix<Scalar, Dynamic, 1, 0, 8192, 1>;
+// dynamic rows, 3 columns
 using Mat = Matrix<Scalar, Dynamic, 3, 0, 8192, 1>;
 using VecI = const Vec;
 using MatI = const Mat;
@@ -27,25 +29,29 @@ Scalar gaussian(Scalar x, Scalar amplitude, Scalar mean, Scalar sigma) {
 
 class GaussianModel {
 public:
-  GaussianModel(VecI &xx, VecI &yy) : x{xx}, y{yy} {}
+  GaussianModel(Vec xx, Vec yy) : x{std::move(xx)}, y{std::move(yy)} {}
   void operator()(VecI &parameters, Vec &residuals) {
-    const auto amplitude{parameters(0)};
-    const auto mean{parameters(1)};
-    const auto sigma{parameters(2)};
+    auto amplitude{parameters(0)};
+    auto mean{parameters(1)};
+    auto sigma{parameters(2)};
     const auto gaussian_values{
-        amplitude *
-        exp((((x.array()) - mean).array().square()) / (-2.0F * sigma * sigma))};
-    residuals = -gaussian_values.array() + y;
+        amplitude * ((((x.array()) - mean).array().square().array()) /
+                     (-2.0F * sigma * sigma))
+                        .array()
+                        .exp()};
+    residuals = (y.array() - (gaussian_values.array()));
   }
   void jacobian(VecI &parameters, Mat &jac) {
     const auto amplitude{parameters(0)};
     const auto mean{parameters(1)};
     const auto sigma{parameters(2)};
     const auto gaussian_values{
-        amplitude *
-        exp((((x.array()) - mean).array().square()) / (-2.0F * sigma * sigma))};
+        amplitude * ((((x.array()) - mean).array().square().array()) /
+                     (-2.0F * sigma * sigma))
+                        .array()
+                        .exp()};
     // Derivative with respect to amplitude
-    jac.col(0) = gaussian_values;
+    jac.col(0) = x;
     const auto diff_x{(x.array()) - mean};
     const auto exp_term_matrix{
         exp((x.array().square().colwise()) / (-2.0F * sigma * sigma)).matrix()};
@@ -65,7 +71,7 @@ Vec &lm(const GaussianModel &model, VecI &initial_guess, Scalar lambda) {
   const auto tolerance{1.00e-4F};
   auto parameters{initial_guess};
   auto residuals{Vec(model.x.size())};
-  auto jacobian{Mat(model.x.size(), 3)};
+  auto jacobian{Mat(model.x.size())};
   for (decltype(0 + maxIter + 1) iter = 0; iter < maxIter; iter += 1) {
     model(residuals, model.jacobian(parameters, jacobian));
     auto residual_norm{residuals.norm()};

@@ -85,7 +85,9 @@
 					;"using XBatch = xsimd::batch<Scalar,avx2>;"
 
 
+     (comments "dynamic rows, 1 column")
      "using Vec = Matrix<Scalar,Dynamic,1,0,8192,1>;"
+     (comments "dynamic rows, 3 columns")
      "using Mat = Matrix<Scalar,Dynamic,3,0,8192,1>;"
 					;"using Vec = Matrix<Scalar,8192,1,0,8192,1>;"
 					
@@ -105,11 +107,11 @@
      (defclass+ GaussianModel ()
        "public:"
        (defmethod GaussianModel (xx yy)
-	 (declare (type VecI& xx yy)
+	 (declare (type Vec xx yy)
 		  (values :constructor)
 		  (construct 
-			     (x xx)
-			     (y yy)
+			     (x (std--move xx))
+			     (y (std--move yy))
 			     )))
        (defmethod "operator()" (parameters residuals)
 	 (declare (type VecI& parameters)
@@ -117,15 +119,20 @@
 	 ,@(loop for e in l-par
 		 and e-i from 0
 		 collect
-		 `(letc ((,e (parameters ,e-i)))))
+		 `(let ((,e (parameters ,e-i)))))
 	 (letc ((gaussian_values
-		 (* amplitude (exp (/ (dot (paren (- (dot x (array)) mean))
-					   (array)
-					   (square))
-				      (* -2s0 sigma sigma)))))
+		 (* amplitude (dot (paren
+				    (/ (dot (paren (- (dot x (array)) mean))
+					    (array)
+					    (square)
+					    (array))
+				       (* -2s0 sigma sigma)))
+				   (array)
+				   (exp))))
 		)
-	       (setf residuals (+ (dot -gaussian_values (array))
-				  y)))
+	       (setf residuals (- (y.array)
+				  (dot gaussian_values (array)))
+				  ))
 	 )
 
        (defmethod jacobian (parameters jac)
@@ -136,14 +143,17 @@
 		 collect
 		 `(letc ((,e (parameters ,e-i)))))
 	 (letc ((gaussian_values
-		 (* amplitude (exp (/ (dot (paren (- (dot x (array)) mean))
-					   (array)
-					   (square))
-				      (* -2s0 sigma sigma)))))
+		 (* amplitude (dot (paren (/ (dot (paren (- (dot x (array)) mean))
+					    (array)
+						  (square)
+						  (array))
+					     (* -2s0 sigma sigma)))
+				   (array)
+				   (exp))))
 		))
 	 (comments "Derivative with respect to amplitude")
-	 (setf (jac.col 0)
-	       gaussian_values)
+	 (setf (jac.col 0) gaussian_values
+	       )
 	 (letc ((diff_x (- (dot x (array)) mean))
 		(exp_term_matrix (dot (exp (/ (dot x (array)
 						   (square)
