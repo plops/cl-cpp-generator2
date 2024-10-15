@@ -22,7 +22,7 @@ using MatI = const Mat;
 
 Scalar gaussian(Scalar x, Scalar amplitude, Scalar mean, Scalar sigma) {
   auto x0{x - mean};
-  return amplitude * exp((x0 * x0) / (-2.0F * sigam * sigma));
+  return amplitude * exp((x0 * x0) / (-2.0F * sigma * sigma));
 }
 
 class GaussianModel {
@@ -32,30 +32,30 @@ public:
     const auto amplitude{parameters(0)};
     const auto mean{parameters(1)};
     const auto sigma{parameters(2)};
-    const auto guassian_values{
+    const auto gaussian_values{
         amplitude *
-        exp(exp((x - mean, array(), square())) / (-2.0F * sigma * sigma))};
-    residuals = (y - gaussian_values);
+        exp((((x.array()) - mean).array().square()) / (-2.0F * sigma * sigma))};
+    residuals = -gaussian_values.array() + y;
   }
   void jacobian(VecI &parameters, Mat &jac) {
     const auto amplitude{parameters(0)};
     const auto mean{parameters(1)};
     const auto sigma{parameters(2)};
-    const auto guassian_values{
+    const auto gaussian_values{
         amplitude *
-        exp(exp((x - mean, array(), square())) / (-2.0F * sigma * sigma))};
+        exp((((x.array()) - mean).array().square()) / (-2.0F * sigma * sigma))};
     // Derivative with respect to amplitude
     jac.col(0) = gaussian_values;
-    const auto diff_x{x - mean};
+    const auto diff_x{(x.array()) - mean};
     const auto exp_term_matrix{
-        exp((x.array().square().colwise()) / (-2.0F * sigma * sigm)).matrix()};
+        exp((x.array().square().colwise()) / (-2.0F * sigma * sigma)).matrix()};
     const auto denominator{sigma * sigma};
     // Derivative with respect to mean
-    jac.col(1) = amplitude * diff_x.array().rowwise() *
-                 (exp_term_matrix.rowwise() / denominator);
+    jac.col(1) = diff_x.array().rowwise() * exp_term_matrix.rowwise() *
+                 (amplitude / denominator);
     // Derivative with respect to sigma
-    jac.col(2) = amplitude * diff_x.array().square().rowwise() *
-                 (exp_term_matrix.rowwise() / (denominator * sigma * sigma));
+    jac.col(2) = diff_x.array().square().rowwise() * exp_term_matrix.rowwise() *
+                 (amplitude / (denominator * sigma * sigma));
   }
   Vec x, y;
 };

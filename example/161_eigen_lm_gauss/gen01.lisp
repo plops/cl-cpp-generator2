@@ -100,7 +100,7 @@
        (let ((x0 (- x mean)))
 	(return (* amplitude
 		   (exp (/ (* x0 x0)
-			   (* -2s0 sigam sigma)))))))
+			   (* -2s0 sigma sigma)))))))
      
      (defclass+ GaussianModel ()
        "public:"
@@ -118,13 +118,14 @@
 		 and e-i from 0
 		 collect
 		 `(letc ((,e (parameters ,e-i)))))
-	 (letc ((guassian_values
-		 (* amplitude (exp (/ (exp (dot (paren (- x mean)
-						       (array)
-						       (square))))
+	 (letc ((gaussian_values
+		 (* amplitude (exp (/ (dot (paren (- (dot x (array)) mean))
+					   (array)
+					   (square))
 				      (* -2s0 sigma sigma)))))
 		)
-	       (setf residuals (- y gaussian_values)))
+	       (setf residuals (+ (dot -gaussian_values (array))
+				  y)))
 	 )
 
        (defmethod jacobian (parameters jac)
@@ -134,33 +135,34 @@
 		 and e-i from 0
 		 collect
 		 `(letc ((,e (parameters ,e-i)))))
-	 (letc ((guassian_values
-		 (* amplitude (exp (/ (exp (dot (paren (- x mean)
-						       (array)
-						       (square))))
+	 (letc ((gaussian_values
+		 (* amplitude (exp (/ (dot (paren (- (dot x (array)) mean))
+					   (array)
+					   (square))
 				      (* -2s0 sigma sigma)))))
 		))
 	 (comments "Derivative with respect to amplitude")
 	 (setf (jac.col 0)
 	       gaussian_values)
-	 (letc ((diff_x (- x mean))
+	 (letc ((diff_x (- (dot x (array)) mean))
 		(exp_term_matrix (dot (exp (/ (dot x (array)
-					       (square)
-					       (colwise))
-					      (* -2s0 sigma sigm)))
+						   (square)
+						   (colwise))
+					      (* -2s0 sigma sigma)))
 				      (matrix)))
 		(denominator (* sigma sigma)))
 	       (comments "Derivative with respect to mean")
 	       (setf (jac.col 1)
-		     (* amplitude
+		     (* 
 			(dot diff_x (array) (rowwise))
-			(/ (exp_term_matrix.rowwise)
-			   denominator)))
+			(exp_term_matrix.rowwise)
+			(/ amplitude denominator)))
 	       (comments "Derivative with respect to sigma")
 	       (setf (jac.col 2)
-		     (* amplitude
+		     (* 
 			(dot diff_x (array) (square) (rowwise))
-			(/ (exp_term_matrix.rowwise)
+			(exp_term_matrix.rowwise)
+			(/ amplitude
 			   (* denominator sigma sigma)))))
 	 )
 					;"private:"
