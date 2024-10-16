@@ -212,9 +212,7 @@
 		    (/= lambda 10s0))
 		   (do0
 		    (*= lambda 10s0))))))
-	 (return parameters))
-
-       )
+	 (return parameters)))
      
      (defun main (argc argv)
        (declare (type int argc)

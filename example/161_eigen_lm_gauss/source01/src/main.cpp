@@ -51,7 +51,8 @@ public:
                         .array()
                         .exp()};
     // Derivative with respect to amplitude
-    jac.col(0) = x;
+    auto q = jac.
+    jac.col(0) = gaussian_values;
     const auto diff_x{(x.array()) - mean};
     const auto exp_term_matrix{
         exp((x.array().square().colwise()) / (-2.0F * sigma * sigma)).matrix()};
@@ -71,7 +72,7 @@ Vec &lm(const GaussianModel &model, VecI &initial_guess, Scalar lambda) {
   const auto tolerance{1.00e-4F};
   auto parameters{initial_guess};
   auto residuals{Vec(model.x.size())};
-  auto jacobian{Mat(model.x.size())};
+  auto jacobian{Mat(model.x.size(), 3)};
   for (decltype(0 + maxIter + 1) iter = 0; iter < maxIter; iter += 1) {
     model(residuals, model.jacobian(parameters, jacobian));
     auto residual_norm{residuals.norm()};
