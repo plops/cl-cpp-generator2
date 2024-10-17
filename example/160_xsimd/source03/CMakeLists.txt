@@ -25,7 +25,7 @@ endif ()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Intel")
     if (NOT CMAKE_CXX_FLAGS MATCHES "-march" AND NOT CMAKE_CXX_FLAGS MATCHES "-arch" AND NOT CMAKE_OSX_ARCHITECTURES)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native -ggdb3")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
     endif ()
     if (NOT CMAKE_CXX_COMPILER_ID MATCHES Clang) # We are using clang-cl
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")

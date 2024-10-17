@@ -90,6 +90,7 @@
 
      (comments "dynamic rows, 1 column")
      "using Vec = Matrix<Scalar,Dynamic,1,0,8192,1>;"
+     "using VecBool = Matrix<boolean,Dynamic,1,0,8192,1>;"
      (comments "dynamic rows, 3 columns")
      "using Mat = Matrix<Scalar,Dynamic,3,0,8192,1>;"
 					;"using Vec = Matrix<Scalar,8192,1,0,8192,1>;"
@@ -99,17 +100,34 @@
      "using MatI = const Mat;"
 					; "constexpr auto Pol = std::execution::par_unseq;"
 
-     
+     "using func_t = void (*)(const Scalar, VecI&, Scalar&, VecO&);"
      
      (defclass+ Fitmrq ()
        "public:"
-       (defmethod GaussianModel (xx yy)
-	 (declare (type Vec xx yy)
+       (defmethod GaussianModel (xx yy ssig aa
+				 funks
+				 &key (TOL 1s-3))
+	 (declare (type Vec xx yy aa ssig)
+		  (type func_t funks)
+		  (type "const Scalar" TOL)
+		  
 		  (values :constructor)
 		  (construct 
 			     (x (std--move xx))
 			     (y (std--move yy))
-			     )))
+			     (ndat (xx.size))
+			     (ma (aa.size))
+			     (sig (std--move ssig))
+			     (tol TOL)
+			     (funcs funks)
+			     (ia ma)
+			     (alpha (paren ma ma))
+			     (a (std--move aa))
+			     (covar (paren ma ma))
+			     
+			     ))
+	 (comments "set entire bool array true")
+	 )
 
 
 
@@ -117,42 +135,13 @@
        "constexpr int NDONE=4, ITMAX=1000;"
        "int ndat, ma, mfit;"
        "Scalar tol;"
-       "void (*func)(const Scalar, VecI&, Scalar&, VecO&);")
+       "func_t func;"
+       ;"void (*func)(const Scalar, VecI&, Scalar&, VecO&);"
+       "VecBool ia;"
+       "Mat covar, alpha;"
+       "Scalar chisq;")
 
      
-
-     (defun lm (model initial_guess lambda)
-       (declare (type "const GaussianModel&" model)
-		(type "VecI&" initial_guess)
-		(type Scalar lambda)
-		(values Vec&))
-       (letc ((maxIter 100)
-	      (tolerance 1e-4)))
-       (let ((parameters initial_guess)
-	     (residuals (Vec (model.x.size)))
-	     (jacobian (Mat (model.x.size) 3)))
-	 (dotimes (iter maxIter)
-	   (model residuals
-		  (model.jacobian parameters jacobian))
-	   (let ((residual_norm (residuals.norm)))
-	     (when (< residual_norm tolerance)
-	       break)
-	     (let ((jTj (+ (* (jacobian.transpose)
-			      jacobian)
-			   (* lambda (MatrixXd--Identity 3 3))))
-		   (delta (* (-jacobian.transpose)
-			     residuals))
-		   (parameters_new (+ parameters delta))
-		   (residual_norm_new (dot (model parameters_new
-						  (model.jacobian parameters_new jacobian))
-					   (norm))))
-	       (if (< residual_norm_new residual_norm)
-		   (do0
-		    (setf parameters parameters_new)
-		    (/= lambda 10s0))
-		   (do0
-		    (*= lambda 10s0))))))
-	 (return parameters)))
      
      (defun main (argc argv)
        (declare (type int argc)

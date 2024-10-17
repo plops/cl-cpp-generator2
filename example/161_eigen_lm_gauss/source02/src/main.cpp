@@ -1,4 +1,4 @@
-#include <Eigen/Core>
+e#include <Eigen/Core>
 #include <algorithm>
 #include <cmath>
 #include <format>
@@ -13,48 +13,31 @@ using namespace Eigen;
 using Scalar = float;
 // dynamic rows, 1 column
 using Vec = Matrix<Scalar, Dynamic, 1, 0, 8192, 1>;
+using VecBool = Matrix<boolean, Dynamic, 1, 0, 8192, 1>;
 // dynamic rows, 3 columns
 using Mat = Matrix<Scalar, Dynamic, 3, 0, 8192, 1>;
 using VecI = const Vec;
 using VecO = Vec;
 using MatI = const Mat;
+using func_t = void (*)(const Scalar, VecI &, Scalar &, VecO &);
 class Fitmrq {
 public:
-  GaussianModel(Vec xx, Vec yy) : x{std::move(xx)}, y{std::move(yy)} {}
+  GaussianModel(Vec xx, Vec yy, Vec ssig, Vec aa, func_t funks,
+                const Scalar TOL)
+      : x{std::move(xx)}, y{std::move(yy)}, ndat{xx.size()}, ma{aa.size()},
+        sig{std::move(ssig)}, tol{TOL}, funcs{funks}, ia{ma}, alpha{(ma, ma)},
+        a{std::move(aa)}, covar{(ma, ma)} {
+    // set entire bool array true
+  }
   Vec x, y, sig;
   constexpr int NDONE = 4, ITMAX = 1000;
   int ndat, ma, mfit;
   Scalar tol;
-  void (*func)(const Scalar, VecI &, Scalar &, VecO &);
+  func_t func;
+  VecBool ia;
+  Mat covar, alpha;
+  Scalar chisq;
 };
-
-Vec &lm(const GaussianModel &model, VecI &initial_guess, Scalar lambda) {
-  const auto maxIter{100};
-  const auto tolerance{1.00e-4F};
-  auto parameters{initial_guess};
-  auto residuals{Vec(model.x.size())};
-  auto jacobian{Mat(model.x.size(), 3)};
-  for (decltype(0 + maxIter + 1) iter = 0; iter < maxIter; iter += 1) {
-    model(residuals, model.jacobian(parameters, jacobian));
-    auto residual_norm{residuals.norm()};
-    if (residual_norm < tolerance) {
-      break;
-    }
-    auto jTj{jacobian.transpose() * jacobian +
-             lambda * MatrixXd::Identity(3, 3)};
-    auto delta{-jacobian.transpose() * residuals};
-    auto parameters_new{parameters + delta};
-    auto residual_norm_new{
-        model(parameters_new, model.jacobian(parameters_new, jacobian)).norm()};
-    if (residual_norm_new < residual_norm) {
-      parameters = parameters_new;
-      lambda /= 10.F;
-    } else {
-      lambda *= 10.F;
-    }
-  }
-  return parameters;
-}
 
 int main(int argc, char **argv) {
   auto op{popl::OptionParser("allowed options")};
