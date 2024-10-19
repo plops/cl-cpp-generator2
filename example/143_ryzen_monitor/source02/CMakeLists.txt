@@ -35,36 +35,23 @@ if (ENABLE_ASAN)
     add_link_options(-fsanitize=address)
 endif ()
 
-find_package(GLFW)
-
-# GLFW
-set(GLFW_DIR ${DEP_DIR}/glfw) # Set this to point to an up-to-date GLFW repo
-option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
-option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
-option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
-option(GLFW_INSTALL "Generate installation target" OFF)
-option(GLFW_DOCUMENT_INTERNALS "Include internals in documentation" OFF)
-add_subdirectory(${GLFW_DIR} binary_dir EXCLUDE_FROM_ALL)
-include_directories(${GLFW_DIR}/include)
-
 # Dear ImGui
-set(IMGUI_DIR ${DEP_DIR}/imgui)
+set(IMGUI_DIR /mnt5/tmp/src/imgui)
 include_directories(${IMGUI_DIR} ${IMGUI_DIR}/backends ..)
-
-# ImPlot
-set(IMPLOT_DIR ${DEP_DIR}/implot)
-include_directories(${IMPLOT_DIR})
+#
+## ImPlot
+#set(IMPLOT_DIR ${DEP_DIR}/implot)
+#include_directories(${IMPLOT_DIR})
 
 # Ryzen
-set(RYZEN_DIR ${DEP_DIR}/ryzen_monitor/src)
+set(RYZEN_DIR /home/martin/src/ryzen_monitor/src)
 include_directories(${RYZEN_DIR} ${RYZEN_DIR}/lib)
 
 # Libraries
 find_package(OpenGL REQUIRED)
-set(LIBRARIES "glfw;OpenGL")
+set(LIBRARIES "OpenGL")
 
-include_directories(${GLFW_DIR}/deps)
-
+find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 
 set(sources
         src/main.cpp
@@ -79,7 +66,7 @@ set(sources
 set_source_files_properties(${sources} PROPERTIES UNITY_GROUP "Sources")
 
 set(imgui_sources_backends
-        ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_sdl2.cpp
         ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
 
 )
@@ -95,13 +82,13 @@ set(imgui_sources_separate
         ${IMGUI_DIR}/imgui_tables.cpp
 )
 set_source_files_properties(${imgui_sources_separate} PROPERTIES UNITY_GROUP "ImPlotImGui")
-
-set(implot_sources
-        ${IMPLOT_DIR}/implot.cpp
-        ${IMPLOT_DIR}/implot_items.cpp
-        #${IMPLOT_DIR}/implot_demo.cpp
-)
-set_source_files_properties(${implot_sources} PROPERTIES UNITY_GROUP "ImPlotImGui")
+#
+#set(implot_sources
+#        ${IMPLOT_DIR}/implot.cpp
+#        ${IMPLOT_DIR}/implot_items.cpp
+#        #${IMPLOT_DIR}/implot_demo.cpp
+#)
+#set_source_files_properties(${implot_sources} PROPERTIES UNITY_GROUP "ImPlotImGui")
 
 set(ryzen_sources
         ${RYZEN_DIR}/lib/libsmu.c
@@ -112,15 +99,7 @@ set(ryzen_sources
 set_source_files_properties(${ryzen_sources} PROPERTIES UNITY_GROUP "Ryzen")
 #file(GLOB sources src/*.cpp)
 
-include(FetchContent)
-FetchContent_Declare(
-        popl
-        GIT_REPOSITORY https://github.com/badaix/popl.git
-        GIT_TAG v1.3.0
-)
-FetchContent_MakeAvailable(popl)
-
-include_directories(${popl_SOURCE_DIR}/include)
+include_directories(/mnt5/tmp/src/popl/include/)
 
 add_executable(${PROJECT_NAME}
         ${sources}
@@ -130,6 +109,6 @@ add_executable(${PROJECT_NAME}
         ${ryzen_sources}
 )
 
-target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES} SDL2::SDL2)
 target_compile_definitions(${PROJECT_NAME} PUBLIC -DImTextureID=ImU64)
 

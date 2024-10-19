@@ -263,7 +263,7 @@ public:
 
     private:
         pointer ptr_;
-}
+};
 
 private :
     /**
