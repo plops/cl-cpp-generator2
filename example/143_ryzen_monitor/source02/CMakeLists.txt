@@ -1,4 +1,3 @@
-# i don't have glfw and implot
 
 # Example usage:
 #  mkdir build
