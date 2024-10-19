@@ -255,7 +255,7 @@ public:
             std::cout << "guard" << std::endl;
         };
         constexpr ~guard() noexcept {
-            if (!(ptr_ == null)) {
+            if (ptr_ != null) {
                 CleanupFunction(ptr_);
             }
             std::cout << "~guard" << std::endl;
