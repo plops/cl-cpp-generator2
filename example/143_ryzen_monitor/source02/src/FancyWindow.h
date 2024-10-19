@@ -21,7 +21,7 @@ class FancyWindow  {
         explicit  FancyWindow (tDimensions Dimensions)   noexcept    ;  
         void updateFrom ()   noexcept    ;  
         void present ()   noexcept    ;  
-        private:
+        public:
         Window Window_;
         Renderer Renderer_;
         Texture Texture_;
