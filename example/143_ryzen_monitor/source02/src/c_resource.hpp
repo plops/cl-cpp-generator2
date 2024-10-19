@@ -1,9 +1,9 @@
 #pragma once
 
-#include <concepts>      // For std::is_invocable_r, etc.
-#include <cstring>       // For std::memcmp
-#include <iostream>      // For std::cout
-#include <type_traits>   // For type traits utilities
+#include <concepts>   // For std::is_invocable_r, etc.
+#include <cstring>    // For std::memcmp
+#include <iostream>   // For std::cout
+#include <type_traits>// For type traits utilities
 
 // Define a null value for resource pointers to avoid hardcoding nullptr in multiple places.
 template<typename T>
@@ -25,18 +25,18 @@ constexpr inline T *c_resource_null_value = nullptr;
 template<typename T, auto *ConstructFunction, auto *DestructFunction>
 class c_resource {
 public:
-    using pointer = T *;                // Type alias for raw pointer
-    using const_pointer = std::add_const_t<T> *;  // Const version of pointer
-    using element_type = T;             // Element type managed by this resource
+    using pointer = T *;                        // Type alias for raw pointer
+    using const_pointer = std::add_const_t<T> *;// Const version of pointer
+    using element_type = T;                     // Element type managed by this resource
 
 private:
-    using Constructor = decltype(ConstructFunction);  // Type of the constructor function
-    using Destructor = decltype(DestructFunction);   // Type of the destructor function
+    using Constructor = decltype(ConstructFunction);// Type of the constructor function
+    using Destructor = decltype(DestructFunction);  // Type of the destructor function
 
-    static constexpr Constructor construct = ConstructFunction;  // Store the constructor function
-    static constexpr Destructor destruct = DestructFunction;    // Store the destructor function
-    static constexpr T *null = c_resource_null_value<T>;        // Null value for resource pointers
-    struct construct_t {};  // Tag type to distinguish between default and explicit constructors
+    static constexpr Constructor construct = ConstructFunction;// Store the constructor function
+    static constexpr Destructor destruct = DestructFunction;   // Store the destructor function
+    static constexpr T *null = c_resource_null_value<T>;       // Null value for resource pointers
+    struct construct_t {};                                     // Tag type to distinguish between default and explicit constructors
 
 public:
     static constexpr construct_t constructed = {};
@@ -221,7 +221,6 @@ public:
     }
 
 private:
-
     /**
      * @brief Helper function to convert the resource to its pointer type.
      *
@@ -264,17 +263,18 @@ public:
 
     private:
         pointer ptr_;
-    }
+}
 
-private:
+private :
     /**
      * @brief Destructs the managed resource if it is not null.
      *
      * @param p Reference to the pointer to be destructed.
      */
-    constexpr static void _destruct(pointer &p) noexcept
+    constexpr static void
+    _destruct(pointer &p) noexcept
         requires std::is_invocable_v<Destructor, T *>
-    {
+{
         if (!(p == null)) {
             std::cout << "_destruct224 T*" << std::endl;
             destruct(p);
@@ -295,5 +295,5 @@ private:
         }
     }
 
-    pointer ptr_ = null;  // Pointer to the managed resource
+    pointer ptr_ = null;// Pointer to the managed resource
 };
