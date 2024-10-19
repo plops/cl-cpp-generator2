@@ -1,3 +1,4 @@
+# i don't have glew and implot
 
 # Example usage:
 #  mkdir build
@@ -24,14 +25,14 @@ set(CMAKE_CXX_STANDARD 20)
 
 # Set DEP_DIR with a command line flag
 if(NOT DEP_DIR)
-	set(DEP_DIR "/mnt5/tmp/src/" CACHE PATH "Path to dependencies directory")
+	set(DEP_DIR "/tmp/deps143/" CACHE PATH "Path to dependencies directory")
 endif()
 
 # Create a CMake Option to enable adress sanitizer
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
 if(ENABLE_ASAN)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+	add_compile_options(-fsanitize=address)
+	add_link_options(-fsanitize=address)
 endif()
 
 find_package(GLFW)
