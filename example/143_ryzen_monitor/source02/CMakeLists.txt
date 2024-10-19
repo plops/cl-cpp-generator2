@@ -97,6 +97,7 @@ set(ryzen_sources
         ${RYZEN_DIR}/ryzen_monitor.c
 )
 set_source_files_properties(${ryzen_sources} PROPERTIES UNITY_GROUP "Ryzen")
+add_compile_definitions(RYZEN_NO_MAIN)
 #file(GLOB sources src/*.cpp)
 
 include_directories(/mnt5/tmp/src/popl/include/)
