@@ -38,10 +38,10 @@ endif ()
 # Dear ImGui
 set(IMGUI_DIR /mnt5/tmp/src/imgui)
 include_directories(${IMGUI_DIR} ${IMGUI_DIR}/backends ..)
-#
-## ImPlot
-#set(IMPLOT_DIR ${DEP_DIR}/implot)
-#include_directories(${IMPLOT_DIR})
+
+# ImPlot
+set(IMPLOT_DIR /mnt5/tmp/src/implot)
+include_directories(${IMPLOT_DIR})
 
 # Ryzen
 set(RYZEN_DIR /home/martin/src/ryzen_monitor/src)
@@ -70,7 +70,7 @@ set(imgui_sources_backends
         ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
 
 )
-#set_source_files_properties(${imgui_sources_backends} PROPERTIES UNITY_GROUP "ImGui_backends")
+set_source_files_properties(${imgui_sources_backends} PROPERTIES UNITY_GROUP "ImGui_backends")
 
 set(imgui_sources_separate
         ${IMGUI_DIR}/imgui.cpp
@@ -82,13 +82,13 @@ set(imgui_sources_separate
         ${IMGUI_DIR}/imgui_tables.cpp
 )
 set_source_files_properties(${imgui_sources_separate} PROPERTIES UNITY_GROUP "ImPlotImGui")
-#
-#set(implot_sources
-#        ${IMPLOT_DIR}/implot.cpp
-#        ${IMPLOT_DIR}/implot_items.cpp
-#        #${IMPLOT_DIR}/implot_demo.cpp
-#)
-#set_source_files_properties(${implot_sources} PROPERTIES UNITY_GROUP "ImPlotImGui")
+
+set(implot_sources
+       ${IMPLOT_DIR}/implot.cpp
+       ${IMPLOT_DIR}/implot_items.cpp
+       #${IMPLOT_DIR}/implot_demo.cpp
+)
+set_source_files_properties(${implot_sources} PROPERTIES UNITY_GROUP "ImPlotImGui")
 
 set(ryzen_sources
         ${RYZEN_DIR}/lib/libsmu.c

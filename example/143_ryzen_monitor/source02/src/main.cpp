@@ -6,7 +6,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 #include "FancyWindow.h"
-//#include "implot.h"
+#include "implot.h"
 #include <chrono>
 #include <cmath>
 #include <deque>
@@ -125,14 +125,14 @@ int main(int argc, char **argv) {
     auto glsl_version{"#version 130"};
     auto w = FancyWindow({.Width = 320, .Height = 240});
     w.updateFrom();
-    while (true) {
-        w.present();
-        SDL_Delay(15);
-    }
+    //while (true) {
+     //   w.present();
+      //  SDL_Delay(15);
+    //}
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    //ImPlot::CreateContext();
+    ImPlot::CreateContext();
     auto io{ImGui::GetIO()};
     io.ConfigFlags = io.ConfigFlags | ImGuiConfigFlags_NavEnableKeyboard;
     ImGui::StyleColorsDark();
@@ -300,11 +300,12 @@ int main(int argc, char **argv) {
                      clear_color.z * clear_color.w, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        w.present();
         SDL_GL_SwapWindow(w.Window_);
     }
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
-    //ImPlot::DestroyContext();
+    ImPlot::DestroyContext();
     ImGui::DestroyContext();
     //glfwDestroyWindow(window);
     //glfwTerminate();
