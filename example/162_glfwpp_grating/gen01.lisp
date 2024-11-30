@@ -159,16 +159,18 @@
 		    (do0
 		     (glColor4f 1s0 1s0 1s0 1s0)
 		     (glBegin GL_LINES)
-		     (let ((skip 8)))
-		     #+nil (dotimes (i (/ w 2))
-			     (let ((x (- (/ i (* .25s0 w)) 1))))
-			     (glVertex2f x -1s0)
-			     (glVertex2f x 1s0))
+		     (let ((skip 2)))
 		     (let ((N (/ h skip))))
+		     (let ((Nx (/ w skip))))
 		     (dotimes (i N)
 		       (let ((y (/ (- i (/ N 2)) (* (/ .5s0 skip) h)) )))
 		       (glVertex2f -1s0 y)
 		       (glVertex2f 1s0 y))
+
+		     (dotimes (i Nx)
+		       (let ((x (/ (- i (/ Nx 2)) (* (/ .5s0 skip) w)) )))
+		       (glVertex2f x -1s0)
+		       (glVertex2f x 1s0))
 		     (glEnd))
 		    
 		    #+nil (glPopMatrix)
