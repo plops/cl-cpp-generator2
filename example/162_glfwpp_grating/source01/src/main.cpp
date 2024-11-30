@@ -1,7 +1,9 @@
 #include "/home/martin/src/glfw/deps/linmath.h"
+#include <chrono>
 #include <format>
 #include <glfwpp/glfwpp.h>
 #include <iostream>
+#include <thread>
 
 int main(int argc, char **argv) {
   auto GLFW{glfw::init()};
@@ -12,28 +14,49 @@ int main(int argc, char **argv) {
   auto w{512};
   auto h{512};
   auto window{glfw::Window(w, h, "GLFWPP Grating")};
-  glfw::makeContextCurrent(window);
   glfw::swapInterval(1);
+  glfw::makeContextCurrent(window);
   while (!window.shouldClose()) {
     auto time{glfw::getTime()};
     glClearColor(0.F, 0.F, 0.F, 1.0F);
     glClear(GL_COLOR_BUFFER_BIT);
     glfw::pollEvents();
+    std::this_thread::sleep_for(std::chrono::milliseconds(66));
     // tree
+    glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     glPushMatrix();
     glTranslatef(-1.0F, -1.0F, 0.F);
     glScalef(2.0F / w, 2.0F / h, 1.0F);
     glBegin(GL_QUADS);
-    auto level{3};
-    for (decltype(0 + level + 1) i = 0; i < level; i += 1) {
-      auto x{512};
-      auto y{1024 / std::pow(2.0F, level)};
-      auto o{2 * i * y};
-      glColor4f((1.0F * i) / level, 1.0F, 1.0F, 1.0F);
-      glVertex2f(0, o);
-      glVertex2f(0, o + y);
-      glVertex2f(x, o + y);
-      glVertex2f(x, o);
+    static int current_level = 0;
+    static bool horizontal = true;
+    current_level = current_level + 1;
+    if (current_level == 9) {
+      horizontal = !horizontal;
+      current_level = 0;
+    }
+    auto level{current_level};
+    auto y{1024 / pow(2.0F, level)};
+    if (horizontal) {
+      for (decltype(0 + pow(2.0F, level) + 1) i = 0; i < pow(2.0F, level);
+           i += 1) {
+        auto x{512};
+        auto o{2 * i * y};
+        glVertex2f(0, o);
+        glVertex2f(0, o + y);
+        glVertex2f(x, o + y);
+        glVertex2f(x, o);
+      }
+    } else {
+      for (decltype(0 + pow(2.0F, level) + 1) i = 0; i < pow(2.0F, level);
+           i += 1) {
+        auto x{512};
+        auto o{2 * i * y};
+        glVertex2f(o, 0);
+        glVertex2f(o + y, 0);
+        glVertex2f(o + y, x);
+        glVertex2f(o, x);
+      }
     }
     glEnd();
     glPopMatrix();

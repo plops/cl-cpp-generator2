@@ -58,8 +58,9 @@
       
       ;Eigen/Core 
 				
-      ;thread
-      ;popl.hpp
+      thread
+      chrono
+					;popl.hpp
       )
      ;"using namespace std;"
      ;"using namespace Eigen;"
@@ -130,8 +131,9 @@
 			(string "GLFWPP Grating")
 			)))
 	   
-	   (glfw--makeContextCurrent window)
 	   (glfw--swapInterval 1)
+	   (glfw--makeContextCurrent window)
+	   
 
 	   #+nil (when (!= GLEW_OK
 			   (glewInit))
@@ -144,26 +146,47 @@
 		    
 		    
 		    (glfw--pollEvents)
-
+		    (std--this_thread--sleep_for (std--chrono--milliseconds 66))
 
 		    (do0
 		     (comments "tree")
-		     
+		     (glColor4f 1s0 1s0 1s0 1s0)
 		     (glPushMatrix)
 		     (glTranslatef -1s0 -1s0 0s0)
 		     (glScalef (/ 2s0 w) (/ 2s0 h) 1s0)
 		     (glBegin GL_QUADS)
-		     (let ((level 3)))
-		     (dotimes (i level)
-		      (do0
-		       (let ((x 512)
-			     (y (/ 1024 (std--pow 2s0 level)))
-			     (o (* 2 i y))))
-		       (glColor4f (/ (* 1s0 i) level) 1s0 1s0 1s0)
-		       (glVertex2f 0 o)
-		       (glVertex2f 0 (+ o y))
-		       (glVertex2f x (+ o y))
-		       (glVertex2f x o)))
+
+		     "static int current_level = 0;"
+		     "static bool horizontal = true;"
+		     		     
+		     (setf current_level (+ current_level 1)
+					    )
+
+		     (when (== current_level 9)
+		       (setf horizontal !horizontal
+			     current_level 0))
+		     
+		     (let ((level current_level)))
+		     (let ((y (/ 1024 (pow 2s0 level)))))
+		     (if horizontal
+
+			 (dotimes (i (pow 2s0 level))
+			   (do0
+			    (let ((x 512)
+				  (o (* 2 i y))))
+			    (glVertex2f 0 o)
+			    (glVertex2f 0 (+ o y))
+			    (glVertex2f x (+ o y))
+			    (glVertex2f x o)))
+
+			 (dotimes (i (pow 2s0 level))
+			   (do0
+			    (let ((x 512)
+				  (o (* 2 i y))))
+			    (glVertex2f  o 0)
+			    (glVertex2f  (+ o y) 0)
+			    (glVertex2f  (+ o y) x )
+			    (glVertex2f  o x))))
 		     (glEnd)
 		     (glPopMatrix))
 		    
