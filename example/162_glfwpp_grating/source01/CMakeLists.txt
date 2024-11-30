@@ -5,8 +5,10 @@ project(showGrating)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 set(GLFWPP_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # disable building glfwpp examples
-add_subdirectory(/mnt5/tmp/src/glfwpp)
-
+add_subdirectory(ext/glfwpp)
+set(OpenGL_GL_PREFERENCE GLVND)
+find_package(OpenGL)
+#find_package(GLEW)
 # include_directories(/home/martin/eigen/include/eigen3)
 #find_package(popl)
 #find_package(Eigen3)
@@ -39,4 +41,4 @@ endif ()
 add_executable(${PROJECT_NAME} src/main.cpp)
 #set_property(TARGET meanSimd PROPERTY CXX_STANDARD 23)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE GLFWPP)
+target_link_libraries(${PROJECT_NAME} PRIVATE GLFWPP OpenGL)

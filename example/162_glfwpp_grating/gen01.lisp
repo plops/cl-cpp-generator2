@@ -52,6 +52,8 @@
       iostream
       format
 
+      ;GL/glew.h
+
       glfwpp/glfwpp.h
       
       ;Eigen/Core 
@@ -113,12 +115,13 @@
 	       (exit 0))
 	     ))
 
-       ,(lprint :vars `((thread--hardware_concurrency)))
+       ;,(lprint :vars `((thread--hardware_concurrency)))
 
        (let ((GLFW (glfw--init))
-	     (hints (glfw--WindowHints (curly :clientApi glfw--ClientApi--OpenGl
-					      :contextVersionMajor 4
-					      :contextVersionMinor 6))))
+	     (hints (space glfw--WindowHints (designated-initializer
+					:clientApi glfw--ClientApi--OpenGl
+					:contextVersionMajor 4
+					:contextVersionMinor 6))))
 	 (hints.apply)
 	 (let ((window (glfw--Window
 			800
@@ -126,14 +129,14 @@
 			(string "GLFWPP Grating")
 			)))
 	   (glfw--makeContextCurrent window)
-	   (when (!= GLEW_OK
+	   #+nil (when (!= GLEW_OK
 		     (glewInit))
 	     (throw (std--runtime_error (string "Could not initialize GLEW"))))
 	   (while (!window.shouldClose)
 		  (let ((time (glfw--getTime)))
 		    (glClearColor 1s0 .2s0 .3s0 1s0)
-		    (glCear GL_COLOR_BUFFER_BIT)
-		    (glfw--pollEvent)
+		    (glClear GL_COLOR_BUFFER_BIT)
+		    (glfw--pollEvents)
 		    (window.swapBuffers))))
 	 )
 
