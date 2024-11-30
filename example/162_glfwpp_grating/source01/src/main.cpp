@@ -20,16 +20,16 @@ int main(int argc, char **argv) {
     glClear(GL_COLOR_BUFFER_BIT);
     glfw::pollEvents();
     // tree
-    glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     glPushMatrix();
     glTranslatef(-1.0F, -1.0F, 0.F);
     glScalef(2.0F / w, 2.0F / h, 1.0F);
     glBegin(GL_QUADS);
-    auto level{4};
+    auto level{3};
     for (decltype(0 + level + 1) i = 0; i < level; i += 1) {
       auto x{512};
-      auto y{256 / level};
-      auto o{(1 + i) * y};
+      auto y{1024 / std::pow(2.0F, level)};
+      auto o{2 * i * y};
+      glColor4f((1.0F * i) / level, 1.0F, 1.0F, 1.0F);
       glVertex2f(0, o);
       glVertex2f(0, o + y);
       glVertex2f(x, o + y);

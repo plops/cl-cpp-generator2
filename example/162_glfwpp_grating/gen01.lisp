@@ -148,17 +148,18 @@
 
 		    (do0
 		     (comments "tree")
-		     (glColor4f 1s0 1s0 1s0 1s0)
+		     
 		     (glPushMatrix)
 		     (glTranslatef -1s0 -1s0 0s0)
 		     (glScalef (/ 2s0 w) (/ 2s0 h) 1s0)
 		     (glBegin GL_QUADS)
-		     (let ((level 4)))
+		     (let ((level 3)))
 		     (dotimes (i level)
 		      (do0
 		       (let ((x 512)
-			     (y (/ 256 level))
-			     (o (* (+ 1 i) y))))
+			     (y (/ 1024 (std--pow 2s0 level)))
+			     (o (* 2 i y))))
+		       (glColor4f (/ (* 1s0 i) level) 1s0 1s0 1s0)
 		       (glVertex2f 0 o)
 		       (glVertex2f 0 (+ o y))
 		       (glVertex2f x (+ o y))
