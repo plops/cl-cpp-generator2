@@ -159,11 +159,17 @@
 		    (do0
 		     (glColor4f 1s0 1s0 1s0 1s0)
 		     (glBegin GL_LINES)
-		     (let ((skip 2)))
+		     (let ((skip 16)
+			   ))
+		     (space static int (setf offset 0))
+		     (setf offset (% (+ offset 1) skip))
+		     
+
 		     (let ((N (/ h skip))))
 		     (let ((Nx (/ w skip))))
 		     (dotimes (i N)
-		       (let ((y (/ (- i (/ N 2)) (* (/ .5s0 skip) h)) )))
+		       (let ((y (/ (- i (/ N 2) (/ offset (* 1s0 N)))
+				   (* (/ .5s0 skip) h)) )))
 		       (glVertex2f -1s0 y)
 		       (glVertex2f 1s0 y))
 

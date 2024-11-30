@@ -20,11 +20,13 @@ int main(int argc, char **argv) {
     glfw::pollEvents();
     glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     glBegin(GL_LINES);
-    auto skip{2};
+    auto skip{16};
+    static int offset = 0;
+    offset = ((offset + 1) % skip);
     auto N{h / skip};
     auto Nx{w / skip};
     for (decltype(0 + N + 1) i = 0; i < N; i += 1) {
-      auto y{(i - (N / 2)) / ((0.50F / skip) * h)};
+      auto y{(i - (N / 2) - (offset / (1.0F * N))) / ((0.50F / skip) * h)};
       glVertex2f(-1.0F, y);
       glVertex2f(1.0F, y);
     }
