@@ -129,10 +129,13 @@
 			w h
 			(string "GLFWPP Grating")
 			)))
+	   
 	   (glfw--makeContextCurrent window)
+	   (glfw--swapInterval 1)
+
 	   #+nil (when (!= GLEW_OK
-		     (glewInit))
-	     (throw (std--runtime_error (string "Could not initialize GLEW"))))
+			   (glewInit))
+		   (throw (std--runtime_error (string "Could not initialize GLEW"))))
 	   (while (!window.shouldClose)
 		  (let ((time (glfw--getTime)))
 		    (glClearColor 0s0 .0s0 .0s0 1s0)
@@ -159,7 +162,7 @@
 		    (do0
 		     (glColor4f 1s0 1s0 1s0 1s0)
 		     (glBegin GL_LINES)
-		     (let ((skip 16)
+		     (let ((skip 4)
 			   ))
 		     (space static int (setf offset 0))
 		     (setf offset (% (+ offset 1) skip))
@@ -172,7 +175,7 @@
 				   (* (/ .5s0 skip) h)) )))
 		       (glVertex2f -1s0 y)
 		       (glVertex2f 1s0 y))
-
+		     #+nil
 		     (dotimes (i Nx)
 		       (let ((x (/ (- i (/ Nx 2)) (* (/ .5s0 skip) w)) )))
 		       (glVertex2f x -1s0)

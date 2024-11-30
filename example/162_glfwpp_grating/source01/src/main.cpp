@@ -13,6 +13,7 @@ int main(int argc, char **argv) {
   auto h{600};
   auto window{glfw::Window(w, h, "GLFWPP Grating")};
   glfw::makeContextCurrent(window);
+  glfw::swapInterval(1);
   while (!window.shouldClose()) {
     auto time{glfw::getTime()};
     glClearColor(0.F, 0.F, 0.F, 1.0F);
@@ -20,7 +21,7 @@ int main(int argc, char **argv) {
     glfw::pollEvents();
     glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     glBegin(GL_LINES);
-    auto skip{16};
+    auto skip{4};
     static int offset = 0;
     offset = ((offset + 1) % skip);
     auto N{h / skip};
@@ -29,11 +30,6 @@ int main(int argc, char **argv) {
       auto y{(i - (N / 2) - (offset / (1.0F * N))) / ((0.50F / skip) * h)};
       glVertex2f(-1.0F, y);
       glVertex2f(1.0F, y);
-    }
-    for (decltype(0 + Nx + 1) i = 0; i < Nx; i += 1) {
-      auto x{(i - (Nx / 2)) / ((0.50F / skip) * w)};
-      glVertex2f(x, -1.0F);
-      glVertex2f(x, 1.0F);
     }
     glEnd();
     window.swapBuffers();
