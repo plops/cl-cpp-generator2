@@ -131,10 +131,11 @@
 			(string "GLFWPP Grating")
 			)))
 	   
-	   (glfw--swapInterval 1)
+
+	   
 	   (glfw--makeContextCurrent window)
 	   
-
+	   (glfw--swapInterval 3)
 	   #+nil (when (!= GLEW_OK
 			   (glewInit))
 		   (throw (std--runtime_error (string "Could not initialize GLEW"))))
@@ -142,7 +143,7 @@
 		  (let ((time (glfw--getTime)))
 		    
 		    (glfw--pollEvents)
-		    (std--this_thread--sleep_for
+		    #+nil (std--this_thread--sleep_for
 		     (std--chrono--milliseconds (/ 1000 10)))
 		    
 		    (do0
