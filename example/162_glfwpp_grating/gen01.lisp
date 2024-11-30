@@ -47,13 +47,13 @@
 		     *source-dir*))
    `(do0
 
-     
+     (include /home/martin/src/glfw/deps/linmath.h)
      (include<>
       iostream
       format
 
       ;GL/glew.h
-
+      
       glfwpp/glfwpp.h
       
       ;Eigen/Core 
@@ -134,9 +134,32 @@
 	     (throw (std--runtime_error (string "Could not initialize GLEW"))))
 	   (while (!window.shouldClose)
 		  (let ((time (glfw--getTime)))
-		    (glClearColor 1s0 .2s0 .3s0 1s0)
+		    (glClearColor 0s0 .0s0 .0s0 1s0)
 		    (glClear GL_COLOR_BUFFER_BIT)
+
+		    
+		    
 		    (glfw--pollEvents)
+
+		    (progn
+		     (comments "Setup modelview matrix (flat XY view)")
+		     "mat4x4 view;"
+		     (space vec3 eye (curly 0s0 0s0 1s0))
+		     (space vec3 center (curly 0s0 0s0 0s0))
+		     (space vec3 up  (curly 0s0 1s0 0s0))
+		     
+		     (mat4x4_look_at view eye center up)
+		     (glLoadMatrixf ("reinterpret_cast<const GLfloat*>" view))
+		     )
+
+		    (do0
+		     (glColor3f 1s0 1s0 1s0)
+		     (glBegin GL_LINES)
+		     (glVertex2f 0s0 0s0)
+		     (glVertex2f 100s0 100s0)
+		     (glEnd))
+		    
+
 		    (window.swapBuffers))))
 	 )
 
