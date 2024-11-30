@@ -120,8 +120,8 @@
        (let ((GLFW (glfw--init))
 	     (hints (space glfw--WindowHints (designated-initializer
 					:clientApi glfw--ClientApi--OpenGl
-					:contextVersionMajor 4
-					:contextVersionMinor 6))))
+					:contextVersionMajor 2
+					:contextVersionMinor 0))))
 	 (hints.apply)
 	 (let ((window (glfw--Window
 			800
@@ -157,8 +157,8 @@
 		    (do0
 		     (glColor4f 1s0 1s0 1s0 1s0)
 		     (glBegin GL_LINES)
-		     (glVertex2f 0s0 0s0)
-		     (glVertex2f 100s0 100s0)
+		     ;(glVertex2f 0s0 0s0)
+		     ;(glVertex2f 100s0 100s0)
 		     (glVertex2f 0s0 0s0)
 		     (glVertex2f 1s0 1s0)
 		     (glEnd))

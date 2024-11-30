@@ -6,8 +6,8 @@
 int main(int argc, char **argv) {
   auto GLFW{glfw::init()};
   auto hints{glfw::WindowHints{.clientApi = glfw::ClientApi::OpenGl,
-                               .contextVersionMajor = 4,
-                               .contextVersionMinor = 6}};
+                               .contextVersionMajor = 2,
+                               .contextVersionMinor = 0}};
   hints.apply();
   auto window{glfw::Window(800, 600, "GLFWPP Grating")};
   glfw::makeContextCurrent(window);
@@ -28,8 +28,6 @@ int main(int argc, char **argv) {
     }
     glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     glBegin(GL_LINES);
-    glVertex2f(0.F, 0.F);
-    glVertex2f(1.00e+2F, 1.00e+2F);
     glVertex2f(0.F, 0.F);
     glVertex2f(1.0F, 1.0F);
     glEnd();
