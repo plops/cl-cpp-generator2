@@ -123,8 +123,8 @@
 					:contextVersionMajor 2
 					:contextVersionMinor 0))))
 	 (hints.apply)
-	 (let ((w 800)
-	       (h 600)
+	 (let ((w 512)
+	       (h 512)
 	       (window (glfw--Window
 			w h
 			(string "GLFWPP Grating")
@@ -162,7 +162,7 @@
 		    (do0
 		     (glColor4f 1s0 1s0 1s0 1s0)
 		     (glBegin GL_LINES)
-		     (let ((skip 4)
+		     (let ((skip 32)
 			   ))
 		     (space static int (setf offset 0))
 		     (setf offset (% (+ offset 1) skip))
@@ -170,14 +170,16 @@
 
 		     (let ((N (/ h skip))))
 		     (let ((Nx (/ w skip))))
+		     #+nil
 		     (dotimes (i N)
 		       (let ((y (/ (- i (/ N 2) (/ offset (* 1s0 N)))
 				   (* (/ .5s0 skip) h)) )))
 		       (glVertex2f -1s0 y)
 		       (glVertex2f 1s0 y))
-		     #+nil
-		     (dotimes (i Nx)
-		       (let ((x (/ (- i (/ Nx 2)) (* (/ .5s0 skip) w)) )))
+		     
+		     (dotimes (i (+ Nx 2))
+		       (let ((x (/ (- i (/ Nx 2) (/ offset (* 1s0 N)))
+				   (* (/ .5s0 skip) w)) )))
 		       (glVertex2f x -1s0)
 		       (glVertex2f x 1s0))
 		     (glEnd))
