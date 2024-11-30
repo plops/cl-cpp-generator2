@@ -146,28 +146,27 @@
 		    (glfw--pollEvents)
 
 
-		    #+nil
-		    (do0 (glPushMatrix)
-			 (progn
-			   (comments "Setup modelview matrix (flat XY view)")
-			   "mat4x4 view;"
-			   (space vec3 eye (curly 0s0 0s0 1s0))
-			   (space vec3 center (curly 0s0 0s0 0s0))
-			   (space vec3 up  (curly 0s0 1s0 0s0))
-			   
-			   (mat4x4_look_at view eye center up)
-			   (glLoadMatrixf ("reinterpret_cast<const GLfloat*>" view))
-			   ))
-
 		    (do0
+		     (comments "tree")
+		     (glColor4f 1s0 1s0 1s0 1s0)
+		     (glPushMatrix)
+		     (glScalef w h 1s0)
+		     (glBegin GL_QUADS)
+		     (glVertex2f 0 0)
+		     (glVertex2f 0 100)
+		     (glVertex2f 100 100)
+		     (glVertex2f 100 0)
+		     (glEnd)
+		     (glPopMatrix))
+		    
+		    #+nil
+		    (do0
+		     (comments "lines")
 		     (glColor4f 1s0 1s0 1s0 1s0)
 		     (glBegin GL_LINES)
-		     (let ((skip 32)
-			   ))
+		     (let ((skip 32)))
 		     (space static int (setf offset 0))
 		     (setf offset (% (+ offset 1) skip))
-		     
-
 		     (let ((N (/ h skip))))
 		     (let ((Nx (/ w skip))))
 		     #+nil
