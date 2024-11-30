@@ -123,9 +123,10 @@
 					:contextVersionMajor 2
 					:contextVersionMinor 0))))
 	 (hints.apply)
-	 (let ((window (glfw--Window
-			800
-			600
+	 (let ((w 800)
+	       (h 600)
+	       (window (glfw--Window
+			w h
 			(string "GLFWPP Grating")
 			)))
 	   (glfw--makeContextCurrent window)
@@ -142,28 +143,29 @@
 		    (glfw--pollEvents)
 
 
-		    (glPushMatrix)
-		    (progn
-		      (comments "Setup modelview matrix (flat XY view)")
-		      "mat4x4 view;"
-		      (space vec3 eye (curly 0s0 0s0 1s0))
-		      (space vec3 center (curly 0s0 0s0 0s0))
-		      (space vec3 up  (curly 0s0 1s0 0s0))
-		     
-		      (mat4x4_look_at view eye center up)
-		      (glLoadMatrixf ("reinterpret_cast<const GLfloat*>" view))
-		      )
+		    #+nil
+		    (do0 (glPushMatrix)
+			 (progn
+			   (comments "Setup modelview matrix (flat XY view)")
+			   "mat4x4 view;"
+			   (space vec3 eye (curly 0s0 0s0 1s0))
+			   (space vec3 center (curly 0s0 0s0 0s0))
+			   (space vec3 up  (curly 0s0 1s0 0s0))
+			   
+			   (mat4x4_look_at view eye center up)
+			   (glLoadMatrixf ("reinterpret_cast<const GLfloat*>" view))
+			   ))
 
 		    (do0
 		     (glColor4f 1s0 1s0 1s0 1s0)
 		     (glBegin GL_LINES)
-		     ;(glVertex2f 0s0 0s0)
-		     ;(glVertex2f 100s0 100s0)
-		     (glVertex2f 0s0 0s0)
-		     (glVertex2f 1s0 1s0)
+		     (dotimes (i (/ w 2))
+		       (let ((x (- (/ i (* .25s0 w)) 1))))
+		       (glVertex2f x -1s0)
+		       (glVertex2f x 1s0))
 		     (glEnd))
 		    
-		    (glPopMatrix)
+		    #+nil (glPopMatrix)
 		    (window.swapBuffers))))
 	 )
 
