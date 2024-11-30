@@ -20,10 +20,12 @@ int main(int argc, char **argv) {
     glfw::pollEvents();
     glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     glBegin(GL_LINES);
-    for (decltype(0 + (w / 2) + 1) i = 0; i < (w / 2); i += 1) {
-      auto x{(i / (0.250F * w)) - 1};
-      glVertex2f(x, -1.0F);
-      glVertex2f(x, 1.0F);
+    auto skip{8};
+    auto N{h / skip};
+    for (decltype(0 + N + 1) i = 0; i < N; i += 1) {
+      auto y{(i - (N / 2)) / ((0.50F / skip) * h)};
+      glVertex2f(-1.0F, y);
+      glVertex2f(1.0F, y);
     }
     glEnd();
     window.swapBuffers();
