@@ -140,36 +140,40 @@
 		   (throw (std--runtime_error (string "Could not initialize GLEW"))))
 	   (while (!window.shouldClose)
 		  (let ((time (glfw--getTime)))
-		    (glClearColor 0s0 .0s0 .0s0 1s0)
-		    (glClear GL_COLOR_BUFFER_BIT)
-
-		    
 		    
 		    (glfw--pollEvents)
-		    (std--this_thread--sleep_for (std--chrono--milliseconds 66))
-
+		    (std--this_thread--sleep_for
+		     (std--chrono--milliseconds (/ 1000 10)))
+		    
 		    (do0
 		     (comments "tree")
-		     (glColor4f 1s0 1s0 1s0 1s0)
+
+		     (do0
+		      "static int current_level = 0;"
+		      "static bool horizontal = true;"
+
+		      (setf current_level (+ current_level 1))
+		      (when (== current_level (* 8 2) )
+			(setf horizontal !horizontal
+			      current_level 0))
+		      (let ((white (== 0 (% current_level 2))))))
+		     
+		     (if white
+		       (do0 (glClearColor 0s0 0s0 0s0 1s0)
+			    (glClear GL_COLOR_BUFFER_BIT)
+			    (glColor4f 1s0 1s0 1s0 1s0))
+		       (do0 (glClearColor 1s0 1s0 1s0 1s0)
+			    (glClear GL_COLOR_BUFFER_BIT)
+			    (glColor4f 0s0 0s0 0s0 1s0)))
+		     
 		     (glPushMatrix)
 		     (glTranslatef -1s0 -1s0 0s0)
 		     (glScalef (/ 2s0 w) (/ 2s0 h) 1s0)
 		     (glBegin GL_QUADS)
 
-		     "static int current_level = 0;"
-		     "static bool horizontal = true;"
-		     		     
-		     (setf current_level (+ current_level 1)
-					    )
-
-		     (when (== current_level 9)
-		       (setf horizontal !horizontal
-			     current_level 0))
-		     
-		     (let ((level current_level)))
+		     (let ((level (/ current_level 2))))
 		     (let ((y (/ 1024 (pow 2s0 level)))))
 		     (if horizontal
-
 			 (dotimes (i (pow 2s0 level))
 			   (do0
 			    (let ((x 512)
@@ -178,7 +182,6 @@
 			    (glVertex2f 0 (+ o y))
 			    (glVertex2f x (+ o y))
 			    (glVertex2f x o)))
-
 			 (dotimes (i (pow 2s0 level))
 			   (do0
 			    (let ((x 512)

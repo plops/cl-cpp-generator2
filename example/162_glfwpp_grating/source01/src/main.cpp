@@ -18,24 +18,31 @@ int main(int argc, char **argv) {
   glfw::makeContextCurrent(window);
   while (!window.shouldClose()) {
     auto time{glfw::getTime()};
-    glClearColor(0.F, 0.F, 0.F, 1.0F);
-    glClear(GL_COLOR_BUFFER_BIT);
     glfw::pollEvents();
-    std::this_thread::sleep_for(std::chrono::milliseconds(66));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 10));
     // tree
-    glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+    static int current_level = 0;
+    static bool horizontal = true;
+    current_level = current_level + 1;
+    if (current_level == 8 * 2) {
+      horizontal = !horizontal;
+      current_level = 0;
+    }
+    auto white{0 == (current_level % 2)};
+    if (white) {
+      glClearColor(0.F, 0.F, 0.F, 1.0F);
+      glClear(GL_COLOR_BUFFER_BIT);
+      glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+    } else {
+      glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
+      glClear(GL_COLOR_BUFFER_BIT);
+      glColor4f(0.F, 0.F, 0.F, 1.0F);
+    }
     glPushMatrix();
     glTranslatef(-1.0F, -1.0F, 0.F);
     glScalef(2.0F / w, 2.0F / h, 1.0F);
     glBegin(GL_QUADS);
-    static int current_level = 0;
-    static bool horizontal = true;
-    current_level = current_level + 1;
-    if (current_level == 9) {
-      horizontal = !horizontal;
-      current_level = 0;
-    }
-    auto level{current_level};
+    auto level{current_level / 2};
     auto y{1024 / pow(2.0F, level)};
     if (horizontal) {
       for (decltype(0 + pow(2.0F, level) + 1) i = 0; i < pow(2.0F, level);
