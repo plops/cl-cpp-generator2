@@ -22,12 +22,14 @@ int main(int argc, char **argv) {
     // tree
     glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     glPushMatrix();
-    glScalef(w, h, 1.0F);
+    glScalef(1.0F / w, 1.0F / h, 1.0F);
     glBegin(GL_QUADS);
+    auto x{256};
+    auto y{512};
     glVertex2f(0, 0);
-    glVertex2f(0, 100);
-    glVertex2f(100, 100);
-    glVertex2f(100, 0);
+    glVertex2f(0, y);
+    glVertex2f(x, y);
+    glVertex2f(x, 0);
     glEnd();
     glPopMatrix();
     window.swapBuffers();
