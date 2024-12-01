@@ -19,7 +19,11 @@ int main(int argc, char **argv) {
   while (!window.shouldClose()) {
     auto time{glfw::getTime()};
     glfw::pollEvents();
-    // tree
+    // show a sequence of horizontal bars and vertical bars that split the image
+    // into 1/2, 1/4th, ... . each image is followed by its inverted version.
+    // the lcd of the projector is too slow to show this pattern exactly with
+    // 60Hz. that is why we set swap interval to 2 (we wait for two frames for
+    // every image so that the display has time to settle)
     static int current_level = 0;
     static bool horizontal = true;
     current_level = current_level + 1;
