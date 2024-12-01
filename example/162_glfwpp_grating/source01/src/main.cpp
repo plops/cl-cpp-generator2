@@ -15,7 +15,9 @@ int main(int argc, char **argv) {
   auto h{512};
   auto window{glfw::Window(w, h, "GLFWPP Grating")};
   glfw::makeContextCurrent(window);
-  glfw::swapInterval(2);
+  // an alternative to increase swap interval is to change screen update rate
+  // `xrandr --output HDMI-A-0 --mode 1920x1080 --rate 24`
+  glfw::swapInterval(1);
   while (!window.shouldClose()) {
     auto time{glfw::getTime()};
     glfw::pollEvents();

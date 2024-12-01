@@ -134,8 +134,9 @@
 
 	   
 	   (glfw--makeContextCurrent window)
-	   
-	   (glfw--swapInterval 2)
+
+	   (comments "an alternative to increase swap interval is to change screen update rate `xrandr --output HDMI-A-0 --mode 1920x1080 --rate 24`")
+	   (glfw--swapInterval 1)
 	   #+nil (when (!= GLEW_OK
 			   (glewInit))
 		   (throw (std--runtime_error (string "Could not initialize GLEW"))))
