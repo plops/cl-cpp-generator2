@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
   auto h{512};
   auto window{glfw::Window(w, h, "GLFWPP Grating")};
   glfw::makeContextCurrent(window);
-  glfw::swapInterval(3);
+  glfw::swapInterval(2);
   while (!window.shouldClose()) {
     auto time{glfw::getTime()};
     glfw::pollEvents();
