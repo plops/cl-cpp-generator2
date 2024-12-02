@@ -4,6 +4,8 @@
 #include <glfwpp/glfwpp.h>
 #include <iostream>
 #include <thread>
+using namespace std;
+using namespace chrono;
 
 int main(int argc, char **argv) {
   auto GLFW{glfw::init()};
@@ -18,6 +20,7 @@ int main(int argc, char **argv) {
   // an alternative to increase swap interval is to change screen update rate
   // `xrandr --output HDMI-A-0 --mode 1920x1080 --rate 24`
   glfw::swapInterval(1);
+  auto t0{high_resolution_clock::now()};
   while (!window.shouldClose()) {
     auto time{glfw::getTime()};
     glfw::pollEvents();
@@ -72,7 +75,21 @@ int main(int argc, char **argv) {
     }
     glEnd();
     glPopMatrix();
+    {
+      auto t2{high_resolution_clock::now()};
+      auto frameTimens{duration_cast<nanoseconds>(t2 - t0).count()};
+      auto targetns{1000'000'000 / 30};
+      std::this_thread::sleep_for(
+          std::chrono::nanoseconds(targetns - frameTimens));
+    }
     window.swapBuffers();
+    auto t1{high_resolution_clock::now()};
+    auto frameTimens{duration_cast<nanoseconds>(t1 - t0).count()};
+    auto frameTimems{frameTimens / 1.0e+6F};
+    auto frameRateHz{1.0e+9F / frameTimens};
+    std::cout << std::format("(:frameTimems '{}' :frameRateHz '{}')\n",
+                             frameTimems, frameRateHz);
+    t0 = t1;
   }
   return 0;
 }
