@@ -47,6 +47,8 @@ int main(int argc, char **argv) {
   auto op{popl::OptionParser("allowed options")};
   auto swapInterval{int(2)};
   auto numberFramesForStatistics{int(211)};
+  auto darkLevel{int(0)};
+  auto brightLevel{int(255)};
   auto helpOption{op.add<popl::Switch>("h", "help", "produce help message")};
   auto verboseOption{
       op.add<popl::Switch>("v", "verbose", "produce verbose output")};
@@ -55,6 +57,10 @@ int main(int argc, char **argv) {
   auto numberFramesForStatisticsOption{
       op.add<popl::Value<int>>("F", "numberFramesForStatistics", "parameter",
                                211, &numberFramesForStatistics)};
+  auto darkLevelOption{
+      op.add<popl::Value<int>>("D", "darkLevel", "parameter", 0, &darkLevel)};
+  auto brightLevelOption{op.add<popl::Value<int>>(
+      "B", "brightLevel", "parameter", 255, &brightLevel)};
   op.parse(argc, argv);
   if (helpOption->is_set()) {
     cout << op << endl;
@@ -76,6 +82,8 @@ int main(int argc, char **argv) {
     return make_tuple(mean, mean_stdev, stdev, stdev_stdev);
   }};
   auto fitres{deque<float>()};
+  auto dark{darkLevel / 255.F};
+  auto bright{brightLevel / 255.F};
   auto GLFW{glfw::init()};
   auto hints{glfw::WindowHints{.clientApi = glfw::ClientApi::OpenGl,
                                .contextVersionMajor = 2,
@@ -106,13 +114,13 @@ int main(int argc, char **argv) {
     }
     auto white{0 == (current_level % 2)};
     if (white) {
-      glClearColor(0.F, 0.F, 0.F, 1.0F);
+      glClearColor(dark, dark, dark, 1.0F);
       glClear(GL_COLOR_BUFFER_BIT);
-      glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+      glColor4f(bright, bright, bright, 1.0F);
     } else {
-      glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
+      glClearColor(bright, bright, bright, 1.0F);
       glClear(GL_COLOR_BUFFER_BIT);
-      glColor4f(0.F, 0.F, 0.F, 1.0F);
+      glColor4f(dark, dark, dark, 1.0F);
     }
     glPushMatrix();
     glTranslatef(-1.0F, -1.0F, 0.F);

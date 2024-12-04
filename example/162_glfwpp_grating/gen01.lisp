@@ -126,6 +126,8 @@
        #+more ,(let ((l `(
 			  (:name swapInterval :default 2 :short s)
 			  (:name numberFramesForStatistics :default 211 :short F)
+			  (:name darkLevel :default 0 :short D)
+			  (:name brightLevel :default 255 :short B)
 			  )))
 		 `(let ((op (popl--OptionParser (string "allowed options")))
 			,@(loop for e in l collect
@@ -217,6 +219,9 @@
 		       (return (make_tuple mean mean_stdev stdev stdev_stdev)))))))
 
        (let ((fitres (deque<float>))))
+
+       (let ((dark (/ darkLevel 255s0))
+	     (bright (/ brightLevel 255s0))))
        
        (let ((GLFW (glfw--init))
 	     (hints (space glfw--WindowHints (designated-initializer
@@ -261,15 +266,17 @@
 			      current_level 0))
 		      #+invert (let ((white (== 0 (% current_level 2)))))
 		      )
+
+		     
 		     
 		     (#-invert do0 #+invert if #+invert white
-		      (do0 (glClearColor 0s0 0s0 0s0 1s0)
+		      (do0 (glClearColor dark dark dark 1s0)
 			   (glClear GL_COLOR_BUFFER_BIT)
-			   #+invert (glColor4f 1s0 1s0 1s0 1s0)
+			   #+invert (glColor4f bright bright bright 1s0)
 			   )
-		      #+invert (do0 (glClearColor 1s0 1s0 1s0 1s0)
+		      #+invert (do0 (glClearColor bright bright bright 1s0)
 				    (glClear GL_COLOR_BUFFER_BIT)
-				    (glColor4f 0s0 0s0 0s0 1s0)
+				    (glColor4f dark dark dark 1s0)
 				    ))
 		     
 		     (glPushMatrix)
@@ -312,10 +319,10 @@
 			(when (< numberFramesForStatistics (fitres.size))
 			  (fitres.pop_front))
 			(letc ((cs (computeStat fitres
-					    (lambda (f)
-					      (declare (type "const auto&" f))
-					      (return f ;(,(format nil "get<~a>" e-i) f)
-						      ))))
+						(lambda (f)
+						  (declare (type "const auto&" f))
+						  (return f ;(,(format nil "get<~a>" e-i) f)
+							  ))))
 			       (pcs (printStat cs))))
 			(let (
 			      ((bracket frameTime_ frameTime_Std frameTimeStd frameTimeStdStd)
