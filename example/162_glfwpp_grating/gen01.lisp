@@ -81,7 +81,42 @@
      "using Scalar = float;"
      "using Vec = std::vector<Scalar>;"
      "using VecI = const Vec;"
+     
+     (defun getSignificantDigits (num)
+       (declare (type Scalar num)
+		(values int))
+       (when (== num 0s0)
+	 (return 1))
+       (when (< num 0)
+	 (setf num -num))
+       (let ((significantDigits 0))
+	 (while (<= num 1s0)
+		(*= num 10s0)
+		(incf significantDigits))
+	 (return significantDigits)))
 
+     (defun printStat (m_md_d_dd)
+       (declare			
+	(type "tuple<Scalar,Scalar,Scalar,Scalar>" m_md_d_dd)
+	(values "string"))
+       (let (((bracket m md d dd) m_md_d_dd)))
+       (letc ((rel (* 100s0 (/ d m)))
+	      (mprecision  (getSignificantDigits md))
+	      (dprecision  (getSignificantDigits dd))
+	      (rprecision  (getSignificantDigits rel))
+
+	      (fmtm (+ (std--string (string "{:."))
+		       (to_string mprecision)
+		       (string "f}")))
+	      (fmtd (+ (std--string (string "{:."))
+		       (to_string dprecision)
+		       (string "f}")))
+	      (fmtr (+ (std--string (string " ({:."))
+		       (to_string rprecision)
+		       (string "f}%)")))
+	      (format_str (+  fmtm (string "±") fmtd fmtr)))
+	     (return (vformat format_str (make_format_args m d rel)))
+	     ))
      
      (defun main (argc argv)
        (declare (type int argc)
@@ -90,6 +125,7 @@
       
        #+more ,(let ((l `(
 			  (:name swapInterval :default 2 :short s)
+			  (:name numberFramesForStatistics :default 211 :short F)
 			  )))
 		 `(let ((op (popl--OptionParser (string "allowed options")))
 			,@(loop for e in l collect
@@ -273,16 +309,20 @@
 					    1s6))
 			    (frameRateHz (/ 1s9 frameTimens) ))
 			(fitres.push_back frameTimems)
-			(when (< 67 (fitres.size))
+			(when (< numberFramesForStatistics (fitres.size))
 			  (fitres.pop_front))
-			(let (((bracket frameTime_ frameTime_Std frameTimeStd frameTimeStdStd)
-				(computeStat fitres
-					     (lambda (f)
-					       (declare (type "const auto&" f))
-					       (return f ;(,(format nil "get<~a>" e-i) f)
-						       ))))
+			(letc ((cs (computeStat fitres
+					    (lambda (f)
+					      (declare (type "const auto&" f))
+					      (return f ;(,(format nil "get<~a>" e-i) f)
+						      ))))
+			       (pcs (printStat cs))))
+			(let (
+			      ((bracket frameTime_ frameTime_Std frameTimeStd frameTimeStdStd)
+				cs
+			       )
 			      ))
-			,(lprint :vars `(frameTime_ frameTimeStd frameTimems frameRateHz)))
+			,(lprint :vars `(pcs frameTimems frameRateHz)))
 		      (setf t0 t1)))))
 	 )
 

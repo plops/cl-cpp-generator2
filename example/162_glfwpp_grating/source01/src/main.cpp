@@ -15,14 +15,46 @@ using Scalar = float;
 using Vec = std::vector<Scalar>;
 using VecI = const Vec;
 
+int getSignificantDigits(Scalar num) {
+  if (num == 0.F) {
+    return 1;
+  }
+  if (num < 0) {
+    num = -num;
+  }
+  auto significantDigits{0};
+  while (num <= 1.0F) {
+    num *= 10.F;
+    significantDigits++;
+  }
+  return significantDigits;
+}
+
+string printStat(tuple<Scalar, Scalar, Scalar, Scalar> m_md_d_dd) {
+  auto [m, md, d, dd]{m_md_d_dd};
+  const auto rel{1.00e+2F * (d / m)};
+  const auto mprecision{getSignificantDigits(md)};
+  const auto dprecision{getSignificantDigits(dd)};
+  const auto rprecision{getSignificantDigits(rel)};
+  const auto fmtm{std::string("{:.") + to_string(mprecision) + "f}"};
+  const auto fmtd{std::string("{:.") + to_string(dprecision) + "f}"};
+  const auto fmtr{std::string(" ({:.") + to_string(rprecision) + "f}%)"};
+  const auto format_str{fmtm + "±" + fmtd + fmtr};
+  return vformat(format_str, make_format_args(m, d, rel));
+}
+
 int main(int argc, char **argv) {
   auto op{popl::OptionParser("allowed options")};
   auto swapInterval{int(2)};
+  auto numberFramesForStatistics{int(211)};
   auto helpOption{op.add<popl::Switch>("h", "help", "produce help message")};
   auto verboseOption{
       op.add<popl::Switch>("v", "verbose", "produce verbose output")};
   auto swapIntervalOption{op.add<popl::Value<int>>(
       "s", "swapInterval", "parameter", 2, &swapInterval)};
+  auto numberFramesForStatisticsOption{
+      op.add<popl::Value<int>>("F", "numberFramesForStatistics", "parameter",
+                               211, &numberFramesForStatistics)};
   op.parse(argc, argv);
   if (helpOption->is_set()) {
     cout << op << endl;
@@ -117,15 +149,15 @@ int main(int argc, char **argv) {
     auto frameTimems{frameTimens / 1.0e+6F};
     auto frameRateHz{1.0e+9F / frameTimens};
     fitres.push_back(frameTimems);
-    if (67 < fitres.size()) {
+    if (numberFramesForStatistics < fitres.size()) {
       fitres.pop_front();
     }
-    auto [frameTime_, frameTime_Std, frameTimeStd, frameTimeStdStd]{
-        computeStat(fitres, [&](const auto &f) { return f; })};
-    std::cout << std::format("(:frameTime_ '{}' :frameTimeStd '{}' "
-                             ":frameTimems '{}' :frameRateHz '{}')\n",
-                             frameTime_, frameTimeStd, frameTimems,
-                             frameRateHz);
+    const auto cs{computeStat(fitres, [&](const auto &f) { return f; })};
+    const auto pcs{printStat(cs)};
+    auto [frameTime_, frameTime_Std, frameTimeStd, frameTimeStdStd]{cs};
+    std::cout << std::format(
+        "(:pcs '{}' :frameTimems '{}' :frameRateHz '{}')\n", pcs, frameTimems,
+        frameRateHz);
     t0 = t1;
   }
   return 0;
