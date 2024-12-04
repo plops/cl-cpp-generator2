@@ -1,12 +1,19 @@
 #include "/home/martin/src/popl/include/popl.hpp"
+#include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <deque>
 #include <format>
 #include <glfwpp/glfwpp.h>
 #include <iostream>
+#include <numeric>
 #include <thread>
+#include <valarray>
 using namespace std;
 using namespace chrono;
+using Scalar = float;
+using Vec = std::vector<Scalar>;
+using VecI = const Vec;
 
 int main(int argc, char **argv) {
   auto op{popl::OptionParser("allowed options")};
@@ -21,6 +28,22 @@ int main(int argc, char **argv) {
     cout << op << endl;
     exit(0);
   }
+  auto computeStat{[](const auto &fitres,
+                      auto filter) -> tuple<Scalar, Scalar, Scalar, Scalar> {
+    // compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8
+    auto data{valarray<Scalar>(fitres.size())};
+    data.resize(fitres.size());
+    transform(fitres.begin(), fitres.end(), &data[0], filter);
+    const auto N{static_cast<Scalar>(data.size())};
+    const auto mean{(data.sum()) / N};
+    const auto stdev{
+        sqrt(((pow(data - mean, 2).sum()) - (pow((data - mean).sum(), 2) / N)) /
+             (N - 1.0F))};
+    const auto mean_stdev{stdev / sqrt(N)};
+    const auto stdev_stdev{stdev / sqrt(2 * N)};
+    return make_tuple(mean, mean_stdev, stdev, stdev_stdev);
+  }};
+  auto fitres{deque<float>()};
   auto GLFW{glfw::init()};
   auto hints{glfw::WindowHints{.clientApi = glfw::ClientApi::OpenGl,
                                .contextVersionMajor = 2,
@@ -93,8 +116,16 @@ int main(int argc, char **argv) {
     auto frameTimens{duration_cast<nanoseconds>(t1 - t0).count()};
     auto frameTimems{frameTimens / 1.0e+6F};
     auto frameRateHz{1.0e+9F / frameTimens};
-    std::cout << std::format("(:frameTimems '{}' :frameRateHz '{}')\n",
-                             frameTimems, frameRateHz);
+    fitres.push_back(frameTimems);
+    if (67 < fitres.size()) {
+      fitres.pop_front();
+    }
+    auto [frameTime_, frameTime_Std, frameTimeStd, frameTimeStdStd]{
+        computeStat(fitres, [&](const auto &f) { return f; })};
+    std::cout << std::format("(:frameTime_ '{}' :frameTimeStd '{}' "
+                             ":frameTimems '{}' :frameRateHz '{}')\n",
+                             frameTime_, frameTimeStd, frameTimems,
+                             frameRateHz);
     t0 = t1;
   }
   return 0;

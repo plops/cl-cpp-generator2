@@ -20,6 +20,11 @@
 				   *source-dir*))
   (ensure-directories-exist *full-source-dir*)
 
+  (defun begin (arr)
+    `(ref (aref ,arr 0)) )
+  (defun end (arr)
+    `(+ (ref (aref ,arr 0)) (dot ,arr (size))))
+  
   (defun lprint (&key (msg "")
 		   (vars nil)
 		   )
@@ -55,6 +60,8 @@
       iostream
       format
       cmath
+      deque
+      valarray
 
 					;GL/glew.h
       
@@ -64,11 +71,17 @@
 				
       thread
       chrono
+      algorithm
+      numeric
 					;popl.hpp
       )
      "using namespace std;"
      "using namespace chrono;"
 					;"using namespace Eigen;"
+     "using Scalar = float;"
+     "using Vec = std::vector<Scalar>;"
+     "using VecI = const Vec;"
+
      
      (defun main (argc argv)
        (declare (type int argc)
@@ -76,53 +89,99 @@
 		(values int))
       
        #+more ,(let ((l `(
-			 (:name swapInterval :default 2 :short s)
-			 )))
-		`(let ((op (popl--OptionParser (string "allowed options")))
-		       ,@(loop for e in l collect
-					  (destructuring-bind (&key name default short (type 'int)) e
-					    `(,name (,type ,default))))
-		       ,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
-					  (:long verbose :short v :type Switch :msg "produce verbose output")
+			  (:name swapInterval :default 2 :short s)
+			  )))
+		 `(let ((op (popl--OptionParser (string "allowed options")))
+			,@(loop for e in l collect
+					   (destructuring-bind (&key name default short (type 'int)) e
+					     `(,name (,type ,default))))
+			,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
+					   (:long verbose :short v :type Switch :msg "produce verbose output")
 					  
-					  ,@(loop for f in l
-						  collect
-						  (destructuring-bind (&key name default short (type 'int)) f
-						    `(:long ,name
-						      :short ,short
-						      :type ,type :msg "parameter"
-						      :default ,default :out ,(format nil "&~a" name))))
+					   ,@(loop for f in l
+						   collect
+						   (destructuring-bind (&key name default short (type 'int)) f
+						     `(:long ,name
+						       :short ,short
+						       :type ,type :msg "parameter"
+						       :default ,default :out ,(format nil "&~a" name))))
 
+					   )
+				appending
+				(destructuring-bind (&key long short type msg default out) e
+				  `((,(format nil "~aOption" long)
+				     ,(let ((cmd `(,(format nil "add<~a>"
+							    (if (eq type 'Switch)
+								"popl::Switch"
+								(format nil "popl::Value<~a>" type)))
+						   (string ,short)
+						   (string ,long)
+						   (string ,msg))))
+					(when default
+					  (setf cmd (append cmd `(,default)))
 					  )
-			       appending
-			       (destructuring-bind (&key long short type msg default out) e
-				 `((,(format nil "~aOption" long)
-				    ,(let ((cmd `(,(format nil "add<~a>"
-							   (if (eq type 'Switch)
-							       "popl::Switch"
-							       (format nil "popl::Value<~a>" type)))
-						  (string ,short)
-						  (string ,long)
-						  (string ,msg))))
-				       (when default
-					 (setf cmd (append cmd `(,default)))
-					 )
-				       (when out
-					 (setf cmd (append cmd `(,out)))
-					 )
-				       `(dot op ,cmd)
-				       ))))
-			       ))
-		   (op.parse argc argv)
-		   (when (helpOption->is_set)
-		     (<< cout
-			 op
-			 endl)
-		     (exit 0))
-		   ))
+					(when out
+					  (setf cmd (append cmd `(,out)))
+					  )
+					`(dot op ,cmd)
+					))))
+				))
+		    (op.parse argc argv)
+		    (when (helpOption->is_set)
+		      (<< cout
+			  op
+			  endl)
+		      (exit 0))
+		    ))
 
 					;,(lprint :vars `((thread--hardware_concurrency)))
 
+       #+more
+       (let ((computeStat
+	       (lambda (fitres
+			filter) 
+		 (declare (type "const auto&" fitres)
+			  (capture "")
+			  (values "tuple<Scalar,Scalar,Scalar,Scalar>"))
+		 (comments "compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8")
+		 (do0
+		  (let ((data (valarray<Scalar> (fitres.size)))))
+		  (data.resize (fitres.size))
+
+		 
+		  (transform (fitres.begin)
+			     (fitres.end)
+			     ,(begin 'data)
+			     filter))
+						
+		 (letc ((N (static_cast<Scalar> (data.size)))
+			(mean (/ (dot data (sum))
+				 N))
+					      
+			;; 14.1.8 corrected two-pass algorithm from bevington 2002
+
+
+			;; (comments "pass1 = sum( (data-s) ** 2 )")
+			;; (comments "pas2 = sum( data-s )")
+			(stdev
+			 (sqrt (/ (- (dot (pow (- data mean) 2)
+					  (sum))
+				     (/ (pow
+					 (dot (paren (- data mean))
+					      (sum))
+					 2)
+					N)
+				     )
+				  (- N 1s0))))
+			;; error in the mean due to sampling
+			(mean_stdev (/ stdev (sqrt N)))
+			;; error in the standard deviation due to sampling
+			(stdev_stdev (/ stdev (sqrt (* 2 N)))))
+					     
+		       (return (make_tuple mean mean_stdev stdev stdev_stdev)))))))
+
+       (let ((fitres (deque<float>))))
+       
        (let ((GLFW (glfw--init))
 	     (hints (space glfw--WindowHints (designated-initializer
 					      :clientApi glfw--ClientApi--OpenGl
@@ -135,7 +194,7 @@
 			w h
 			(string "GLFWPP Grating")
 			)))
-	   
+	    
 
 	   
 	   (glfw--makeContextCurrent window)
@@ -168,14 +227,14 @@
 		      )
 		     
 		     (#-invert do0 #+invert if #+invert white
-			 (do0 (glClearColor 0s0 0s0 0s0 1s0)
-			      (glClear GL_COLOR_BUFFER_BIT)
-			      #+invert (glColor4f 1s0 1s0 1s0 1s0)
-			      )
-			  #+invert (do0 (glClearColor 1s0 1s0 1s0 1s0)
-			       (glClear GL_COLOR_BUFFER_BIT)
-			       (glColor4f 0s0 0s0 0s0 1s0)
-			       ))
+		      (do0 (glClearColor 0s0 0s0 0s0 1s0)
+			   (glClear GL_COLOR_BUFFER_BIT)
+			   #+invert (glColor4f 1s0 1s0 1s0 1s0)
+			   )
+		      #+invert (do0 (glClearColor 1s0 1s0 1s0 1s0)
+				    (glClear GL_COLOR_BUFFER_BIT)
+				    (glColor4f 0s0 0s0 0s0 1s0)
+				    ))
 		     
 		     (glPushMatrix)
 		     (glTranslatef -1s0 -1s0 0s0)
@@ -183,7 +242,7 @@
 		     (glBegin GL_QUADS)
 
 		     (let ((level (/ current_level #-invert 1 #+invert 2
-				     ))))
+						   ))))
 		     (let ((y (/ 1024 (pow 2s0 level)))))
 		     (if horizontal
 			 (dotimes (i (pow 2s0 level))
@@ -205,49 +264,25 @@
 		     (glEnd)
 		     (glPopMatrix))
 		    
-		    #+nil
-		    (do0
-		     (comments "lines")
-		     (glColor4f 1s0 1s0 1s0 1s0)
-		     (glBegin GL_LINES)
-		     (let ((skip 32)))
-		     (space static int (setf offset 0))
-		     (setf offset (% (+ offset 1) skip))
-		     (let ((N (/ h skip))))
-		     (let ((Nx (/ w skip))))
-		     #+nil
-		     (dotimes (i N)
-		       (let ((y (/ (- i (/ N 2) (/ offset (* 1s0 N)))
-				   (* (/ .5s0 skip) h)) )))
-		       (glVertex2f -1s0 y)
-		       (glVertex2f 1s0 y))
-		     
-		     (dotimes (i (+ Nx 2))
-		       (let ((x (/ (- i (/ Nx 2) (/ offset (* 1s0 N)))
-				   (* (/ .5s0 skip) w)) )))
-		       (glVertex2f x -1s0)
-		       (glVertex2f x 1s0))
-		     (glEnd))
 		    
-		    #+nil (glPopMatrix)
-		    #+nil (progn
-		     (let ((t2 (high_resolution_clock--now))
-			   (frameTimens (dot (duration_cast<nanoseconds> (- t2 t0))
-					     (count)))
-			   (targetns (/ "1000'000'000"
-					30)))
-		       (std--this_thread--sleep_for
-			(std--chrono--nanoseconds (- targetns frameTimens)))
-		      
-		       ))
 		    (window.swapBuffers)
 		    (let ((t1 (high_resolution_clock--now)))
 		      (let ((frameTimens (dot (duration_cast<nanoseconds> (- t1 t0))
-					       (count)))
+					      (count)))
 			    (frameTimems (/ frameTimens
-					  1s6))
+					    1s6))
 			    (frameRateHz (/ 1s9 frameTimens) ))
-			,(lprint :vars `(frameTimems frameRateHz)))
+			(fitres.push_back frameTimems)
+			(when (< 67 (fitres.size))
+			  (fitres.pop_front))
+			(let (((bracket frameTime_ frameTime_Std frameTimeStd frameTimeStdStd)
+				(computeStat fitres
+					     (lambda (f)
+					       (declare (type "const auto&" f))
+					       (return f ;(,(format nil "get<~a>" e-i) f)
+						       ))))
+			      ))
+			,(lprint :vars `(frameTime_ frameTimeStd frameTimems frameRateHz)))
 		      (setf t0 t1)))))
 	 )
 
