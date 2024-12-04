@@ -1,5 +1,6 @@
-#include "/home/martin/src/glfw/deps/linmath.h"
+#include "/home/martin/src/popl/include/popl.hpp"
 #include <chrono>
+#include <cmath>
 #include <format>
 #include <glfwpp/glfwpp.h>
 #include <iostream>
@@ -8,6 +9,18 @@ using namespace std;
 using namespace chrono;
 
 int main(int argc, char **argv) {
+  auto op{popl::OptionParser("allowed options")};
+  auto swapInterval{int(2)};
+  auto helpOption{op.add<popl::Switch>("h", "help", "produce help message")};
+  auto verboseOption{
+      op.add<popl::Switch>("v", "verbose", "produce verbose output")};
+  auto swapIntervalOption{op.add<popl::Value<int>>(
+      "s", "swapInterval", "parameter", 2, &swapInterval)};
+  op.parse(argc, argv);
+  if (helpOption->is_set()) {
+    cout << op << endl;
+    exit(0);
+  }
   auto GLFW{glfw::init()};
   auto hints{glfw::WindowHints{.clientApi = glfw::ClientApi::OpenGl,
                                .contextVersionMajor = 2,
@@ -19,7 +32,7 @@ int main(int argc, char **argv) {
   glfw::makeContextCurrent(window);
   // an alternative to increase swap interval is to change screen update rate
   // `xrandr --output HDMI-A-0 --mode 1920x1080 --rate 24`
-  glfw::swapInterval(1);
+  glfw::swapInterval(swapInterval);
   auto t0{high_resolution_clock::now()};
   while (!window.shouldClose()) {
     auto time{glfw::getTime()};
@@ -75,13 +88,6 @@ int main(int argc, char **argv) {
     }
     glEnd();
     glPopMatrix();
-    {
-      auto t2{high_resolution_clock::now()};
-      auto frameTimens{duration_cast<nanoseconds>(t2 - t0).count()};
-      auto targetns{1000'000'000 / 30};
-      std::this_thread::sleep_for(
-          std::chrono::nanoseconds(targetns - frameTimens));
-    }
     window.swapBuffers();
     auto t1{high_resolution_clock::now()};
     auto frameTimens{duration_cast<nanoseconds>(t1 - t0).count()};

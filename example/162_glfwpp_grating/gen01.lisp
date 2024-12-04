@@ -6,9 +6,11 @@
 (in-package :cl-cpp-generator2)
 
 (progn
-  (setf *features* (set-difference *features* (list :more
+  (setf *features* (set-difference *features* (list :more ;; command line parsing
+						    :invert ;; show inverted frames
 						    )))
-  (setf *features* (set-exclusive-or *features* (list ;:more
+  (setf *features* (set-exclusive-or *features* (list :more
+						      :invert
 						      ))))
 
 (let ()
@@ -47,16 +49,18 @@
 		     *source-dir*))
    `(do0
 
-     (include /home/martin/src/glfw/deps/linmath.h)
+     ;(include /home/martin/src/glfw/deps/linmath.h)
+     #+more (include "/home/martin/src/popl/include/popl.hpp")
      (include<>
       iostream
       format
+      cmath
 
-      ;GL/glew.h
+					;GL/glew.h
       
       glfwpp/glfwpp.h
       
-      ;Eigen/Core 
+					;Eigen/Core 
 				
       thread
       chrono
@@ -71,8 +75,8 @@
 		(type char** argv)
 		(values int))
       
-       #+Nil ,(let ((l `(
-			 (:name numberPoints :default 1024 :short p)
+       #+more ,(let ((l `(
+			 (:name swapInterval :default 2 :short s)
 			 )))
 		`(let ((op (popl--OptionParser (string "allowed options")))
 		       ,@(loop for e in l collect
@@ -80,7 +84,7 @@
 					    `(,name (,type ,default))))
 		       ,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
 					  (:long verbose :short v :type Switch :msg "produce verbose output")
-					  (:long mean :short m :type Switch :msg "Print mean and standard deviation statistics, otherwise print median and mean absolute deviation from it")
+					  
 					  ,@(loop for f in l
 						  collect
 						  (destructuring-bind (&key name default short (type 'int)) f
@@ -137,7 +141,7 @@
 	   (glfw--makeContextCurrent window)
 
 	   (comments "an alternative to increase swap interval is to change screen update rate `xrandr --output HDMI-A-0 --mode 1920x1080 --rate 24`")
-	   (glfw--swapInterval 1)
+	   (glfw--swapInterval swapInterval)
 	   #+nil (when (!= GLEW_OK
 			   (glewInit))
 		   (throw (std--runtime_error (string "Could not initialize GLEW"))))
@@ -157,25 +161,29 @@
 		      "static bool horizontal = true;"
 
 		      (setf current_level (+ current_level 1))
-		      (when (== current_level (* 8 2) )
+		      (when (== current_level (* 8 #+invert 2 #-invert 1))
 			(setf horizontal !horizontal
 			      current_level 0))
-		      (let ((white (== 0 (% current_level 2))))))
+		      #+invert (let ((white (== 0 (% current_level 2)))))
+		      )
 		     
-		     (if white
+		     (#-invert do0 #+invert if #+invert white
 			 (do0 (glClearColor 0s0 0s0 0s0 1s0)
 			      (glClear GL_COLOR_BUFFER_BIT)
-			      (glColor4f 1s0 1s0 1s0 1s0))
-			 (do0 (glClearColor 1s0 1s0 1s0 1s0)
-			      (glClear GL_COLOR_BUFFER_BIT)
-			      (glColor4f 0s0 0s0 0s0 1s0)))
+			      #+invert (glColor4f 1s0 1s0 1s0 1s0)
+			      )
+			  #+invert (do0 (glClearColor 1s0 1s0 1s0 1s0)
+			       (glClear GL_COLOR_BUFFER_BIT)
+			       (glColor4f 0s0 0s0 0s0 1s0)
+			       ))
 		     
 		     (glPushMatrix)
 		     (glTranslatef -1s0 -1s0 0s0)
 		     (glScalef (/ 2s0 w) (/ 2s0 h) 1s0)
 		     (glBegin GL_QUADS)
 
-		     (let ((level (/ current_level 2))))
+		     (let ((level (/ current_level #-invert 1 #+invert 2
+				     ))))
 		     (let ((y (/ 1024 (pow 2s0 level)))))
 		     (if horizontal
 			 (dotimes (i (pow 2s0 level))
@@ -222,7 +230,7 @@
 		     (glEnd))
 		    
 		    #+nil (glPopMatrix)
-		    (progn
+		    #+nil (progn
 		     (let ((t2 (high_resolution_clock--now))
 			   (frameTimens (dot (duration_cast<nanoseconds> (- t2 t0))
 					     (count)))
