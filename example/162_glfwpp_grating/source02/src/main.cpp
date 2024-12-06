@@ -6,7 +6,6 @@
 #include <format>
 #include <glfwpp/glfwpp.h>
 #include <iostream>
-#include <numeric>
 #include <thread>
 #include <valarray>
 using namespace std;
@@ -208,7 +207,7 @@ int main(int argc, char **argv) {
     for (decltype(0 + 8 + 1) i = 0; i < 8; i += 1) {
       if ((id & 1 << i)) {
         auto x0{w + i * idStripeWidth};
-        auto x1{(w + (1 + i) * idStripeWidth) - 2};
+        auto x1{(w + (1 + i) * idStripeWidth) - (idStripeWidth / 2)};
         glVertex2f(x0, 0);
         glVertex2f(x1, 0);
         glVertex2f(x1, h);

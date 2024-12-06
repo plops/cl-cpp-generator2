@@ -6,7 +6,7 @@
 (in-package :cl-cpp-generator2)
 
 (progn
-  (setf *features* (set-difference *features* (list :more ;; command line parsing
+  (setf *features* (set-difference *features* (list :more ;; command line parsing and print frame time statistics
 						    :invert ;; show inverted frames
 						    :barcode ;; show frame id as a vertical barcode
 						    )))
@@ -62,18 +62,13 @@
       cmath
       deque
       valarray
-
 					;GL/glew.h
-      
       glfwpp/glfwpp.h
-      
-					;Eigen/Core 
-				
+      					;Eigen/Core 
       thread
       chrono
       algorithm
-      numeric
-	
+      ;numeric
       )
      "using namespace std;"
      "using namespace chrono;"
@@ -120,13 +115,11 @@
 		(format_str (+  fmtm (string "±") fmtd fmtr)))
 	       (return (vformat format_str (make_format_args m d rel)))
 	       ))
-
        (defmethod Statistics (n)
 	 (declare (type int n)
 		  (values :constructor)
 		  (construct (numberFramesForStatistics n)
-			     (fitres (deque<float>))))
-	 )
+			     (fitres (deque<float>)))))
 
 
        "deque<float> fitres;"
@@ -186,111 +179,100 @@
 		       (lambda (f)
 			 (declare (type "const auto&" f))
 			 (return f    ;(,(format nil "get<~a>" e-i) f)
-				 ))))
+				 ))))))
 
-
-	 ))
-
+     #+more
      (defclass+ DelayEstimator ()
-	 "public:"
-	 (defmethod DelayEstimator (numberFramesForStatistics)
-	   (declare (type int numberFramesForStatistics)
-		    (construct (numberFramesForStatistics numberFramesForStatistics)
-			       (frameRateStats (Statistics numberFramesForStatistics)))
-		    (values :constructor))
-	   (setf t0 (high_resolution_clock--now)))
-	 "int numberFramesForStatistics;"
-	 "Statistics frameRateStats;"
+       "public:"
+       (defmethod DelayEstimator (numberFramesForStatistics)
+	 (declare (type int numberFramesForStatistics)
+		  (construct (numberFramesForStatistics numberFramesForStatistics)
+			     (frameRateStats (Statistics numberFramesForStatistics)))
+		  (values :constructor))
+	 (setf t0 (high_resolution_clock--now)))
+       "int numberFramesForStatistics;"
+       "Statistics frameRateStats;"
 	 
-	 (letd ((t0 (high_resolution_clock--now))
-		 (t1
-		  (high_resolution_clock--now))
-		 ))
+       (letd ((t0 (high_resolution_clock--now))
+	      (t1
+	       (high_resolution_clock--now))
+	      ))
 	 
-	 (defmethod update ()
-	   (setf t1 (high_resolution_clock--now))
-	   (let ((frameTimens (dot (duration_cast<nanoseconds> (- t1 t0))
-				   (count)))
-		 (frameTimems (/ frameTimens
-				 1s6))
-		 (frameRateHz (/ 1s9 frameTimens) ))
-	     (frameRateStats.push_back frameTimems)
+       (defmethod update ()
+	 (setf t1 (high_resolution_clock--now))
+	 (let ((frameTimens (dot (duration_cast<nanoseconds> (- t1 t0))
+				 (count)))
+	       (frameTimems (/ frameTimens
+			       1s6))
+	       (frameRateHz (/ 1s9 frameTimens) ))
+	   (frameRateStats.push_back frameTimems)
 		       
-	     (letc ((cs (frameRateStats.compute) )
-		    (pcs (frameRateStats.printStat cs))))
-	     (let (
-		   ((bracket frameTime_ frameTime_Std frameTimeStd frameTimeStdStd)
-		     cs
-		    )
-		   ))
-	     ,(lprint :vars `(pcs frameTimems frameRateHz)))
-	   (setf t0 t1))
-	 )
+	   (letc ((cs (frameRateStats.compute) )
+		  (pcs (frameRateStats.printStat cs))))
+	   (let (
+		 ((bracket frameTime_ frameTime_Std frameTimeStd frameTimeStdStd)
+		   cs
+		  )
+		 ))
+	   ,(lprint :vars `(pcs frameTimems frameRateHz)))
+	 (setf t0 t1)))
      
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
 		(values int))
       
-       #+more ,(let ((l `(
-			  (:name swapInterval :default 2 :short s)
-			  (:name numberFramesForStatistics :default 211 :short F)
-			  (:name darkLevel :default 0 :short D)
-			  (:name brightLevel :default 255 :short B)
-			  )))
-		 `(let ((op (popl--OptionParser (string "allowed options")))
-			,@(loop for e in l collect
-					   (destructuring-bind (&key name default short (type 'int)) e
-					     `(,name (,type ,default))))
-			,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
-					   (:long verbose :short v :type Switch :msg "produce verbose output")
-					  
-					   ,@(loop for f in l
-						   collect
-						   (destructuring-bind (&key name default short (type 'int)) f
-						     `(:long ,name
-						       :short ,short
-						       :type ,type :msg "parameter"
-						       :default ,default :out ,(format nil "&~a" name))))
+       #+more
+       ,(let ((l `((:name swapInterval :default 2 :short s)
+		   (:name numberFramesForStatistics :default 211 :short F)
+		   (:name darkLevel :default 0 :short D)
+		   (:name brightLevel :default 255 :short B)
+		   )))
+	  `(let ((op (popl--OptionParser (string "allowed options")))
+		 ,@(loop for e in l collect
+				    (destructuring-bind (&key name default short (type 'int)) e
+				      `(,name (,type ,default))))
+		 ,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
+				    (:long verbose :short v :type Switch :msg "produce verbose output")
+				    
+				    ,@(loop for f in l
+					    collect
+					    (destructuring-bind (&key name default short (type 'int)) f
+					      `(:long ,name
+						:short ,short
+						:type ,type :msg "parameter"
+						:default ,default :out ,(format nil "&~a" name))))
 
-					   )
-				appending
-				(destructuring-bind (&key long short type msg default out) e
-				  `((,(format nil "~aOption" long)
-				     ,(let ((cmd `(,(format nil "add<~a>"
-							    (if (eq type 'Switch)
-								"popl::Switch"
-								(format nil "popl::Value<~a>" type)))
-						   (string ,short)
-						   (string ,long)
-						   (string ,msg))))
-					(when default
-					  (setf cmd (append cmd `(,default)))
-					  )
-					(when out
-					  (setf cmd (append cmd `(,out)))
-					  )
-					`(dot op ,cmd)
-					))))
-				))
-		    (op.parse argc argv)
-		    (when (helpOption->is_set)
-		      (<< cout
-			  op
-			  endl)
-		      (exit 0))
-		    ))
-
-					;,(lprint :vars `((thread--hardware_concurrency)))
-
-       
-
-       
-       
+				    )
+			 appending
+			 (destructuring-bind (&key long short type msg default out) e
+			   `((,(format nil "~aOption" long)
+			      ,(let ((cmd `(,(format nil "add<~a>"
+						     (if (eq type 'Switch)
+							 "popl::Switch"
+							 (format nil "popl::Value<~a>" type)))
+					    (string ,short)
+					    (string ,long)
+					    (string ,msg))))
+				 (when default
+				   (setf cmd (append cmd `(,default)))
+				   )
+				 (when out
+				   (setf cmd (append cmd `(,out)))
+				   )
+				 `(dot op ,cmd)
+				 ))))
+			 ))
+	     (op.parse argc argv)
+	     (when (helpOption->is_set)
+	       (<< cout
+		   op
+		   endl)
+	       (exit 0))))
+       ;;,(lprint :vars `((thread--hardware_concurrency)))
+       #+more
        (let ((frameDelayEstimator (DelayEstimator numberFramesForStatistics))))
        
-       
-
        (let ((dark (/ darkLevel 255s0))
 	     (bright (/ brightLevel 255s0))))
        
@@ -315,17 +297,11 @@
 
 	   (comments "an alternative to increase swap interval is to change screen update rate `xrandr --output HDMI-A-0 --mode 1920x1080 --rate 24`")
 	   (glfw--swapInterval swapInterval)
-	   #+nil (when (!= GLEW_OK
-			   (glewInit))
-		   (throw (std--runtime_error (string "Could not initialize GLEW"))))
 	   
 	   (while (!window.shouldClose)
 		  (let ((time (glfw--getTime)))
 		    
-		    (glfw--pollEvents)
-		    #+nil (std--this_thread--sleep_for
-			   (std--chrono--milliseconds (/ 1000 10)))
-		    
+		    (glfw--pollEvents)		    
 		    (do0
 		     (comments "show a sequence of horizontal bars and vertical bars that split the image into 1/2, 1/4th, ... . each image is followed by its inverted version. the lcd of the projector is too slow to show this pattern exactly with 60Hz. that is why we set swap interval to 2 (we wait for two frames for every image so that the display has time to settle)")
 
@@ -395,25 +371,20 @@
 		       (incf id)
 		       (dotimes (i 8)
 			 (when (& id (<< 1 i))
-			   (let ((x0 (+ w (* i idStripeWidth))
-				     )
+			   (let ((x0 (+ w (* i idStripeWidth)))
 				 (x1 (- (+ w (* (+ 1 i) idStripeWidth))
-					2)))
+					(/ idStripeWidth 2))))
 			    (do0
 			     (glVertex2f x0 0)
 			     (glVertex2f x1 0)
 			     (glVertex2f x1 h)
 			     (glVertex2f x0 h)))))
 		       (glEnd )))
-		     
 		     (glPopMatrix))
-		    
-		    
 		    (window.swapBuffers)
+		    #+more
 		    (frameDelayEstimator.update)
-		    )))
-	 )
-
+		    ))))
        (return 0)))
    :omit-parens t
    :format t
