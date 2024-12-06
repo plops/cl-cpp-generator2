@@ -287,14 +287,13 @@
 			     collect
 			     (let ((y (/ (* pattern-w) (expt 2 level))))
 			       `(:name ,(format nil "vertical-stripes-~a" level)
-				    
-				       :draw ((:color (,dark ,dark ,dark) :type GL_QUADS :coords ((0 0 w h)))
-					      ,@(loop for i below (expt 2 level)
-						      collect
-						      (let ((o (* 2 i y)))
-							`(:color (,bright ,bright ,bright)
-							  :type GL_QUADS
-							  :coords ((,o 0 ,(+ o y) h)))))))))))
+				 :draw ((:color (,dark ,dark ,dark) :type GL_QUADS :coords ((0 0 w h)))
+					,@(loop for i below (expt 2 level)
+						collect
+						(let ((o (* 2 i y)))
+						  `(:color (,bright ,bright ,bright)
+						    :type GL_QUADS
+						    :coords ((,o 0 ,(+ o y) h)))))))))))
 	       (l (loop for e in l0 and e-i from 0 collect
 			`(:id ,e-i ,@e))))
 	  (defparameter *bla* l))
