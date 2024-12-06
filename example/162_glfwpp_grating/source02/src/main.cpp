@@ -122,6 +122,7 @@ int main(int argc, char **argv) {
   auto frameDelayEstimator{DelayEstimator(numberFramesForStatistics)};
   auto dark{darkLevel / 255.F};
   auto bright{brightLevel / 255.F};
+  *bla *;
   auto GLFW{glfw::init()};
   auto hints{glfw::WindowHints{.clientApi = glfw::ClientApi::OpenGl,
                                .contextVersionMajor = 2,

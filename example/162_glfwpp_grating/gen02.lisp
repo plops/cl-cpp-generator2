@@ -221,7 +221,6 @@
        (declare (type int argc)
 		(type char** argv)
 		(values int))
-      
        #+more
        ,(let ((l `((:name swapInterval :default 2 :short s)
 		   (:name numberFramesForStatistics :default 211 :short F)
@@ -275,6 +274,30 @@
        
        (let ((dark (/ darkLevel 255s0))
 	     (bright (/ brightLevel 255s0))))
+
+       ,(let* ((pattern-w 512)
+	       (pattern-h 512)
+	       (levels-w (floor (- (log pattern-w 2) 2)))
+	       (levels-h (floor (- (log pattern-h 2) 2)))
+	       (bright "bright")
+	       (dark "dark")
+	       (l0 `((:name all-white :draw ((:color (,bright ,bright ,bright) :type GL_QUADS :coords ((0 0 w h)))))
+		     (:name all-dark :draw ((:color (,dark ,dark ,dark) :type GL_QUADS :coords ((0 0 w h)))))
+		     ,@(loop for level below levels-w
+			     collect
+			     (let ((y (/ (* pattern-w) (expt 2 level))))
+			       `(:name ,(format nil "vertical-stripes-~a" level)
+				    
+				       :draw ((:color (,dark ,dark ,dark) :type GL_QUADS :coords ((0 0 w h)))
+					      ,@(loop for i below (expt 2 level)
+						      collect
+						      (let ((o (* 2 i y)))
+							`(:color (,bright ,bright ,bright)
+							  :type GL_QUADS
+							  :coords ((,o 0 ,(+ o y) h)))))))))))
+	       (l (loop for e in l0 and e-i from 0 collect
+			`(:id ,e-i ,@e))))
+	  (defparameter *bla* l))
        
        (let ((GLFW (glfw--init))
 	     (hints (space glfw--WindowHints (designated-initializer
@@ -374,11 +397,11 @@
 			   (let ((x0 (+ w (* i idStripeWidth)))
 				 (x1 (- (+ w (* (+ 1 i) idStripeWidth))
 					(/ idStripeWidth 2))))
-			    (do0
-			     (glVertex2f x0 0)
-			     (glVertex2f x1 0)
-			     (glVertex2f x1 h)
-			     (glVertex2f x0 h)))))
+			     (do0
+			      (glVertex2f x0 0)
+			      (glVertex2f x1 0)
+			      (glVertex2f x1 h)
+			      (glVertex2f x0 h)))))
 		       (glEnd )))
 		     (glPopMatrix))
 		    (window.swapBuffers)
