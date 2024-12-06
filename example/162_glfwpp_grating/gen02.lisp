@@ -283,21 +283,36 @@
 	       (dark "dark")
 	       (l0 `((:name all-white :draw ((:color (,bright ,bright ,bright) :type GL_QUADS :coords ((0 0 w h)))))
 		     (:name all-dark :draw ((:color (,dark ,dark ,dark) :type GL_QUADS :coords ((0 0 w h)))))
-		     ,@(loop for level below levels-w
-			     collect
-			     (let ((y (/ (* pattern-w) (expt 2 level))))
-			       `(:name ,(format nil "vertical-stripes-~a" level)
-				 :draw ((:color (,dark ,dark ,dark) :type GL_QUADS :coords ((0 0 w h)))
-					,@(loop for i below (expt 2 level)
-						collect
-						(let ((o (* 2 i y)))
-						  `(:color (,bright ,bright ,bright)
-						    :type GL_QUADS
-						    :coords ((,o 0 ,(+ o y) h)))))))))))
+		     ,@(loop for direction in `(vertical horizontal)
+			    and pattern-size in `(,pattern-w ,pattern-h)
+			    and levels-size in `(,levels-w ,levels-h)
+			    appending
+			    (loop for level below levels-size
+				  appending
+				  (let ((y (/ (* pattern-size) (expt 2 level))))
+				    `((:name ,(format nil "~a-stripes-~a" direction level)
+				       :draw ((:color (,dark ,dark ,dark) :type GL_QUADS :coords ((0 0 w h)))
+					      ,@(loop for i below (expt 2 level)
+						      collect
+						      (let ((o (* 2 i y)))
+							`(:color (,bright ,bright ,bright)
+							  :type GL_QUADS
+							  :coords ((,o 0 ,(+ o y) h)))))
+					      ))
+				      (:name ,(format nil "~a-stripes-~a-invert" direction level)
+				       :draw ((:color (,bright ,bright ,bright) :type GL_QUADS :coords ((0 0 w h)))
+					      ,@(loop for i below (expt 2 level)
+						      collect
+						      (let ((o (* 2 i y)))
+							`(:color (,dark ,dark ,dark)
+							  :type GL_QUADS
+							  :coords ((,o 0 ,(+ o y) h)))))
+					      ))))))))
 	       (l (loop for e in l0 and e-i from 0 collect
 			`(:id ,e-i ,@e))))
 	  (defparameter *bla* l))
-       
+
+             
        (let ((GLFW (glfw--init))
 	     (hints (space glfw--WindowHints (designated-initializer
 					      :clientApi glfw--ClientApi--OpenGl
