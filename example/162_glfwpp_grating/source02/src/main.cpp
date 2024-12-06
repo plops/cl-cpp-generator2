@@ -106,6 +106,7 @@ int main(int argc, char **argv) {
     decltype(high_resolution_clock::now()) t0;
     decltype(high_resolution_clock::now()) t1;
     void update() {
+      t1 = high_resolution_clock::now();
       auto frameTimens{duration_cast<nanoseconds>(t1 - t0).count()};
       auto frameTimems{frameTimens / 1.0e+6F};
       auto frameRateHz{1.0e+9F / frameTimens};
