@@ -14,34 +14,62 @@ using namespace chrono;
 using Scalar = float;
 using Vec = std::vector<Scalar>;
 using VecI = const Vec;
-
-int getSignificantDigits(Scalar num) {
-  if (num == 0.F) {
-    return 1;
+class Statistics {
+public:
+  int getSignificantDigits(Scalar num) {
+    if (num == 0.F) {
+      return 1;
+    }
+    if (num < 0) {
+      num = -num;
+    }
+    auto significantDigits{0};
+    while (num <= 1.0F) {
+      num *= 10.F;
+      significantDigits++;
+    }
+    return significantDigits;
   }
-  if (num < 0) {
-    num = -num;
+  string printStat(tuple<Scalar, Scalar, Scalar, Scalar> m_md_d_dd) {
+    auto [m, md, d, dd]{m_md_d_dd};
+    const auto rel{1.00e+2F * (d / m)};
+    const auto mprecision{getSignificantDigits(md)};
+    const auto dprecision{getSignificantDigits(dd)};
+    const auto rprecision{getSignificantDigits(rel)};
+    const auto fmtm{std::string("{:.") + to_string(mprecision) + "f}"};
+    const auto fmtd{std::string("{:.") + to_string(dprecision) + "f}"};
+    const auto fmtr{std::string(" ({:.") + to_string(rprecision) + "f}%)"};
+    const auto format_str{fmtm + "±" + fmtd + fmtr};
+    return vformat(format_str, make_format_args(m, d, rel));
   }
-  auto significantDigits{0};
-  while (num <= 1.0F) {
-    num *= 10.F;
-    significantDigits++;
+  Statistics(int n) : numberFramesForStatistics{n}, fitres{deque<float>()} {}
+  deque<float> fitres;
+  int numberFramesForStatistics;
+  void push_back(float frameTimems) {
+    fitres.push_back(frameTimems);
+    if (numberFramesForStatistics < fitres.size()) {
+      fitres.pop_front();
+    }
   }
-  return significantDigits;
-}
-
-string printStat(tuple<Scalar, Scalar, Scalar, Scalar> m_md_d_dd) {
-  auto [m, md, d, dd]{m_md_d_dd};
-  const auto rel{1.00e+2F * (d / m)};
-  const auto mprecision{getSignificantDigits(md)};
-  const auto dprecision{getSignificantDigits(dd)};
-  const auto rprecision{getSignificantDigits(rel)};
-  const auto fmtm{std::string("{:.") + to_string(mprecision) + "f}"};
-  const auto fmtd{std::string("{:.") + to_string(dprecision) + "f}"};
-  const auto fmtr{std::string(" ({:.") + to_string(rprecision) + "f}%)"};
-  const auto format_str{fmtm + "±" + fmtd + fmtr};
-  return vformat(format_str, make_format_args(m, d, rel));
-}
+  tuple<Scalar, Scalar, Scalar, Scalar> compute() {
+    auto computeStat{[](const auto &fitres,
+                        auto filter) -> tuple<Scalar, Scalar, Scalar, Scalar> {
+      // compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8
+      auto data{valarray<Scalar>(fitres.size())};
+      data.resize(fitres.size());
+      transform(fitres.begin(), fitres.end(), &data[0], filter);
+      const auto N{static_cast<Scalar>(data.size())};
+      const auto mean{(data.sum()) / N};
+      const auto stdev{sqrt(
+          ((pow(data - mean, 2).sum()) - (pow((data - mean).sum(), 2) / N)) /
+          (N - 1.0F))};
+      const auto mean_stdev{stdev / sqrt(N)};
+      const auto stdev_stdev{stdev / sqrt(2 * N)};
+      return make_tuple(mean, mean_stdev, stdev, stdev_stdev);
+    }};
+    return computeStat(fitres, [&](const auto &f) { return f; });
+  }
+};
 
 int main(int argc, char **argv) {
   auto op{popl::OptionParser("allowed options")};
@@ -66,22 +94,32 @@ int main(int argc, char **argv) {
     cout << op << endl;
     exit(0);
   }
-  auto computeStat{[](const auto &fitres,
-                      auto filter) -> tuple<Scalar, Scalar, Scalar, Scalar> {
-    // compute mean and standard deviation Numerical Recipes 14.1.2 and 14.1.8
-    auto data{valarray<Scalar>(fitres.size())};
-    data.resize(fitres.size());
-    transform(fitres.begin(), fitres.end(), &data[0], filter);
-    const auto N{static_cast<Scalar>(data.size())};
-    const auto mean{(data.sum()) / N};
-    const auto stdev{
-        sqrt(((pow(data - mean, 2).sum()) - (pow((data - mean).sum(), 2) / N)) /
-             (N - 1.0F))};
-    const auto mean_stdev{stdev / sqrt(N)};
-    const auto stdev_stdev{stdev / sqrt(2 * N)};
-    return make_tuple(mean, mean_stdev, stdev, stdev_stdev);
-  }};
-  auto fitres{deque<float>()};
+  class DelayEstimator {
+  public:
+    DelayEstimator(int numberFramesForStatistics)
+        : numberFramesForStatistics{numberFramesForStatistics},
+          frameRateStats{Statistics(numberFramesForStatistics)} {
+      t0 = high_resolution_clock::now();
+    }
+    int numberFramesForStatistics;
+    Statistics frameRateStats;
+    decltype(high_resolution_clock::now()) t0;
+    decltype(high_resolution_clock::now()) t1;
+    void update() {
+      auto frameTimens{duration_cast<nanoseconds>(t1 - t0).count()};
+      auto frameTimems{frameTimens / 1.0e+6F};
+      auto frameRateHz{1.0e+9F / frameTimens};
+      frameRateStats.push_back(frameTimems);
+      const auto cs{frameRateStats.compute()};
+      const auto pcs{frameRateStats.printStat(cs)};
+      auto [frameTime_, frameTime_Std, frameTimeStd, frameTimeStdStd]{cs};
+      std::cout << std::format(
+          "(:pcs '{}' :frameTimems '{}' :frameRateHz '{}')\n", pcs, frameTimems,
+          frameRateHz);
+      t0 = t1;
+    }
+  };
+  auto frameDelayEstimator{DelayEstimator(numberFramesForStatistics)};
   auto dark{darkLevel / 255.F};
   auto bright{brightLevel / 255.F};
   auto GLFW{glfw::init()};
@@ -96,7 +134,6 @@ int main(int argc, char **argv) {
   // an alternative to increase swap interval is to change screen update rate
   // `xrandr --output HDMI-A-0 --mode 1920x1080 --rate 24`
   glfw::swapInterval(swapInterval);
-  auto t0{high_resolution_clock::now()};
   while (!window.shouldClose()) {
     auto time{glfw::getTime()};
     glfw::pollEvents();
@@ -123,6 +160,7 @@ int main(int argc, char **argv) {
       glColor4f(dark, dark, dark, 1.0F);
     }
     glPushMatrix();
+    // scale coordinates so that 0..w-1, 0..h-1 cover the screen
     glTranslatef(-1.0F, -1.0F, 0.F);
     glScalef(2.0F / w, 2.0F / h, 1.0F);
     glBegin(GL_QUADS);
@@ -152,21 +190,7 @@ int main(int argc, char **argv) {
     glEnd();
     glPopMatrix();
     window.swapBuffers();
-    auto t1{high_resolution_clock::now()};
-    auto frameTimens{duration_cast<nanoseconds>(t1 - t0).count()};
-    auto frameTimems{frameTimens / 1.0e+6F};
-    auto frameRateHz{1.0e+9F / frameTimens};
-    fitres.push_back(frameTimems);
-    if (numberFramesForStatistics < fitres.size()) {
-      fitres.pop_front();
-    }
-    const auto cs{computeStat(fitres, [&](const auto &f) { return f; })};
-    const auto pcs{printStat(cs)};
-    auto [frameTime_, frameTime_Std, frameTimeStd, frameTimeStdStd]{cs};
-    std::cout << std::format(
-        "(:pcs '{}' :frameTimems '{}' :frameRateHz '{}')\n", pcs, frameTimems,
-        frameRateHz);
-    t0 = t1;
+    frameDelayEstimator.update();
   }
   return 0;
 }

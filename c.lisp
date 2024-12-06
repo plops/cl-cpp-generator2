@@ -294,25 +294,25 @@ Returns:
 A string representing the variable declaration."
 
 	(let* ((type (lookup-type name :env env)))
-		(cond ((null type)
-					 (format nil "~a ~a"
-									 *auto-keyword*
-									 (funcall emit name)))
-					((and (listp type)
-								(eq 'array (first type)))
-					 (progn
-						 ;; array
-						 (destructuring-bind (array_ element-type &rest dims) type
-							 (assert (eq array_ 'array))
-							 (format nil "~a ~a~{[~a]~}"
-											 (funcall emit element-type)
-											 (funcall emit name)
-											 (mapcar emit dims)))))
-					(t (format nil "~a ~a"
-										 (if type
-												 (funcall emit type)
-												 *auto-keyword*)
-										 (funcall emit name))))))
+	  (cond ((null type)
+		 (format nil "~a ~a"
+			 *auto-keyword*
+			 (funcall emit name)))
+		((and (listp type)
+		      (eq 'array (first type)))
+		 (progn
+		   ;; array
+		   (destructuring-bind (array_ element-type &rest dims) type
+		     (assert (eq array_ 'array))
+		     (format nil "~a ~a~{[~a]~}"
+			     (funcall emit element-type)
+			     (funcall emit name)
+			     (mapcar emit dims)))))
+		(t (format nil "~a ~a"
+			   (if type
+			       (funcall emit type)
+			       *auto-keyword*)
+			   (funcall emit name))))))
     #+nil (if (listp type)
 	      (if (null type)
 		  (format nil "~a ~a"
@@ -335,7 +335,7 @@ A string representing the variable declaration."
 			  )
 		      (funcall emit name)))
 
-(defun parse-let (code emit &key const)
+(defun parse-let (code emit &key const decltype)
   "Parse a Common Lisp LET form and emit similar C++ code.
 
   This function takes a Common Lisp LET form and generates equivalent
@@ -353,28 +353,38 @@ A string representing the variable declaration."
     - code: The Common Lisp LET form to parse.
     - emit: The function used to emit child forms below the LET form as C++ code.
     - const: Write const in front of every definition (this is used in letc)
+    - decltype: Write decltype(<init-form>) for every definition (this is used in letd)
   Returns:
     The generated C++ code as a string."
   (destructuring-bind (decls &rest body) (cdr code)
     (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p noexcept-p final-p override-p pure-p template template-instance) (consume-declare body)
       (with-output-to-string (s)
-	(format s "~a"
-		(funcall emit
-			 `(do0
-			   ,@(loop for decl in decls collect
-						     (if (listp decl) ;; split into name and initform
-							 (destructuring-bind (name &optional value) decl
-							   ;; FIXME: introducing initializer lists is better for C++ but not working with GLSL (and possibly C)
-							   (format nil ;"~a ~@[ = ~a~];"
-								   "~a~a ~@[{~a}~];"
-								   (if const "const " "")
-								   (variable-declaration :name name :env env :emit emit)
-
-								   (when value
-								     (funcall emit value))))
-							 (format nil "~a;"
-								 (variable-declaration :name decl :env env :emit emit))))
-			   ,@body)))))))
+	(format
+	 s "~a"
+	 (funcall
+	  emit
+	  `(do0
+	    ,@(loop for decl in decls
+		    collect
+		    (if (listp decl) ;; split into name and initform
+			(destructuring-bind (name &optional value) decl
+			  ;; FIXME: introducing initializer lists is better for C++ but not working with GLSL (and possibly C)
+			  (format nil ;"~a ~@[ = ~a~];"
+				  "~a~a ~@[{~a}~];"
+				  (if const "const " "")
+				  (if decltype
+				      (if value
+				       (format nil "decltype(~a) ~a"
+					       (funcall emit value)
+					       name)
+				       (break "decltype needs value"))
+				      (variable-declaration :name name :env env :emit emit))
+				  (unless decltype
+				    (when value
+				      (funcall emit value)))))
+			(format nil "~a;"
+				(variable-declaration :name decl :env env :emit emit))))
+	    ,@body)))))))
 
 (defun parse-defun (code emit &key header-only (class nil))
 	"Emit a C++ function definition or declaration from a Common Lisp DEFUN form.
@@ -1309,7 +1319,7 @@ emit-c into a string. Except lists: Those stay lists."
 										while
 										include include<> case
 										when if unless cond
-										let letc pragma
+										let letc letd pragma
 										split-header-and-code
 										defun defun* defmethod defclass
 										comments comment doc
@@ -1534,8 +1544,9 @@ emit-c into a string. Except lists: Those stay lists."
 				     (emit type)
 				     (emit value)))))
 
-		  (let (parse-let code #'emit))
-		  (letc (parse-let code #'emit :const t))
+		  (let (parse-let code #'emit)) ;; normal variable declaration (defaults to auto), e.g. auto v =0;
+		  (letc (parse-let code #'emit :const t)) ;; const declaration, e.g. const auto b = True;
+		  (letd (parse-let code #'emit :decltype t)) ;; variable declaration with decltype, no definition; e.g. decltype(high_resolution_timer::now()) t0;
 		  (setf
 		   (let ((args (cdr code)))
 		     ;; "setf {pair}*"
