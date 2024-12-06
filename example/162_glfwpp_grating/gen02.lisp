@@ -187,7 +187,45 @@
 			 (declare (type "const auto&" f))
 			 (return f    ;(,(format nil "get<~a>" e-i) f)
 				 ))))
+
+
 	 ))
+
+     (defclass+ DelayEstimator ()
+	 "public:"
+	 (defmethod DelayEstimator (numberFramesForStatistics)
+	   (declare (type int numberFramesForStatistics)
+		    (construct (numberFramesForStatistics numberFramesForStatistics)
+			       (frameRateStats (Statistics numberFramesForStatistics)))
+		    (values :constructor))
+	   (setf t0 (high_resolution_clock--now)))
+	 "int numberFramesForStatistics;"
+	 "Statistics frameRateStats;"
+	 
+	 (letd ((t0 (high_resolution_clock--now))
+		 (t1
+		  (high_resolution_clock--now))
+		 ))
+	 
+	 (defmethod update ()
+	   (setf t1 (high_resolution_clock--now))
+	   (let ((frameTimens (dot (duration_cast<nanoseconds> (- t1 t0))
+				   (count)))
+		 (frameTimems (/ frameTimens
+				 1s6))
+		 (frameRateHz (/ 1s9 frameTimens) ))
+	     (frameRateStats.push_back frameTimems)
+		       
+	     (letc ((cs (frameRateStats.compute) )
+		    (pcs (frameRateStats.printStat cs))))
+	     (let (
+		   ((bracket frameTime_ frameTime_Std frameTimeStd frameTimeStdStd)
+		     cs
+		    )
+		   ))
+	     ,(lprint :vars `(pcs frameTimems frameRateHz)))
+	   (setf t0 t1))
+	 )
      
      (defun main (argc argv)
        (declare (type int argc)
@@ -247,41 +285,7 @@
 
        
 
-       (defclass+ DelayEstimator ()
-	 "public:"
-	 (defmethod DelayEstimator (numberFramesForStatistics)
-	   (declare (type int numberFramesForStatistics)
-		    (construct (numberFramesForStatistics numberFramesForStatistics)
-			       (frameRateStats (Statistics numberFramesForStatistics)))
-		    (values :constructor))
-	   (setf t0 (high_resolution_clock--now)))
-	 "int numberFramesForStatistics;"
-	 "Statistics frameRateStats;"
-	 
-	 (letd ((t0 (high_resolution_clock--now))
-		 (t1
-		  (high_resolution_clock--now))
-		 ))
-	 
-	 (defmethod update ()
-	   (setf t1 (high_resolution_clock--now))
-	   (let ((frameTimens (dot (duration_cast<nanoseconds> (- t1 t0))
-				   (count)))
-		 (frameTimems (/ frameTimens
-				 1s6))
-		 (frameRateHz (/ 1s9 frameTimens) ))
-	     (frameRateStats.push_back frameTimems)
-		       
-	     (letc ((cs (frameRateStats.compute) )
-		    (pcs (frameRateStats.printStat cs))))
-	     (let (
-		   ((bracket frameTime_ frameTime_Std frameTimeStd frameTimeStdStd)
-		     cs
-		    )
-		   ))
-	     ,(lprint :vars `(pcs frameTimems frameRateHz)))
-	   (setf t0 t1))
-	 )
+       
        
        (let ((frameDelayEstimator (DelayEstimator numberFramesForStatistics))))
        
@@ -296,10 +300,14 @@
 					      :contextVersionMajor 2
 					      :contextVersionMinor 0))))
 	 (hints.apply)
-	 (let ((w 512)
+	 (let ((idStripeWidth 16)
+	       (idBits 9)
+	       (wId (* idStripeWidth idBits))
+	       (w 512)
+	       (wAll (+ w wId))
 	       (h 512)
 	       (window (glfw--Window
-			w h
+			wAll h
 			(string "GLFWPP Grating")
 			)))
 	 	   
@@ -331,9 +339,7 @@
 			      current_level 0))
 		      #+invert (let ((white (== 0 (% current_level 2)))))
 		      )
-
-		     
-		     
+	     
 		     (#-invert do0 #+invert if #+invert white
 		      (do0 (glClearColor dark dark dark 1s0)
 			   (glClear GL_COLOR_BUFFER_BIT)
@@ -347,7 +353,7 @@
 		     (glPushMatrix)
 		     (comments "scale coordinates so that 0..w-1, 0..h-1 cover the screen")
 		     (glTranslatef -1s0 -1s0 0s0)
-		     (glScalef (/ 2s0 w) (/ 2s0 h) 1s0)
+		     (glScalef (/ 2s0 wAll) (/ 2s0 h) 1s0)
 		     (glBegin GL_QUADS)
 
 		     (let ((level (/ current_level #-invert 1 #+invert 2
@@ -371,6 +377,35 @@
 			    (glVertex2f  (+ o y) x )
 			    (glVertex2f  o x))))
 		     (glEnd)
+
+		     (do0
+		      (comments "green on black barcode for the id on the right")
+		      (do0
+		       (glColor4f 0s0 0s0 0s0 1s0)
+		       (glBegin GL_QUADS)
+		       (glVertex2f w 0)
+		       (glVertex2f wAll 0)
+		       (glVertex2f wAll h)
+		       (glVertex2f w h)
+		       (glEnd ))
+		      (do0
+		       (glColor4f 0s0 1s0 0s0 1s0)
+		       (glBegin GL_QUADS)
+		       "static unsigned char id = 0;"
+		       (incf id)
+		       (dotimes (i 8)
+			 (when (& id (<< 1 i))
+			   (let ((x0 (+ w (* i idStripeWidth))
+				     )
+				 (x1 (- (+ w (* (+ 1 i) idStripeWidth))
+					2)))
+			    (do0
+			     (glVertex2f x0 0)
+			     (glVertex2f x1 0)
+			     (glVertex2f x1 h)
+			     (glVertex2f x0 h)))))
+		       (glEnd )))
+		     
 		     (glPopMatrix))
 		    
 		    

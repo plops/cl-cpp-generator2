@@ -70,6 +70,32 @@ public:
     return computeStat(fitres, [&](const auto &f) { return f; });
   }
 };
+class DelayEstimator {
+public:
+  DelayEstimator(int numberFramesForStatistics)
+      : numberFramesForStatistics{numberFramesForStatistics},
+        frameRateStats{Statistics(numberFramesForStatistics)} {
+    t0 = high_resolution_clock::now();
+  }
+  int numberFramesForStatistics;
+  Statistics frameRateStats;
+  decltype(high_resolution_clock::now()) t0;
+  decltype(high_resolution_clock::now()) t1;
+  void update() {
+    t1 = high_resolution_clock::now();
+    auto frameTimens{duration_cast<nanoseconds>(t1 - t0).count()};
+    auto frameTimems{frameTimens / 1.0e+6F};
+    auto frameRateHz{1.0e+9F / frameTimens};
+    frameRateStats.push_back(frameTimems);
+    const auto cs{frameRateStats.compute()};
+    const auto pcs{frameRateStats.printStat(cs)};
+    auto [frameTime_, frameTime_Std, frameTimeStd, frameTimeStdStd]{cs};
+    std::cout << std::format(
+        "(:pcs '{}' :frameTimems '{}' :frameRateHz '{}')\n", pcs, frameTimems,
+        frameRateHz);
+    t0 = t1;
+  }
+};
 
 int main(int argc, char **argv) {
   auto op{popl::OptionParser("allowed options")};
@@ -94,32 +120,6 @@ int main(int argc, char **argv) {
     cout << op << endl;
     exit(0);
   }
-  class DelayEstimator {
-  public:
-    DelayEstimator(int numberFramesForStatistics)
-        : numberFramesForStatistics{numberFramesForStatistics},
-          frameRateStats{Statistics(numberFramesForStatistics)} {
-      t0 = high_resolution_clock::now();
-    }
-    int numberFramesForStatistics;
-    Statistics frameRateStats;
-    decltype(high_resolution_clock::now()) t0;
-    decltype(high_resolution_clock::now()) t1;
-    void update() {
-      t1 = high_resolution_clock::now();
-      auto frameTimens{duration_cast<nanoseconds>(t1 - t0).count()};
-      auto frameTimems{frameTimens / 1.0e+6F};
-      auto frameRateHz{1.0e+9F / frameTimens};
-      frameRateStats.push_back(frameTimems);
-      const auto cs{frameRateStats.compute()};
-      const auto pcs{frameRateStats.printStat(cs)};
-      auto [frameTime_, frameTime_Std, frameTimeStd, frameTimeStdStd]{cs};
-      std::cout << std::format(
-          "(:pcs '{}' :frameTimems '{}' :frameRateHz '{}')\n", pcs, frameTimems,
-          frameRateHz);
-      t0 = t1;
-    }
-  };
   auto frameDelayEstimator{DelayEstimator(numberFramesForStatistics)};
   auto dark{darkLevel / 255.F};
   auto bright{brightLevel / 255.F};
@@ -128,9 +128,13 @@ int main(int argc, char **argv) {
                                .contextVersionMajor = 2,
                                .contextVersionMinor = 0}};
   hints.apply();
+  auto idStripeWidth{16};
+  auto idBits{9};
+  auto wId{idStripeWidth * idBits};
   auto w{512};
+  auto wAll{w + wId};
   auto h{512};
-  auto window{glfw::Window(w, h, "GLFWPP Grating")};
+  auto window{glfw::Window(wAll, h, "GLFWPP Grating")};
   glfw::makeContextCurrent(window);
   // an alternative to increase swap interval is to change screen update rate
   // `xrandr --output HDMI-A-0 --mode 1920x1080 --rate 24`
@@ -163,7 +167,7 @@ int main(int argc, char **argv) {
     glPushMatrix();
     // scale coordinates so that 0..w-1, 0..h-1 cover the screen
     glTranslatef(-1.0F, -1.0F, 0.F);
-    glScalef(2.0F / w, 2.0F / h, 1.0F);
+    glScalef(2.0F / wAll, 2.0F / h, 1.0F);
     glBegin(GL_QUADS);
     auto level{current_level / 2};
     auto y{1024 / pow(2.0F, level)};
@@ -186,6 +190,29 @@ int main(int argc, char **argv) {
         glVertex2f(o + y, 0);
         glVertex2f(o + y, x);
         glVertex2f(o, x);
+      }
+    }
+    glEnd();
+    // green on black barcode for the id on the right
+    glColor4f(0.F, 0.F, 0.F, 1.0F);
+    glBegin(GL_QUADS);
+    glVertex2f(w, 0);
+    glVertex2f(wAll, 0);
+    glVertex2f(wAll, h);
+    glVertex2f(w, h);
+    glEnd();
+    glColor4f(0.F, 1.0F, 0.F, 1.0F);
+    glBegin(GL_QUADS);
+    static unsigned char id = 0;
+    id++;
+    for (decltype(0 + 8 + 1) i = 0; i < 8; i += 1) {
+      if ((id & 1 << i)) {
+        auto x0{w + i * idStripeWidth};
+        auto x1{(w + (1 + i) * idStripeWidth) - 2};
+        glVertex2f(x0, 0);
+        glVertex2f(x1, 0);
+        glVertex2f(x1, h);
+        glVertex2f(x0, h);
       }
     }
     glEnd();
