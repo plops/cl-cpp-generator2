@@ -290,24 +290,19 @@
 			    (loop for level below levels-size
 				  appending
 				  (let ((y (/ (* pattern-size) (expt 2 level))))
-				    `((:name ,(format nil "~a-stripes-~a" direction level)
-				       :draw ((:color (,dark ,dark ,dark) :type GL_QUADS :coords ((0 0 w h)))
-					      ,@(loop for i below (expt 2 level)
-						      collect
-						      (let ((o (* 2 i y)))
-							`(:color (,bright ,bright ,bright)
-							  :type GL_QUADS
-							  :coords ((,o 0 ,(+ o y) h)))))
-					      ))
-				      (:name ,(format nil "~a-stripes-~a-invert" direction level)
-				       :draw ((:color (,bright ,bright ,bright) :type GL_QUADS :coords ((0 0 w h)))
-					      ,@(loop for i below (expt 2 level)
-						      collect
-						      (let ((o (* 2 i y)))
-							`(:color (,dark ,dark ,dark)
-							  :type GL_QUADS
-							  :coords ((,o 0 ,(+ o y) h)))))
-					      ))))))))
+				    (loop for illum in `(normal invert)
+					  and bg in `(,dark ,bright)
+					  and fg in `(,bright ,dark)
+					  collect
+					  `(:name ,(format nil "~a-stripes-~a-~a" direction level illum)
+					    :draw ((:color (,bg ,bg ,bg) :type GL_QUADS :coords ((0 0 w h)))
+						   ,@(loop for i below (expt 2 level)
+							   collect
+							   (let ((o (* 2 i y)))
+							     `(:color (,fg ,fg ,fg)
+							       :type GL_QUADS
+							       :coords ((,o 0 ,(+ o y) h)))))
+						   ))))))))
 	       (l (loop for e in l0 and e-i from 0 collect
 			`(:id ,e-i ,@e))))
 	  (defparameter *bla* l))
