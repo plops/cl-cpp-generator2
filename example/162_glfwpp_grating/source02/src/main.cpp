@@ -136,6 +136,20 @@ int main(int argc, char **argv) {
     int id;
     string name;
     vector<DrawPrimitive> draw;
+
+    void execute() {
+      for (auto &&[color, type, coords] : draw) {
+        glColor4f(color[0], color[1], color[2], 1.0F);
+        glBegin(type);
+        for (auto &&[x0, y0, x1, y1] : coords) {
+          glVertex2f(x0, y0);
+          glVertex2f(x1, y0);
+          glVertex2f(x1, y1);
+          glVertex2f(x0, y1);
+        }
+        glEnd();
+      }
+    }
   };
   auto w{512};
   auto h{512};
@@ -657,18 +671,7 @@ int main(int argc, char **argv) {
     // scale coordinates so that 0..w-1, 0..h-1 cover the screen
     glTranslatef(-1.0F, -1.0F, 0.F);
     glScalef(2.0F / wAll, 2.0F / h, 1.0F);
-    auto draws{drawFrames[frameId].draw};
-    for (auto &&[color, type, coords] : draws) {
-      glColor4f(color[0], color[1], color[2], 1.0F);
-      glBegin(type);
-      for (auto &&[x0, y0, x1, y1] : coords) {
-        glVertex2f(x0, y0);
-        glVertex2f(x1, y0);
-        glVertex2f(x1, y1);
-        glVertex2f(x0, y1);
-      }
-      glEnd();
-    }
+    drawFrames[frameId].execute();
     // green on black barcode for the id on the right
     glColor4f(0.F, 0.F, 0.F, 1.0F);
     glBegin(GL_QUADS);

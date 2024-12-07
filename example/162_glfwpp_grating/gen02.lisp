@@ -319,7 +319,20 @@
 	      "public:"
 	      "int id;"
 	      "string name;"
-	      "vector<DrawPrimitive> draw;")
+	      "vector<DrawPrimitive> draw;"
+	      (defun execute ()
+		(for-range ((bracket color type coords) draw)
+			   (glColor4f (aref color 0)
+				      (aref color 1)
+				      (aref color 2)
+				      1s0)
+			   (glBegin type)
+			   (for-range ((bracket x0 y0 x1 y1) coords)
+				      (glVertex2f x0 y0)
+				      (glVertex2f x1 y0)
+				      (glVertex2f x1 y1)
+				      (glVertex2f x0 y1))
+			   (glEnd))))
 	    (let ((w ,pattern-w)
 		  (h ,pattern-h)
 		  (wf (static_cast<float> w))
@@ -421,21 +434,9 @@
 		     (glTranslatef -1s0 -1s0 0s0)
 		     (glScalef (/ 2s0 wAll) (/ 2s0 h) 1s0)
 
-		     (let ((draws (dot (aref drawFrames frameId)
-				       draw)))
-		       (for-range ((bracket color type coords) draws)
-				  (glColor4f (aref color 0)
-					     (aref color 1)
-					     (aref color 2)
-					     1s0)
-				  (glBegin type)
-				  (for-range ((bracket x0 y0 x1 y1) coords)
-					     (glVertex2f x0 y0)
-					     (glVertex2f x1 y0)
-					     (glVertex2f x1 y1)
-					     (glVertex2f x0 y1))
-				  (glEnd))
-		       )
+		     (dot (aref drawFrames frameId)
+			  (execute))
+		     
 
 		     #+nil
 		     (do0 (glBegin GL_QUADS)
