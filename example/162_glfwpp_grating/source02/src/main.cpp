@@ -755,6 +755,8 @@ int main(int argc, char **argv) {
     glScalef(2.0F / wAll, 2.0F / h, 1.0F);
     drawFrames[frameId].execute();
     auto codedFrameId{1 + (frameId << 1) + (1 << 6)};
+    // the codedFrameId consists of |S|Data|E|, with S and E being start and end
+    // bits, respectively
     drawBarcode(codedFrameId, 7, 16, w, wAll, 0, h);
     glPopMatrix();
     window.swapBuffers();

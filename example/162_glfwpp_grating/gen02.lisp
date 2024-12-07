@@ -461,7 +461,7 @@
 			`(let ((codedFrameId (+ 1
 						(<< frameId ,start-bits)
 						(<< 1 ,(+ data-bits start-bits)))))
-			   
+			   (comments "the codedFrameId consists of |S|Data|E|, with S and E being start and end bits, respectively")
 			   (drawBarcode codedFrameId ,coded-bits
 					16
 					w wAll 0 h)))
