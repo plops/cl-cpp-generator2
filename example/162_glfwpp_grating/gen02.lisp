@@ -284,8 +284,8 @@
 	       (levels-h (floor (- (log pattern-h 2) 2)))
 	       (bright "bright")
 	       (dark "dark")
-	       (l0 `((:name all-white :draw ((:color (,bright ,bright ,bright) :type GL_QUADS :coords ((0 0 w h)))))
-		     (:name all-dark :draw ((:color (,dark ,dark ,dark) :type GL_QUADS :coords ((0 0 w h)))))
+	       (l0 `((:name all-white :draw ((:color (,bright ,bright ,bright) :type GL_QUADS :coords ((0 0 wf hf)))))
+		     (:name all-dark :draw ((:color (,dark ,dark ,dark) :type GL_QUADS :coords ((0 0 wf hf)))))
 		     ,@(loop for direction in `(vertical horizontal)
 			    and pattern-size in `(,pattern-w ,pattern-h)
 			    and levels-size in `(,levels-w ,levels-h)
@@ -298,13 +298,13 @@
 					  and fg in `(,bright ,dark)
 					  collect
 					  `(:name ,(format nil "~a-stripes-~a-~a" direction level illum)
-					    :draw ((:color (,bg ,bg ,bg) :type GL_QUADS :coords ((0 0 w h)))
+					    :draw ((:color (,bg ,bg ,bg) :type GL_QUADS :coords ((0 0 wf hf)))
 						   (:color (,bg ,bg ,bg) :type GL_QUADS
 						    :coords 
 						    ,(loop for i below (expt 2 level)
 							    collect
 							    (let ((o (* 2 i y)))
-							      `(,o 0 ,(+ o y) h))))
+							      `(,o 0 ,(+ o y) hf))))
 						   ))))))))
 	       (l (loop for e in l0 and e-i from 0 collect
 			`(:id ,e-i ,@e))))
@@ -321,7 +321,10 @@
 	      "string name;"
 	      "vector<DrawPrimitive> draw;")
 	    (let ((w ,pattern-w)
-		  (h ,pattern-h)))
+		  (h ,pattern-h)
+		  (wf (static_cast<float> w))
+		  (hf (static_cast<float> h)))
+	      )
 	    (space
 	     vector<DrawFrame>
 	     (setf drawFrames
@@ -339,7 +342,7 @@
 										 :type GL_QUADS
 										 :coords (curly (curly 0 0 512 512)))))
 		    #-nil
-		    ,@(loop for e in (subseq l 0 3)
+		    ,@(loop for e in l
 			    collect
 			    (destructuring-bind (&key id name draw) e
 			      `(designated-initializer
@@ -355,7 +358,10 @@
 												 collect
 												 `(curly ,@(loop for c0 in c
 														 collect
-														 `(static_cast<float> ,c0))))))))))
+														 c0
+														 #+nil(if (numberp c0)
+														     (coerce c0 'single-float)
+														     `(static_cast<float> ,c0)))))))))))
 			      ))))))
 	  )
 
