@@ -16,6 +16,32 @@ using namespace chrono;
 using Scalar = float;
 using Vec = std::vector<Scalar>;
 using VecI = const Vec;
+
+void drawBarcode(int code, int bits, int idStripeWidth, float x0, float x1,
+                 float y0, float y1) {
+  // green on black barcode for the id on the right
+  glColor4f(0.F, 0.F, 0.F, 1.0F);
+  glBegin(GL_QUADS);
+  glVertex2f(x0, y0);
+  glVertex2f(x1, y0);
+  glVertex2f(x1, y1);
+  glVertex2f(x0, y1);
+  glEnd();
+  glColor4f(0.F, 1.0F, 0.F, 1.0F);
+  glBegin(GL_QUADS);
+  for (decltype(0 + bits + 1) i = 0; i < bits; i += 1) {
+    if ((code & 1 << i)) {
+      auto xx0{x0 + i * idStripeWidth};
+      auto xx1{(x0 + (1 + i) * idStripeWidth) - (idStripeWidth / 2)};
+      glVertex2f(xx0, y0);
+      glVertex2f(xx1, y0);
+      glVertex2f(xx1, y1);
+      glVertex2f(xx0, y1);
+    }
+  }
+  glEnd();
+}
+
 class Statistics {
 public:
   int getSignificantDigits(Scalar num) {
@@ -728,27 +754,7 @@ int main(int argc, char **argv) {
     glTranslatef(-1.0F, -1.0F, 0.F);
     glScalef(2.0F / wAll, 2.0F / h, 1.0F);
     drawFrames[frameId].execute();
-    // green on black barcode for the id on the right
-    glColor4f(0.F, 0.F, 0.F, 1.0F);
-    glBegin(GL_QUADS);
-    glVertex2f(w, 0);
-    glVertex2f(wAll, 0);
-    glVertex2f(wAll, h);
-    glVertex2f(w, h);
-    glEnd();
-    glColor4f(0.F, 1.0F, 0.F, 1.0F);
-    glBegin(GL_QUADS);
-    for (decltype(0 + 8 + 1) i = 0; i < 8; i += 1) {
-      if ((frameId & 1 << i)) {
-        auto x0{w + i * idStripeWidth};
-        auto x1{(w + (1 + i) * idStripeWidth) - (idStripeWidth / 2)};
-        glVertex2f(x0, 0);
-        glVertex2f(x1, 0);
-        glVertex2f(x1, h);
-        glVertex2f(x0, h);
-      }
-    }
-    glEnd();
+    drawBarcode(frameId, 5, 16, w, wAll, 0, h);
     glPopMatrix();
     window.swapBuffers();
     frameDelayEstimator.update();

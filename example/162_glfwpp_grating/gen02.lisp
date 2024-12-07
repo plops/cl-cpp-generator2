@@ -80,6 +80,35 @@
      "using Vec = std::vector<Scalar>;"
      "using VecI = const Vec;"
 
+     (defun drawBarcode (code bits idStripeWidth x0 x1 y0 y1)
+       (declare (type int code bits idStripeWidth )
+		(type float  x0 x1 y0 y1)
+		)
+       (comments "green on black barcode for the id on the right")
+       (do0
+	(glColor4f 0s0 0s0 0s0 1s0)
+	(glBegin GL_QUADS)
+	(glVertex2f x0 y0)
+	(glVertex2f x1 y0)
+	(glVertex2f x1 y1)
+	(glVertex2f x0 y1)
+	(glEnd ))
+       (do0
+	(glColor4f 0s0 1s0 0s0 1s0)
+	(glBegin GL_QUADS)
+	(dotimes (i bits)
+	  (when (& code (<< 1 i))
+	    (let ((xx0 (+ x0 (* i idStripeWidth)))
+		  (xx1 (- (+ x0 (* (+ 1 i) idStripeWidth))
+			  (/ idStripeWidth 2))))
+	      (do0
+	       (glVertex2f xx0 y0)
+	       (glVertex2f xx1 y0)
+	       (glVertex2f xx1 y1)
+	       (glVertex2f xx0 y1)))))
+	(glEnd ))
+       )
+     
      #+more
      (defclass+ Statistics ()
        "public:"
@@ -128,11 +157,13 @@
        "deque<float> fitres;"
        "int numberFramesForStatistics;"
 
+
+       
        (defmethod push_back (frameTimems)
-			  (declare (type float frameTimems))
-			  (fitres.push_back frameTimems)
-			  (when (< numberFramesForStatistics (fitres.size))
-			    (fitres.pop_front)))
+	 (declare (type float frameTimems))
+	 (fitres.push_back frameTimems)
+	 (when (< numberFramesForStatistics (fitres.size))
+	   (fitres.pop_front)))
        
        (defmethod compute ()
 	 (declare (values "tuple<Scalar,Scalar,Scalar,Scalar>"))
@@ -302,6 +333,7 @@
 			`(:id ,e-i ,@e))))
 	  (defparameter *bla* l)
 	  `(do0
+	    
 	    (defclass+ DrawPrimitive ()
 	      "public:"
 	      "array<float,3> color;"
@@ -422,30 +454,11 @@
 				 (glVertex2f  o x))))
 			  (glEnd))
 
-		     (do0
-		      (comments "green on black barcode for the id on the right")
-		      (do0
-		       (glColor4f 0s0 0s0 0s0 1s0)
-		       (glBegin GL_QUADS)
-		       (glVertex2f w 0)
-		       (glVertex2f wAll 0)
-		       (glVertex2f wAll h)
-		       (glVertex2f w h)
-		       (glEnd ))
-		      (do0
-		       (glColor4f 0s0 1s0 0s0 1s0)
-		       (glBegin GL_QUADS)
-		       (dotimes (i 8)
-			 (when (& frameId (<< 1 i))
-			   (let ((x0 (+ w (* i idStripeWidth)))
-				 (x1 (- (+ w (* (+ 1 i) idStripeWidth))
-					(/ idStripeWidth 2))))
-			     (do0
-			      (glVertex2f x0 0)
-			      (glVertex2f x1 0)
-			      (glVertex2f x1 h)
-			      (glVertex2f x0 h)))))
-		       (glEnd )))
+		     (drawBarcode frameId ,(ceiling (log 29 2))
+				  16
+				  w wAll 0 h)
+		     
+		     
 		     (glPopMatrix))
 		    (window.swapBuffers)
 		    #+more
