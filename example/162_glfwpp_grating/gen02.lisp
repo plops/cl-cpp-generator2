@@ -228,24 +228,20 @@
        ,(let ((l `((:name swapInterval :default 2 :short s)
 		   (:name numberFramesForStatistics :default 211 :short F)
 		   (:name darkLevel :default 0 :short D)
-		   (:name brightLevel :default 255 :short B)
-		   )))
+		   (:name brightLevel :default 255 :short B))))
 	  `(let ((op (popl--OptionParser (string "allowed options")))
 		 ,@(loop for e in l collect
 				    (destructuring-bind (&key name default short (type 'int)) e
 				      `(,name (,type ,default))))
 		 ,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
 				    (:long verbose :short v :type Switch :msg "produce verbose output")
-				    
 				    ,@(loop for f in l
 					    collect
 					    (destructuring-bind (&key name default short (type 'int)) f
 					      `(:long ,name
 						:short ,short
 						:type ,type :msg "parameter"
-						:default ,default :out ,(format nil "&~a" name))))
-
-				    )
+						:default ,default :out ,(format nil "&~a" name)))))
 			 appending
 			 (destructuring-bind (&key long short type msg default out) e
 			   `((,(format nil "~aOption" long)
@@ -257,14 +253,11 @@
 					    (string ,long)
 					    (string ,msg))))
 				 (when default
-				   (setf cmd (append cmd `(,default)))
-				   )
+				   (setf cmd (append cmd `(,default))))
 				 (when out
-				   (setf cmd (append cmd `(,out)))
-				   )
+				   (setf cmd (append cmd `(,out))))
 				 `(dot op ,cmd)
-				 ))))
-			 ))
+				 ))))))
 	     (op.parse argc argv)
 	     (when (helpOption->is_set)
 	       (<< cout
@@ -273,11 +266,9 @@
 	       (exit 0))))
        ;;,(lprint :vars `((thread--hardware_concurrency)))
        #+more
-       (let ((frameDelayEstimator (DelayEstimator numberFramesForStatistics))))
-       
+       (let ((frameDelayEstimator (DelayEstimator numberFramesForStatistics))))    
        (let ((dark (/ darkLevel 255s0))
 	     (bright (/ brightLevel 255s0))))
-
        ,(let* ((pattern-w 512)
 	       (pattern-h 512)
 	       (levels-w (floor (- (log pattern-w 2) 2)))
@@ -299,13 +290,12 @@
 					  collect
 					  `(:name ,(format nil "~a-stripes-~a-~a" direction level illum)
 					    :draw ((:color (,bg ,bg ,bg) :type GL_QUADS :coords ((0 0 wf hf)))
-						   (:color (,bg ,bg ,bg) :type GL_QUADS
+						   (:color (,fg ,fg ,fg) :type GL_QUADS
 						    :coords 
 						    ,(loop for i below (expt 2 level)
 							    collect
 							    (let ((o (* 2 i y)))
-							      `(,o 0 ,(+ o y) hf))))
-						   ))))))))
+							      `(,o 0 ,(+ o y) hf))))))))))))
 	       (l (loop for e in l0 and e-i from 0 collect
 			`(:id ,e-i ,@e))))
 	  (defparameter *bla* l)
@@ -336,8 +326,7 @@
 	    (let ((w ,pattern-w)
 		  (h ,pattern-h)
 		  (wf (static_cast<float> w))
-		  (hf (static_cast<float> h)))
-	      )
+		  (hf (static_cast<float> h))))
 	    (comments "show a sequence of horizontal bars and vertical bars that split the image into 1/2, 1/4th, ... . each image is followed by its inverted version. the lcd of the projector is too slow to show this pattern exactly with 60Hz. that is why we set swap interval to 2 (we wait for two frames for every image so that the display has time to settle)")
 	    (space
 	     vector<DrawFrame>
@@ -360,20 +349,16 @@
 				       ,@(loop for d in draw
 					       collect
 					       (destructuring-bind (&key color type coords) d
-						 `(designated-initializer :color (curly ,@color)
-									  :type ,type
-									  :coords (curly ,@(loop for c in coords
-												 collect
-												 `(curly ,@(loop for c0 in c
-														 collect
-														 c0
-														 #+nil(if (numberp c0)
-															  (coerce c0 'single-float)
-															  `(static_cast<float> ,c0)))))))))))
-			      ))))))
-	  )
-
-             
+						 `(designated-initializer
+						   :color (curly ,@color)
+						   :type ,type
+						   :coords (curly ,@(loop for c in coords
+									  collect
+									  `(curly ,@(loop for c0 in c
+											  collect
+											  (if (numberp c0)
+											      (coerce c0 'single-float)
+											      c0)))))))))))))))))
        (let ((GLFW (glfw--init))
 	     (hints (space glfw--WindowHints (designated-initializer
 					      :clientApi glfw--ClientApi--OpenGl
@@ -388,17 +373,11 @@
 	       ;(h 512)
 	       (window (glfw--Window
 			wAll h
-			(string "GLFWPP Grating")
-			)))
-	 	   
+			(string "GLFWPP Grating"))))
 	   (glfw--makeContextCurrent window)
-
 	   (comments "an alternative to increase swap interval is to change screen update rate `xrandr --output HDMI-A-0 --mode 1920x1080 --rate 24`")
-
 	   (glfw--swapInterval swapInterval)
-
 	   (let ((frameId 0)))
-	   
 	   (while (!window.shouldClose)
 		  (let ((time (glfw--getTime)))
 		    
