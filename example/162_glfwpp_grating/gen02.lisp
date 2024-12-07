@@ -454,9 +454,17 @@
 				 (glVertex2f  o x))))
 			  (glEnd))
 
-		     (drawBarcode frameId ,(ceiling (log 29 2))
-				  16
-				  w wAll 0 h)
+		     ,(let* ((data-bits (ceiling (log 29 2)))
+			     (start-bits 1)
+			     (end-bits 1)
+			     (coded-bits (+ data-bits start-bits end-bits))) 
+			`(let ((codedFrameId (+ 1
+						(<< frameId ,start-bits)
+						(<< 1 ,(+ data-bits start-bits)))))
+			   
+			   (drawBarcode codedFrameId ,coded-bits
+					16
+					w wAll 0 h)))
 		     
 		     
 		     (glPopMatrix))

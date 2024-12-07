@@ -754,7 +754,8 @@ int main(int argc, char **argv) {
     glTranslatef(-1.0F, -1.0F, 0.F);
     glScalef(2.0F / wAll, 2.0F / h, 1.0F);
     drawFrames[frameId].execute();
-    drawBarcode(frameId, 5, 16, w, wAll, 0, h);
+    auto codedFrameId{1 + (frameId << 1) + (1 << 6)};
+    drawBarcode(codedFrameId, 7, 16, w, wAll, 0, h);
     glPopMatrix();
     window.swapBuffers();
     frameDelayEstimator.update();
