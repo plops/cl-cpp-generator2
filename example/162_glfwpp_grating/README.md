@@ -32,7 +32,6 @@ eventually, i want to build a 3d scanner using only a projector
   for the first frame but the second copy is properly displayed by the
   projector without screen tearing artifacts.
   
-
 - if more than one screen is connected to the computer the screen tear
   may run accross the screen. it may help to use `xrandr` with the
   option `--primary` on the display that is going to be captured.
@@ -45,8 +44,8 @@ eventually, i want to build a 3d scanner using only a projector
   slow-motion frames are properly illuminated while many show the lcd
   in a transitioning state. the 3d reconstruction software shall
   remove these frames. the update pattern seems to run over the
-  display in a vertical motion. part of the illumination pattern and
-  acquisition setup is a large white plane next to the 3d target that
-  will alternatively be black or bright. only when this area is
-  sufficiently uniform a frame ma be considered 'properly
-  illuminated'.
+  display from top to bottom in a vertical motion. part of the
+  illumination pattern and acquisition setup is a large white plane
+  next to the 3d target that will alternatively be black or
+  bright. only when this area is sufficiently uniform a frame ma be
+  considered 'properly illuminated'.
