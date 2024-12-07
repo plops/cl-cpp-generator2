@@ -27,17 +27,20 @@ void drawBarcode(int code, int bits, int idStripeWidth, float x0, float x1,
   glVertex2f(x1, y1);
   glVertex2f(x0, y1);
   glEnd();
-  glColor4f(0.F, 1.0F, 0.F, 1.0F);
   glBegin(GL_QUADS);
   for (decltype(0 + bits + 1) i = 0; i < bits; i += 1) {
+    // Hi bits are green, low bits are red
     if ((code & (1 << i))) {
-      auto xx0{x0 + i * idStripeWidth};
-      auto xx1{(x0 + (1 + i) * idStripeWidth) - (idStripeWidth / 2)};
-      glVertex2f(xx0, y0);
-      glVertex2f(xx1, y0);
-      glVertex2f(xx1, y1);
-      glVertex2f(xx0, y1);
+      glColor4f(0.F, 1.0F, 0.F, 1.0F);
+    } else {
+      glColor4f(1.0F, 0.F, 0.F, 1.0F);
     }
+    auto xx0{x0 + i * idStripeWidth};
+    auto xx1{(x0 + (1 + i) * idStripeWidth) - (idStripeWidth / 2)};
+    glVertex2f(xx0, y0);
+    glVertex2f(xx1, y0);
+    glVertex2f(xx1, y1);
+    glVertex2f(xx0, y1);
   }
   glEnd();
 }

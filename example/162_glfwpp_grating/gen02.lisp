@@ -94,18 +94,21 @@
 	(glVertex2f x0 y1)
 	(glEnd ))
        (do0
-	(glColor4f 0s0 1s0 0s0 1s0)
+	
 	(glBegin GL_QUADS)
 	(dotimes (i bits)
-	  (when (& code (paren (<< 1 i)))
-	    (let ((xx0 (+ x0 (* i idStripeWidth)))
-		  (xx1 (- (+ x0 (* (+ 1 i) idStripeWidth))
-			  (/ idStripeWidth 2))))
-	      (do0
-	       (glVertex2f xx0 y0)
-	       (glVertex2f xx1 y0)
-	       (glVertex2f xx1 y1)
-	       (glVertex2f xx0 y1)))))
+	  (comments "Hi bits are green, low bits are red")
+	  (if (& code (paren (<< 1 i)))
+	      (glColor4f 0s0 1s0 0s0 1s0)
+	      (glColor4f 1s0 0s0 0s0 1s0))
+	  (let ((xx0 (+ x0 (* i idStripeWidth)))
+		(xx1 (- (+ x0 (* (+ 1 i) idStripeWidth))
+			(/ idStripeWidth 2))))
+	    (do0
+	     (glVertex2f xx0 y0)
+	     (glVertex2f xx1 y0)
+	     (glVertex2f xx1 y1)
+	     (glVertex2f xx0 y1))))
 	(glEnd ))
        )
      
