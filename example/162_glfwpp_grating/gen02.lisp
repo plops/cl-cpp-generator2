@@ -295,7 +295,9 @@
 						    ,(loop for i below (expt 2 level)
 							    collect
 							    (let ((o (* 2 i y)))
-							      `(,o 0 ,(+ o y) hf))))))))))))
+							      (if (eq direction 'vertical)
+								  `(,o 0 ,(+ o y) hf)
+								  `(0 ,o wf ,(+ o y))))))))))))))
 	       (l (loop for e in l0 and e-i from 0 collect
 			`(:id ,e-i ,@e))))
 	  (defparameter *bla* l)
@@ -386,28 +388,7 @@
 		     (if (< frameId (drawFrames.size))
 			 (incf frameId)
 			 (setf frameId 0))
-		     
-		     #+nil (do0
-		      "static int current_level = 0;"
-		      "static bool horizontal = true;"
-		      
-		      (setf current_level (+ current_level 1))
-		      (when (== current_level (* 8 #+invert 2 #-invert 1))
-			(setf horizontal !horizontal
-			      current_level 0))
-		      #+invert (let ((white (== 0 (% current_level 2)))))
-		      )
-	     
-		     #+nil(#-invert do0 #+invert if #+invert white
-		      (do0 (glClearColor dark dark dark 1s0)
-			   (glClear GL_COLOR_BUFFER_BIT)
-			   #+invert (glColor4f bright bright bright 1s0)
-			   )
-		      #+invert (do0 (glClearColor bright bright bright 1s0)
-				    (glClear GL_COLOR_BUFFER_BIT)
-				    (glColor4f dark dark dark 1s0)
-				    ))
-		     
+		     		     
 		     (glPushMatrix)
 		     (comments "scale coordinates so that 0..w-1, 0..h-1 cover the screen")
 		     (glTranslatef -1s0 -1s0 0s0)
@@ -415,7 +396,6 @@
 
 		     (dot (aref drawFrames frameId)
 			  (execute))
-		     
 
 		     #+nil
 		     (do0 (glBegin GL_QUADS)
@@ -455,10 +435,8 @@
 		      (do0
 		       (glColor4f 0s0 1s0 0s0 1s0)
 		       (glBegin GL_QUADS)
-		       "static unsigned char id = 0;"
-		       (incf id)
 		       (dotimes (i 8)
-			 (when (& id (<< 1 i))
+			 (when (& frameId (<< 1 i))
 			   (let ((x0 (+ w (* i idStripeWidth)))
 				 (x1 (- (+ w (* (+ 1 i) idStripeWidth))
 					(/ idStripeWidth 2))))
