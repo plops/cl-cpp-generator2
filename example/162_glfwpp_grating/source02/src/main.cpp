@@ -137,11 +137,32 @@ int main(int argc, char **argv) {
     string name;
     vector<DrawPrimitive> draw;
   };
-  vector<DrawFrame> drawFrames = {{.id = 0,
-                                   .name = "bright",
-                                   .draw = {{.color = {0.10F, 0.20F, 0.30F},
-                                             .type = GL_QUADS,
-                                             .coords = {{0, 0, 512, 512}}}}}};
+  auto w{512};
+  auto h{512};
+  vector<DrawFrame> drawFrames = {
+      {.id = 0,
+       .name = "all-white",
+       .draw = {{.color = {bright, bright, bright},
+                 .type = GL_QUADS,
+                 .coords = {{static_cast<float>(0), static_cast<float>(0),
+                             static_cast<float>(w), static_cast<float>(h)}}}}},
+      {.id = 1,
+       .name = "all-dark",
+       .draw = {{.color = {dark, dark, dark},
+                 .type = GL_QUADS,
+                 .coords = {{static_cast<float>(0), static_cast<float>(0),
+                             static_cast<float>(w), static_cast<float>(h)}}}}},
+      {.id = 2,
+       .name = "vertical-stripes-0-normal",
+       .draw = {
+           {.color = {dark, dark, dark},
+            .type = GL_QUADS,
+            .coords = {{static_cast<float>(0), static_cast<float>(0),
+                        static_cast<float>(w), static_cast<float>(h)}}},
+           {.color = {dark, dark, dark},
+            .type = GL_QUADS,
+            .coords = {{static_cast<float>(0), static_cast<float>(0),
+                        static_cast<float>(512), static_cast<float>(h)}}}}}};
   auto GLFW{glfw::init()};
   auto hints{glfw::WindowHints{.clientApi = glfw::ClientApi::OpenGl,
                                .contextVersionMajor = 2,
@@ -150,9 +171,7 @@ int main(int argc, char **argv) {
   auto idStripeWidth{16};
   auto idBits{9};
   auto wId{idStripeWidth * idBits};
-  auto w{512};
   auto wAll{w + wId};
-  auto h{512};
   auto window{glfw::Window(wAll, h, "GLFWPP Grating")};
   glfw::makeContextCurrent(window);
   // an alternative to increase swap interval is to change screen update rate

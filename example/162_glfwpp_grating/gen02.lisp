@@ -299,12 +299,12 @@
 					  collect
 					  `(:name ,(format nil "~a-stripes-~a-~a" direction level illum)
 					    :draw ((:color (,bg ,bg ,bg) :type GL_QUADS :coords ((0 0 w h)))
-						   ,@(loop for i below (expt 2 level)
-							   collect
-							   (let ((o (* 2 i y)))
-							     `(:color (,fg ,fg ,fg)
-							       :type GL_QUADS
-							       :coords ((,o 0 ,(+ o y) h)))))
+						   (:color (,bg ,bg ,bg) :type GL_QUADS
+						    :coords 
+						    ,(loop for i below (expt 2 level)
+							    collect
+							    (let ((o (* 2 i y)))
+							      `(,o 0 ,(+ o y) h))))
 						   ))))))))
 	       (l (loop for e in l0 and e-i from 0 collect
 			`(:id ,e-i ,@e))))
@@ -320,11 +320,43 @@
 	      "int id;"
 	      "string name;"
 	      "vector<DrawPrimitive> draw;")
-	    (space vector<DrawFrame> (setf drawFrames (curly (designated-initializer :id 0
-									       :name (string "bright")
-									       :draw (curly (designated-initializer :color (curly .1 .2 .3)
-														    :type GL_QUADS
-														    :coords (curly (curly 0 0 512 512)))))))))
+	    (let ((w ,pattern-w)
+		  (h ,pattern-h)))
+	    (space
+	     vector<DrawFrame>
+	     (setf drawFrames
+		   (curly
+		    #+nil
+		    (designated-initializer :id 0
+					    :name (string "bright")
+					    :draw (curly (designated-initializer :color (curly bright .2 .3)
+										 :type GL_QUADS
+										 :coords (curly (curly 0 0 (static_cast<float> w) 512)))))
+		    #+nil
+		    (designated-initializer :id 1
+					    :name (string "dark")
+					    :draw (curly (designated-initializer :color (curly .0 .0 .0)
+										 :type GL_QUADS
+										 :coords (curly (curly 0 0 512 512)))))
+		    #-nil
+		    ,@(loop for e in (subseq l 0 3)
+			    collect
+			    (destructuring-bind (&key id name draw) e
+			      `(designated-initializer
+				:id ,id
+				:name (string ,name)
+				:draw (curly
+				       ,@(loop for d in draw
+					       collect
+					       (destructuring-bind (&key color type coords) d
+						 `(designated-initializer :color (curly ,@color)
+									  :type ,type
+									  :coords (curly ,@(loop for c in coords
+												 collect
+												 `(curly ,@(loop for c0 in c
+														 collect
+														 `(static_cast<float> ,c0))))))))))
+			      ))))))
 	  )
 
              
@@ -337,9 +369,9 @@
 	 (let ((idStripeWidth 16)
 	       (idBits 9)
 	       (wId (* idStripeWidth idBits))
-	       (w 512)
+	       ;(w 512)
 	       (wAll (+ w wId))
-	       (h 512)
+	       ;(h 512)
 	       (window (glfw--Window
 			wAll h
 			(string "GLFWPP Grating")
