@@ -68,7 +68,10 @@
       thread
       chrono
       algorithm
-      ;numeric
+      string
+      vector
+      array
+					;numeric
       )
      "using namespace std;"
      "using namespace chrono;"
@@ -305,7 +308,24 @@
 						   ))))))))
 	       (l (loop for e in l0 and e-i from 0 collect
 			`(:id ,e-i ,@e))))
-	  (defparameter *bla* l))
+	  (defparameter *bla* l)
+	  `(do0
+	    (defclass+ DrawPrimitive ()
+	      "public:"
+	      "array<float,3> color;"
+	      "decltype(GL_QUADS) type;"
+	      "vector<array<float,4>> coords;")
+	    (defclass+ DrawFrame ()
+	      "public:"
+	      "int id;"
+	      "string name;"
+	      "vector<DrawPrimitive> draw;")
+	    (space vector<DrawFrame> (setf drawFrames (curly (designated-initializer :id 0
+									       :name (string "bright")
+									       :draw (curly (designated-initializer :color (curly .1 .2 .3)
+														    :type GL_QUADS
+														    :coords (curly (curly 0 0 512 512)))))))))
+	  )
 
              
        (let ((GLFW (glfw--init))

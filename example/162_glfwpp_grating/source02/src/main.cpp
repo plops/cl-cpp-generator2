@@ -1,13 +1,16 @@
 #include "/home/martin/src/popl/include/popl.hpp"
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <deque>
 #include <format>
 #include <glfwpp/glfwpp.h>
 #include <iostream>
+#include <string>
 #include <thread>
 #include <valarray>
+#include <vector>
 using namespace std;
 using namespace chrono;
 using Scalar = float;
@@ -122,7 +125,23 @@ int main(int argc, char **argv) {
   auto frameDelayEstimator{DelayEstimator(numberFramesForStatistics)};
   auto dark{darkLevel / 255.F};
   auto bright{brightLevel / 255.F};
-  *bla *;
+  class DrawPrimitive {
+  public:
+    array<float, 3> color;
+    decltype(GL_QUADS) type;
+    vector<array<float, 4>> coords;
+  };
+  class DrawFrame {
+  public:
+    int id;
+    string name;
+    vector<DrawPrimitive> draw;
+  };
+  vector<DrawFrame> drawFrames = {{.id = 0,
+                                   .name = "bright",
+                                   .draw = {{.color = {0.10F, 0.20F, 0.30F},
+                                             .type = GL_QUADS,
+                                             .coords = {{0, 0, 512, 512}}}}}};
   auto GLFW{glfw::init()};
   auto hints{glfw::WindowHints{.clientApi = glfw::ClientApi::OpenGl,
                                .contextVersionMajor = 2,
