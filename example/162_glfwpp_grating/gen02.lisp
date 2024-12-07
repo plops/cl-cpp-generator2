@@ -325,6 +325,7 @@
 		  (wf (static_cast<float> w))
 		  (hf (static_cast<float> h)))
 	      )
+	    (comments "show a sequence of horizontal bars and vertical bars that split the image into 1/2, 1/4th, ... . each image is followed by its inverted version. the lcd of the projector is too slow to show this pattern exactly with 60Hz. that is why we set swap interval to 2 (we wait for two frames for every image so that the display has time to settle)")
 	    (space
 	     vector<DrawFrame>
 	     (setf drawFrames
@@ -335,13 +336,7 @@
 					    :draw (curly (designated-initializer :color (curly bright .2 .3)
 										 :type GL_QUADS
 										 :coords (curly (curly 0 0 (static_cast<float> w) 512)))))
-		    #+nil
-		    (designated-initializer :id 1
-					    :name (string "dark")
-					    :draw (curly (designated-initializer :color (curly .0 .0 .0)
-										 :type GL_QUADS
-										 :coords (curly (curly 0 0 512 512)))))
-		    #-nil
+		    		    
 		    ,@(loop for e in l
 			    collect
 			    (destructuring-bind (&key id name draw) e
@@ -360,8 +355,8 @@
 														 collect
 														 c0
 														 #+nil(if (numberp c0)
-														     (coerce c0 'single-float)
-														     `(static_cast<float> ,c0)))))))))))
+															  (coerce c0 'single-float)
+															  `(static_cast<float> ,c0)))))))))))
 			      ))))))
 	  )
 
@@ -386,19 +381,24 @@
 	   (glfw--makeContextCurrent window)
 
 	   (comments "an alternative to increase swap interval is to change screen update rate `xrandr --output HDMI-A-0 --mode 1920x1080 --rate 24`")
+
 	   (glfw--swapInterval swapInterval)
+
+	   (let ((frameId 0)))
 	   
 	   (while (!window.shouldClose)
 		  (let ((time (glfw--getTime)))
 		    
 		    (glfw--pollEvents)		    
 		    (do0
-		     (comments "show a sequence of horizontal bars and vertical bars that split the image into 1/2, 1/4th, ... . each image is followed by its inverted version. the lcd of the projector is too slow to show this pattern exactly with 60Hz. that is why we set swap interval to 2 (we wait for two frames for every image so that the display has time to settle)")
-
-		     (do0
+		     (if (< frameId (drawFrames.size))
+			 (incf frameId)
+			 (setf frameId 0))
+		     
+		     #+nil (do0
 		      "static int current_level = 0;"
 		      "static bool horizontal = true;"
-
+		      
 		      (setf current_level (+ current_level 1))
 		      (when (== current_level (* 8 #+invert 2 #-invert 1))
 			(setf horizontal !horizontal
@@ -406,7 +406,7 @@
 		      #+invert (let ((white (== 0 (% current_level 2)))))
 		      )
 	     
-		     (#-invert do0 #+invert if #+invert white
+		     #+nil(#-invert do0 #+invert if #+invert white
 		      (do0 (glClearColor dark dark dark 1s0)
 			   (glClear GL_COLOR_BUFFER_BIT)
 			   #+invert (glColor4f bright bright bright 1s0)
@@ -420,29 +420,47 @@
 		     (comments "scale coordinates so that 0..w-1, 0..h-1 cover the screen")
 		     (glTranslatef -1s0 -1s0 0s0)
 		     (glScalef (/ 2s0 wAll) (/ 2s0 h) 1s0)
-		     (glBegin GL_QUADS)
 
-		     (let ((level (/ current_level #-invert 1 #+invert 2
-						   ))))
-		     (let ((y (/ 1024 (pow 2s0 level)))))
-		     (if horizontal
-			 (dotimes (i (pow 2s0 level))
-			   (do0
-			    (let ((x 512)
-				  (o (* 2 i y))))
-			    (glVertex2f 0 o)
-			    (glVertex2f 0 (+ o y))
-			    (glVertex2f x (+ o y))
-			    (glVertex2f x o)))
-			 (dotimes (i (pow 2s0 level))
-			   (do0
-			    (let ((x 512)
-				  (o (* 2 i y))))
-			    (glVertex2f  o 0)
-			    (glVertex2f  (+ o y) 0)
-			    (glVertex2f  (+ o y) x )
-			    (glVertex2f  o x))))
-		     (glEnd)
+		     (let ((draws (dot (aref drawFrames frameId)
+				       draw)))
+		       (for-range ((bracket color type coords) draws)
+				  (glColor4f (aref color 0)
+					     (aref color 1)
+					     (aref color 2)
+					     1s0)
+				  (glBegin type)
+				  (for-range ((bracket x0 y0 x1 y1) coords)
+					     (glVertex2f x0 y0)
+					     (glVertex2f x1 y0)
+					     (glVertex2f x1 y1)
+					     (glVertex2f x0 y1))
+				  (glEnd))
+		       )
+
+		     #+nil
+		     (do0 (glBegin GL_QUADS)
+			  
+			  (let ((level (/ current_level #-invert 1 #+invert 2
+							))))
+			  (let ((y (/ 1024 (pow 2s0 level)))))
+			  (if horizontal
+			      (dotimes (i (pow 2s0 level))
+				(do0
+				 (let ((x 512)
+				       (o (* 2 i y))))
+				 (glVertex2f 0 o)
+				 (glVertex2f 0 (+ o y))
+				 (glVertex2f x (+ o y))
+				 (glVertex2f x o)))
+			      (dotimes (i (pow 2s0 level))
+				(do0
+				 (let ((x 512)
+				       (o (* 2 i y))))
+				 (glVertex2f  o 0)
+				 (glVertex2f  (+ o y) 0)
+				 (glVertex2f  (+ o y) x )
+				 (glVertex2f  o x))))
+			  (glEnd))
 
 		     (do0
 		      (comments "green on black barcode for the id on the right")

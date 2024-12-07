@@ -141,6 +141,11 @@ int main(int argc, char **argv) {
   auto h{512};
   auto wf{static_cast<float>(w)};
   auto hf{static_cast<float>(h)};
+  // show a sequence of horizontal bars and vertical bars that split the image
+  // into 1/2, 1/4th, ... . each image is followed by its inverted version. the
+  // lcd of the projector is too slow to show this pattern exactly with 60Hz.
+  // that is why we set swap interval to 2 (we wait for two frames for every
+  // image so that the display has time to settle)
   vector<DrawFrame> drawFrames =
       {{.id = 0,
         .name = "all-white",
@@ -639,60 +644,31 @@ int main(int argc, char **argv) {
   // an alternative to increase swap interval is to change screen update rate
   // `xrandr --output HDMI-A-0 --mode 1920x1080 --rate 24`
   glfw::swapInterval(swapInterval);
+  auto frameId{0};
   while (!window.shouldClose()) {
     auto time{glfw::getTime()};
     glfw::pollEvents();
-    // show a sequence of horizontal bars and vertical bars that split the image
-    // into 1/2, 1/4th, ... . each image is followed by its inverted version.
-    // the lcd of the projector is too slow to show this pattern exactly with
-    // 60Hz. that is why we set swap interval to 2 (we wait for two frames for
-    // every image so that the display has time to settle)
-    static int current_level = 0;
-    static bool horizontal = true;
-    current_level = current_level + 1;
-    if (current_level == 8 * 2) {
-      horizontal = !horizontal;
-      current_level = 0;
-    }
-    auto white{0 == (current_level % 2)};
-    if (white) {
-      glClearColor(dark, dark, dark, 1.0F);
-      glClear(GL_COLOR_BUFFER_BIT);
-      glColor4f(bright, bright, bright, 1.0F);
+    if (frameId < drawFrames.size()) {
+      frameId++;
     } else {
-      glClearColor(bright, bright, bright, 1.0F);
-      glClear(GL_COLOR_BUFFER_BIT);
-      glColor4f(dark, dark, dark, 1.0F);
+      frameId = 0;
     }
     glPushMatrix();
     // scale coordinates so that 0..w-1, 0..h-1 cover the screen
     glTranslatef(-1.0F, -1.0F, 0.F);
     glScalef(2.0F / wAll, 2.0F / h, 1.0F);
-    glBegin(GL_QUADS);
-    auto level{current_level / 2};
-    auto y{1024 / pow(2.0F, level)};
-    if (horizontal) {
-      for (decltype(0 + pow(2.0F, level) + 1) i = 0; i < pow(2.0F, level);
-           i += 1) {
-        auto x{512};
-        auto o{2 * i * y};
-        glVertex2f(0, o);
-        glVertex2f(0, o + y);
-        glVertex2f(x, o + y);
-        glVertex2f(x, o);
+    auto draws{drawFrames[frameId].draw};
+    for (auto &&[color, type, coords] : draws) {
+      glColor4f(color[0], color[1], color[2], 1.0F);
+      glBegin(type);
+      for (auto &&[x0, y0, x1, y1] : coords) {
+        glVertex2f(x0, y0);
+        glVertex2f(x1, y0);
+        glVertex2f(x1, y1);
+        glVertex2f(x0, y1);
       }
-    } else {
-      for (decltype(0 + pow(2.0F, level) + 1) i = 0; i < pow(2.0F, level);
-           i += 1) {
-        auto x{512};
-        auto o{2 * i * y};
-        glVertex2f(o, 0);
-        glVertex2f(o + y, 0);
-        glVertex2f(o + y, x);
-        glVertex2f(o, x);
-      }
+      glEnd();
     }
-    glEnd();
     // green on black barcode for the id on the right
     glColor4f(0.F, 0.F, 0.F, 1.0F);
     glBegin(GL_QUADS);
