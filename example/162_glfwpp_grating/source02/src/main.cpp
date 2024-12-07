@@ -130,7 +130,7 @@ public:
 
 int main(int argc, char **argv) {
   auto op{popl::OptionParser("allowed options")};
-  auto swapInterval{int(2)};
+  auto swapInterval{int(1)};
   auto numberFramesForStatistics{int(211)};
   auto darkLevel{int(0)};
   auto brightLevel{int(255)};
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
   auto verboseOption{
       op.add<popl::Switch>("v", "verbose", "produce verbose output")};
   auto swapIntervalOption{op.add<popl::Value<int>>(
-      "s", "swapInterval", "parameter", 2, &swapInterval)};
+      "s", "swapInterval", "parameter", 1, &swapInterval)};
   auto numberFramesForStatisticsOption{
       op.add<popl::Value<int>>("F", "numberFramesForStatistics", "parameter",
                                211, &numberFramesForStatistics)};
@@ -1300,15 +1300,16 @@ int main(int argc, char **argv) {
   // an alternative to increase swap interval is to change screen update rate
   // `xrandr --output HDMI-A-0 --mode 1920x1080 --rate 24`
   glfw::swapInterval(swapInterval);
-  auto frameId{0};
+  auto frameIdTimes2{0};
   while (!window.shouldClose()) {
     auto time{glfw::getTime()};
     glfw::pollEvents();
-    if (frameId < drawFrames.size()) {
-      frameId++;
+    if (frameIdTimes2 < 2 * drawFrames.size()) {
+      frameIdTimes2++;
     } else {
-      frameId = 0;
+      frameIdTimes2 = 0;
     }
+    auto frameId{frameIdTimes2 / 2};
     glPushMatrix();
     // scale coordinates so that 0..w-1, 0..h-1 cover the screen
     glTranslatef(-1.0F, -1.0F, 0.F);

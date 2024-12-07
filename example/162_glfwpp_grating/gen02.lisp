@@ -259,7 +259,7 @@
 		(type char** argv)
 		(values int))
        #+more
-       ,(let ((l `((:name swapInterval :default 2 :short s)
+       ,(let ((l `((:name swapInterval :default 1 :short s)
 		   (:name numberFramesForStatistics :default 211 :short F)
 		   ;(:name patternWidth :default 512 :short w)
 		   ;(:name patternHeight :default 512 :short h)
@@ -419,15 +419,16 @@
 	   (glfw--makeContextCurrent window)
 	   (comments "an alternative to increase swap interval is to change screen update rate `xrandr --output HDMI-A-0 --mode 1920x1080 --rate 24`")
 	   (glfw--swapInterval swapInterval)
-	   (let ((frameId 0)))
+	   (let ((frameIdTimes2 0)))
 	   (while (!window.shouldClose)
 		  (let ((time (glfw--getTime)))
 		    
 		    (glfw--pollEvents)		    
 		    (do0
-		     (if (< frameId (drawFrames.size))
-			 (incf frameId)
-			 (setf frameId 0))
+		     (if (< frameIdTimes2 (*  2 (drawFrames.size)))
+			 (incf frameIdTimes2)
+			 (setf frameIdTimes2 0))
+		     (let ((frameId (/ frameIdTimes2 2))))
 		     		     
 		     (glPushMatrix)
 		     (comments "scale coordinates so that 0..w-1, 0..h-1 cover the screen")

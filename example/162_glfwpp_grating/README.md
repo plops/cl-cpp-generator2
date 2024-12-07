@@ -24,12 +24,14 @@ eventually, i want to build a 3d scanner using only a projector
   framerates of gpu and projector don't match).
   
 - the barcode is shown as vertical stripes. on my laptop i found
-  screen tearing at the top of the screen, even though i enable
+  screen tearing at the top of the screen, even though i enabled
   vsync. that means the top of the screen always shows one earlier
-  frame.
+  frame. i somewhat alleviate this issue by displaying two identical
+  frames one after another. the gpu emits frames with 60Hz but two
+  consecutive frames show the same thing. screen tearing still occurs
+  for the first frame but the second copy is properly displayed by the
+  projector without screen tearing artifacts.
   
-  i investigate if running vsync with 60Hz but updating the image
-  content only every 2nd image will help to alleviate this problem.
 
 - if more than one screen is connected to the computer the screen tear
   may run accross the screen. it may help to use `xrandr` with the
