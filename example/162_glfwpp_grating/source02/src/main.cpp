@@ -30,7 +30,7 @@ void drawBarcode(int code, int bits, int idStripeWidth, float x0, float x1,
   glColor4f(0.F, 1.0F, 0.F, 1.0F);
   glBegin(GL_QUADS);
   for (decltype(0 + bits + 1) i = 0; i < bits; i += 1) {
-    if ((code & 1 << i)) {
+    if ((code & (1 << i))) {
       auto xx0{x0 + i * idStripeWidth};
       auto xx1{(x0 + (1 + i) * idStripeWidth) - (idStripeWidth / 2)};
       glVertex2f(xx0, y0);
@@ -732,7 +732,7 @@ int main(int argc, char **argv) {
                                .contextVersionMinor = 0}};
   hints.apply();
   auto idStripeWidth{16};
-  auto idBits{9};
+  auto idBits{16};
   auto wId{idStripeWidth * idBits};
   auto wAll{w + wId};
   auto window{glfw::Window(wAll, h, "GLFWPP Grating")};
@@ -754,10 +754,20 @@ int main(int argc, char **argv) {
     glTranslatef(-1.0F, -1.0F, 0.F);
     glScalef(2.0F / wAll, 2.0F / h, 1.0F);
     drawFrames[frameId].execute();
-    auto codedFrameId{1 + (frameId << 1) + (1 << 6)};
+    const auto hamming3{
+        array<int, 16>({0, 3, 7, 4, 6, 5, 1, 2, 5, 6, 2, 1, 3, 0, 4, 7})};
+    // frameId needs more than 4 bits. split into two 4 bit nibbles and encode
+    // with (7,4) binary block code that can correct one bit error
+    auto frameIdLo{(frameId & 0xF)};
+    auto frameIdHi{((frameId & 0xF0)) >> 4};
+    auto codedFrameIdLo{frameIdLo + (hamming3.at(frameIdLo) << 4)};
+    auto codedFrameIdHi{frameIdHi + (hamming3.at(frameIdHi) << 4)};
+    auto boundedCodedFrameId{1 + (codedFrameIdLo << 1) + (codedFrameIdHi << 8) +
+                             (1 << 15)};
     // the codedFrameId consists of |S|Data|E|, with S and E being start and end
-    // bits, respectively
-    drawBarcode(codedFrameId, 7, 16, w, wAll, 0, h);
+    // bits, respectively parity check via (7,4) binary block code (numerical
+    // recipes 16.2.1 error correction codes and soft decision
+    drawBarcode(boundedCodedFrameId, 16, 16, w, wAll, 0, h);
     glPopMatrix();
     window.swapBuffers();
     frameDelayEstimator.update();

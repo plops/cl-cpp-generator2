@@ -97,7 +97,7 @@
 	(glColor4f 0s0 1s0 0s0 1s0)
 	(glBegin GL_QUADS)
 	(dotimes (i bits)
-	  (when (& code (<< 1 i))
+	  (when (& code (paren (<< 1 i)))
 	    (let ((xx0 (+ x0 (* i idStripeWidth)))
 		  (xx1 (- (+ x0 (* (+ 1 i) idStripeWidth))
 			  (/ idStripeWidth 2))))
@@ -400,7 +400,7 @@
 					      :contextVersionMinor 0))))
 	 (hints.apply)
 	 (let ((idStripeWidth 16)
-	       (idBits 9)
+	       (idBits 16)
 	       (wId (* idStripeWidth idBits))
 	       ;(w 512)
 	       (wAll (+ w wId))
@@ -454,17 +454,56 @@
 				 (glVertex2f  o x))))
 			  (glEnd))
 
-		     ,(let* ((data-bits (ceiling (log 29 2)))
+		     ,(let* (;;(data-bits (ceiling (log 29 2)))
 			     (start-bits 1)
 			     (end-bits 1)
-			     (coded-bits (+ data-bits start-bits end-bits))) 
-			`(let ((codedFrameId (+ 1
-						(<< frameId ,start-bits)
-						(<< 1 ,(+ data-bits start-bits)))))
-			   (comments "the codedFrameId consists of |S|Data|E|, with S and E being start and end bits, respectively")
-			   (drawBarcode codedFrameId ,coded-bits
-					16
-					w wAll 0 h)))
+			     (message-bits 4)
+			     (codeword-bits 7)
+			     (coded-bits (+ codeword-bits ;; lo
+					    codeword-bits ;; hi
+					    start-bits end-bits))
+			     ;; one bit can be corrected
+			     (codewords `(#b000
+					  #b011
+					  #b111
+					  #b100
+					  #b110
+					  #b101
+					  #b001
+					  #b010
+					  #b101
+					  #b110
+					  #b010
+					  #b001
+					  #b011
+					  #b000
+					  #b100
+					  #b111))) 
+			`(letc ((hamming3 (,(format nil "array<int,~a>"
+						     (length codewords))
+					    (curly ,@codewords))))
+			       (comments "frameId needs more than 4 bits. split into two 4 bit nibbles and encode with (7,4) binary block code that can correct one bit error")
+			       (let ((frameIdLo (& frameId (hex #xf)))
+				     (frameIdHi (>> (paren (& frameId (hex #xf0))) 4))
+				     (codedFrameIdLo (+ frameIdLo
+						      (paren (<< (dot hamming3 (at frameIdLo))
+							   ,message-bits))))
+				     (codedFrameIdHi (+ frameIdHi
+						      (paren (<< (dot hamming3 (at frameIdHi))
+							   ,message-bits))))
+				     (boundedCodedFrameId (+ 1
+							     (paren (<< codedFrameIdLo
+								  ,start-bits))
+							    (paren (<< codedFrameIdHi
+								  ,(+ codeword-bits start-bits)))
+							     (paren (<< 1 ,(+ codeword-bits
+									codeword-bits
+									start-bits))))))
+				 (comments "the codedFrameId consists of |S|Data|E|, with S and E being start and end bits, respectively")
+				 (comments "parity check via (7,4) binary block code (numerical recipes 16.2.1 error correction codes and soft decision")
+				 (drawBarcode boundedCodedFrameId ,coded-bits
+					      16
+					      w wAll 0 h))))
 		     
 		     
 		     (glPopMatrix))
