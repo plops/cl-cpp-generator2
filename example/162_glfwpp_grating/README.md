@@ -1,6 +1,7 @@
 display a grating on the video projector.
 
-eventually, i want to build a 3d scanner using only a projector (60USD) and an iphone
+eventually, i want to build a 3d scanner using only a projector
+(60USD) and an iphone
 
 
 |       |   |                                                                   |
@@ -26,6 +27,9 @@ eventually, i want to build a 3d scanner using only a projector (60USD) and an i
   screen tearing at the top of the screen, even though i enable
   vsync. that means the top of the screen always shows one earlier
   frame.
+  
+  i investigate if running vsync with 60Hz but updating the image
+  content only every 2nd image will help to alleviate this problem.
 
 - if more than one screen is connected to the computer the screen tear
   may run accross the screen. it may help to use `xrandr` with the
@@ -39,8 +43,8 @@ eventually, i want to build a 3d scanner using only a projector (60USD) and an i
   slow-motion frames are properly illuminated while many show the lcd
   in a transitioning state. the 3d reconstruction software shall
   remove these frames. the update pattern seems to run over the
-  display in a vertical motion (but i'm not sure). maybe it will be
-  usefull to have a large white plane next to the 3d target that will
-  alternatively be black or bright. only when this area is
+  display in a vertical motion. part of the illumination pattern and
+  acquisition setup is a large white plane next to the 3d target that
+  will alternatively be black or bright. only when this area is
   sufficiently uniform a frame ma be considered 'properly
   illuminated'.

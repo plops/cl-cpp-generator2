@@ -261,6 +261,8 @@
        #+more
        ,(let ((l `((:name swapInterval :default 2 :short s)
 		   (:name numberFramesForStatistics :default 211 :short F)
+		   ;(:name patternWidth :default 512 :short w)
+		   ;(:name patternHeight :default 512 :short h)
 		   (:name darkLevel :default 0 :short D)
 		   (:name brightLevel :default 255 :short B))))
 	  `(let ((op (popl--OptionParser (string "allowed options")))
@@ -303,8 +305,8 @@
        (let ((frameDelayEstimator (DelayEstimator numberFramesForStatistics))))    
        (let ((dark (/ darkLevel 255s0))
 	     (bright (/ brightLevel 255s0))))
-       ,(let* ((pattern-w 512)
-	       (pattern-h 512)
+       ,(let* ((pattern-w 1024)
+	       (pattern-h 1024)
 	       (levels-w (floor (- (log pattern-w 2) 2)))
 	       (levels-h (floor (- (log pattern-h 2) 2)))
 	       (bright "bright")
@@ -402,12 +404,15 @@
 					      :contextVersionMajor 2
 					      :contextVersionMinor 0))))
 	 (hints.apply)
+	 (comments "from left to right: stripe pattern, frameId barcode, uniform")
 	 (let ((idStripeWidth 16)
 	       (idBits 16)
 	       (wId (* idStripeWidth idBits))
-	       ;(w 512)
-	       (wAll (+ w wId))
-	       ;(h 512)
+					;(w 512)
+	       (wUniform 128)
+	       (wAll (+ w wId wUniform))
+	       
+					;(h 512)
 	       (window (glfw--Window
 			wAll h
 			(string "GLFWPP Grating"))))
@@ -483,31 +488,46 @@
 					  #b100
 					  #b111))) 
 			`(letc ((hamming3 (,(format nil "array<int,~a>"
-						     (length codewords))
-					    (curly ,@codewords))))
+						    (length codewords))
+					   (curly ,@codewords))))
 			       (comments "frameId needs more than 4 bits. split into two 4 bit nibbles and encode with (7,4) binary block code that can correct one bit error")
 			       (let ((frameIdLo (& frameId (hex #xf)))
 				     (frameIdHi (>> (paren (& frameId (hex #xf0))) 4))
 				     (codedFrameIdLo (+ frameIdLo
-						      (paren (<< (dot hamming3 (at frameIdLo))
-							   ,message-bits))))
+							(paren (<< (dot hamming3 (at frameIdLo))
+								   ,message-bits))))
 				     (codedFrameIdHi (+ frameIdHi
-						      (paren (<< (dot hamming3 (at frameIdHi))
-							   ,message-bits))))
+							(paren (<< (dot hamming3 (at frameIdHi))
+								   ,message-bits))))
 				     (boundedCodedFrameId (+ 1
 							     (paren (<< codedFrameIdLo
-								  ,start-bits))
-							    (paren (<< codedFrameIdHi
-								  ,(+ codeword-bits start-bits)))
+									,start-bits))
+							     (paren (<< codedFrameIdHi
+									,(+ codeword-bits start-bits)))
 							     (paren (<< 1 ,(+ codeword-bits
-									codeword-bits
-									start-bits))))))
+									      codeword-bits
+									      start-bits))))))
 				 (comments "the codedFrameId consists of |S|Data|E|, with S and E being start and end bits, respectively")
 				 (comments "parity check via (7,4) binary block code (numerical recipes 16.2.1 error correction codes and soft decision")
 				 (drawBarcode boundedCodedFrameId ,coded-bits
 					      16
-					      w wAll 0 h))))
+					      w (+ w wId) 0 h))))
 		     
+		     (do0
+		      (comments "uniform area that flickers between bright and dark in every frame")
+		      (if (== 0 (% frameId 2))
+			  (glColor4f 1s0 1s0 1s0 1s0)
+			  (glColor4f 0s0 0s0 0s0 1s0))
+		      (glBegin GL_QUADS)
+		      (let ((x0 (+ w wId))
+			    (x1 wAll)
+			    (y0 0)
+			    (y1 h)))
+		      (glVertex2f x0 y0)
+		      (glVertex2f x1 y0)
+		      (glVertex2f x1 y1)
+		      (glVertex2f x0 y1)
+		      (glEnd))
 		     
 		     (glPopMatrix))
 		    (window.swapBuffers)
