@@ -1,10 +1,8 @@
-//
-// Created by martin on 1/16/25.
-//
-
 #include "shape.h"
-// we need unique_ptr
 #include <memory>
+#include <vector>
+#include <functional>
+#include <string>
 
 class Circle {
   public:
@@ -21,14 +19,19 @@ class Shape {
       : pimpl_{std::make_unique<ShapeModel<ConcreteShape, DrawStrategy>>(shape, drawer)}
     {}
     void draw() const { pimpl_->draw(); }
-
+	// rule of 5, needs work
+    Shape(Shape const& shape) : pimpl_{std::move(pimpl_)} {}
+    Shape(Shape&& shape) : pimpl_{std::move(pimpl_)} {}
+    ~Shape() = default;
+    Shape& operator=(Shape const& shape) { pimpl_ = std::move(pimpl_); return *this; }
+    Shape& operator=(Shape&& shape) { pimpl_ = std::move(pimpl_); return *this; }
   private:
 class ShapeConcept
 {
   public:
     virtual ~ShapeConcept() = default;
     virtual void draw() const = 0;
-	virtual ShapeConcept *clone() const = 0;
+	virtual ShapeConcept *clone() const = 0; // is this the right clone()?
 };
 
 
@@ -48,3 +51,18 @@ class ShapeModel : public ShapeConcept
 };
   std::unique_ptr<ShapeConcept> pimpl_;
 };
+
+using Shapes = std::vector<Shape>;
+using ShapesFactory = std::function<Shapes(std::string_view)>;
+
+void drawAllShapes(Shapes const& shapes){
+  for(auto const& shape : shapes){
+    shape.draw();
+  }
+}
+
+void createAndDrawShapes(ShapesFactory const& factory, std::string_view filename){
+  Shapes shapes = factory(filename);
+  drawAllShapes(shapes);
+}
+
