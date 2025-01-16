@@ -39,7 +39,7 @@ type erasure
     than specific language features, is crucial for project
     success. The talk emphasizes the need for a stronger focus on
     design principles in the C++ community.
-*   **0:36:26 Progressive C++:** The concept of ""Progressive C++"" is
+*   **0:36:26 Progressive C++:** The concept of "Progressive C++" is
     introduced as a new term to describe modern C++ development that
     emphasizes design philosophy over specific language features.
 *   **0:36:38 Type Erasure as a Solution:** Type erasure, using a
