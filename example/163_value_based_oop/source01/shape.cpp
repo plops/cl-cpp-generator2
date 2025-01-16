@@ -76,7 +76,7 @@ class OpenGLDrawer {
 
 class YourShapesFactory {
   public:
-    Shapes operator()(std::string_view filename) const {
+    Shapes operator()(const std::string& filename) const {
       Shapes shapes{};
       std::string shape{};
       std::istringstream shape_file{filename};
