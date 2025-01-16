@@ -64,7 +64,7 @@ void drawAllShapes(Shapes const& shapes){
 }
 
 void createAndDrawShapes(ShapesFactory const& factory, std::string_view filename){
-  Shapes shapes = factory(filename);
+  Shapes shapes = factory{filename};
   drawAllShapes(shapes);
 }
 
@@ -76,7 +76,7 @@ class OpenGLDrawer {
 
 class YourShapesFactory {
   public:
-    Shapes operator()(const std::string& filename) const {
+    Shapes operator()(std::string_view filename) const {
       Shapes shapes{};
       std::string shape{};
       std::istringstream shape_file{filename};
