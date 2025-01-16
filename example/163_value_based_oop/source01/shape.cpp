@@ -3,6 +3,8 @@
 #include <vector>
 #include <functional>
 #include <string>
+#include <string_view>
+#include <sstream>
 
 class Circle {
   public:
@@ -31,7 +33,7 @@ class ShapeConcept
   public:
     virtual ~ShapeConcept() = default;
     virtual void draw() const = 0;
-	virtual ShapeConcept *clone() const = 0; // is this the right clone()?
+	//virtual ShapeConcept *clone() const = 0; // is this the right clone()?
 };
 
 
@@ -44,7 +46,7 @@ class ShapeModel : public ShapeConcept
         : shape_{shape}, drawer_{drawer}
     {}
     void draw() const override {drawer_(shape_);}
-    ShapeConcept *clone() const override { return new ShapeModel(shape_); }
+    //ShapeConcept *clone() const override { return new ShapeModel(shape_); }
   private:
     ConcreteShape shape_;
     DrawStrategy drawer_;
@@ -66,3 +68,27 @@ void createAndDrawShapes(ShapesFactory const& factory, std::string_view filename
   drawAllShapes(shapes);
 }
 
+class OpenGLDrawer {
+  public:
+    explicit OpenGLDrawer() {}
+    void operator()(Circle const& circle) const {};
+};
+
+class YourShapesFactory {
+  public:
+    Shapes operator()(std::string_view filename) const {
+      Shapes shapes{};
+      std::string shape{};
+      std::istringstream shape_file{filename};
+	  while(shape_file >> shape){
+            if(shape == "circle"){
+              double radius{};
+              shape_file >> radius;
+              shapes.emplace_back(Circle{radius}, OpenGLDrawer{});
+            } else {
+              break;
+            }
+	  }
+      return shapes;
+    }
+};
