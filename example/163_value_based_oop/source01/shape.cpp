@@ -92,3 +92,9 @@ class YourShapesFactory {
       return shapes;
     }
 };
+
+int main(int argc, const char * argv[]) {
+  YourShapesFactory factory{};
+  createAndDrawShapes(factory, "shapes.txt");
+  return 0;
+}
