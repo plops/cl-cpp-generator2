@@ -30,7 +30,10 @@ class OpenGLDrawer
 public:
     explicit OpenGLDrawer() = default;
 
-    void operator()(Circle const& circle) const {};
+    void operator()(Circle const& circle) const
+    {
+        std::cout << std::format("draw circle {}",circle.radius()) << std::endl;
+    };
 };
 
 class YourShapesFactory
