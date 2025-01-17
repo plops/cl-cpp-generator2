@@ -11,7 +11,7 @@ class Circle
 public:
     explicit Circle(double radius) : radius_{radius} {}
 
-    double radius() const { return radius_; }
+    [[nodiscard]] double radius() const { return radius_; }
 
 private:
     double radius_;
@@ -30,7 +30,7 @@ public:
     // rule of 5, needs work
     Shape(Shape const& shape) : pimpl_{std::move(pimpl_)} {}
 
-    Shape(Shape&& shape) : pimpl_{std::move(pimpl_)} {}
+    Shape(Shape&& shape) noexcept : pimpl_{std::move(pimpl_)} {}
 
     ~Shape() = default;
 
@@ -40,7 +40,7 @@ public:
         return *this;
     }
 
-    Shape& operator=(Shape&& shape)
+    Shape& operator=(Shape&& shape) noexcept
     {
         pimpl_ = std::move(pimpl_);
         return *this;
@@ -93,7 +93,7 @@ void createAndDrawShapes(ShapesFactory const& factory, std::string_view filename
 class OpenGLDrawer
 {
 public:
-    explicit OpenGLDrawer() {}
+    explicit OpenGLDrawer() = default;
 
     void operator()(Circle const& circle) const {};
 };
