@@ -18,4 +18,4 @@ private:
 };
 
 
-#endif //CIRCLE_H
+#endif // CIRCLE_H
