@@ -3,17 +3,8 @@
 #include <sstream>
 #include <string_view>
 #include <vector>
+#include "Circle.h"
 
-class Circle
-{
-public:
-    explicit Circle(double radius) : radius_{radius} {}
-
-    [[nodiscard]] double radius() const { return radius_; }
-
-private:
-    double radius_;
-};
 
 class Shape
 {
