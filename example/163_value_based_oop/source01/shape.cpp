@@ -64,7 +64,7 @@ void drawAllShapes(Shapes const& shapes){
 }
 
 void createAndDrawShapes(ShapesFactory const& factory, std::string_view filename){
-  Shapes shapes = factory{filename};
+  Shapes shapes = factory(filename);
   drawAllShapes(shapes);
 }
 
@@ -79,7 +79,7 @@ class YourShapesFactory {
     Shapes operator()(std::string_view filename) const {
       Shapes shapes{};
       std::string shape{};
-      std::istringstream shape_file{filename};
+      std::istringstream shape_file(static_cast<std::string>(filename));
 	  while(shape_file >> shape){
             if(shape == "circle"){
               double radius{};
