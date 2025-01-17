@@ -1,4 +1,6 @@
 #include <functional>
+#include <iostream>
+#include <ostream>
 #include <sstream>
 #include <string_view>
 #include <vector>
@@ -36,6 +38,7 @@ class YourShapesFactory
 public:
     Shapes operator()(std::string_view filename) const
     {
+        std::cout << std::format("YourShapesFactory {}", filename) << std::endl;
         Shapes shapes{};
         std::string shape{};
         std::istringstream shape_file(static_cast<std::string>(filename));
@@ -45,10 +48,13 @@ public:
             {
                 double radius{};
                 shape_file >> radius;
+                std::cout << std::format("  Circle {}", radius) << std::endl;
+
                 shapes.emplace_back(Circle{radius}, OpenGLDrawer{});
             }
             else
             {
+                std::cout << std::format("  unsupported Shape: {}", shape) << std::endl;
                 break;
             }
         }
