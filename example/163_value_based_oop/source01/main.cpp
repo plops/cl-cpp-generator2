@@ -65,6 +65,6 @@ public:
 int main(int argc, const char* argv[])
 {
     YourShapesFactory factory{};
-    createAndDrawShapes(factory, "shapes.txt");
+    createAndDrawShapes(factory, "circle 5");
     return 0;
 }
