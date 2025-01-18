@@ -85,14 +85,17 @@ int main()
     auto lazy{Cat()};
     auto s1{PetStrategy1()};
     auto s2{PetStrategy2()};
-    std::vector<StatelessTE > v;
-    v.emplace_back(StatelessTE(rover, s2));
-    v.emplace_back(StatelessTE(lazy, s1));
-
-    for (auto&& e : v)
-    {
-        e.getTreat();
-        e.getPetted();
-    }
+    StatelessTE q{rover, s1};
+q.getTreat();
+q.getPetted();
+    // std::vector<StatelessTE> v;
+    // v.emplace_back(StatelessTE(rover, s2));
+    // v.emplace_back(StatelessTE(lazy, s1));
+    //
+    // for (auto&& e : v)
+    // {
+    //     e.getTreat();
+    //     e.getPetted();
+    // }
     return 0;
 }
