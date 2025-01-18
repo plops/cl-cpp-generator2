@@ -5,3 +5,7 @@ add_executable(
         ${PROJECT_NAME}
         main.cpp
 )
+add_executable(
+        dogcat2
+        main2.cpp
+)

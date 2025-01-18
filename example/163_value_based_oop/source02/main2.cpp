@@ -8,7 +8,9 @@ struct Interface
     virtual void getPetted() = 0;
 };
 
-// Object and Strategy get copied into the templated Implementation class (so we can't keep track of states in these objects)
+// As opposode to main.cpp here Object and Strategy are stored as a point in the templated Implementation class
+// Now the object or strategy can collect statistics (or any other state)
+
 template<typename Object, typename Strategy>
 struct Implementation : public Interface
 {
