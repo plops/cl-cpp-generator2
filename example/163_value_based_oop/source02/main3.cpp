@@ -2,70 +2,67 @@
 #include <memory>
 #include <vector>
 
-struct Interface
+
+struct UniversalTE
 {
-    virtual ~Interface() = default;
-    virtual void getTreat() = 0;
-    virtual void getPetted() = 0;
-};
-
-template <typename Type>
-struct is_shared_ptr : std::false_type
-{
-};
-template <typename Type>
-struct is_shared_ptr<std::shared_ptr<Type>> : std::true_type
-{
-};
-
-
-// Object and Strategy get copied into the templated Implementation class (so we can't keep track of states in these objects)
-template<typename Object, typename Strategy>
-struct Implementation : public Interface
-{
-    Object object;
-    Strategy strategy;
-
-    // mimic Dog& operator=(...) {...; return *this; }
-
-    auto& object_()
+private:
+    struct Interface
     {
-        if constexpr (is_shared_ptr<std::remove_cvref_t<Object>>::value)
-            return *object;
-        else
-            return object;
-    }
+        virtual ~Interface() = default;
+        virtual void getTreat() = 0;
+        virtual void getPetted() = 0;
+    };
 
-    auto& strategy_()
+
+    std::unique_ptr<Interface> pimpl;
+
+
+    template <typename Type>
+    struct is_shared_ptr : std::false_type
+    {
+    };
+    template <typename Type>
+    struct is_shared_ptr<std::shared_ptr<Type>> : std::true_type
+    {
+    };
+
+
+    // Object and Strategy get copied into the templated Implementation class (so we can't keep track of states in these
+    // objects)
+    template <typename Object, typename Strategy>
+    struct Implementation : public Interface
+    {
+        Object object;
+        Strategy strategy;
+
+        // mimic Dog& operator=(...) {...; return *this; }
+
+        auto& object_()
+        {
+            if constexpr (is_shared_ptr<std::remove_cvref_t<Object>>::value)
+                return *object;
+            else
+                return object;
+        }
+
+        auto& strategy_()
         {
             if constexpr (is_shared_ptr<std::remove_cvref_t<Strategy>>::value)
                 return *strategy;
             else
                 return strategy;
-            }
+        }
 
 
-    template<typename Object2, typename Strategy2>
-    Implementation(Object2&& o, Strategy2&& s)
-        : object(std::forward<Object2>(o))
-    , strategy(std::forward<Strategy2>(s))
-    {}
-    void getTreat() override
-    {
-        strategy_().getTreat(object_());
-    }
-    void getPetted() override
-    {
-        strategy_().getPetted(object_());
-    }
-};
+        template <typename Object2, typename Strategy2>
+        Implementation(Object2&& o, Strategy2&& s) :
+            object(std::forward<Object2>(o)), strategy(std::forward<Strategy2>(s))
+        {
+        }
+        void getTreat() override { strategy_().getTreat(object_()); }
+        void getPetted() override { strategy_().getPetted(object_()); }
+    };
 
-
-
-struct UniversalTE
-{
-private:
-    std::unique_ptr<Interface> pimpl;
 
 public:
     template <typename Object, typename Strategy>
@@ -81,35 +78,59 @@ public:
 
 struct Cat
 {
-    void meow(){}
-    void purr(){}
-    void scratch(){}
+    void meow() {}
+    void purr() {}
+    void scratch() {}
 };
 struct Dog
 {
-    void bark(){};
-    void sit(){};
+    void bark() {};
+    void sit() {};
     int hairsShedded{0};
-    auto hairsSheddedCount(){ return hairsShedded; }
-    void shed(){ hairsShedded += 1'000'000;}
+    auto hairsSheddedCount() { return hairsShedded; }
+    void shed() { hairsShedded += 1'000'000; }
 };
 
 struct PetStrategy1
 {
-    void getTreat(Cat& cat){ cat.meow(); cat.scratch(); }
-    void getPetted(Cat& cat){ cat.purr(); }
-    void getTreat(Dog& dog){ dog.sit(); }
-    void getPetted(Dog& dog){ dog.bark(); dog.shed(); }
+    void getTreat(Cat& cat)
+    {
+        cat.meow();
+        cat.scratch();
+    }
+    void getPetted(Cat& cat) { cat.purr(); }
+    void getTreat(Dog& dog) { dog.sit(); }
+    void getPetted(Dog& dog)
+    {
+        dog.bark();
+        dog.shed();
+    }
 };
 
 struct PetStrategy2
 {
-    int treatsSpent{   0};
-    auto treatsSpentCount(){ return treatsSpent; }
-    void getTreat(Cat& cat){ ++treatsSpent; cat.meow(); }
-    void getPetted(Cat& cat){ cat.purr(); cat.purr(); }
-    void getTreat(Dog& dog){ ++treatsSpent; dog.sit(); }
-    void getPetted(Dog& dog){ dog.sit(); dog.shed(); }
+    int treatsSpent{0};
+    auto treatsSpentCount() { return treatsSpent; }
+    void getTreat(Cat& cat)
+    {
+        ++treatsSpent;
+        cat.meow();
+    }
+    void getPetted(Cat& cat)
+    {
+        cat.purr();
+        cat.purr();
+    }
+    void getTreat(Dog& dog)
+    {
+        ++treatsSpent;
+        dog.sit();
+    }
+    void getPetted(Dog& dog)
+    {
+        dog.sit();
+        dog.shed();
+    }
 };
 
 int main()
