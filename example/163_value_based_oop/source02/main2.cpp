@@ -1,6 +1,8 @@
 #include <memory>
 #include <vector>
-
+#include <iostream>
+#include <string_view>
+#include <string>
 struct Interface
 {
     virtual ~Interface() = default;
@@ -87,17 +89,25 @@ public:
 
 struct Cat
 {
-    void meow() {}
-    void purr() {}
-    void scratch() {}
+    std::string name_;
+    Cat(std::string_view name): name_(name) {}
+    void meow() { std::cout << name_ << " meow" << std::endl; }
+    void purr() { std::cout << name_ << " purr" << std::endl; }
+    void scratch() { std::cout << name_ << " scratch" << std::endl; }
 };
 struct Dog
 {
-    void bark() {};
-    void sit() {};
+    std::string name_;
+    Dog(std::string_view name): name_(name) {}
+    void bark() { std::cout << name_ << " bark" << std::endl; };
+    void sit() { std::cout << name_ << " sit" << std::endl; };
     int hairsShedded{0};
     auto hairsSheddedCount() { return hairsShedded; }
-    void shed() { hairsShedded += 1'000'000; }
+    void shed()
+    {
+        hairsShedded += 1'000'000;
+        std::cout << name_ << " shed " << hairsShedded << std::endl;
+    }
 };
 
 struct PetStrategy1
@@ -144,23 +154,22 @@ struct PetStrategy2
 
 int main()
 {
-    auto rover{Dog()};
-    auto lazy{Cat()};
+    //auto rover{Dog("rover")};
+    auto rover{std::make_shared<Dog>("rover")};
+    auto lazy{Cat("lazy")};
     auto s1{PetStrategy1()};
-    auto s2{PetStrategy2()};
-    // StatelessTE q0{rover, s1};
-    // StatelessTE q1{rover, s2};
-    // StatelessTE q2{lazy, s1};
-    // StatelessTE q3{lazy, s2};
-    // auto v{std::vector<StatelessTE>{q0,q1,q2,q3}};
+    auto s2{std::make_shared<PetStrategy2>()};
     std::vector<StatefulTE> v;
-    v.emplace_back(StatefulTE(rover, s2));
+    v.emplace_back(StatefulTE(rover, s1));
     v.emplace_back(StatefulTE(lazy, s1));
-
+    v.emplace_back(StatefulTE(rover, s2));
+    v.emplace_back(StatefulTE(lazy, s2));
     for (auto&& e : v)
     {
         e.getTreat();
         e.getPetted();
+        std::cout << "rover hairs shed: " <<  rover->hairsSheddedCount() << std::endl;
+        std::cout << "s2 treats: " << s2->treatsSpentCount() << std::endl;
     }
     return 0;
 }
