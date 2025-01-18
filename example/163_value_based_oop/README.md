@@ -1,7 +1,9 @@
 # Introduction
 
 Here I'm learning about type erasure. This is a programming pattern
-that helps with decoupling dependencies.
+that helps with decoupling dependencies. By this two problems are avoided:
+1) Lots of derived classes that need to be updated whenever the a strategy is changed.
+2) Header-only libraries (and slow the resulting slow compilation times) because of many templates
 
 A diagram that shows what kind of issues this solves is shown in this
 short talk:
