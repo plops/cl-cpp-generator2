@@ -60,6 +60,23 @@
       memory
       )
 
+     (defclass+ UniversalTE ()
+       "private:"
+       (space std--unique_ptr<Interface> pimpl)
+       (defclass+ Interface ()
+	 "public:"
+	 (space virtual (~Interface) = default)
+	 (space virtual void (getTreat) = 0)
+	 (space virtual void (getPetted) = 0))
+       (space template (angle typename Type)
+	      struct is_shared_ptr ":" std--false_type (progn))
+       (space template (angle typename Type)
+	      struct is_shared_ptr (angle std--shared_ptr
+					  (angle Type)
+					  )
+	      (progn))
+       "public:")
+
 
      )
    :omit-parens t

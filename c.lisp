@@ -1242,7 +1242,7 @@ emit-c into a string. Except lists: Those stay lists."
 		  (angle
 		   (let ((args (cdr code)))
 		     (m 'angle
-			(format nil "<~{~a~^, ~}>" (mapcar #'emit args)))))
+			(format nil "<~{~a~^ ~}>" (mapcar #'emit args)))))
 		  (bracket
 		   ;; bracket {args}*
 		   (let ((args (cdr code)))
