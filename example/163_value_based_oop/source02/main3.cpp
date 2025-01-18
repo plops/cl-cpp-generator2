@@ -1,3 +1,4 @@
+#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -51,11 +52,11 @@ struct Implementation : public Interface
     {}
     void getTreat() override
     {
-        strategy.getTreat(object);
+        strategy_().getTreat(object_());
     }
     void getPetted() override
     {
-        strategy.getPetted(object);
+        strategy_().getPetted(object_());
     }
 };
 
@@ -113,23 +114,23 @@ struct PetStrategy2
 
 int main()
 {
-    auto rover{Dog()};
+    auto rover{std::make_shared<Dog>()};
+    auto bella{Dog()};
     auto lazy{Cat()};
     auto s1{PetStrategy1()};
-    auto s2{PetStrategy2()};
-    // StatelessTE q0{rover, s1};
-    // StatelessTE q1{rover, s2};
-    // StatelessTE q2{lazy, s1};
-    // StatelessTE q3{lazy, s2};
-    // auto v{std::vector<StatelessTE>{q0,q1,q2,q3}};
+    auto s2{std::make_shared<PetStrategy2>()};
+
     std::vector<UniversalTE> v;
     v.emplace_back(UniversalTE(rover, s2));
     v.emplace_back(UniversalTE(lazy, s1));
+    v.emplace_back(UniversalTE(bella, s2));
 
     for (auto&& e : v)
     {
         e.getTreat();
         e.getPetted();
+        std::cout << "s2 treats: " << s2->treatsSpentCount() << std::endl;
+        std::cout << "rover shed: " << rover->hairsSheddedCount() << std::endl;
     }
     return 0;
 }
