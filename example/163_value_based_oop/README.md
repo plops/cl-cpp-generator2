@@ -3,6 +3,13 @@
 Here I'm learning about type erasure. This is a programming pattern
 that helps with decoupling dependencies.
 
+A diagram that shows what kind of issues this solves is shown in this
+short talk:
+'MUC++_Klaus_Iglberger_-_A_Brief_Introduction_to_Type_Erasure-[SPelQUPcHQQ]'
+at minute 8:00.
+
+
+
 
 # References
 
