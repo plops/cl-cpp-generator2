@@ -87,20 +87,20 @@ struct Dog
     void bark() {};
     void sit() {};
     int hairsShedded{0};
-    auto hairsSheddedCount() { return hairsShedded; }
+    [[nodiscard]] auto hairsSheddedCount() const { return hairsShedded; }
     void shed() { hairsShedded += 1'000'000; }
 };
 
 struct PetStrategy1
 {
-    void getTreat(Cat& cat)
+    static void getTreat(Cat& cat)
     {
         cat.meow();
         cat.scratch();
     }
-    void getPetted(Cat& cat) { cat.purr(); }
-    void getTreat(Dog& dog) { dog.sit(); }
-    void getPetted(Dog& dog)
+    static void getPetted(Cat& cat) { cat.purr(); }
+    static void getTreat(Dog& dog) { dog.sit(); }
+    static void getPetted(Dog& dog)
     {
         dog.bark();
         dog.shed();
@@ -110,13 +110,13 @@ struct PetStrategy1
 struct PetStrategy2
 {
     int treatsSpent{0};
-    auto treatsSpentCount() { return treatsSpent; }
+    [[nodiscard]] auto treatsSpentCount() const { return treatsSpent; }
     void getTreat(Cat& cat)
     {
         ++treatsSpent;
         cat.meow();
     }
-    void getPetted(Cat& cat)
+    static void getPetted(Cat& cat)
     {
         cat.purr();
         cat.purr();
@@ -126,7 +126,7 @@ struct PetStrategy2
         ++treatsSpent;
         dog.sit();
     }
-    void getPetted(Dog& dog)
+    static void getPetted(Dog& dog)
     {
         dog.sit();
         dog.shed();
@@ -142,9 +142,9 @@ int main()
     auto s2{std::make_shared<PetStrategy2>()};
 
     std::vector<UniversalTE> v;
-    v.emplace_back(UniversalTE(rover, s2));
-    v.emplace_back(UniversalTE(lazy, s1));
-    v.emplace_back(UniversalTE(bella, s2));
+    v.emplace_back(rover, s2);
+    v.emplace_back(lazy, s1);
+    v.emplace_back(bella, s2);
 
     for (auto&& e : v)
     {
