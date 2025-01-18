@@ -1,4 +1,5 @@
 #include <memory>
+#include <vector>
 
 struct Interface
 {
@@ -85,15 +86,15 @@ int main()
     auto lazy{Cat()};
     auto s1{PetStrategy1()};
     auto s2{PetStrategy2()};
-    StatelessTE q0{rover, s1};
-    StatelessTE q1{rover, s2};
-    StatelessTE q2{lazy, s1};
-    StatelessTE q3{lazy, s2};
-    auto v{std::vector<StatelessTE>{q0,q1,q2,q3}};
-    // std::vector<StatelessTE> v;
-    // v.emplace_back(StatelessTE(rover, s2));
-    // v.emplace_back(StatelessTE(lazy, s1));
-    //
+    // StatelessTE q0{rover, s1};
+    // StatelessTE q1{rover, s2};
+    // StatelessTE q2{lazy, s1};
+    // StatelessTE q3{lazy, s2};
+    // auto v{std::vector<StatelessTE>{q0,q1,q2,q3}};
+    std::vector<StatelessTE> v;
+    v.emplace_back(StatelessTE(rover, s2));
+    v.emplace_back(StatelessTE(lazy, s1));
+
     for (auto&& e : v)
     {
         e.getTreat();
