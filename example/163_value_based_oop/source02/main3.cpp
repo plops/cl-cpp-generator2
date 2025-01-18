@@ -71,35 +71,43 @@ public:
             std::forward<Object>(object), std::forward<Strategy>(strategy)))
     {
     }
-    void getTreat() { pimpl->getTreat(); }
-    void getPetted() { pimpl->getPetted(); }
+    void getTreat() const { pimpl->getTreat(); }
+    void getPetted() const { pimpl->getPetted(); }
 };
 
 
 struct Cat
 {
-    void meow() {}
-    void purr() {}
-    void scratch() {}
+    std::string name;
+    explicit Cat(std::string_view name) : name(name) {}
+    void meow() const { std::cout << "cat meow " << name << std::endl; }
+    void purr() const { std::cout << "cat purr " << name << std::endl; }
+    void scratch() const { std::cout << "cat scratch " << name << std::endl; }
 };
 struct Dog
 {
-    void bark() {};
-    void sit() {};
+    std::string name;
+    explicit Dog(std::string_view name) : name(name) {}
+    void bark() const { std::cout << "dog bark " << name << std::endl; };
+    void sit() const { std::cout << "dog sit " << name << std::endl; };
     int hairsShedded{0};
     [[nodiscard]] auto hairsSheddedCount() const { return hairsShedded; }
-    void shed() { hairsShedded += 1'000'000; }
+    void shed()
+    {
+        hairsShedded += 1'000'000;
+        std::cout << "hairsShedded: " << hairsShedded << std::endl;
+    }
 };
 
 struct PetStrategy1
 {
-    static void getTreat(Cat& cat)
+    static void getTreat(const Cat& cat)
     {
         cat.meow();
         cat.scratch();
     }
-    static void getPetted(Cat& cat) { cat.purr(); }
-    static void getTreat(Dog& dog) { dog.sit(); }
+    static void getPetted(const Cat& cat) { cat.purr(); }
+    static void getTreat(const Dog& dog) { dog.sit(); }
     static void getPetted(Dog& dog)
     {
         dog.bark();
@@ -111,17 +119,17 @@ struct PetStrategy2
 {
     int treatsSpent{0};
     [[nodiscard]] auto treatsSpentCount() const { return treatsSpent; }
-    void getTreat(Cat& cat)
+    void getTreat(const Cat& cat)
     {
         ++treatsSpent;
         cat.meow();
     }
-    static void getPetted(Cat& cat)
+    static void getPetted(const Cat& cat)
     {
         cat.purr();
         cat.purr();
     }
-    void getTreat(Dog& dog)
+    void getTreat(const Dog& dog)
     {
         ++treatsSpent;
         dog.sit();
@@ -135,9 +143,9 @@ struct PetStrategy2
 
 int main()
 {
-    auto rover{std::make_shared<Dog>()};
-    auto bella{Dog()};
-    auto lazy{Cat()};
+    auto rover{std::make_shared<Dog>("rover")};
+    auto bella{Dog("bella")};
+    auto lazy{Cat("lazy")};
     auto s1{PetStrategy1()};
     auto s2{std::make_shared<PetStrategy2>()};
 
