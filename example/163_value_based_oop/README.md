@@ -1,3 +1,8 @@
+# Introduction
+
+Here I'm learning about type erasure. This is a programming pattern
+that helps with decoupling dependencies.
+
 
 # References
 
