@@ -1,8 +1,8 @@
-#include <memory>
-#include <vector>
 #include <iostream>
-#include <string_view>
+#include <memory>
 #include <string>
+#include <string_view>
+#include <vector>
 struct Interface
 {
     virtual ~Interface() = default;
@@ -47,7 +47,10 @@ public:
     StatefulTE(Object&& object, Strategy&& strategy)
     {
         // object and strategy must be shared_ptr. so if they not already are
-        // the following code will convert them (note that this happens at compile time)
+        // the following code will convert them
+        // note that while this happens at compile time, allocating and deallocating heap objects that are not passed
+        // in as shared ptrs is still wasteful
+        // main3 shows how to use the hybrid universal type erased class
         if constexpr (is_shared_ptr<std::remove_cvref_t<Object>>::value)
         {
             if constexpr (is_shared_ptr<std::remove_cvref_t<Strategy>>::value)
@@ -90,7 +93,7 @@ public:
 struct Cat
 {
     std::string name_;
-    Cat(std::string_view name): name_(name) {}
+    Cat(std::string_view name) : name_(name) {}
     void meow() { std::cout << name_ << " meow" << std::endl; }
     void purr() { std::cout << name_ << " purr" << std::endl; }
     void scratch() { std::cout << name_ << " scratch" << std::endl; }
@@ -98,7 +101,7 @@ struct Cat
 struct Dog
 {
     std::string name_;
-    Dog(std::string_view name): name_(name) {}
+    Dog(std::string_view name) : name_(name) {}
     void bark() { std::cout << name_ << " bark" << std::endl; };
     void sit() { std::cout << name_ << " sit" << std::endl; };
     int hairsShedded{0};
@@ -154,7 +157,7 @@ struct PetStrategy2
 
 int main()
 {
-    //auto rover{Dog("rover")};
+    // auto rover{Dog("rover")};
     auto rover{std::make_shared<Dog>("rover")};
     auto lazy{Cat("lazy")};
     auto s1{PetStrategy1()};
@@ -168,7 +171,7 @@ int main()
     {
         e.getTreat();
         e.getPetted();
-        std::cout << "rover hairs shed: " <<  rover->hairsSheddedCount() << std::endl;
+        std::cout << "rover hairs shed: " << rover->hairsSheddedCount() << std::endl;
         std::cout << "s2 treats: " << s2->treatsSpentCount() << std::endl;
     }
     return 0;
