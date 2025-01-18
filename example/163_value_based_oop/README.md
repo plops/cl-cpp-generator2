@@ -8,6 +8,10 @@ short talk:
 'MUC++_Klaus_Iglberger_-_A_Brief_Introduction_to_Type_Erasure-[SPelQUPcHQQ]'
 at minute 8:00.
 
+Note that in main{,2,3}.cpp the Interface and Implementation classes
+shall be private in StatelessTE, StatefulTE and UniversalTE,
+respectively.
+
 
 
 

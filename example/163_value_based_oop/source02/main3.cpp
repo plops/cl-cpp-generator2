@@ -8,12 +8,41 @@ struct Interface
     virtual void getPetted() = 0;
 };
 
+template <typename Type>
+struct is_shared_ptr : std::false_type
+{
+};
+template <typename Type>
+struct is_shared_ptr<std::shared_ptr<Type>> : std::true_type
+{
+};
+
+
 // Object and Strategy get copied into the templated Implementation class (so we can't keep track of states in these objects)
 template<typename Object, typename Strategy>
 struct Implementation : public Interface
 {
     Object object;
     Strategy strategy;
+
+    // mimic Dog& operator=(...) {...; return *this; }
+
+    auto& object_()
+    {
+        if constexpr (is_shared_ptr<std::remove_cvref_t<Object>>::value)
+            return *object;
+        else
+            return object;
+    }
+
+    auto& strategy_()
+        {
+            if constexpr (is_shared_ptr<std::remove_cvref_t<Strategy>>::value)
+                return *strategy;
+            else
+                return strategy;
+            }
+
 
     template<typename Object2, typename Strategy2>
     Implementation(Object2&& o, Strategy2&& s)
@@ -30,14 +59,16 @@ struct Implementation : public Interface
     }
 };
 
-struct StatelessTE
+
+
+struct UniversalTE
 {
 private:
     std::unique_ptr<Interface> pimpl;
 
 public:
     template <typename Object, typename Strategy>
-    StatelessTE(Object&& object, Strategy&& strategy) :
+    UniversalTE(Object&& object, Strategy&& strategy) :
         pimpl(std::make_unique<Implementation<std::remove_cvref_t<Object>, std::remove_cvref_t<Strategy>>>(
             std::forward<Object>(object), std::forward<Strategy>(strategy)))
     {
@@ -91,9 +122,9 @@ int main()
     // StatelessTE q2{lazy, s1};
     // StatelessTE q3{lazy, s2};
     // auto v{std::vector<StatelessTE>{q0,q1,q2,q3}};
-    std::vector<StatelessTE> v;
-    v.emplace_back(StatelessTE(rover, s2));
-    v.emplace_back(StatelessTE(lazy, s1));
+    std::vector<UniversalTE> v;
+    v.emplace_back(UniversalTE(rover, s2));
+    v.emplace_back(UniversalTE(lazy, s1));
 
     for (auto&& e : v)
     {

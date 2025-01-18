@@ -9,3 +9,7 @@ add_executable(
         dogcat2
         main2.cpp
 )
+add_executable(
+        dogcat3
+        main3.cpp
+)
