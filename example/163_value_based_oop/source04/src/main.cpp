@@ -21,20 +21,26 @@ private:
 
   public:
     void object() {
-      if (constexpr is_shared_ptr<std::remove_cvref_t<Object>>::value) {
+      if constexpr (is_shared_ptr<std::remove_cvref_t<Object>>::value) {
         return *object_;
       } else {
-        return object;
-      }
+        return object_;
+      };
     }
     void strategy() {
-      if (constexpr is_shared_ptr<std::remove_cvref_t<Strategy>>::value) {
+      if constexpr (is_shared_ptr<std::remove_cvref_t<Strategy>>::value) {
         return *strategy_;
       } else {
-        return strategy;
-      }
+        return strategy_;
+      };
     }
   };
+  template <typename Object2, typename Strategy2>
+  void Implementation(Object2 &&o, Strategy2 &&s)
+      : object_{std::forward(<Object2>)(o)},
+        strategy_{std::forward(<Strategy2>)(s)} {};
 
 public:
+  void getTreat() override { strategy().getTreat(object()); }
+  void getPetted() override { strategy().getPetted(object()); }
 };

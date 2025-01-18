@@ -82,22 +82,42 @@
 		(space Strategy strategy_)
 		"public:"
 		(defmethod object ()
-		  (if (space constexpr (space is_shared_ptr
-					(angle (space
-						std--remove_cvref_t
-						(angle Object)))
-					--value))
+		  (if-constexpr (space is_shared_ptr
+			     (angle (space
+				     std--remove_cvref_t
+				     (angle Object)))
+			     --value)
 		      (return *object_)
-		      (return object)))
+		      (return object_)))
 		(defmethod strategy ()
-		  (if (space constexpr (space is_shared_ptr
-					(angle (space
-						std--remove_cvref_t
-						(angle Strategy)))
-					--value))
+		  (if-constexpr
+		   (space is_shared_ptr
+			  (angle (space
+				  std--remove_cvref_t
+				  (angle Strategy)))
+			  --value)
 		      (return *strategy_)
-		      (return strategy)))))
-       "public:")
+		      (return strategy_)))))
+       (space template (angle "typename Object2"
+			      "typename Strategy2")
+	      (defmethod Implementation (o s)
+		(declare (type Object2&& o)
+			 (type Strategy2&& s)
+			 (construct (object_ (space std--forward
+						    ((angle Object2) o)))
+				    (strategy_ (space std--forward
+						    ((angle Strategy2) s))))))
+	      )
+       
+       "public:"
+       (defmethod getTreat ()
+	 (declare (override))
+	 (dot (strategy)
+	      (getTreat (object))))
+       (defmethod getPetted ()
+	 (declare (override))
+	 (dot (strategy)
+	      (getPetted (object)))))
 
 
      )
