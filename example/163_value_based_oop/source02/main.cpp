@@ -8,6 +8,27 @@ struct Interface
 };
 
 
+template<typename Object, typename Strategy>
+struct Implementation : public Interface
+{
+    Object object;
+    Strategy strategy;
+
+    template<typename Object2, typename Strategy2>
+    Implementation(Object2&& o, Strategy2&& s)
+        : object(std::forward<Object2>(o))
+    , strategy(std::forward<Strategy2>(s))
+    {}
+    void getTreat() override
+    {
+        strategy.getTreat(object);
+    }
+    void getPetted() override
+    {
+        strategy.getPetted(object);
+    }
+};
+
 class StatelessTE
 {
 private:
@@ -24,8 +45,54 @@ public:
     void getPetted() { pimpl->getPetted(); }
 };
 
+
+struct Cat
+{
+    void meow(){}
+    void purr(){}
+    void scratch(){}
+};
+struct Dog
+{
+    void bark(){};
+    void sit(){};
+    int hairsShedded{0};
+    auto hairsSheddedCount(){ return hairsShedded; }
+    void shed(){ hairsShedded += 1'000'000;}
+};
+
+struct PetStrategy1
+{
+    void getTreat(Cat& cat){ cat.meow(); cat.scratch(); }
+    void getPetted(Cat& cat){ cat.purr(); }
+    void getTreat(Dog& dog){ dog.sit(); }
+    void getPetted(Dog& dog){ dog.bark(); dog.shed(); }
+};
+
+struct PetStrategy2
+{
+    int treatsSpent{   0};
+    auto treatsSpentCount(){ return treatsSpent; }
+    void getTreat(Cat& cat){ ++treatsSpent; cat.meow(); }
+    void getPetted(Cat& cat){ cat.purr(); cat.purr(); }
+    void getTreat(Dog& dog){ ++treatsSpent; dog.sit(); }
+    void getPetted(Dog& dog){ dog.sit(); dog.shed(); }
+};
+
 int main()
 {
-    StatelessTE em{};
+    auto rover{Dog()};
+    auto lazy{Cat()};
+    auto s1{PetStrategy1()};
+    auto s2{PetStrategy2()};
+    std::vector<StatelessTE > v;
+    v.emplace_back(StatelessTE(rover, s2));
+    v.emplace_back(StatelessTE(lazy, s1));
+
+    for (auto&& e : v)
+    {
+        e.getTreat();
+        e.getPetted();
+    }
     return 0;
 }
