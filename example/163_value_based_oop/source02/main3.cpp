@@ -3,7 +3,7 @@
 #include <vector>
 
 
-struct UniversalTE
+class UniversalTE
 {
 private:
     struct Interface
