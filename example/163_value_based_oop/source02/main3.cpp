@@ -27,8 +27,8 @@ private:
     };
 
 
-    // Object and Strategy get copied into the templated Implementation class (so we can't keep track of states in these
-    // objects)
+    // Object and Strategy get copied (potentially as a reference) into the templated Implementation class (so we can't
+    // keep track of states in these objects)
     template <typename Object, typename Strategy>
     struct Implementation : public Interface
     {
