@@ -1,7 +1,7 @@
 
 # References
 
-## Youtube video
+## Youtube video 1 
 - There_is_no_silver_bullet_-_Klaus_Iglberger_-_Meeting_C++_2024
 - 5F3d3LocM3k
 
@@ -68,3 +68,7 @@ type erasure
     solution for replacing inheritance hierarchies due to its
     limitations in terms of type relationships and its tendency to
     push designs towards a template-heavy approach.
+
+## Youtube Video 2
+
+MUC++_Nicolas_Chausse_-_Two_Kinds_of_Type_Erasure-[QgMQPqVc6JE]
