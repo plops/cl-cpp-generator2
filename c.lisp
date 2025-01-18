@@ -794,7 +794,7 @@ of digits.
 		;(substitute #\e #\d (format nil "~,vG" digits a))
 		))
 (defparameter *operators*
-	`(comma semicolon space space-n comments paren* paren angle bracket curly designated-initializer new indent split-header-and-code do0 pragma include include<> progn namespace do defclass+ defclass protected public defmethod defun defun* defun+ return co_return co_await co_yield throw cast let setf not bitwise-not deref ref + - * ^ xor & / or and logior logand = /= *= ^= <= < != == % << >> incf decf string string-r string-u8 char hex ? if when unless dot aref -> lambda case for for-range dotimes foreach while deftype struct defstruct0 handler-case)
+	`(comma semicolon space space-n comments paren* paren angle bracket curly designated-initializer new indent split-header-and-code do0 pragma include include<> progn namespace do defclass+ defclass protected public defmethod defun defun* defun+ return co_return co_await co_yield throw cast let setf not bitwise-not deref ref + - * ^ xor & / or and logior logand = /= *= ^= <= < != == % << >> incf decf string string-r string-u8 char hex ? if when unless if-constexpr dot aref -> lambda case for for-range dotimes foreach while deftype struct defstruct0 handler-case)
   "This variable stores a list of operators that are supported by the EMIT-C function.
  It is used in the PAREN* form to determine whether parentheses are needed.")
 
@@ -1242,7 +1242,7 @@ emit-c into a string. Except lists: Those stay lists."
 		  (angle
 		   (let ((args (cdr code)))
 		     (m 'angle
-			(format nil "<~{~a~^ ~}>" (mapcar #'emit args)))))
+			(format nil "<~{~a~^, ~}>" (mapcar #'emit args)))))
 		  (bracket
 		   ;; bracket {args}*
 		   (let ((args (cdr code)))
@@ -1680,6 +1680,14 @@ emit-c into a string. Except lists: Those stay lists."
 		  (if (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
 			(with-output-to-string (s)
 			  (format s "if ( ~a ) ~a"
+				  (emit condition)
+				  (emit `(progn ,true-statement)))
+			  (when false-statement
+			    (format s " else ~a"
+				    (emit `(progn ,false-statement)))))))
+		  (if-constexpr (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
+			(with-output-to-string (s)
+			  (format s "if constexpr ( ~a ) ~a"
 				  (emit condition)
 				  (emit `(progn ,true-statement)))
 			  (when false-statement

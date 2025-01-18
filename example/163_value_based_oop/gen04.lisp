@@ -62,19 +62,41 @@
 
      (defclass+ UniversalTE ()
        "private:"
-       (space std--unique_ptr<Interface> pimpl)
+       (space std--unique_ptr (angle Interface) pimpl)
        (defclass+ Interface ()
 	 "public:"
 	 (space virtual (~Interface) = default)
 	 (space virtual void (getTreat) = 0)
 	 (space virtual void (getPetted) = 0))
-       (space template (angle typename Type)
+       (space template (angle "typename Type")
 	      struct is_shared_ptr ":" std--false_type (progn))
-       (space template (angle typename Type)
-	      struct is_shared_ptr (angle std--shared_ptr
-					  (angle Type)
-					  )
+       (space template (angle "typename Type")
+	      struct is_shared_ptr (angle (space std--shared_ptr
+						 (angle Type)))
 	      (progn))
+       (space (angle "typename Object"
+		     "typename Strategy")
+	      (defclass+ Implementation ("public Interface")
+		"private:"
+		(space Object object_)
+		(space Strategy strategy_)
+		"public:"
+		(defmethod object ()
+		  (if (space constexpr (space is_shared_ptr
+					(angle (space
+						std--remove_cvref_t
+						(angle Object)))
+					--value))
+		      (return *object_)
+		      (return object)))
+		(defmethod strategy ()
+		  (if (space constexpr (space is_shared_ptr
+					(angle (space
+						std--remove_cvref_t
+						(angle Strategy)))
+					--value))
+		      (return *strategy_)
+		      (return strategy)))))
        "public:")
 
 

@@ -39,7 +39,7 @@ private:
 
         auto& object_()
         {
-            if constexpr (is_shared_ptr<std::remove_cvref_t<Object>>::value)
+            if (constexpr (is_shared_ptr<std::remove_cvref_t<Object>>::value))
                 return *object;
             else
                 return object;
