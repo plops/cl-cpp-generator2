@@ -15,7 +15,7 @@ shall be private in StatelessTE, StatefulTE and UniversalTE,
 respectively.
 
 
-source02 has interface and implementation that are hidden by pimple
+source02 has interface and implementation that are hidden by pimpl
 in source01 these are called concept and model, respectively (which apparently is the naming convention in programming pattern literature)
 
 # References
