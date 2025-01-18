@@ -2,7 +2,7 @@
 #include <memory>
 #include <vector>
 
-
+// TE stands for type elimination
 class UniversalTE
 {
 private:
