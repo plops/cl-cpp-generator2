@@ -239,6 +239,13 @@ where params .. ((:pname alpha :type int) ...)"
 				       `(space std--forward
 					       (angle ,type)
 					       (paren ,object))))))))))
+	 ,@(loop for e in functions
+		   collect
+		   (destructuring-bind (&key name return params code) e
+		     `(defmethod ,name ()
+			(declare (const)
+				 (values ,return))
+			     (-> pimpl (,name)))))
 	 ))
     )
   (write-source 

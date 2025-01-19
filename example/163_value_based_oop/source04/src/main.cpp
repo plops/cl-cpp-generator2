@@ -35,10 +35,10 @@ private:
         return strategy_;
       };
     }
-    template <typename Object456, typename Strategy457>
-    Implementation(Object456 &&object456, Strategy457 &&strategy457)
-        : object_{std::forward<Object456>(object456)},
-          strategy_{std::forward<Strategy457>(strategy457)} {}
+    template <typename Object461, typename Strategy462>
+    Implementation(Object461 &&object461, Strategy462 &&strategy462)
+        : object_{std::forward<Object461>(object461)},
+          strategy_{std::forward<Strategy462>(strategy462)} {}
     virtual void getTreat() override { strategy().getTreat(object()); }
     virtual void getPetted() override { strategy().getPetted(object()); };
   };
@@ -50,4 +50,6 @@ public:
                                               std::__remove_cvref_t<Strategy>>>(
             std::forward<Object>(object_),
             std::forward<Strategy>(strategy_))} {};
+  void getTreat() const { pimpl->getTreat(); }
+  void getPetted() const { pimpl->getPetted(); }
 };
