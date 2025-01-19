@@ -1,10 +1,6 @@
-#include <format>
-#include <iostream>
 #include <memory>
 #include <type_traits>
-#include <vector>
 class UniversalTE {
-private:
   class Interface {
   public:
     virtual ~Interface() = default;
@@ -15,7 +11,7 @@ private:
   template <typename Type> struct is_shared_ptr : std::false_type {};
   template <typename Type> struct is_shared_ptr<std::shared_ptr<Type>> {};
   template <typename Object, typename Strategy>
-  class Implementation : public Interface {
+  class Implementationation final : public Interface {
   private:
     Object object_;
     Strategy strategy_;
@@ -35,10 +31,10 @@ private:
         return strategy_;
       };
     }
-    template <typename Object473, typename Strategy474>
-    Implementation(Object473 &&object473, Strategy474 &&strategy474)
-        : object_{std::forward<Object473>(object473)},
-          strategy_{std::forward<Strategy474>(strategy474)} {}
+    template <typename Object266, typename Strategy267>
+    Implementation(Object266 &&object266, Strategy267 &&strategy267)
+        : object_{std::forward<Object266>(object266)},
+          strategy_{std::forward<Strategy267>(strategy267)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
@@ -50,6 +46,7 @@ public:
                                               std::__remove_cvref_t<Strategy>>>(
             std::forward<Object>(object_),
             std::forward<Strategy>(strategy_))} {};
+  
   void getTreat() const { pimpl->getTreat(); }
   void getPetted() const { pimpl->getPetted(); }
 };

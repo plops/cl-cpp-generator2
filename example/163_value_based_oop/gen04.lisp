@@ -128,8 +128,6 @@ where params .. ((:pname alpha :type int) ...)"
 				(intern (string-upcase (format nil "~a" e)))))
 	   )
       `(defclass+ ,name ()
-	 "private:"
-	 
 	 (defclass+ Interface ()
 	   "public:"
 	   (space virtual (~Interface) = default)
@@ -155,7 +153,7 @@ where params .. ((:pname alpha :type int) ...)"
 		(angle ,@(loop for ty in typenames
 			       collect
 			       (format nil "typename ~a" ty)))
-		(defclass+ Implementation "public Interface"
+		(defclass+ "Implementation final" "public Interface"
 		  "private:"
 		  ,@(loop for type in typenames
 			  and object in type-objects
@@ -255,9 +253,9 @@ where params .. ((:pname alpha :type int) ...)"
 		     *source-dir*))
    `(do0
      (include<>
-      iostream
-      format
-      vector
+      ;iostream
+      ;format
+      ;vector
       memory
       type_traits
       )
