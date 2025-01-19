@@ -203,7 +203,7 @@ where params .. ((:pname alpha :type int) ...)"
 				       p
 				     `(space ,type ,pname)))
 		      (declare (override)
-			       (virtual)
+			       ;(virtual)
 			       (values ,return))
 		      ,code)))
 		)))
