@@ -30,10 +30,10 @@ class UniversalTE {
         return strategy_;
       };
     }
-    template <typename Object313, typename Strategy314>
-    Implementation(Object313 &&object313, Strategy314 &&strategy314)
-        : object_{std::forward<Object313>(object313)},
-          strategy_{std::forward<Strategy314>(strategy314)} {}
+    template <typename Object319, typename Strategy320>
+    Implementation(Object319 &&object319, Strategy320 &&strategy320)
+        : object_{std::forward<Object319>(object319)},
+          strategy_{std::forward<Strategy320>(strategy320)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
@@ -46,32 +46,22 @@ public:
             std::forward<Object>(object_),
             std::forward<Strategy>(strategy_))} {};
   // copy and move constructors
-  UniversalTE(const UniversalTE& other)
-    : pimpl(other.pimpl)
-  {
-  }
-
-  UniversalTE(UniversalTE&& other) noexcept
-    : pimpl(std::move(other.pimpl))
-  {
-  }
-
-  UniversalTE& operator=(const UniversalTE& other)
-  {
-    if (this == &other)
+  UniversalTE(const UniversalTE &other) : pimpl{other.pimpl} {}
+  UniversalTE(UniversalTE &&other) noexcept : pimpl{std::move(other.pimpl)} {}
+  UniversalTE &operator=(const UniversalTE &other) {
+    if (this == &other) {
       return *this;
+    }
     pimpl = other.pimpl;
     return *this;
   }
-
-  UniversalTE& operator=(UniversalTE&& other) noexcept
-  {
-    if (this == &other)
+  UniversalTE &operator=(UniversalTE &&other) noexcept {
+    if (this == &other) {
       return *this;
+    }
     pimpl = std::move(other.pimpl);
     return *this;
   }
-
   void getTreat() const { pimpl->getTreat(); }
   void getPetted() const { pimpl->getPetted(); }
 };

@@ -254,6 +254,14 @@ where params .. ((:pname alpha :type int) ...)"
 	     (return *this))
 	   (setf pimpl other.pimpl)
 	   (return *this))
+	 (defmethod operator= (other)
+	   (declare (values ,(format nil "~a&" name))
+		    (noexcept)
+		    (type ,(format nil "~a&&" name) other))
+	   (when (== this &other)
+	     (return *this))
+	   (setf pimpl (std--move other.pimpl))
+	   (return *this))
 	 
 	 ,@(loop for e in functions
 		 collect
