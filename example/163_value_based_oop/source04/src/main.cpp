@@ -11,8 +11,7 @@ class UniversalTE {
   template <typename Type> struct is_shared_ptr : std::false_type {};
   template <typename Type> struct is_shared_ptr<std::shared_ptr<Type>> {};
   template <typename Object, typename Strategy>
-  class Implementationation final : public Interface {
-  private:
+  class Implementation final : public Interface {
     Object object_;
     Strategy strategy_;
 
@@ -31,10 +30,10 @@ class UniversalTE {
         return strategy_;
       };
     }
-    template <typename Object266, typename Strategy267>
-    Implementation(Object266 &&object266, Strategy267 &&strategy267)
-        : object_{std::forward<Object266>(object266)},
-          strategy_{std::forward<Strategy267>(strategy267)} {}
+    template <typename Object313, typename Strategy314>
+    Implementation(Object313 &&object313, Strategy314 &&strategy314)
+        : object_{std::forward<Object313>(object313)},
+          strategy_{std::forward<Strategy314>(strategy314)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
@@ -46,7 +45,33 @@ public:
                                               std::__remove_cvref_t<Strategy>>>(
             std::forward<Object>(object_),
             std::forward<Strategy>(strategy_))} {};
-  
+  // copy and move constructors
+  UniversalTE(const UniversalTE& other)
+    : pimpl(other.pimpl)
+  {
+  }
+
+  UniversalTE(UniversalTE&& other) noexcept
+    : pimpl(std::move(other.pimpl))
+  {
+  }
+
+  UniversalTE& operator=(const UniversalTE& other)
+  {
+    if (this == &other)
+      return *this;
+    pimpl = other.pimpl;
+    return *this;
+  }
+
+  UniversalTE& operator=(UniversalTE&& other) noexcept
+  {
+    if (this == &other)
+      return *this;
+    pimpl = std::move(other.pimpl);
+    return *this;
+  }
+
   void getTreat() const { pimpl->getTreat(); }
   void getPetted() const { pimpl->getPetted(); }
 };

@@ -154,7 +154,7 @@ where params .. ((:pname alpha :type int) ...)"
 			       collect
 			       (format nil "typename ~a" ty)))
 		(defclass+ "Implementation final" "public Interface"
-		  "private:"
+		  ;"private:"
 		  ,@(loop for type in typenames
 			  and object in type-objects
 			  collect
@@ -237,13 +237,31 @@ where params .. ((:pname alpha :type int) ...)"
 				       `(space std--forward
 					       (angle ,type)
 					       (paren ,object))))))))))
+	 (comments "copy and move constructors")
+	 (defmethod ,name (other)
+	   (declare (values :constructor)
+		    (type ,(format nil "const ~a&" name) other)
+		    (construct (pimpl other.pimpl))))
+	 (defmethod ,name (other)
+	   (declare (values :constructor)
+		    (type ,(format nil "~a&&" name) other)
+		    (noexcept)
+		    (construct (pimpl (std--move other.pimpl)))))
+	 (defmethod operator= (other)
+	   (declare (values ,(format nil "~a&" name))
+		    (type ,(format nil "const ~a&" name) other))
+	   (when (== this &other)
+	     (return *this))
+	   (setf pimpl other.pimpl)
+	   (return *this))
+	 
 	 ,@(loop for e in functions
-		   collect
-		   (destructuring-bind (&key name return params code) e
-		     `(defmethod ,name ()
-			(declare (const)
-				 (values ,return))
-			     (-> pimpl (,name)))))
+		 collect
+		 (destructuring-bind (&key name return params code) e
+		   `(defmethod ,name ()
+		      (declare (const)
+			       (values ,return))
+		      (-> pimpl (,name)))))
 	 ))
     )
   (write-source 
