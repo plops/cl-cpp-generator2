@@ -35,10 +35,10 @@ private:
         return strategy_;
       };
     }
-    template <typename Object461, typename Strategy462>
-    Implementation(Object461 &&object461, Strategy462 &&strategy462)
-        : object_{std::forward<Object461>(object461)},
-          strategy_{std::forward<Strategy462>(strategy462)} {}
+    template <typename Object467, typename Strategy468>
+    Implementation(Object467 &&object467, Strategy468 &&strategy468)
+        : object_{std::forward<Object467>(object467)},
+          strategy_{std::forward<Strategy468>(strategy468)} {}
     virtual void getTreat() override { strategy().getTreat(object()); }
     virtual void getPetted() override { strategy().getPetted(object()); };
   };
@@ -53,3 +53,5 @@ public:
   void getTreat() const { pimpl->getTreat(); }
   void getPetted() const { pimpl->getPetted(); }
 };
+
+int main() {}

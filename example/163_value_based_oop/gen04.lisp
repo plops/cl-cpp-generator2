@@ -271,7 +271,8 @@ where params .. ((:pname alpha :type int) ...)"
        :typenames `(Object Strategy))
      
      
-
+     (defun main ()
+       (declare (values int)))
 
      )
    :omit-parens t
