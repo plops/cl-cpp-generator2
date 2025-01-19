@@ -13,8 +13,8 @@ private:
   };
   template <typename Type> struct is_shared_ptr : std::false_type {};
   template <typename Type> struct is_shared_ptr<std::shared_ptr<Type>> {};
-  <typename Object, typename Strategy> class Implementation
-      : public Interface() {
+  template <typename Object, typename Strategy>
+  class Implementation : public Interface() {
   private:
     Object object_;
     Strategy strategy_;
@@ -35,10 +35,10 @@ private:
       };
     }
   };
-  template <typename Object2, typename Strategy2>
-  void Implementation(Object2 &&o, Strategy2 &&s)
-      : object_{std::forward(<Object2>)(o)},
-        strategy_{std::forward(<Strategy2>)(s)} {};
+  template <typename Object334, typename Strategy335>
+  void Implementation(Object334 &&object334, Strategy335 &&strategy335)
+      : object_{std::forward(<Object334>)(object334)},
+        strategy_{std::forward(<Strategy335>)(strategy335)} {};
 
 public:
   void getTreat() override { strategy().getTreat(object()); }
