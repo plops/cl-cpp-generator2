@@ -76,7 +76,7 @@ where params .. ((:pname alpha :type int) ...)"
 	  (space virtual (~Interface) = default)
 	  ,@(loop for e in functions
 		  collect
-		  (destructuring-bind (&key name return params) e
+		  (destructuring-bind (&key name return params code) e
 		    `(space virtual ,return
 			    (,name
 			     ,@(loop for p in params
@@ -132,15 +132,20 @@ where params .. ((:pname alpha :type int) ...)"
 	       )
        
 	"public:"
-	(defmethod getTreat ()
-	  (declare (override)
-		   (values void))
-	  (dot (strategy)
-	       (getTreat (object))))
-	(defmethod getPetted ()
-	  (declare (override))
-	  (dot (strategy)
-	       (getPetted (object))))))
+	,@(loop for e in functions
+		
+		collect
+		  (destructuring-bind (&key name return params code) e
+		    `(defmethod ,name ()
+		       #+nil ,(loop for p in params
+				     collect
+				     (destructuring-bind (&key pname type)
+					 p
+				       `(space ,type ,pname)))
+		       (declare (override)
+				(virtual)
+				(values ,return))
+		       ,code)))))
     )
   (write-source 
    (asdf:system-relative-pathname
@@ -157,8 +162,10 @@ where params .. ((:pname alpha :type int) ...)"
 
      ,(create-type-erasure
        :name `UniversalTE
-       :functions `((:name getTreat :return void :params ())
-		    (:name getPetted :return void :params ()))
+       :functions `((:name getTreat :return void :params () :code (dot (strategy)
+								       (getTreat (object))))
+		    (:name getPetted :return void :params () :code (dot (strategy)
+								       (getPetted (object)))))
        :typenames `(Object Strategy))
      #+nil
      (defclass+ UniversalTE ()
