@@ -60,7 +60,7 @@ public:
       return *this;
     }
     pimpl = std::move(other.pimpl);
-    return *this;
+    return *this;X
   }
   void getTreat() const { pimpl->getTreat(); }
   void getPetted() const { pimpl->getPetted(); }

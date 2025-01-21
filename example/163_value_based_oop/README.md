@@ -18,6 +18,14 @@ respectively.
 source02 has interface and implementation that are hidden by pimpl
 in source01 these are called concept and model, respectively (which apparently is the naming convention in programming pattern literature)
 
+
+# Where to declare the private classes?
+
+According to cpp design chapter "The pimpl idiom" forward declare
+class Implementation in the header file and define the class in the
+cpp file.
+
+
 # References
 
 ## Youtube video 1 
