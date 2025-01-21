@@ -25,6 +25,68 @@ According to cpp design chapter "The pimpl idiom" forward declare
 class Implementation in the header file and define the class in the
 cpp file.
 
+# How to deal with the unique_ptr pimpl?
+
+According to cpp design chapter "The pimpl idiom".  We need to define
+the destructor of the class that contains the pimpl unique_ptr in the
+cpp file:
+
+```
+UniversalTE::~UniversalTE() = default;
+```
+
+Otherwise the compiler will call the destructor of the pimpl
+unique_ptr, crossing the information boundary that the bridge design
+pattern is supposed to uphold.
+
+
+The unique_ptr can't be copied, so in order for the UniversalTE class
+to be useful (copyable) we need to implement according to the rule of
+5. note that the pimpl will not change after initialization and is
+   therefore declared as const:
+   
+```
+std::unique_ptr<Interface> const pimpl;
+```
+
+## Copy constructor 17
+
+```
+UniversalTE::UniversalTE( UniversalTE const& other )
+  : pimpl{ make_unique<Interface>(*other.pimpl) }
+{}
+```
+
+## Copy assignment operator 18
+
+```
+UniversalTE& UniversalTE::operator=( UniversalTE const& other )
+{
+	*pimpl = *other.pimpl;
+	return *this;
+}
+```
+
+## Move constructor 19
+
+allocates new memory with make_unique(), which may fail or throw
+therefore the move constructor is not noexcept
+
+```
+UniversalTE::UniversalTE( UniversalTE&& other )
+  : pimpl{ make_unique<Interface>( std::move(*other.pimpl)) }
+{}
+```
+
+## Move assignment operator 20
+```
+UniversalTE& UniversalTE::operator=( UniversalTE&& other )
+{
+  *pimpl = std::move(*other.pimpl);
+  return *this;
+}
+```
+
 
 # References
 
