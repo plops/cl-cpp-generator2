@@ -19,6 +19,11 @@ source02 has interface and implementation that are hidden by pimpl
 in source01 these are called concept and model, respectively (which apparently is the naming convention in programming pattern literature)
 
 
+|       |                                                                                   |
+| gen04 | use lisp to define the UniversalTE class                                          |
+| gen05 | try to figure out how to declare internal classes with implementation in cpp file |
+|       |                                                                                   |
+
 # Where to declare the private classes?
 
 According to cpp design chapter "The pimpl idiom" forward declare
