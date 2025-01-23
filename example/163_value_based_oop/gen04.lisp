@@ -336,10 +336,10 @@ where params .. ((:pname alpha :type int) ...)"
 		  (construct (name name))))
        (defmethod meow ()
 	 (declare (const))
-	 ,(lprint :msg "meow"))
+	 ,(lprint :msg "meow" :vars `(name)))
        (defmethod scratch ()
 	 (declare (const))
-	 ,(lprint :msg "scratch")))
+	 ,(lprint :msg "scratch" :vars `(name))))
 
      (defclass+ Dog ()
        "public:"
@@ -350,13 +350,13 @@ where params .. ((:pname alpha :type int) ...)"
 		  (construct (name name))))
        (defmethod bark ()
 	 (declare (const))
-	 ,(lprint :msg "bark"))
+	 ,(lprint :msg "bark" :vars `(name)))
        (defmethod sit ()
 	 (declare (const))
-	 ,(lprint :msg "sit"))
+	 ,(lprint :msg "sit" :vars `(name)))
        (defmethod waggle ()
 	 (declare (const))
-	 ,(lprint :msg "waggle")))
+	 ,(lprint :msg "waggle" :vars `(name))))
 
      (defclass+ PetStrategy1 ()
        "public:"

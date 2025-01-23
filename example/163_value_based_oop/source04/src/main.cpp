@@ -36,10 +36,10 @@ class UniversalTE {
         return strategy_;
       };
     }
-    template <typename Object2878, typename Strategy2879>
-    Implementation(Object2878 &&object2878, Strategy2879 &&strategy2879)
-        : object_{std::forward<Object2878>(object2878)},
-          strategy_{std::forward<Strategy2879>(strategy2879)} {}
+    template <typename Object2978, typename Strategy2979>
+    Implementation(Object2978 &&object2978, Strategy2979 &&strategy2979)
+        : object_{std::forward<Object2978>(object2978)},
+          strategy_{std::forward<Strategy2979>(strategy2979)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
@@ -89,16 +89,26 @@ class Cat {
 public:
   std::string name;
   Cat(std::string_view name) : name{name} {}
-  void meow() const { std::cout << "(meow" << ")\n"; }
-  void scratch() const { std::cout << "(scratch" << ")\n"; }
+  void meow() const {
+    std::cout << "(meow" << std::format(":name '{}')\n", name);
+  }
+  void scratch() const {
+    std::cout << "(scratch" << std::format(":name '{}')\n", name);
+  }
 };
 class Dog {
 public:
   std::string name;
   Dog(std::string_view name) : name{name} {}
-  void bark() const { std::cout << "(bark" << ")\n"; }
-  void sit() const { std::cout << "(sit" << ")\n"; }
-  void waggle() const { std::cout << "(waggle" << ")\n"; }
+  void bark() const {
+    std::cout << "(bark" << std::format(":name '{}')\n", name);
+  }
+  void sit() const {
+    std::cout << "(sit" << std::format(":name '{}')\n", name);
+  }
+  void waggle() const {
+    std::cout << "(waggle" << std::format(":name '{}')\n", name);
+  }
 };
 class PetStrategy1 {
 public:
