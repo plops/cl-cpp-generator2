@@ -14,6 +14,7 @@
 						      ))))
 
 (let ()
+  (load "util.lisp")
   (defparameter *source-dir* #P"example/163_value_based_oop/source05/src/")
   (defparameter *full-source-dir* (asdf:system-relative-pathname
 				   'cl-cpp-generator2
@@ -115,8 +116,7 @@
 
 	       (defmethod ,(format nil "~~~a" class-name) ()
 		 (declare
-		  (values :constructor))
-		 )
+		  (values :constructor)))
 	       
 	       
 	       ,@(remove-if
@@ -144,11 +144,16 @@
 				(setf (-> this ,member-name)
 				      ,member-name)))))))
 	       "private:"
+	       (defclass Interface ()
+		 "public:"
+		 (defmethod draw ()
+		   (declare (virtual))))
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
 				  (destructuring-bind (&key name type param doc initform param-name member-name) e
-				    `(space ,type ,member-name))))))))
+				    `(space ,type ,member-name))))))
+     :format t))
   
   (write-source 
    (asdf:system-relative-pathname

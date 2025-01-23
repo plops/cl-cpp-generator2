@@ -7,7 +7,7 @@ class UniversalTE {
     virtual void getTreat() = 0;
     virtual void getPetted() = 0;
   };
-  std::unique_ptr<Interface> pimpl;
+  std::unique_ptr<Interface> const pimpl;
   template <typename Type> struct is_shared_ptr : std::false_type {};
   template <typename Type> struct is_shared_ptr<std::shared_ptr<Type>> {};
   template <typename Object, typename Strategy>
@@ -30,10 +30,10 @@ class UniversalTE {
         return strategy_;
       };
     }
-    template <typename Object319, typename Strategy320>
-    Implementation(Object319 &&object319, Strategy320 &&strategy320)
-        : object_{std::forward<Object319>(object319)},
-          strategy_{std::forward<Strategy320>(strategy320)} {}
+    template <typename Object360, typename Strategy361>
+    Implementation(Object360 &&object360, Strategy361 &&strategy361)
+        : object_{std::forward<Object360>(object360)},
+          strategy_{std::forward<Strategy361>(strategy361)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
@@ -46,21 +46,27 @@ public:
             std::forward<Object>(object_),
             std::forward<Strategy>(strategy_))} {};
   // copy and move constructors
-  UniversalTE(const UniversalTE &other) : pimpl{other.pimpl} {}
-  UniversalTE(UniversalTE &&other) noexcept : pimpl{std::move(other.pimpl)} {}
-  UniversalTE &operator=(const UniversalTE &other) {
+  // copy constructor
+  UniversalTE(UniversalTE const &other)
+      : pimpl{std::make_unique<Interface>(*other.pimpl)} {}
+  // copy assignment operator
+  UniversalTE &operator=(UniversalTE const &other) {
     if (this == &other) {
       return *this;
     }
-    pimpl = other.pimpl;
+    *pimpl = *other.pimpl;
     return *this;
   }
-  UniversalTE &operator=(UniversalTE &&other) noexcept {
+  // move constructor
+  UniversalTE(UniversalTE &&other)
+      : pimpl{std::make_unique<Interface>(std::move(*other.pimpl))} {}
+  // move assignment operator
+  UniversalTE &operator=(UniversalTE &&other) {
     if (this == &other) {
       return *this;
     }
-    pimpl = std::move(other.pimpl);
-    return *this;X
+    *pimpl = std::move(*other.pimpl);
+    return *this;
   }
   void getTreat() const { pimpl->getTreat(); }
   void getPetted() const { pimpl->getPetted(); }
