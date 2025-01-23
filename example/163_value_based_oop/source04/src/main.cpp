@@ -1,4 +1,8 @@
+#include <format>
+#include <iostream>
 #include <memory>
+#include <string>
+#include <string_view>
 #include <type_traits>
 class UniversalTE {
   class Interface {
@@ -30,10 +34,10 @@ class UniversalTE {
         return strategy_;
       };
     }
-    template <typename Object432, typename Strategy433>
-    Implementation(Object432 &&object432, Strategy433 &&strategy433)
-        : object_{std::forward<Object432>(object432)},
-          strategy_{std::forward<Strategy433>(strategy433)} {}
+    template <typename Object510, typename Strategy511>
+    Implementation(Object510 &&object510, Strategy511 &&strategy511)
+        : object_{std::forward<Object510>(object510)},
+          strategy_{std::forward<Strategy511>(strategy511)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
@@ -79,5 +83,19 @@ public:
   void getTreat() const { pimpl->getTreat(); }
   void getPetted() const { pimpl->getPetted(); }
 };
+class Cat {
+public:
+  std::string name;
+  Cat(std::string_view name) : name{name} {}
+  void meow() { std::cout << std::format("(meow)\n"); }
+};
+class PetStrategy1 {
+public:
+  void getTreat(const Cat &cat) { cat.meow(); }
+};
 
-int main() {}
+int main() {
+  auto lazy{Cat("lazy")};
+  auto s1{PetStrategy1()};
+  auto v{std::vector < UniversalTE({lazy, s1})};
+}

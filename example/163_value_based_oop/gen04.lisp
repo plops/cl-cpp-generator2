@@ -299,9 +299,11 @@ where params .. ((:pname alpha :type int) ...)"
 		     *source-dir*))
    `(do0
      (include<>
-      ;iostream
-      ;format
-      ;vector
+      iostream
+      format
+      string
+      string_view
+					;vector
       memory
       type_traits
       )
@@ -313,10 +315,30 @@ where params .. ((:pname alpha :type int) ...)"
 		    (:name getPetted :return void :params () :code (dot (strategy)
 								       (getPetted (object)))))
        :typenames `(Object Strategy))
-     
+
+     (defclass+ Cat ()
+       "public:"
+       (space std--string name)
+       (defmethod Cat (name)
+	 (declare (values :constructor)
+		  (type "std::string_view" name)
+		  (construct (name name))))
+       (defmethod meow ()
+	 ,(lprint :msg "meow")))
+
+     (defclass+ PetStrategy1 ()
+       "public:"
+       (defmethod getTreat (cat)
+	 (declare (type "const Cat&" cat))
+	 (cat.meow)))
      
      (defun main ()
-       (declare (values int)))
+       (declare (values int))
+       (let ((lazy (Cat (string "lazy")))
+	     (s1 (PetStrategy1))
+	     (v (std--vector<UniversalTE
+		 (curly lazy s1))))
+	 ))
 
      )
    :omit-parens t
