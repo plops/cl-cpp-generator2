@@ -249,7 +249,7 @@ where params .. ((:pname alpha :type int) ...)"
 				       `(space std--forward
 					       (angle ,type)
 					       (paren ,object))))))))))
-	 #-nil
+	 #+nil
 	 (do0
 	  (comments "copy and move constructors")
 	  (comments "copy constructor")

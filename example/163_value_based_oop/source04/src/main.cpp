@@ -35,10 +35,10 @@ class UniversalTE {
         return strategy_;
       };
     }
-    template <typename Object1478, typename Strategy1479>
-    Implementation(Object1478 &&object1478, Strategy1479 &&strategy1479)
-        : object_{std::forward<Object1478>(object1478)},
-          strategy_{std::forward<Strategy1479>(strategy1479)} {}
+    template <typename Object1628, typename Strategy1629>
+    Implementation(Object1628 &&object1628, Strategy1629 &&strategy1629)
+        : object_{std::forward<Object1628>(object1628)},
+          strategy_{std::forward<Strategy1629>(strategy1629)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
@@ -50,37 +50,6 @@ public:
                                               std::__remove_cvref_t<Strategy>>>(
             std::forward<Object>(object_),
             std::forward<Strategy>(strategy_))} {};
-  // copy and move constructors
-  // copy constructor
-  template <typename Object, typename Strategy>
-  UniversalTE(const UniversalTE &other)
-      : pimpl{std::make_unique<Implementation<std::__remove_cvref_t<Object>,
-                                              std::__remove_cvref_t<Strategy>>>(
-            *other.pimpl)} {}
-  // copy assignment operator
-  template <typename Object, typename Strategy>
-  UniversalTE &operator=(const UniversalTE &other) {
-    if (this == &other) {
-      return *this;
-    }
-    *pimpl = *other.pimpl;
-    return *this;
-  }
-  // move constructor
-  template <typename Object, typename Strategy>
-  UniversalTE(UniversalTE &&other)
-      : pimpl{std::make_unique<Implementation<std::__remove_cvref_t<Object>,
-                                              std::__remove_cvref_t<Strategy>>>(
-            std::move(*other.pimpl))} {}
-  // move assignment operator
-  template <typename Object, typename Strategy>
-  UniversalTE &operator=(UniversalTE &&other) {
-    if (this == &other) {
-      return *this;
-    }
-    *pimpl = std::move(*other.pimpl);
-    return *this;
-  }
   void getTreat() const { pimpl->getTreat(); }
   void getPetted() const { pimpl->getPetted(); }
 };
