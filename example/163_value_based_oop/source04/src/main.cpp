@@ -35,10 +35,10 @@ class UniversalTE {
         return strategy_;
       };
     }
-    template <typename Object828, typename Strategy829>
-    Implementation(Object828 &&object828, Strategy829 &&strategy829)
-        : object_{std::forward<Object828>(object828)},
-          strategy_{std::forward<Strategy829>(strategy829)} {}
+    template <typename Object1078, typename Strategy1079>
+    Implementation(Object1078 &&object1078, Strategy1079 &&strategy1079)
+        : object_{std::forward<Object1078>(object1078)},
+          strategy_{std::forward<Strategy1079>(strategy1079)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
@@ -50,6 +50,37 @@ public:
                                               std::__remove_cvref_t<Strategy>>>(
             std::forward<Object>(object_),
             std::forward<Strategy>(strategy_))} {};
+  // copy and move constructors
+  // copy constructor
+  template <typename Object, typename Strategy>
+  UniversalTE(const UniversalTE &other)
+      : pimpl{std::make_unique<Implementation<std::__remove_cvref_t<Object>,
+                                              std::__remove_cvref_t<Strategy>>>(
+            *other.pimpl)} {}
+  // copy assignment operator
+  template <typename Object, typename Strategy>
+  UniversalTE &operator=(const UniversalTE &other) {
+    if (this == &other) {
+      return *this;
+    }
+    *pimpl = *other.pimpl;
+    return *this;
+  }
+  // move constructor
+  template <typename Object, typename Strategy>
+  UniversalTE(UniversalTE &&other)
+      : pimpl{std::make_unique<Implementation<std::__remove_cvref_t<Object>,
+                                              std::__remove_cvref_t<Strategy>>>(
+            std::move(*other.pimpl))} {}
+  // move assignment operator
+  template <typename Object, typename Strategy>
+  UniversalTE &operator=(UniversalTE &&other) {
+    if (this == &other) {
+      return *this;
+    }
+    *pimpl = std::move(*other.pimpl);
+    return *this;
+  }
   void getTreat() const { pimpl->getTreat(); }
   void getPetted() const { pimpl->getPetted(); }
 };
@@ -60,6 +91,14 @@ public:
   void meow() const { std::cout << "(meow" << ")\n"; }
   void scratch() const { std::cout << "(scratch" << ")\n"; }
 };
+class Dog {
+public:
+  std::string name;
+  Dog(std::string_view name) : name{name} {}
+  void bark() const { std::cout << "(bark" << ")\n"; }
+  void sit() const { std::cout << "(sit" << ")\n"; }
+  void waggle() const { std::cout << "(waggle" << ")\n"; }
+};
 class PetStrategy1 {
 public:
   void getTreat(const Cat &cat) {
@@ -67,12 +106,15 @@ public:
     cat.scratch();
   }
   void getPetted(const Cat &cat) { cat.meow(); }
+  void getPetted(const Dog &dog) { dog.waggle(); }
+  void getTreat(const Dog &dog) { dog.sit(); }
 };
 
 int main() {
   auto lazy{Cat("lazy")};
+  auto rover{Dog("rover")};
   auto s1{PetStrategy1()};
-  UniversalTE e{lazy, s1};
-  std::vector<UniversalTE> v;
-  v.emplace_back(e);
+  UniversalTE l1{lazy, s1};
+  UniversalTE r1{rover, s1};
+  std::vector<UniversalTE> v{l1};
 }

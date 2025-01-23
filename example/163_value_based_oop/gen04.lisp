@@ -247,14 +247,14 @@ where params .. ((:pname alpha :type int) ...)"
 				       `(space std--forward
 					       (angle ,type)
 					       (paren ,object))))))))))
-	 #+nil
+	 #-nil
 	 (do0
 	  (comments "copy and move constructors")
 	  (comments "copy constructor")
 	  ,template
 	  (defmethod ,name (other)
 	    (declare (values :constructor)
-		     (type ,(format nil "~a const&" name) other)
+		     (type ,(format nil "const ~a&" name) other)
 		     (construct (pimpl (space
 					,make-unique
 					#+nil (space std--make_unique
@@ -266,7 +266,7 @@ where params .. ((:pname alpha :type int) ...)"
 	  ,template
 	  (defmethod operator= (other)
 	    (declare (values ,(format nil "~a&" name))
-		     (type ,(format nil "~a const&" name) other))
+		     (type ,(format nil "const ~a&" name) other))
 	    (when (== this &other)
 	      (return *this))
 	    (setf *pimpl *other.pimpl)
@@ -338,6 +338,23 @@ where params .. ((:pname alpha :type int) ...)"
 	 (declare (const))
 	 ,(lprint :msg "scratch")))
 
+     (defclass+ Dog ()
+       "public:"
+       (space std--string name)
+       (defmethod Dog (name)
+	 (declare (values :constructor)
+		  (type "std::string_view" name)
+		  (construct (name name))))
+       (defmethod bark ()
+	 (declare (const))
+	 ,(lprint :msg "bark"))
+       (defmethod sit ()
+	 (declare (const))
+	 ,(lprint :msg "sit"))
+       (defmethod waggle ()
+	 (declare (const))
+	 ,(lprint :msg "waggle")))
+
      (defclass+ PetStrategy1 ()
        "public:"
        (defmethod getTreat (cat)
@@ -347,17 +364,27 @@ where params .. ((:pname alpha :type int) ...)"
        (defmethod getPetted (cat)
 	 (declare (type "const Cat&" cat))
 	 (cat.meow)
+	 )
+       (defmethod getPetted (dog)
+	 (declare (type "const Dog&" dog))
+	 (dog.waggle)
+	 )
+       (defmethod getTreat (dog)
+	 (declare (type "const Dog&" dog))
+	 (dog.sit)
 	 ))
      
      (defun main ()
        (declare (values int))
        (let ((lazy (Cat (string "lazy")))
+	     (rover (Dog (string "rover")))
 	     (s1 (PetStrategy1))
 	     #+nil (v (std--vector<UniversalTE>
 		 )))
-	 "UniversalTE e{lazy,s1};"
-	 "std::vector<UniversalTE> v;"
-	 (v.emplace_back e)
+	 "UniversalTE l1{lazy,s1};"
+	 "UniversalTE r1{rover,s1};"
+	 "std::vector<UniversalTE> v{l1};"
+	 ;(v.emplace_back l1)
 	 ))
 
      )
