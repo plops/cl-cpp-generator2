@@ -113,7 +113,19 @@
 				)
     "functions .. ((:name getTreat :return void :params ()) ... )
 where params .. ((:pname alpha :type int) ...)"
-    (let* (
+    (let* ((template `(space-n template
+			     (angle ,@(loop for ty in typenames
+				collect
+				(format nil "typename ~a" ty)))))
+	   (make-unique `(space std--make_unique
+				(angle
+				 (space
+				  Implementation
+				  (angle
+				   ,@(loop for type in typenames
+					   collect
+					   `(space std--__remove_cvref_t
+						   (angle ,type))))))))
 	   (type-objects (loop for e in typenames
 			       collect
 			       (intern (string-upcase (format nil "~a_" e)))))
@@ -208,10 +220,9 @@ where params .. ((:pname alpha :type int) ...)"
 	 
        
 	 "public:"
-	 (space template
-		(angle ,@(loop for ty in typenames
-			       collect
-			       (format nil "typename ~a" ty)))
+	 
+	 (space
+	  ,template
 		(defmethod ,name (,@type-objects)
 		  (declare (values :constructor)
 			   ,@(loop for type in typenames
@@ -221,15 +232,8 @@ where params .. ((:pname alpha :type int) ...)"
 			   (construct
 			    (pimpl
 			     (space
-			      std--make_unique
-			      (angle
-			       (space
-				Implementation
-				(angle
-				 ,@(loop for type in typenames
-					 collect
-					 `(space std--__remove_cvref_t
-						 (angle ,type))))))
+			      ,make-unique
+			      
 			      (paren
 			       ,@(loop for type in typenames
 				       and object in type-objects
@@ -239,14 +243,19 @@ where params .. ((:pname alpha :type int) ...)"
 					       (paren ,object))))))))))
 	 (comments "copy and move constructors")
 	 (comments "copy constructor")
+	 ,template
 	 (defmethod ,name (other)
 	   (declare (values :constructor)
 		    (type ,(format nil "~a const&" name) other)
-		    (construct (pimpl (space std--make_unique
-					     (angle Interface)
-					     (paren (deref other.pimpl)))))))
+		    (construct (pimpl (space
+				       ,make-unique
+				       #+nil (space std--make_unique
+						    (angle Interface))
+					     
+				       (paren (deref other.pimpl)))))))
 
 	 (comments "copy assignment operator")
+	 ,template
 	 (defmethod operator= (other)
 	   (declare (values ,(format nil "~a&" name))
 		    (type ,(format nil "~a const&" name) other))
@@ -255,18 +264,19 @@ where params .. ((:pname alpha :type int) ...)"
 	   (setf *pimpl *other.pimpl)
 	   (return *this))
 	 (comments "move constructor")
-       	 (defmethod ,name (other)
+       	 ,template
+	 (defmethod ,name (other)
 	   (declare (values :constructor)
 		    (type ,(format nil "~a&&" name) other)
-		    ;(noexcept)
-		    (construct (pimpl (space std--make_unique
-					     (angle Interface)
+					;(noexcept)
+		    (construct (pimpl (space ,make-unique
 					     (paren (std--move *other.pimpl)))))))
 	 
 	 (comments "move assignment operator")
+	 ,template
 	 (defmethod operator= (other)
 	   (declare (values ,(format nil "~a&" name))
-		    ;(noexcept)
+					;(noexcept)
 		    (type ,(format nil "~a&&" name) other))
 	   (when (== this &other)
 	     (return *this))

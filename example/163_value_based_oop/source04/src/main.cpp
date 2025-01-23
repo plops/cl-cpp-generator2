@@ -30,10 +30,10 @@ class UniversalTE {
         return strategy_;
       };
     }
-    template <typename Object360, typename Strategy361>
-    Implementation(Object360 &&object360, Strategy361 &&strategy361)
-        : object_{std::forward<Object360>(object360)},
-          strategy_{std::forward<Strategy361>(strategy361)} {}
+    template <typename Object432, typename Strategy433>
+    Implementation(Object432 &&object432, Strategy433 &&strategy433)
+        : object_{std::forward<Object432>(object432)},
+          strategy_{std::forward<Strategy433>(strategy433)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
@@ -47,9 +47,13 @@ public:
             std::forward<Strategy>(strategy_))} {};
   // copy and move constructors
   // copy constructor
+  template <typename Object, typename Strategy>
   UniversalTE(UniversalTE const &other)
-      : pimpl{std::make_unique<Interface>(*other.pimpl)} {}
+      : pimpl{std::make_unique<Implementation<std::__remove_cvref_t<Object>,
+                                              std::__remove_cvref_t<Strategy>>>(
+            *other.pimpl)} {}
   // copy assignment operator
+  template <typename Object, typename Strategy>
   UniversalTE &operator=(UniversalTE const &other) {
     if (this == &other) {
       return *this;
@@ -58,9 +62,13 @@ public:
     return *this;
   }
   // move constructor
+  template <typename Object, typename Strategy>
   UniversalTE(UniversalTE &&other)
-      : pimpl{std::make_unique<Interface>(std::move(*other.pimpl))} {}
+      : pimpl{std::make_unique<Implementation<std::__remove_cvref_t<Object>,
+                                              std::__remove_cvref_t<Strategy>>>(
+            std::move(*other.pimpl))} {}
   // move assignment operator
+  template <typename Object, typename Strategy>
   UniversalTE &operator=(UniversalTE &&other) {
     if (this == &other) {
       return *this;
