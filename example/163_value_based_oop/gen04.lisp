@@ -323,12 +323,14 @@ where params .. ((:pname alpha :type int) ...)"
       type_traits
       )
 
+     (comments "experiments with type erasure and strategy design patterns")
+
      ,(create-type-erasure
        :name `UniversalTE
        :functions `((:name getTreat :return void :params () :code (dot (strategy)
 								       (getTreat (object))))
 		    (:name getPetted :return void :params () :code (dot (strategy)
-								       (getPetted (object)))))
+									(getPetted (object)))))
        :typenames `(Object Strategy))
 
      (defclass+ Cat ()

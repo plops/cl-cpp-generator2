@@ -5,6 +5,7 @@
 #include <string_view>
 #include <type_traits>
 #include <vector>
+// experiments with type erasure and strategy design patterns
 class UniversalTE {
   class Interface {
   public:
@@ -36,10 +37,10 @@ class UniversalTE {
         return strategy_;
       };
     }
-    template <typename Object3478, typename Strategy3479>
-    Implementation(Object3478 &&object3478, Strategy3479 &&strategy3479)
-        : object_{std::forward<Object3478>(object3478)},
-          strategy_{std::forward<Strategy3479>(strategy3479)} {}
+    template <typename Object3529, typename Strategy3530>
+    Implementation(Object3529 &&object3529, Strategy3530 &&strategy3530)
+        : object_{std::forward<Object3529>(object3529)},
+          strategy_{std::forward<Strategy3530>(strategy3530)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
