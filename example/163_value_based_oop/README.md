@@ -54,6 +54,8 @@ to be useful (copyable) we need to implement according to the rule of
 std::unique_ptr<Interface> const pimpl;
 ```
 
+Note: This const doesn't work with UniversalTE class
+
 ## Copy constructor 17
 
 ```
@@ -92,6 +94,11 @@ UniversalTE& UniversalTE::operator=( UniversalTE&& other )
 }
 ```
 
+
+# Notes
+
+Strategy: configuration details are passed from the outside
+Bridge: class knows about details but wants to reduce dependencies on these details
 
 # References
 
