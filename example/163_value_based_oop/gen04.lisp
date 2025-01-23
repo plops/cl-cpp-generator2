@@ -263,13 +263,15 @@ where params .. ((:pname alpha :type int) ...)"
 					#+nil (space std--make_unique
 						     (angle Interface))
 					
-					(paren (deref other.pimpl)))))))
+					(paren (deref other.pimpl))))))
+	    ,(lprint :msg "copy constructor"))
 
 	  (comments "copy assignment operator")
 	  ,template
 	  (defmethod operator= (other)
 	    (declare (values ,(format nil "~a&" name))
 		     (type ,(format nil "const ~a&" name) other))
+	    ,(lprint :msg "copy assignment operator")
 	    (when (== this &other)
 	      (return *this))
 	    (setf *pimpl *other.pimpl)
@@ -281,7 +283,8 @@ where params .. ((:pname alpha :type int) ...)"
 		     (type ,(format nil "~a&&" name) other)
 					;(noexcept)
 		     (construct (pimpl (space ,make-unique
-					      (paren (std--move *other.pimpl)))))))
+					      (paren (std--move *other.pimpl))))))
+	    ,(lprint :msg "move constructor"))
 	  
 	  (comments "move assignment operator")
 	  ,template
@@ -289,6 +292,7 @@ where params .. ((:pname alpha :type int) ...)"
 	    (declare (values ,(format nil "~a&" name))
 					;(noexcept)
 		     (type ,(format nil "~a&&" name) other))
+	    ,(lprint :msg "move assignment operator")
 	    (when (== this &other)
 	      (return *this))
 	    (setf *pimpl (std--move *other.pimpl))
@@ -389,7 +393,7 @@ where params .. ((:pname alpha :type int) ...)"
 	     #+nil (v (std--vector<UniversalTE>
 		       )))
 	 "UniversalTE k1{kurt,s1};"
-	 ; "UniversalTE copy_k1{k1};"
+	 "UniversalTE copy_k1{k1};"
 	 "UniversalTE move_k1{std::move(k1)};"
 	 "UniversalTE l1{lazy,ss1};"
 	 "UniversalTE r1{rover,s1};"

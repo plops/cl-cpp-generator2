@@ -36,10 +36,10 @@ class UniversalTE {
         return strategy_;
       };
     }
-    template <typename Object3128, typename Strategy3129>
-    Implementation(Object3128 &&object3128, Strategy3129 &&strategy3129)
-        : object_{std::forward<Object3128>(object3128)},
-          strategy_{std::forward<Strategy3129>(strategy3129)} {}
+    template <typename Object3478, typename Strategy3479>
+    Implementation(Object3478 &&object3478, Strategy3479 &&strategy3479)
+        : object_{std::forward<Object3478>(object3478)},
+          strategy_{std::forward<Strategy3479>(strategy3479)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
@@ -57,10 +57,13 @@ public:
   UniversalTE(const UniversalTE &other)
       : pimpl{std::make_unique<Implementation<std::__remove_cvref_t<Object>,
                                               std::__remove_cvref_t<Strategy>>>(
-            *other.pimpl)} {}
+            *other.pimpl)} {
+    std::cout << "(copy constructor" << ")\n";
+  }
   // copy assignment operator
   template <typename Object, typename Strategy>
   UniversalTE &operator=(const UniversalTE &other) {
+    std::cout << "(copy assignment operator" << ")\n";
     if (this == &other) {
       return *this;
     }
@@ -72,10 +75,13 @@ public:
   UniversalTE(UniversalTE &&other)
       : pimpl{std::make_unique<Implementation<std::__remove_cvref_t<Object>,
                                               std::__remove_cvref_t<Strategy>>>(
-            std::move(*other.pimpl))} {}
+            std::move(*other.pimpl))} {
+    std::cout << "(move constructor" << ")\n";
+  }
   // move assignment operator
   template <typename Object, typename Strategy>
   UniversalTE &operator=(UniversalTE &&other) {
+    std::cout << "(move assignment operator" << ")\n";
     if (this == &other) {
       return *this;
     }
@@ -128,6 +134,7 @@ int main() {
   auto s1{PetStrategy1()};
   auto ss1{std::make_shared<PetStrategy1>()};
   UniversalTE k1{kurt, s1};
+  UniversalTE copy_k1{k1};
   UniversalTE move_k1{std::move(k1)};
   UniversalTE l1{lazy, ss1};
   UniversalTE r1{rover, s1};
