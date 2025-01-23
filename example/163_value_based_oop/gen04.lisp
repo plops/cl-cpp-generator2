@@ -385,17 +385,19 @@ where params .. ((:pname alpha :type int) ...)"
 		    (string "kurt")))
 	     (rover (Dog (string "rover")))
 	     (s1 (PetStrategy1))
-	     ;(ss1 (std--make_shared<PetStrategy1>))
+	     (ss1 (std--make_shared<PetStrategy1>))
 	     #+nil (v (std--vector<UniversalTE>
 		       )))
 	 "UniversalTE k1{kurt,s1};"
+	 "UniversalTE l1{lazy,ss1};"
 	 "UniversalTE r1{rover,s1};"
-	 ;"std::vector<UniversalTE> v{l1};"
+	 ;"std::vector<UniversalTE> v{{l1}};"
+	 ;"std::vector<UniversalTE> v{{lazy,s1}};"
 	 "std::vector<UniversalTE> v;"
 	 ;(v.emplace_back l1)
 	 (v.emplace_back lazy s1)
 	 (v.emplace_back rover s1)
-	 ;(v.emplace_back kurt ss1)
+	 (v.emplace_back kurt ss1)
 	 (for-range (e v)
 		    (e.getTreat)
 		    (e.getPetted))
