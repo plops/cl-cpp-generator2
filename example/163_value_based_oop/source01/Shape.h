@@ -34,7 +34,9 @@ private:
     public:
         virtual ~ShapeConcept() = default;
         virtual void draw() const = 0;
-        // virtual ShapeConcept *clone() const = 0; // is this the right clone()?
+        // cpp design guideline 32
+
+        virtual std::unique_ptr<ShapeConcept> clone() const = 0;
     };
 
 
@@ -46,7 +48,10 @@ private:
         explicit ShapeModel(ConcreteShape shape, DrawStrategy drawer) : shape_{shape}, drawer_{drawer} {}
 
         void draw() const override { drawer_(shape_); }
-        // ShapeConcept *clone() const override { return new ShapeModel(shape_); }
+        std::unique_ptr<ShapeConcept> clone() const override
+        {
+            return std::make_unique<ShapeModel>(*this);
+        }
     private:
         ConcreteShape shape_;
         DrawStrategy drawer_;
