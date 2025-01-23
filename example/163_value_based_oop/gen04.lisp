@@ -29,11 +29,17 @@
 		   (vars nil)
 		   )
     `(<< std--cout
-	 (std--format
-	  (string ,(format nil "(~a~{:~a '{}'~^ ~})\\n"
-			   msg
-			   (loop for e in vars collect (emit-c :code e  :omit-redundant-parentheses t)) ))
-	  ,@vars))
+	 (string ,(format nil "(~a" msg))
+	 ,(if (< 0 (length vars))
+	   `(std--format
+	    (string ,(format nil "~{:~a '{}'~^ ~})\\n"
+			     (loop for e in vars
+				   collect
+				   (emit-c :code e
+					   :omit-redundant-parentheses t))))
+	    ,@vars)
+	   `(string ")\\n"))
+	 )
     #+nil
     `(<< std--cout
 	 (string ,(format nil "~a"
@@ -241,47 +247,49 @@ where params .. ((:pname alpha :type int) ...)"
 				       `(space std--forward
 					       (angle ,type)
 					       (paren ,object))))))))))
-	 (comments "copy and move constructors")
-	 (comments "copy constructor")
-	 ,template
-	 (defmethod ,name (other)
-	   (declare (values :constructor)
-		    (type ,(format nil "~a const&" name) other)
-		    (construct (pimpl (space
-				       ,make-unique
-				       #+nil (space std--make_unique
-						    (angle Interface))
-					     
-				       (paren (deref other.pimpl)))))))
+	 #+nil
+	 (do0
+	  (comments "copy and move constructors")
+	  (comments "copy constructor")
+	  ,template
+	  (defmethod ,name (other)
+	    (declare (values :constructor)
+		     (type ,(format nil "~a const&" name) other)
+		     (construct (pimpl (space
+					,make-unique
+					#+nil (space std--make_unique
+						     (angle Interface))
+					
+					(paren (deref other.pimpl)))))))
 
-	 (comments "copy assignment operator")
-	 ,template
-	 (defmethod operator= (other)
-	   (declare (values ,(format nil "~a&" name))
-		    (type ,(format nil "~a const&" name) other))
-	   (when (== this &other)
-	     (return *this))
-	   (setf *pimpl *other.pimpl)
-	   (return *this))
-	 (comments "move constructor")
-       	 ,template
-	 (defmethod ,name (other)
-	   (declare (values :constructor)
-		    (type ,(format nil "~a&&" name) other)
+	  (comments "copy assignment operator")
+	  ,template
+	  (defmethod operator= (other)
+	    (declare (values ,(format nil "~a&" name))
+		     (type ,(format nil "~a const&" name) other))
+	    (when (== this &other)
+	      (return *this))
+	    (setf *pimpl *other.pimpl)
+	    (return *this))
+	  (comments "move constructor")
+       	  ,template
+	  (defmethod ,name (other)
+	    (declare (values :constructor)
+		     (type ,(format nil "~a&&" name) other)
 					;(noexcept)
-		    (construct (pimpl (space ,make-unique
-					     (paren (std--move *other.pimpl)))))))
-	 
-	 (comments "move assignment operator")
-	 ,template
-	 (defmethod operator= (other)
-	   (declare (values ,(format nil "~a&" name))
+		     (construct (pimpl (space ,make-unique
+					      (paren (std--move *other.pimpl)))))))
+	  
+	  (comments "move assignment operator")
+	  ,template
+	  (defmethod operator= (other)
+	    (declare (values ,(format nil "~a&" name))
 					;(noexcept)
-		    (type ,(format nil "~a&&" name) other))
-	   (when (== this &other)
-	     (return *this))
-	   (setf *pimpl (std--move *other.pimpl))
-	   (return *this))
+		     (type ,(format nil "~a&&" name) other))
+	    (when (== this &other)
+	      (return *this))
+	    (setf *pimpl (std--move *other.pimpl))
+	    (return *this)))
 	 
 	 ,@(loop for e in functions
 		 collect
@@ -303,7 +311,7 @@ where params .. ((:pname alpha :type int) ...)"
       format
       string
       string_view
-					;vector
+      vector
       memory
       type_traits
       )
@@ -324,20 +332,32 @@ where params .. ((:pname alpha :type int) ...)"
 		  (type "std::string_view" name)
 		  (construct (name name))))
        (defmethod meow ()
-	 ,(lprint :msg "meow")))
+	 (declare (const))
+	 ,(lprint :msg "meow"))
+       (defmethod scratch ()
+	 (declare (const))
+	 ,(lprint :msg "scratch")))
 
      (defclass+ PetStrategy1 ()
        "public:"
        (defmethod getTreat (cat)
 	 (declare (type "const Cat&" cat))
-	 (cat.meow)))
+	 (cat.meow)
+	 (cat.scratch))
+       (defmethod getPetted (cat)
+	 (declare (type "const Cat&" cat))
+	 (cat.meow)
+	 ))
      
      (defun main ()
        (declare (values int))
        (let ((lazy (Cat (string "lazy")))
 	     (s1 (PetStrategy1))
-	     (v (std--vector<UniversalTE
-		 (curly lazy s1))))
+	     #+nil (v (std--vector<UniversalTE>
+		 )))
+	 "UniversalTE e{lazy,s1};"
+	 "std::vector<UniversalTE> v;"
+	 (v.emplace_back e)
 	 ))
 
      )

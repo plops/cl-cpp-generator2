@@ -4,6 +4,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <vector>
 class UniversalTE {
   class Interface {
   public:
@@ -34,10 +35,10 @@ class UniversalTE {
         return strategy_;
       };
     }
-    template <typename Object510, typename Strategy511>
-    Implementation(Object510 &&object510, Strategy511 &&strategy511)
-        : object_{std::forward<Object510>(object510)},
-          strategy_{std::forward<Strategy511>(strategy511)} {}
+    template <typename Object828, typename Strategy829>
+    Implementation(Object828 &&object828, Strategy829 &&strategy829)
+        : object_{std::forward<Object828>(object828)},
+          strategy_{std::forward<Strategy829>(strategy829)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
@@ -49,37 +50,6 @@ public:
                                               std::__remove_cvref_t<Strategy>>>(
             std::forward<Object>(object_),
             std::forward<Strategy>(strategy_))} {};
-  // copy and move constructors
-  // copy constructor
-  template <typename Object, typename Strategy>
-  UniversalTE(UniversalTE const &other)
-      : pimpl{std::make_unique<Implementation<std::__remove_cvref_t<Object>,
-                                              std::__remove_cvref_t<Strategy>>>(
-            *other.pimpl)} {}
-  // copy assignment operator
-  template <typename Object, typename Strategy>
-  UniversalTE &operator=(UniversalTE const &other) {
-    if (this == &other) {
-      return *this;
-    }
-    *pimpl = *other.pimpl;
-    return *this;
-  }
-  // move constructor
-  template <typename Object, typename Strategy>
-  UniversalTE(UniversalTE &&other)
-      : pimpl{std::make_unique<Implementation<std::__remove_cvref_t<Object>,
-                                              std::__remove_cvref_t<Strategy>>>(
-            std::move(*other.pimpl))} {}
-  // move assignment operator
-  template <typename Object, typename Strategy>
-  UniversalTE &operator=(UniversalTE &&other) {
-    if (this == &other) {
-      return *this;
-    }
-    *pimpl = std::move(*other.pimpl);
-    return *this;
-  }
   void getTreat() const { pimpl->getTreat(); }
   void getPetted() const { pimpl->getPetted(); }
 };
@@ -87,15 +57,22 @@ class Cat {
 public:
   std::string name;
   Cat(std::string_view name) : name{name} {}
-  void meow() { std::cout << std::format("(meow)\n"); }
+  void meow() const { std::cout << "(meow" << ")\n"; }
+  void scratch() const { std::cout << "(scratch" << ")\n"; }
 };
 class PetStrategy1 {
 public:
-  void getTreat(const Cat &cat) { cat.meow(); }
+  void getTreat(const Cat &cat) {
+    cat.meow();
+    cat.scratch();
+  }
+  void getPetted(const Cat &cat) { cat.meow(); }
 };
 
 int main() {
   auto lazy{Cat("lazy")};
   auto s1{PetStrategy1()};
-  auto v{std::vector < UniversalTE({lazy, s1})};
+  UniversalTE e{lazy, s1};
+  std::vector<UniversalTE> v;
+  v.emplace_back(e);
 }
