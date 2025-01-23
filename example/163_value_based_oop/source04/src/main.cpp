@@ -12,7 +12,7 @@ class UniversalTE {
     virtual void getTreat() = 0;
     virtual void getPetted() = 0;
   };
-  std::unique_ptr<Interface> const pimpl;
+  std::unique_ptr<Interface> pimpl;
   template <typename Type> struct is_shared_ptr : std::false_type {};
   template <typename Type> struct is_shared_ptr<std::shared_ptr<Type>> {};
   template <typename Object, typename Strategy>
@@ -35,10 +35,10 @@ class UniversalTE {
         return strategy_;
       };
     }
-    template <typename Object1078, typename Strategy1079>
-    Implementation(Object1078 &&object1078, Strategy1079 &&strategy1079)
-        : object_{std::forward<Object1078>(object1078)},
-          strategy_{std::forward<Strategy1079>(strategy1079)} {}
+    template <typename Object1478, typename Strategy1479>
+    Implementation(Object1478 &&object1478, Strategy1479 &&strategy1479)
+        : object_{std::forward<Object1478>(object1478)},
+          strategy_{std::forward<Strategy1479>(strategy1479)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
@@ -116,5 +116,12 @@ int main() {
   auto s1{PetStrategy1()};
   UniversalTE l1{lazy, s1};
   UniversalTE r1{rover, s1};
-  std::vector<UniversalTE> v{l1};
+  std::vector<UniversalTE> v;
+  v.emplace_back(lazy, s1);
+  v.emplace_back(rover, s1);
+  for (auto &&e : v) {
+    e.getTreat();
+    e.getPetted();
+  }
+  return 0;
 }

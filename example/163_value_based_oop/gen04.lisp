@@ -160,7 +160,9 @@ where params .. ((:pname alpha :type int) ...)"
 					  p
 					`(space ,type ,pname)))) = 0))))
 
-	 (space std--unique_ptr (angle Interface) const pimpl)
+	 (space std--unique_ptr (angle Interface)
+		;const
+		pimpl)
 	 (space template (angle "typename Type")
 		struct is_shared_ptr ":" std--false_type (progn))
 	 (space template (angle "typename Type")
@@ -383,9 +385,16 @@ where params .. ((:pname alpha :type int) ...)"
 		 )))
 	 "UniversalTE l1{lazy,s1};"
 	 "UniversalTE r1{rover,s1};"
-	 "std::vector<UniversalTE> v{l1};"
+	 ;"std::vector<UniversalTE> v{l1};"
+	 "std::vector<UniversalTE> v;"
 	 ;(v.emplace_back l1)
-	 ))
+	 (v.emplace_back lazy s1)
+	 (v.emplace_back rover s1)
+	 (for-range (e v)
+	      (e.getTreat)
+	      (e.getPetted))
+	 )
+       (return 0))
 
      )
    :omit-parens t
