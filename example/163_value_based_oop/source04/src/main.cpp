@@ -36,10 +36,10 @@ class UniversalTE {
         return strategy_;
       };
     }
-    template <typename Object2978, typename Strategy2979>
-    Implementation(Object2978 &&object2978, Strategy2979 &&strategy2979)
-        : object_{std::forward<Object2978>(object2978)},
-          strategy_{std::forward<Strategy2979>(strategy2979)} {}
+    template <typename Object3128, typename Strategy3129>
+    Implementation(Object3128 &&object3128, Strategy3129 &&strategy3129)
+        : object_{std::forward<Object3128>(object3128)},
+          strategy_{std::forward<Strategy3129>(strategy3129)} {}
     void getTreat() override { strategy().getTreat(object()); }
     void getPetted() override { strategy().getPetted(object()); };
   };
@@ -128,6 +128,7 @@ int main() {
   auto s1{PetStrategy1()};
   auto ss1{std::make_shared<PetStrategy1>()};
   UniversalTE k1{kurt, s1};
+  UniversalTE move_k1{std::move(k1)};
   UniversalTE l1{lazy, ss1};
   UniversalTE r1{rover, s1};
   std::vector<UniversalTE> v;

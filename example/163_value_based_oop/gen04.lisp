@@ -381,7 +381,7 @@ where params .. ((:pname alpha :type int) ...)"
        (declare (values int))
        (let ((lazy (Cat (string "lazy")))
 	     (kurt (std--make_shared<Cat>
-		    ;Cat
+					;Cat
 		    (string "kurt")))
 	     (rover (Dog (string "rover")))
 	     (s1 (PetStrategy1))
@@ -389,12 +389,14 @@ where params .. ((:pname alpha :type int) ...)"
 	     #+nil (v (std--vector<UniversalTE>
 		       )))
 	 "UniversalTE k1{kurt,s1};"
+	 ; "UniversalTE copy_k1{k1};"
+	 "UniversalTE move_k1{std::move(k1)};"
 	 "UniversalTE l1{lazy,ss1};"
 	 "UniversalTE r1{rover,s1};"
-	 ;"std::vector<UniversalTE> v{{l1}};"
-	 ;"std::vector<UniversalTE> v{{lazy,s1}};"
+					;"std::vector<UniversalTE> v{{l1}};"
+					;"std::vector<UniversalTE> v{{lazy,s1}};"
 	 "std::vector<UniversalTE> v;"
-	 ;(v.emplace_back l1)
+					;(v.emplace_back l1)
 	 (v.emplace_back lazy s1)
 	 (v.emplace_back rover s1)
 	 (v.emplace_back kurt ss1)
