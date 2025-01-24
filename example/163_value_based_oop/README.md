@@ -97,9 +97,10 @@ UniversalTE& UniversalTE::operator=( UniversalTE&& other )
 
 # Notes
 
-Strategy: configuration details are passed from the outside
-Bridge: class knows about details but wants to reduce dependencies on these details
-
+Strategy: configuration details are passed from the outside (behavioural)
+Bridge: class knows about details but wants to reduce dependencies on these details (structural)
+Prototype: provides virtual clone function (works with open set of types)
+    
 # References
 
 ## Youtube video 1 
