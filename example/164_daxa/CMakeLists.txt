@@ -13,4 +13,6 @@ target_link_libraries(
         ${PROJECT_NAME}
         /home/martin/vulkan/lib64/libdaxa.a
         glfw
+        vulkan
+        X11
 )
