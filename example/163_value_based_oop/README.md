@@ -97,10 +97,18 @@ UniversalTE& UniversalTE::operator=( UniversalTE&& other )
 
 # Notes
 
-Strategy: configuration details are passed from the outside (behavioural)
+Visitor:
+  - works for open set of operations (you can easily add more)
+Strategy: configuration details are passed (dependency injection) from the outside (behavioural) (guidelines 23 and )
+  - works for open set of types (orthogonal to visitor)
+  - one strategy deals with one operation (e.g. drawing but not serialization)
+    - for more operations look at `external polymorphism` and `type erasure`
 Bridge: class knows about details but wants to reduce dependencies on these details (structural)
-Prototype: provides virtual clone function (works with open set of types)
-    
+Prototype: provides virtual clone function (works with open set of types) (guideline 30)
+
+External Polymorphism (p. 3932)
+
+
 # References
 
 ## Youtube video 1 
