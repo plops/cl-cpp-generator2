@@ -8,7 +8,7 @@ using namespace daxa::types;
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define GLFW_NATIVE_INCLUDE_NONE
 using HWND = void *;
-#elif defined(__linux__) /
+#elif defined(__linux__)
 #define GLFW_EXPOSE_NATIVE_X11
 #define GLFW_EXPOSE_NATIVE_WAYLAND
 #endif
