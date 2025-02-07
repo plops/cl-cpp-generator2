@@ -29,6 +29,10 @@ int main(int argc, char const* argv[])
                                             .image_usage{ImageUsageFlagBits::TRANSFER_DST},
                                             .name{"my swapchain"}})};
     auto swapchain_image{swapchain.acquire_next_image()};
+
+
+    auto pipeline_manager{daxa::PipelineManager(
+        {.device{device},})}
     // Main loop
     while (!window.should_close())
     {
