@@ -32,6 +32,7 @@ int main(int argc, char const* argv[])
     // Main loop
     while (!window.should_close())
     {
+        window.update();
     }
 
     return 0;
