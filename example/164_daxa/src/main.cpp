@@ -14,7 +14,7 @@ int main(int argc, char const* argv[])
     auto instance{create_instance({})};
     auto device{instance.create_device_2(instance.choose_device({}, {}))};
     auto swapchain{device.create_swapchain({.native_window{window.get_native_handle()},
-                                            .native_window_platform{window.get_native_platform()},
+                                            .native_window_platform{AppWindow::get_native_platform()},
                                             .surface_format_selector{[](Format format)
                                                                      {
                                                                          switch (format)
@@ -28,6 +28,7 @@ int main(int argc, char const* argv[])
                                             .present_mode{PresentMode::MAILBOX},
                                             .image_usage{ImageUsageFlagBits::TRANSFER_DST},
                                             .name{"my swapchain"}})};
+    auto swapchain_image{swapchain.acquire_next_image()};
     // Main loop
     while (!window.should_close())
     {
