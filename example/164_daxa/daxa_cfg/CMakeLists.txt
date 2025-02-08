@@ -57,7 +57,6 @@ if(DAXA_ENABLE_STATIC_ANALYSIS)
             --fix)
     endif()
 else()
-    # TODO(capi): re-enable when not dealing with the compile errors.
     # Also, the features in the CMakePresets are disabled for now
     set(CMAKE_UNITY_BUILD false)
 endif()
@@ -183,7 +182,7 @@ if(DAXA_ENABLE_UTILS_PIPELINE_MANAGER_SLANG)
             COMMAND ${CMAKE_COMMAND} -E copy ${SLANG_GLSLANG_DLL} $<TARGET_FILE_DIR:daxa>
         )
     else()
-        # TODO(grundlett) ...
+        #
         # find_file(SLANG_DLL libslang.so)
         # find_file(SLANG_GLSLANG_DLL libslang-glslang.so)
     endif()
