@@ -6,10 +6,34 @@
  * needs ~/src/Daxa and ~/vulkan VulkanMemory...
  */
 
+#include <array>
 #include <daxa/daxa.hpp>
 #include <daxa/utils/pipeline_manager.hpp>
+#include <daxa/utils/task_graph.hpp>
+#include "shared.inl"
 #include "window.h"
 using namespace daxa;
+
+
+void upload_vertex_data_task(TaskGraph& tg, TaskBufferView vertices)
+{
+    tg.add_task({.attachments{{inl_attachment(TaskBufferAccess::TRANSFER_WRITE, vertices)}},
+                 .task{[=](TaskInterface ti)
+                       {
+                           constexpr float n{-.5f}, p{.5f}, z{.0f}, o{1.f};
+                           auto data{std::array{
+                               MyVertex{.position{n, p, z}, .color{o, z, z}},
+                               MyVertex{.position{p, p, z}, .color{z, o, z}},
+                               MyVertex{.position{z, n, z}, .color{z, z, o}},
+                           }};
+                           auto staging_buffer_id
+                           {
+                               ti.device.create_buffer({.size{sizeof(data)},
+                                                        .allocate_info{MemoryFlagBits::HOST_ACCESS_RANDOM},
+                                                        .name{"my_staging_buffer"}});
+                           };
+                       }}});
+}
 
 int main(int argc, char const* argv[])
 {
@@ -58,7 +82,7 @@ int main(int argc, char const* argv[])
         pipeline = result.value();
     }
 
-
+    auto buffer_id{device.create_buffer({.size{3 * sizeof(MyVertex)}, .name{"my vertex data"}})};
     // Main loop
     while (!window.should_close())
     {
