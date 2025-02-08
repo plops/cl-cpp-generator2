@@ -59,7 +59,7 @@ if(DAXA_ENABLE_STATIC_ANALYSIS)
 else()
     # TODO(capi): re-enable when not dealing with the compile errors.
     # Also, the features in the CMakePresets are disabled for now
-    set(CMAKE_UNITY_BUILD true)
+    set(CMAKE_UNITY_BUILD false)
 endif()
 
 add_library(daxa
@@ -100,6 +100,11 @@ else()
         PUBLIC "DAXA_CMAKE_EXPORT=")
 endif()
 
+target_compile_options(daxa
+  PRIVATE
+  -fdiagnostics-color=always
+)
+
 target_compile_features(daxa PUBLIC cxx_std_20)
 
 find_package(Vulkan REQUIRED)
@@ -134,7 +139,8 @@ if(DAXA_ENABLE_UTILS_IMGUI)
         DAXA_BUILT_WITH_UTILS_IMGUI=true
     )
     #find_package(imgui CONFIG REQUIRED)
-    include_directories(/home/martin/src/imgui)
+    include_directories(/home/martin/src/imgui
+    /home/martin/src/imgui/backends)
     target_link_libraries(daxa
         PUBLIC
         #imgui::imgui
