@@ -2,6 +2,10 @@
 // Created by martin on 2/7/25.
 //
 
+/**
+ * needs ~/src/Daxa and ~/vulkan VulkanMemory...
+ */
+
 #include <daxa/daxa.hpp>
 #include <daxa/utils/pipeline_manager.hpp>
 #include "window.h"
