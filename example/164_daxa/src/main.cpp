@@ -32,13 +32,13 @@ int main(int argc, char const* argv[])
     auto swapchain_image{swapchain.acquire_next_image()};
 
     // requires DAXA_ENABLE_UTILS_PIPELINE_MANAGER_GLSLANG
-    auto pipeline_manager546567
-    {
-        PipelineManager(
-            {.device{device},
-             .shader_compile_options{.root_paths{{"."}}.language{ShaderLanguage::GLSL}.enable_debug_info{true}},
-             .name{"my pipelinemanager"}})
-    }
+    // auto pipeline_manager
+    // {
+    //     PipelineManager(
+    //         {.device{device},
+    //          .shader_compile_options{.root_paths{{"."}}.language{ShaderLanguage::GLSL}.enable_debug_info{true}},
+    //          .name{"my pipelinemanager"}})
+    // }
     // Main loop
     while (!window.should_close())
     {
