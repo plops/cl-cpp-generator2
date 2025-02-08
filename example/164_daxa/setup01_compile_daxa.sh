@@ -15,6 +15,8 @@ cmake .. \
       -DDAXA_ENABLE_UTILS_TASK_GRAPH=true \
       -DDAXA_ENABLE_TESTS=true \
       -DDAXA_ENABLE_TOOLS=false \
-      -DDAXA_ENABLE_STATIC_ANALYSIS=fals \
+      -DDAXA_ENABLE_STATIC_ANALYSIS=false \
       -DCMAKE_CXX_STANDARD=20 \
       -DBUILD_SHARED_LIBS=true
+
+#      -DCMAKE_INCLUDE_DIR=/home/martin/src/imgui
