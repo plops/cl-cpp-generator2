@@ -35,14 +35,30 @@ int main(int argc, char const* argv[])
                                             .name{"my swapchain"}})};
     auto swapchain_image{swapchain.acquire_next_image()};
 
-    // requires DAXA_ENABLE_UTILS_PIPELINE_MANAGER_GLSLANG
-    auto pipeline_manager
+    auto pipeline_manager{PipelineManager(
+        {.device{device},
+         .shader_compile_options{.root_paths{"."}, .language{ShaderLanguage::GLSL}, .enable_debug_info{true}},
+         .name{"my pipelinemanager"}})};
+
+    std::shared_ptr<RasterPipeline> pipeline;
     {
-        PipelineManager(
-            {.device{device},
-             .shader_compile_options{.root_paths{"."}, .language{ShaderLanguage::GLSL}, .enable_debug_info{true}},
-             .name{"my pipelinemanager"}})
-    };
+        auto result = pipeline_manager.add_raster_pipeline({
+            .vertex_shader_info{ShaderCompileInfo{.source{ShaderFile{"main.glsl"}}}},
+            .fragment_shader_info{ShaderCompileInfo{.source{ShaderFile{"main.glsl"}}}},
+            .color_attachments{{.format{swapchain.get_format()}}},
+            .raster{{}},
+            .push_constant_size{sizeof(MyPushConstant)},
+            .name{"my pipeline"},
+        });
+        if (result.is_err())
+        {
+            std::cerr << result.message() << std::endl;
+            return -1;
+        }
+        pipeline = result.value();
+    }
+
+
     // Main loop
     while (!window.should_close())
     {
