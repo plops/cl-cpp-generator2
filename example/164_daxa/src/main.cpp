@@ -76,7 +76,7 @@ void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pi
    , .task{[render_target, pipeline, vertices](const TaskInterface& ti)
      {
          // Get screen dimensions from the target image
-         auto size { ti.device.info(ti.get(render_target).ids[0]).value().size };
+         auto size{ti.device.info(ti.get(render_target).ids[0]).value().size};
          // std::cout << "size: " << size.x << ", " << size.y << std::endl;
          // Record the actual renderpass
          auto render_recorder{std::move(ti.recorder)
@@ -138,9 +138,10 @@ int main(const int argc, char const* argv[])
     std::shared_ptr<RasterPipeline> pipeline;
     {
         constexpr auto fn{"/home/martin/stage/cl-cpp-generator2/example/164_daxa/src/main.glsl"};
-        auto result = pipeline_manager.add_raster_pipeline({
-            .vertex_shader_info{ShaderCompileInfo{.source{ShaderFile{fn}}}}
-          , .fragment_shader_info{ShaderCompileInfo{.source{ShaderFile{fn}}}}
+        const auto shaderFile{ShaderFile{fn}};
+        const auto result = pipeline_manager.add_raster_pipeline({
+            .vertex_shader_info{ShaderCompileInfo{.source{shaderFile}}}
+          , .fragment_shader_info{ShaderCompileInfo{.source{shaderFile}}}
           , .color_attachments{{{.format{swapchain.get_format()}}}}
           , .raster{{}}
           , .push_constant_size{sizeof(MyPushConstant)}
