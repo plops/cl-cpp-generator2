@@ -217,12 +217,18 @@ int main(const int argc, char const* argv[])
             swapchain.resize();
             window.swapchain_out_of_date = false;
         }
-        // Acquire the next image
-        auto swapchain_image{swapchain.acquire_next_image()};
-        if (swapchain_image.is_empty()) { continue; }
-        // Update image id
-        task_swapchain_image.set_images({.images{std::span{&swapchain_image
-                                                         , 1}}});
+
+        try
+        {
+            // Acquire the next image
+            auto swapchain_image{swapchain.acquire_next_image()};
+            if (swapchain_image.is_empty()) { continue; }
+            // Update image id
+            task_swapchain_image.set_images({.images{std::span{&swapchain_image
+                                                             , 1}}});
+        }
+        catch (const std::logic_error&) { continue; }
+
         // Execute render task graph
         loop_task_graph.execute({});
         device.collect_garbage();

@@ -177,7 +177,7 @@ int main(int argc, char const *argv[])
 
             // We update the image id of the task swapchain image.
             task_swapchain_image.set_images({.images = std::span{&swapchain_image, 1}});
-        } catch (const std::logic_error &e){
+        } catch (const std::logic_error &){
             continue;
         }
 
