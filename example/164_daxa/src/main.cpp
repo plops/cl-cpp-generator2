@@ -1,121 +1,114 @@
-//
-// Created by martin on 2/7/25.
-//
+#include "window.h"
+#include "shared.inl"
 
-/**
- * needs ~/src/Daxa and ~/vulkan VulkanMemory...
- */
-
-#include <array>
 #include <daxa/utils/pipeline_manager.hpp>
 #include <daxa/utils/task_graph.hpp>
 #include <iostream>
-#include "shared.inl"
-#include "window.h"
 
-using namespace daxa;
-
-void upload_vertex_data_task(TaskGraph& tg, TaskBufferView vertices)
+void upload_vertex_data_task(daxa::TaskGraph & tg, daxa::TaskBufferView vertices)
 {
-    // Task that will send data to the GPU
     tg.add_task({
-        .attachments{{inl_attachment(TaskBufferAccess::TRANSFER_WRITE, vertices)}},
-        .task{[=](TaskInterface ti)
-              {
-                  // The triangle coordinates are fixed here
-                  constexpr float n{-.5f}, p{.5f}, z{.0f}, o{1.f};
-                  auto data{std::array{
-                      MyVertex{.position{n, p, z}, .color{o, z, z}},
-                      MyVertex{.position{p, p, z}, .color{z, o, z}},
-                      MyVertex{.position{z, n, z}, .color{z, z, o}},
-                  }};
-                  auto staging_buffer_id{ti.device.create_buffer({.size{sizeof(data)},
-                                                                  .allocate_info{MemoryFlagBits::HOST_ACCESS_RANDOM},
-                                                                  .name{"my_staging_buffer"}})};
-                  // Defer destruction of the buffer until after it is on the GPU
-                  ti.recorder.destroy_buffer_deferred(staging_buffer_id);
-                  auto* buffer_ptr{
-                      ti.device.buffer_host_address_as<std::array<MyVertex, 3>>(staging_buffer_id).value()};
-                  *buffer_ptr = data;
-                  ti.recorder.copy_buffer_to_buffer({
-                      .src_buffer{staging_buffer_id},
-                      .dst_buffer{ti.get(vertices).ids[0]},
-                      .size{sizeof(data)},
-                  });
-              }},
-        .name{"upload_vertex_data_task"},
+        .attachments = {
+            daxa::inl_attachment(daxa::TaskBufferAccess::TRANSFER_WRITE, vertices),
+        },
+        .task = [=](daxa::TaskInterface ti)
+        {
+            auto data = std::array{
+                MyVertex{.position = {-0.5f, +0.5f, 0.0f}, .color = {1.0f, 0.0f, 0.0f}},
+                MyVertex{.position = {+0.5f, +0.5f, 0.0f}, .color = {0.0f, 1.0f, 0.0f}},
+                MyVertex{.position = {+0.0f, -0.5f, 0.0f}, .color = {0.0f, 0.0f, 1.0f}},
+            };
+            auto staging_buffer_id = ti.device.create_buffer({
+                .size = sizeof(data),
+                .allocate_info = daxa::MemoryFlagBits::HOST_ACCESS_RANDOM,
+                .name = "my staging buffer",
+            });
+            ti.recorder.destroy_buffer_deferred(staging_buffer_id);
+            auto * buffer_ptr = ti.device.buffer_host_address_as<std::array<MyVertex, 3>>(staging_buffer_id).value();
+            *buffer_ptr = data;
+            ti.recorder.copy_buffer_to_buffer({
+                .src_buffer = staging_buffer_id,
+                .dst_buffer = ti.get(vertices).ids[0],
+                .size = sizeof(data),
+            });
+        },
+        .name = "upload vertices",
     });
 }
 
-void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pipeline, TaskBufferView vertices,
-                        TaskImageView render_target)
+void draw_vertices_task(daxa::TaskGraph & tg, std::shared_ptr<daxa::RasterPipeline> pipeline, daxa::TaskBufferView vertices, daxa::TaskImageView render_target)
 {
-    // Create Rendering task
-    tg.add_task(
-        {.attachments{inl_attachment(TaskBufferAccess::VERTEX_SHADER_READ, vertices),
-                      inl_attachment(TaskImageAccess::COLOR_ATTACHMENT, ImageViewType::REGULAR_2D, render_target)},
-         .task{[=](TaskInterface ti)
-               {
-                   // Get screen dimensions from the target image
-                   auto size = ti.device.info(ti.get(render_target).ids[0]).value().size;
-                   // Record the actual renderpass
-                   auto render_recorder{std::move(ti.recorder)
-                                            .begin_renderpass({
-                                                .color_attachments{std::array{RenderAttachmentInfo{
-                                                    .image_view{ti.get(render_target).ids[0]},
-                                                    .load_op{AttachmentLoadOp::CLEAR},
-                                                    .clear_value{std::array<f32, 4>{.1f, .0f, .5f, 1.f}}}}},
-                                                .render_area{.width{size.x}, .height{size.y}},
-                                            })};
-                   render_recorder.set_pipeline(*pipeline);
-                   render_recorder.push_constant(
-                       MyPushConstant{.my_vertex_ptr{ti.device.device_address(ti.get(vertices).ids[0]).value()}});
-                   render_recorder.draw({.vertex_count{3}});
-                   ti.recorder = std::move(render_recorder).end_renderpass();
-               }},
-         .name{"draw_vertices_task"}});
+    tg.add_task({
+        .attachments = {
+            daxa::inl_attachment(daxa::TaskBufferAccess::VERTEX_SHADER_READ, vertices),
+            daxa::inl_attachment(daxa::TaskImageAccess::COLOR_ATTACHMENT, daxa::ImageViewType::REGULAR_2D, render_target),
+        },
+        .task = [=](daxa::TaskInterface ti)
+        {
+            auto const size = ti.device.info(ti.get(render_target).ids[0]).value().size;
+
+            daxa::RenderCommandRecorder render_recorder = std::move(ti.recorder).begin_renderpass({
+                .color_attachments = std::array{
+                    daxa::RenderAttachmentInfo{
+                        .image_view = ti.get(render_target).view_ids[0],
+                        .load_op = daxa::AttachmentLoadOp::CLEAR,
+                        .clear_value = std::array<daxa::f32, 4>{0.1f, 0.0f, 0.5f, 1.0f},
+                    },
+                },
+                .render_area = {.width = size.x, .height = size.y},
+            });
+
+            render_recorder.set_pipeline(*pipeline);
+            render_recorder.push_constant(MyPushConstant{
+                .my_vertex_ptr = ti.device.device_address(ti.get(vertices).ids[0]).value(),
+            });
+            render_recorder.draw({.vertex_count = 3});
+            ti.recorder = std::move(render_recorder).end_renderpass();
+        },
+        .name = "draw vertices",
+    });
 }
 
-int main(int argc, char const* argv[])
+int main(int argc, char const *argv[])
 {
     // Create a window
     auto window = AppWindow("Learn Daxa", 860, 640);
 
-    auto instance{create_instance({})};
-    auto device{instance.create_device_2(instance.choose_device({}, {}))};
-    auto swapchain{device.create_swapchain({.native_window{window.get_native_handle()},
-                                            .native_window_platform{AppWindow::get_native_platform()},
-                                            // .surface_format_selector{[](Format format)
-                                            //                          {
-                                            //                              switch (format)
-                                            //                              {
-                                            //                              case Format::R8G8B8A8_UINT:
-                                            //                                  return 100;
-                                            //                              default:
-                                            //                                  return default_format_score(format);
-                                            //                              }
-                                            //                          }},
-                                            .present_mode{PresentMode::FIFO},
-                                            .image_usage{ImageUsageFlagBits::TRANSFER_DST},
-                                            .name{"my swapchain"}})};
+    daxa::Instance instance = daxa::create_instance({});
 
-    auto pipeline_manager{
-        PipelineManager({.device{device},
-                         .shader_compile_options{.root_paths{"/home/martin/src/Daxa/include", ".", "../src"},
-                                                 .language{ShaderLanguage::GLSL},
-                                                 .enable_debug_info{true}},
-                         .name{"my pipeline manager"}})};
+    daxa::Device device = instance.create_device_2(instance.choose_device({}, {}));
 
-    std::shared_ptr<RasterPipeline> pipeline;
+    daxa::Swapchain swapchain = device.create_swapchain({
+        .native_window = window.get_native_handle(),
+        .native_window_platform = window.get_native_platform(),
+        .present_mode = daxa::PresentMode::FIFO,
+        .image_usage = daxa::ImageUsageFlagBits::TRANSFER_DST,
+        .name = "my swapchain",
+    });
+
+    auto pipeline_manager = daxa::PipelineManager({
+        .device = device,
+        .shader_compile_options = {
+            .root_paths = {
+                "/home/martin/src/Daxa/include", ".", "../src"
+                //DAXA_SHADER_INCLUDE_DIR,
+                //"./src/shader",
+            },
+            .language = daxa::ShaderLanguage::GLSL,
+            .enable_debug_info = true,
+        },
+        .name = "my pipeline manager",
+    });
+
+    std::shared_ptr<daxa::RasterPipeline> pipeline;
     {
-        constexpr auto fn{"/home/martin/stage/cl-cpp-generator2/example/164_daxa/src/main.glsl"};
         auto result = pipeline_manager.add_raster_pipeline({
-            .vertex_shader_info{ShaderCompileInfo{.source{ShaderFile{fn}}}},
-            .fragment_shader_info{ShaderCompileInfo{.source{ShaderFile{fn}}}},
-            .color_attachments{{.format{swapchain.get_format()}}},
-            .raster{{}},
-            .push_constant_size{sizeof(MyPushConstant)},
-            .name{"my pipeline"},
+            .vertex_shader_info = daxa::ShaderCompileInfo{.source = daxa::ShaderFile{"main.glsl"}},
+            .fragment_shader_info = daxa::ShaderCompileInfo{.source = daxa::ShaderFile{"main.glsl"}},
+            .color_attachments = {{.format = swapchain.get_format()}},
+            .raster = {},
+            .push_constant_size = sizeof(MyPushConstant),
+            .name = "my pipeline",
         });
         if (result.is_err())
         {
@@ -125,65 +118,73 @@ int main(int argc, char const* argv[])
         pipeline = result.value();
     }
 
-    auto buffer_id{device.create_buffer({.size{3 * sizeof(MyVertex)}, .name{"my vertex data"}})};
+    auto buffer_id = device.create_buffer({
+        .size = sizeof(MyVertex) * 3,
+        .name = "my vertex data",
+    });
 
-    auto task_swapchain_image{TaskImage({.swapchain_image{true}, .name{"task swapchain image"}})};
-    auto task_vertex_buffer{
-        TaskBuffer({.initial_buffers{.buffers{std::span{&buffer_id, 1}}}, .name{"my task vertex buffer"}})};
+    auto task_swapchain_image = daxa::TaskImage{{.swapchain_image = true, .name = "swapchain image"}};
+    auto task_vertex_buffer = daxa::TaskBuffer({
+        .initial_buffers = {.buffers = std::span{&buffer_id, 1}},
+        .name = "task vertex buffer",
+    });
 
-    auto loop_task_graph{TaskGraph({.device{device}, .swapchain{swapchain}, .name{"my loop"}})};
-
-    // Manually mark used resources (this is needed to detect errors in graph)
+    auto loop_task_graph = daxa::TaskGraph({
+        .device = device,
+        .swapchain = swapchain,
+        .name = "loop",
+    });
     loop_task_graph.use_persistent_buffer(task_vertex_buffer);
     loop_task_graph.use_persistent_image(task_swapchain_image);
-
-    // Fill the rendering task graph
     draw_vertices_task(loop_task_graph, pipeline, task_vertex_buffer, task_swapchain_image);
 
-    // Tell the task graph that we are done filling it
     loop_task_graph.submit({});
-    // Do the present step
+    // And tell the task graph to do the present step.
     loop_task_graph.present({});
-    // Compile the dependency graph between tasks
+    // Finally, we complete the task graph, which essentially compiles the
+    // dependency graph between tasks, and inserts the most optimal synchronization!
     loop_task_graph.complete({});
 
-    // Secondary task graph that transfers the vertices. Only runs once
     {
-        auto upload_task_graph{TaskGraph({
-            .device{device},
-            .name{"upload vertex buffer task graph"},
-        })};
+        auto upload_task_graph = daxa::TaskGraph({
+            .device = device,
+            .name = "upload",
+        });
+
         upload_task_graph.use_persistent_buffer(task_vertex_buffer);
+
         upload_vertex_data_task(upload_task_graph, task_vertex_buffer);
+
         upload_task_graph.submit({});
         upload_task_graph.complete({});
         upload_task_graph.execute({});
     }
 
-
-    // Main loop
-    while (!window.should_close())
-    {
+    while (!window.should_close()){
         window.update();
-        if (window.swapchain_out_of_date)
-        {
+
+        if (window.swapchain_out_of_date){
             swapchain.resize();
             window.swapchain_out_of_date = false;
         }
-        // Acquire the next image
-        auto swapchain_image{swapchain.acquire_next_image()};
+
+        // acquire the next image
+        auto swapchain_image = swapchain.acquire_next_image();
         if (swapchain_image.is_empty())
         {
             continue;
         }
-        // Update image id
-        task_swapchain_image.set_images({.images{std::span{&swapchain_image, 1}}});
-        // Execute render task graph
+
+        // We update the image id of the task swapchain image.
+        task_swapchain_image.set_images({.images = std::span{&swapchain_image, 1}});
+
+        // So, now all we need to do is execute our task graph!
         loop_task_graph.execute({});
         device.collect_garbage();
     }
 
     device.destroy_buffer(buffer_id);
+
     device.wait_idle();
     device.collect_garbage();
 
