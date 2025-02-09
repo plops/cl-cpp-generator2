@@ -47,7 +47,7 @@ void upload_vertex_data_task(TaskGraph& tg, TaskBufferView vertices)
     });
 }
 
-void draw_vertices_task(TaskGraph& tg, std::shared_ptr<RasterPipeline> pipeline, TaskBufferView vertices,
+void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pipeline, TaskBufferView vertices,
                         TaskImageView render_target)
 {
     // Create Rendering task
