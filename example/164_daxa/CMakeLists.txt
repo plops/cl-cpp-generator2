@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.6)
 project(triangle)
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 26)
 set(DAXA_ENABLE_UTILS_PIPELINE_MANAGER_GLSLANG ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_PREFIX_PATH ~/vulkan/)
 find_package(Vulkan REQUIRED)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
@@ -19,7 +20,8 @@ include_directories(
 
 add_executable(
         ${PROJECT_NAME}
-        src/main_tut.cpp
+        src/main.cpp
+        #src/main_tut.cpp
         /home/martin/src/Daxa/src/cpp_wrapper.cpp
 
         /home/martin/src/Daxa/src/impl_device.cpp
@@ -50,7 +52,7 @@ target_compile_definitions(${PROJECT_NAME}
         DAXA_BUILT_WITH_UTILS_MEM=true
 
 )
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
+#target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
 target_link_libraries(
         ${PROJECT_NAME}

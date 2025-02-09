@@ -50,7 +50,8 @@ void upload_vertex_data_task(TaskGraph& tg, const TaskBufferView vertices)
             const auto staging_buffer_id{ti.device.create_buffer({.size{sizeof(data)}
                                                                 , .allocate_info{MemoryFlagBits::HOST_ACCESS_RANDOM}
                                                                 , .name{"my_staging_buffer"}})};
-            // Defer destruction of the buffer until after it is on the GPU
+            // Defer destruction of the buffer until after it is on the GPU (when garbage_collect
+            // is called on the device, which happens once per frame)
             ti.recorder.destroy_buffer_deferred(staging_buffer_id);
             auto* buffer_ptr{
                 ti.device.buffer_host_address_as<std::array<MyVertex, 3>>(staging_buffer_id).value()};
@@ -67,8 +68,8 @@ void upload_vertex_data_task(TaskGraph& tg, const TaskBufferView vertices)
     });
 }
 
-void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pipeline, const TaskBufferView vertices,
-                        const TaskImageView& render_target
+void draw_vertices_task(TaskGraph& tg, std::shared_ptr<RasterPipeline> pipeline, const TaskBufferView vertices,
+                        TaskImageView render_target
     )
 {
     // Create Rendering task
@@ -105,13 +106,16 @@ void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pi
 
 int main(const int argc, char const* argv[])
 {
-    std::cout << argc << " " << argv[0] << std::endl;
+    //std::cout << argc << " " << argv[0] << std::endl;
     // Create a window
     auto window{AppWindow("Learn Daxa", 860, 640)};
-    std::cout << "App window created" << std::endl;
+    //std::cout << "App window created" << std::endl;
 
     auto instance{create_instance({})};
     auto device{instance.create_device_2(instance.choose_device({}, {}))};
+    auto di{device.info()};
+    auto dp{device.properties()};
+    std::cout << "device: " << dp.device_name << std::endl;
     auto swapchain{device.create_swapchain({.native_window{window.get_native_handle()}
                                           , .native_window_platform{AppWindow::get_native_platform()}
                                            ,
@@ -138,8 +142,8 @@ int main(const int argc, char const* argv[])
                                                , .enable_debug_info{true}}
                        , .name{"my pipeline manager"}})};
 
-    std::shared_ptr<RasterPipeline> pipeline;
-    {
+    auto pipeline
+    {[&pipeline_manager,&swapchain](){
         constexpr auto fn{"/home/martin/stage/cl-cpp-generator2/example/164_daxa/src/main.glsl"};
         const auto shaderFile{ShaderFile{fn}};
         const auto result = pipeline_manager.add_raster_pipeline({
@@ -154,11 +158,12 @@ int main(const int argc, char const* argv[])
         if (result.is_err())
         {
             std::cerr << result.message() << std::endl;
-            return -1;
+            throw std::runtime_error("failed to create pipeline");
         }
-        pipeline = result.value();
-        std::cout << "pipeline created" << std::endl;
-    }
+        //std::cout << "pipeline created" << std::endl;
+
+        return result.value();
+    }()};
 
     auto buffer_id{device.create_buffer({.size{3 * sizeof(MyVertex)}
                                        , .name{"my vertex data"}})};
@@ -190,7 +195,7 @@ int main(const int argc, char const* argv[])
     loop_task_graph.present({});
     // Compile the dependency graph between tasks
     loop_task_graph.complete({});
-    std::cout << "render task graph completed" << std::endl;
+    //std::cout << "render task graph completed" << std::endl;
 
     // Secondary task graph that transfers the vertices. Only runs once
     {
@@ -204,7 +209,7 @@ int main(const int argc, char const* argv[])
         upload_task_graph.submit({});
         upload_task_graph.complete({});
         upload_task_graph.execute({});
-        std::cout << "upload vertex buffer task graph executed" << std::endl;
+        //std::cout << "upload vertex buffer task graph executed" << std::endl;
     }
 
 
@@ -239,7 +244,7 @@ int main(const int argc, char const* argv[])
     device.wait_idle();
     device.collect_garbage();
 
-    std::cout << "cleaned up" << std::endl;
+    //std::cout << "cleaned up" << std::endl;
 
     return 0;
 }
