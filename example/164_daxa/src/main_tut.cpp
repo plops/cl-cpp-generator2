@@ -167,14 +167,20 @@ int main(int argc, char const *argv[])
         }
 
         // acquire the next image
-        auto swapchain_image = swapchain.acquire_next_image();
-        if (swapchain_image.is_empty())
-        {
+        try{
+         auto swapchain_image = swapchain.acquire_next_image();
+            if (swapchain_image.is_empty())
+            {
+                continue;
+            }
+
+
+            // We update the image id of the task swapchain image.
+            task_swapchain_image.set_images({.images = std::span{&swapchain_image, 1}});
+        } catch (const std::logic_error &e){
             continue;
         }
 
-        // We update the image id of the task swapchain image.
-        task_swapchain_image.set_images({.images = std::span{&swapchain_image, 1}});
 
         // So, now all we need to do is execute our task graph!
         loop_task_graph.execute({});
