@@ -15,7 +15,7 @@
 
 using namespace daxa;
 
-void upload_vertex_data_task(TaskGraph& tg, TaskBufferView vertices)
+void upload_vertex_data_task(TaskGraph& tg, const TaskBufferView vertices)
 {
     // Task that will send data to the GPU
     tg.add_task({
@@ -24,7 +24,7 @@ void upload_vertex_data_task(TaskGraph& tg, TaskBufferView vertices)
         {
             // The triangle coordinates are fixed here
             constexpr float n{-.5f}, p{.5f}, z{.0f}, o{1.f};
-            auto data{std::array{
+            const auto data{std::array{
                 MyVertex{.position{n
                                  , p
                                  , z}
@@ -45,7 +45,7 @@ void upload_vertex_data_task(TaskGraph& tg, TaskBufferView vertices)
                               , o}}
                ,
             }};
-            auto staging_buffer_id{ti.device.create_buffer({.size{sizeof(data)}
+            const auto staging_buffer_id{ti.device.create_buffer({.size{sizeof(data)}
                                                           , .allocate_info{MemoryFlagBits::HOST_ACCESS_RANDOM}
                                                           , .name{"my_staging_buffer"}})};
             // Defer destruction of the buffer until after it is on the GPU
@@ -65,7 +65,7 @@ void upload_vertex_data_task(TaskGraph& tg, TaskBufferView vertices)
     });
 }
 
-void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pipeline, TaskBufferView vertices,
+void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pipeline, const TaskBufferView vertices,
                         TaskImageView render_target
     )
 {
@@ -77,14 +77,14 @@ void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pi
      {
          // Get screen dimensions from the target image
          auto size = ti.device.info(ti.get(render_target).ids[0]).value().size;
-         std::cout << "size: " << size.x << ", " << size.y << std::endl;
+         // std::cout << "size: " << size.x << ", " << size.y << std::endl;
          // Record the actual renderpass
          auto render_recorder{std::move(ti.recorder)
             .begin_renderpass({
                  .color_attachments{std::array{RenderAttachmentInfo{
                      .image_view{ti.get(render_target).ids[0]}
                    , .load_op{AttachmentLoadOp::CLEAR}
-                   , .clear_value{std::array<f32, 4>{.1f
+                   , .clear_value{std::array{.1f
                                                    , .0f
                                                    , .5f
                                                    , 1.f}}}}}
@@ -103,6 +103,7 @@ void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pi
 
 int main(int argc, char const* argv[])
 {
+    std::cout << argc << " " << argv[0] << std::endl;
     // Create a window
     auto window{AppWindow("Learn Daxa", 860, 640)};
 
@@ -159,9 +160,12 @@ int main(int argc, char const* argv[])
 
     auto task_swapchain_image{TaskImage({.swapchain_image{true}
                                        , .name{"task swapchain image"}})};
-    auto task_vertex_buffer{
-        TaskBuffer({.initial_buffers{.buffers{std::span{&buffer_id
-                                                      , 1}}}
+   const auto task_vertex_buffer{
+        TaskBuffer({.initial_buffers =
+                    {
+                        .buffers{std::span{&buffer_id
+                                         , 1}}
+                    }
                   , .name{"my task vertex buffer"}})};
 
     auto loop_task_graph{TaskGraph({.device{device}
