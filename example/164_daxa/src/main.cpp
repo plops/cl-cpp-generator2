@@ -10,8 +10,8 @@
 #include <daxa/daxa.hpp>
 #include <daxa/utils/pipeline_manager.hpp>
 #include <daxa/utils/task_graph.hpp>
-//#include <oneapi/tbb/detail/_task.h>
-
+// #include <oneapi/tbb/detail/_task.h>
+#include <iostream>
 #include "shared.inl"
 #include "window.h"
 using namespace daxa;
@@ -99,10 +99,12 @@ int main(int argc, char const* argv[])
                                             .name{"my swapchain"}})};
     auto swapchain_image{swapchain.acquire_next_image()};
 
-    auto pipeline_manager{PipelineManager(
-        {.device{device},
-         .shader_compile_options{.root_paths{"."}, .language{ShaderLanguage::GLSL}, .enable_debug_info{true}},
-         .name{"my pipelinemanager"}})};
+    auto pipeline_manager{
+        PipelineManager({.device{device},
+                         .shader_compile_options{.root_paths{"/home/martin/src/Daxa/include", ".", "../src"},
+                                                 .language{ShaderLanguage::GLSL},
+                                                 .enable_debug_info{true}},
+                         .name{"my pipelinemanager"}})};
 
     std::shared_ptr<RasterPipeline> pipeline;
     {
@@ -165,7 +167,7 @@ int main(int argc, char const* argv[])
         if (window.swapchain_out_of_date)
         {
             swapchain.resize();
-            window.swapchain_out_of_date=false;
+            window.swapchain_out_of_date = false;
         }
         // Acquire the next image
         auto swapchain_image{swapchain.acquire_next_image()};
