@@ -19,7 +19,7 @@ include_directories(
 
 add_executable(
         ${PROJECT_NAME}
-        src/main.cpp
+        src/main_tut.cpp
         /home/martin/src/Daxa/src/cpp_wrapper.cpp
 
         /home/martin/src/Daxa/src/impl_device.cpp
