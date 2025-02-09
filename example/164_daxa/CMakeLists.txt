@@ -64,4 +64,3 @@ target_link_libraries(
         GPUOpen::VulkanMemoryAllocator
         Vulkan::Vulkan
 )
-

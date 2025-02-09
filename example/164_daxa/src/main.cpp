@@ -7,43 +7,44 @@
  */
 
 #include <array>
-#include <daxa/daxa.hpp>
 #include <daxa/utils/pipeline_manager.hpp>
 #include <daxa/utils/task_graph.hpp>
-// #include <oneapi/tbb/detail/_task.h>
 #include <iostream>
 #include "shared.inl"
 #include "window.h"
-using namespace daxa;
 
+using namespace daxa;
 
 void upload_vertex_data_task(TaskGraph& tg, TaskBufferView vertices)
 {
     // Task that will send data to the GPU
-    tg.add_task({.attachments{{inl_attachment(TaskBufferAccess::TRANSFER_WRITE, vertices)}},
-                 .task{[=](TaskInterface ti)
-                       {
-                           constexpr float n{-.5f}, p{.5f}, z{.0f}, o{1.f};
-                           auto data{std::array{
-                               MyVertex{.position{n, p, z}, .color{o, z, z}},
-                               MyVertex{.position{p, p, z}, .color{z, o, z}},
-                               MyVertex{.position{z, n, z}, .color{z, z, o}},
-                           }};
-                           auto staging_buffer_id{
-                               ti.device.create_buffer({.size{sizeof(data)},
-                                                        .allocate_info{MemoryFlagBits::HOST_ACCESS_RANDOM},
-                                                        .name{"my_staging_buffer"}})};
-                           // Defer destruction of the buffer until after it is on the GPU
-                           ti.recorder.destroy_buffer_deferred(staging_buffer_id);
-                           auto buffer_ptr{
-                               ti.device.buffer_host_address_as<std::array<MyVertex, 3>>(staging_buffer_id).value()};
-                           *buffer_ptr = data;
-                           ti.recorder.copy_buffer_to_buffer({
-                               .src_buffer{staging_buffer_id},
-                               .dst_buffer{ti.get(vertices).ids[0]},
-                               .size{sizeof(data)},
-                           });
-                       }}});
+    tg.add_task({
+        .attachments{{inl_attachment(TaskBufferAccess::TRANSFER_WRITE, vertices)}},
+        .task{[=](TaskInterface ti)
+              {
+                  // The triangle coordinates are fixed here
+                  constexpr float n{-.5f}, p{.5f}, z{.0f}, o{1.f};
+                  auto data{std::array{
+                      MyVertex{.position{n, p, z}, .color{o, z, z}},
+                      MyVertex{.position{p, p, z}, .color{z, o, z}},
+                      MyVertex{.position{z, n, z}, .color{z, z, o}},
+                  }};
+                  auto staging_buffer_id{ti.device.create_buffer({.size{sizeof(data)},
+                                                                  .allocate_info{MemoryFlagBits::HOST_ACCESS_RANDOM},
+                                                                  .name{"my_staging_buffer"}})};
+                  // Defer destruction of the buffer until after it is on the GPU
+                  ti.recorder.destroy_buffer_deferred(staging_buffer_id);
+                  auto* buffer_ptr{
+                      ti.device.buffer_host_address_as<std::array<MyVertex, 3>>(staging_buffer_id).value()};
+                  *buffer_ptr = data;
+                  ti.recorder.copy_buffer_to_buffer({
+                      .src_buffer{staging_buffer_id},
+                      .dst_buffer{ti.get(vertices).ids[0]},
+                      .size{sizeof(data)},
+                  });
+              }},
+        .name{"upload_vertex_data_task"},
+    });
 }
 
 void draw_vertices_task(TaskGraph& tg, std::shared_ptr<RasterPipeline> pipeline, TaskBufferView vertices,
@@ -72,7 +73,7 @@ void draw_vertices_task(TaskGraph& tg, std::shared_ptr<RasterPipeline> pipeline,
                    render_recorder.draw({.vertex_count{3}});
                    ti.recorder = std::move(render_recorder).end_renderpass();
                }},
-         .name{"draw_vertices"}});
+         .name{"draw_vertices_task"}});
 }
 
 int main(int argc, char const* argv[])
@@ -84,27 +85,26 @@ int main(int argc, char const* argv[])
     auto device{instance.create_device_2(instance.choose_device({}, {}))};
     auto swapchain{device.create_swapchain({.native_window{window.get_native_handle()},
                                             .native_window_platform{AppWindow::get_native_platform()},
-                                            .surface_format_selector{[](Format format)
-                                                                     {
-                                                                         switch (format)
-                                                                         {
-                                                                         case Format::R8G8B8A8_UINT:
-                                                                             return 100;
-                                                                         default:
-                                                                             return default_format_score(format);
-                                                                         }
-                                                                     }},
-                                            .present_mode{PresentMode::MAILBOX},
+                                            // .surface_format_selector{[](Format format)
+                                            //                          {
+                                            //                              switch (format)
+                                            //                              {
+                                            //                              case Format::R8G8B8A8_UINT:
+                                            //                                  return 100;
+                                            //                              default:
+                                            //                                  return default_format_score(format);
+                                            //                              }
+                                            //                          }},
+                                            .present_mode{PresentMode::FIFO},
                                             .image_usage{ImageUsageFlagBits::TRANSFER_DST},
                                             .name{"my swapchain"}})};
-    auto swapchain_image{swapchain.acquire_next_image()};
 
     auto pipeline_manager{
         PipelineManager({.device{device},
                          .shader_compile_options{.root_paths{"/home/martin/src/Daxa/include", ".", "../src"},
                                                  .language{ShaderLanguage::GLSL},
                                                  .enable_debug_info{true}},
-                         .name{"my pipelinemanager"}})};
+                         .name{"my pipeline manager"}})};
 
     std::shared_ptr<RasterPipeline> pipeline;
     {
@@ -127,9 +127,9 @@ int main(int argc, char const* argv[])
 
     auto buffer_id{device.create_buffer({.size{3 * sizeof(MyVertex)}, .name{"my vertex data"}})};
 
-    auto task_swapchain_image{TaskImage({.swapchain_image{true}, .name{"my swapchain"}})};
+    auto task_swapchain_image{TaskImage({.swapchain_image{true}, .name{"task swapchain image"}})};
     auto task_vertex_buffer{
-        TaskBuffer({.initial_buffers{.buffers{std::span{&buffer_id, 1}}}, .name{"my vertex buffer"}})};
+        TaskBuffer({.initial_buffers{.buffers{std::span{&buffer_id, 1}}}, .name{"my task vertex buffer"}})};
 
     auto loop_task_graph{TaskGraph({.device{device}, .swapchain{swapchain}, .name{"my loop"}})};
 
@@ -142,6 +142,7 @@ int main(int argc, char const* argv[])
 
     // Tell the task graph that we are done filling it
     loop_task_graph.submit({});
+    // Do the present step
     loop_task_graph.present({});
     // Compile the dependency graph between tasks
     loop_task_graph.complete({});
@@ -150,7 +151,7 @@ int main(int argc, char const* argv[])
     {
         auto upload_task_graph{TaskGraph({
             .device{device},
-            .name{"upload vertex buffer"},
+            .name{"upload vertex buffer task graph"},
         })};
         upload_task_graph.use_persistent_buffer(task_vertex_buffer);
         upload_vertex_data_task(upload_task_graph, task_vertex_buffer);
@@ -172,7 +173,9 @@ int main(int argc, char const* argv[])
         // Acquire the next image
         auto swapchain_image{swapchain.acquire_next_image()};
         if (swapchain_image.is_empty())
+        {
             continue;
+        }
         // Update image id
         task_swapchain_image.set_images({.images{std::span{&swapchain_image, 1}}});
         // Execute render task graph
