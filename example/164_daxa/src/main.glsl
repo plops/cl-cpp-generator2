@@ -1,6 +1,6 @@
 // Includes the daxa shader API
-//#include <daxa/daxa.inl>
-#include "/home/martin/src/Daxa/include/daxa/daxa.inl"
+#include <daxa/daxa.inl>
+//#include "/home/martin/src/Daxa/include/daxa/daxa.inl"
 
 // Enabled the extension GL_EXT_debug_printf
 #extension GL_EXT_debug_printf : enable

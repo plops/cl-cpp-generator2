@@ -10,7 +10,7 @@
 #include <daxa/daxa.hpp>
 #include <daxa/utils/pipeline_manager.hpp>
 #include <daxa/utils/task_graph.hpp>
-#include <oneapi/tbb/detail/_task.h>
+//#include <oneapi/tbb/detail/_task.h>
 
 #include "shared.inl"
 #include "window.h"
@@ -162,7 +162,25 @@ int main(int argc, char const* argv[])
     while (!window.should_close())
     {
         window.update();
+        if (window.swapchain_out_of_date)
+        {
+            swapchain.resize();
+            window.swapchain_out_of_date=false;
+        }
+        // Acquire the next image
+        auto swapchain_image{swapchain.acquire_next_image()};
+        if (swapchain_image.is_empty())
+            continue;
+        // Update image id
+        task_swapchain_image.set_images({.images{std::span{&swapchain_image, 1}}});
+        // Execute render task graph
+        loop_task_graph.execute({});
+        device.collect_garbage();
     }
+
+    device.destroy_buffer(buffer_id);
+    device.wait_idle();
+    device.collect_garbage();
 
     return 0;
 }
