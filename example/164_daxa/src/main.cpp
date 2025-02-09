@@ -17,6 +17,7 @@ using namespace daxa;
 
 void upload_vertex_data_task(TaskGraph& tg, TaskBufferView vertices)
 {
+    // Task that will send data to the GPU
     tg.add_task({.attachments{{inl_attachment(TaskBufferAccess::TRANSFER_WRITE, vertices)}},
                  .task{[=](TaskInterface ti)
                        {
@@ -26,12 +27,20 @@ void upload_vertex_data_task(TaskGraph& tg, TaskBufferView vertices)
                                MyVertex{.position{p, p, z}, .color{z, o, z}},
                                MyVertex{.position{z, n, z}, .color{z, z, o}},
                            }};
-                           auto staging_buffer_id
-                           {
+                           auto staging_buffer_id{
                                ti.device.create_buffer({.size{sizeof(data)},
                                                         .allocate_info{MemoryFlagBits::HOST_ACCESS_RANDOM},
-                                                        .name{"my_staging_buffer"}});
-                           };
+                                                        .name{"my_staging_buffer"}})};
+                           // Defer destruction of the buffer until after it is on the GPU
+                           ti.recorder.destroy_buffer_deferred(staging_buffer_id);
+                           auto buffer_ptr{
+                               ti.device.buffer_host_address_as<std::array<MyVertex, 3>>(staging_buffer_id).value()};
+                           *buffer_ptr = data;
+                           ti.recorder.copy_buffer_to_buffer({
+                               .src_buffer{staging_buffer_id},
+                               .dst_buffer{ti.get(vertices).ids[0]},
+                               .size{sizeof(data)},
+                           });
                        }}});
 }
 
