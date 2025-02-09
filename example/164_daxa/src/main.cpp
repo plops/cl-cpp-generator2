@@ -44,6 +44,35 @@ void upload_vertex_data_task(TaskGraph& tg, TaskBufferView vertices)
                        }}});
 }
 
+void draw_vertices_task(TaskGraph& tg, std::shared_ptr<RasterPipeline> pipeline, TaskBufferView vertices,
+                        TaskImageView render_target)
+{
+    // Create Rendering task
+    tg.add_task(
+        {.attachments{inl_attachment(TaskBufferAccess::VERTEX_SHADER_READ, vertices),
+                      inl_attachment(TaskImageAccess::COLOR_ATTACHMENT, ImageViewType::REGULAR_2D, render_target)},
+         .task{[=](TaskInterface ti)
+               {
+                   // Get screen dimensions from the target image
+                   auto size = ti.device.info(ti.get(render_target).ids[0]).value().size;
+                   // Record the actual renderpass
+                   auto render_recorder{std::move(ti.recorder)
+                                            .begin_renderpass({
+                                                .color_attachments{std::array{RenderAttachmentInfo{
+                                                    .image_view{ti.get(render_target).ids[0]},
+                                                    .load_op{AttachmentLoadOp::CLEAR},
+                                                    .clear_value{std::array<f32,4>{.1f, .0f, .5f, 1.f}}}}},
+                                                .render_area{.width{size.x}, .height{size.y}},
+                                            })};
+                   render_recorder.set_pipeline(*pipeline);
+                   render_recorder.push_constant(
+                       MyPushConstant{.my_vertex_ptr{ti.device.device_address(ti.get(vertices).ids[0]).value()}});
+                   render_recorder.draw({.vertex_count{3}});
+                   ti.recorder = std::move(render_recorder).end_renderpass();
+               }},
+         .name{"draw_vertices"}});
+}
+
 int main(int argc, char const* argv[])
 {
     // Create a window
