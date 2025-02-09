@@ -106,9 +106,10 @@ int main(int argc, char const* argv[])
 
     std::shared_ptr<RasterPipeline> pipeline;
     {
+        constexpr auto fn{"/home/martin/stage/cl-cpp-generator2/example/164_daxa/src/main.glsl"};
         auto result = pipeline_manager.add_raster_pipeline({
-            .vertex_shader_info{ShaderCompileInfo{.source{ShaderFile{"main.glsl"}}}},
-            .fragment_shader_info{ShaderCompileInfo{.source{ShaderFile{"main.glsl"}}}},
+            .vertex_shader_info{ShaderCompileInfo{.source{ShaderFile{fn}}}},
+            .fragment_shader_info{ShaderCompileInfo{.source{ShaderFile{fn}}}},
             .color_attachments{{.format{swapchain.get_format()}}},
             .raster{{}},
             .push_constant_size{sizeof(MyPushConstant)},
