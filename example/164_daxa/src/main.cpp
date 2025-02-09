@@ -25,9 +25,24 @@ void upload_vertex_data_task(TaskGraph& tg, TaskBufferView vertices)
             // The triangle coordinates are fixed here
             constexpr float n{-.5f}, p{.5f}, z{.0f}, o{1.f};
             auto data{std::array{
-                MyVertex{.position{n, p, z}, .color{o, z, z}}
-              , MyVertex{.position{p, p, z}, .color{z, o, z}}
-              , MyVertex{.position{z, n, z}, .color{z, z, o}}
+                MyVertex{.position{n
+                                 , p
+                                 , z}
+                       , .color{o
+                              , z
+                              , z}}
+              , MyVertex{.position{p
+                                 , p
+                                 , z}
+                       , .color{z
+                              , o
+                              , z}}
+              , MyVertex{.position{z
+                                 , n
+                                 , z}
+                       , .color{z
+                              , z
+                              , o}}
                ,
             }};
             auto staging_buffer_id{ti.device.create_buffer({.size{sizeof(data)}
@@ -68,8 +83,12 @@ void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pi
                  .color_attachments{std::array{RenderAttachmentInfo{
                      .image_view{ti.get(render_target).ids[0]}
                    , .load_op{AttachmentLoadOp::CLEAR}
-                   , .clear_value{std::array<f32, 4>{.1f, .0f, .5f, 1.f}}}}}
-               , .render_area{.width{size.x}, .height{size.y}}
+                   , .clear_value{std::array<f32, 4>{.1f
+                                                   , .0f
+                                                   , .5f
+                                                   , 1.f}}}}}
+               , .render_area{.width{size.x}
+                            , .height{size.y}}
                 ,
              })};
          render_recorder.set_pipeline(*pipeline);
@@ -107,7 +126,9 @@ int main(int argc, char const* argv[])
 
     auto pipeline_manager{
         PipelineManager({.device{device}
-                       , .shader_compile_options{.root_paths{"/home/martin/src/Daxa/include", ".", "../src"}
+                       , .shader_compile_options{.root_paths{"/home/martin/src/Daxa/include"
+                                                           , "."
+                                                           , "../src"}
                                                , .language{ShaderLanguage::GLSL}
                                                , .enable_debug_info{true}}
                        , .name{"my pipeline manager"}})};
@@ -132,13 +153,19 @@ int main(int argc, char const* argv[])
         pipeline = result.value();
     }
 
-    auto buffer_id{device.create_buffer({.size{3 * sizeof(MyVertex)}, .name{"my vertex data"}})};
+    auto buffer_id{device.create_buffer({.size{3 * sizeof(MyVertex)}
+                                       , .name{"my vertex data"}})};
 
-    auto task_swapchain_image{TaskImage({.swapchain_image{true}, .name{"task swapchain image"}})};
+    auto task_swapchain_image{TaskImage({.swapchain_image{true}
+                                       , .name{"task swapchain image"}})};
     auto task_vertex_buffer{
-        TaskBuffer({.initial_buffers{.buffers{std::span{&buffer_id, 1}}}, .name{"my task vertex buffer"}})};
+        TaskBuffer({.initial_buffers{.buffers{std::span{&buffer_id
+                                                      , 1}}}
+                  , .name{"my task vertex buffer"}})};
 
-    auto loop_task_graph{TaskGraph({.device{device}, .swapchain{swapchain}, .name{"my loop"}})};
+    auto loop_task_graph{TaskGraph({.device{device}
+                                  , .swapchain{swapchain}
+                                  , .name{"my loop"}})};
 
     // Manually mark used resources (this is needed to detect errors in graph)
     loop_task_graph.use_persistent_buffer(task_vertex_buffer);
@@ -182,7 +209,8 @@ int main(int argc, char const* argv[])
         auto swapchain_image{swapchain.acquire_next_image()};
         if (swapchain_image.is_empty()) { continue; }
         // Update image id
-        task_swapchain_image.set_images({.images{std::span{&swapchain_image, 1}}});
+        task_swapchain_image.set_images({.images{std::span{&swapchain_image
+                                                         , 1}}});
         // Execute render task graph
         loop_task_graph.execute({});
         device.collect_garbage();
