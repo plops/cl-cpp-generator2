@@ -10,6 +10,8 @@
 #include <daxa/utils/pipeline_manager.hpp>
 #include <daxa/utils/task_graph.hpp>
 #include <iostream>
+#include <thread>
+
 #include "shared.inl"
 #include "window.h"
 
@@ -106,6 +108,7 @@ int main(const int argc, char const* argv[])
     std::cout << argc << " " << argv[0] << std::endl;
     // Create a window
     auto window{AppWindow("Learn Daxa", 860, 640)};
+    std::cout << "App window created" << std::endl;
 
     auto instance{create_instance({})};
     auto device{instance.create_device_2(instance.choose_device({}, {}))};
@@ -154,6 +157,7 @@ int main(const int argc, char const* argv[])
             return -1;
         }
         pipeline = result.value();
+        std::cout << "pipeline created" << std::endl;
     }
 
     auto buffer_id{device.create_buffer({.size{3 * sizeof(MyVertex)}
@@ -186,6 +190,7 @@ int main(const int argc, char const* argv[])
     loop_task_graph.present({});
     // Compile the dependency graph between tasks
     loop_task_graph.complete({});
+    std::cout << "render task graph completed" << std::endl;
 
     // Secondary task graph that transfers the vertices. Only runs once
     {
@@ -199,6 +204,7 @@ int main(const int argc, char const* argv[])
         upload_task_graph.submit({});
         upload_task_graph.complete({});
         upload_task_graph.execute({});
+        std::cout << "upload vertex buffer task graph executed" << std::endl;
     }
 
 
@@ -226,6 +232,8 @@ int main(const int argc, char const* argv[])
 
     device.wait_idle();
     device.collect_garbage();
+
+    std::cout << "cleaned up" << std::endl;
 
     return 0;
 }
