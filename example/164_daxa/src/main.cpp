@@ -115,7 +115,7 @@ int main(const int argc, char const* argv[])
     auto device{instance.create_device_2(instance.choose_device({}, {}))};
     auto di{device.info()};
     auto dp{device.properties()};
-    std::cout << "device: " << dp.device_name << std::endl;
+    //std::cout << "device: " << dp.device_name << std::endl;
     auto swapchain{device.create_swapchain({.native_window{window.get_native_handle()}
                                           , .native_window_platform{AppWindow::get_native_platform()}
                                            ,
@@ -158,10 +158,11 @@ int main(const int argc, char const* argv[])
         if (result.is_err())
         {
             std::cerr << result.message() << std::endl;
-            throw std::runtime_error("failed to create pipeline");
+            throw std::runtime_error("failed to create raster pipeline");
         }
         //std::cout << "pipeline created" << std::endl;
-
+        // This returns a shared pointer of the pipeline, the pipeline manager retains ownership. Note that the pipeline
+        // manager is meant to be used during development only. Don't use in shipped code.
         return result.value();
     }()};
 
