@@ -77,6 +77,7 @@ void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pi
      {
          // Get screen dimensions from the target image
          auto size = ti.device.info(ti.get(render_target).ids[0]).value().size;
+         std::cout << "size: " << size.x << ", " << size.y << std::endl;
          // Record the actual renderpass
          auto render_recorder{std::move(ti.recorder)
             .begin_renderpass({
@@ -103,7 +104,7 @@ void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pi
 int main(int argc, char const* argv[])
 {
     // Create a window
-    auto window = AppWindow("Learn Daxa", 860, 640);
+    auto window{AppWindow("Learn Daxa", 860, 640)};
 
     auto instance{create_instance({})};
     auto device{instance.create_device_2(instance.choose_device({}, {}))};
@@ -139,7 +140,7 @@ int main(int argc, char const* argv[])
         auto result = pipeline_manager.add_raster_pipeline({
             .vertex_shader_info{ShaderCompileInfo{.source{ShaderFile{fn}}}}
           , .fragment_shader_info{ShaderCompileInfo{.source{ShaderFile{fn}}}}
-          , .color_attachments{{.format{swapchain.get_format()}}}
+          , .color_attachments{{{.format{swapchain.get_format()}}}}
           , .raster{{}}
           , .push_constant_size{sizeof(MyPushConstant)}
           , .name{"my pipeline"}
