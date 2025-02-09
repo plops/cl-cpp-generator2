@@ -132,7 +132,30 @@ int main(int argc, char const* argv[])
 
     // Manually mark used resources (this is needed to detect errors in graph)
     loop_task_graph.use_persistent_buffer(task_vertex_buffer);
-    loop_task_graph.use_persistent_image{task_swapchain_image};
+    loop_task_graph.use_persistent_image(task_swapchain_image);
+
+    // Fill the rendering task graph
+    draw_vertices_task(loop_task_graph, pipeline, task_vertex_buffer, task_swapchain_image);
+
+    // Tell the task graph that we are done filling it
+    loop_task_graph.submit({});
+    loop_task_graph.present({});
+    // Compile the dependency graph between tasks
+    loop_task_graph.complete({});
+
+    // Secondary task graph that transfers the vertices. Only runs once
+    {
+        auto upload_task_graph{TaskGraph({
+            .device{device},
+            .name{"upload vertex buffer"},
+        })};
+        upload_task_graph.use_persistent_buffer(task_vertex_buffer);
+        upload_vertex_data_task(upload_task_graph, task_vertex_buffer);
+        upload_task_graph.submit({});
+        upload_task_graph.complete({});
+        upload_task_graph.execute({});
+    }
+
 
     // Main loop
     while (!window.should_close())
