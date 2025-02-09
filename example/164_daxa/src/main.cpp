@@ -10,6 +10,8 @@
 #include <daxa/daxa.hpp>
 #include <daxa/utils/pipeline_manager.hpp>
 #include <daxa/utils/task_graph.hpp>
+#include <oneapi/tbb/detail/_task.h>
+
 #include "shared.inl"
 #include "window.h"
 using namespace daxa;
@@ -61,7 +63,7 @@ void draw_vertices_task(TaskGraph& tg, std::shared_ptr<RasterPipeline> pipeline,
                                                 .color_attachments{std::array{RenderAttachmentInfo{
                                                     .image_view{ti.get(render_target).ids[0]},
                                                     .load_op{AttachmentLoadOp::CLEAR},
-                                                    .clear_value{std::array<f32,4>{.1f, .0f, .5f, 1.f}}}}},
+                                                    .clear_value{std::array<f32, 4>{.1f, .0f, .5f, 1.f}}}}},
                                                 .render_area{.width{size.x}, .height{size.y}},
                                             })};
                    render_recorder.set_pipeline(*pipeline);
@@ -121,6 +123,17 @@ int main(int argc, char const* argv[])
     }
 
     auto buffer_id{device.create_buffer({.size{3 * sizeof(MyVertex)}, .name{"my vertex data"}})};
+
+    auto task_swapchain_image{TaskImage({.swapchain_image{true}, .name{"my swapchain"}})};
+    auto task_vertex_buffer{
+        TaskBuffer({.initial_buffers{.buffers{std::span{&buffer_id, 1}}}, .name{"my vertex buffer"}})};
+
+    auto loop_task_graph{TaskGraph({.device{device}, .swapchain{swapchain}, .name{"my loop"}})};
+
+    // Manually mark used resources (this is needed to detect errors in graph)
+    loop_task_graph.use_persistent_buffer(task_vertex_buffer);
+    loop_task_graph.use_persistent_image{task_swapchain_image};
+
     // Main loop
     while (!window.should_close())
     {
