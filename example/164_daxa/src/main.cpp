@@ -24,7 +24,7 @@ void upload_vertex_data_task(TaskGraph& tg, const TaskBufferView vertices)
         {
             // The triangle coordinates are fixed here
             constexpr float n{-.5f}, p{.5f}, z{.0f}, o{1.f};
-            const auto data{std::array{
+            constexpr auto data{std::array{
                 MyVertex{.position{n
                                  , p
                                  , z}
@@ -46,8 +46,8 @@ void upload_vertex_data_task(TaskGraph& tg, const TaskBufferView vertices)
                ,
             }};
             const auto staging_buffer_id{ti.device.create_buffer({.size{sizeof(data)}
-                                                          , .allocate_info{MemoryFlagBits::HOST_ACCESS_RANDOM}
-                                                          , .name{"my_staging_buffer"}})};
+                                                                , .allocate_info{MemoryFlagBits::HOST_ACCESS_RANDOM}
+                                                                , .name{"my_staging_buffer"}})};
             // Defer destruction of the buffer until after it is on the GPU
             ti.recorder.destroy_buffer_deferred(staging_buffer_id);
             auto* buffer_ptr{
@@ -85,9 +85,9 @@ void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pi
                      .image_view{ti.get(render_target).ids[0]}
                    , .load_op{AttachmentLoadOp::CLEAR}
                    , .clear_value{std::array{.1f
-                                                   , .0f
-                                                   , .5f
-                                                   , 1.f}}}}}
+                                           , .0f
+                                           , .5f
+                                           , 1.f}}}}}
                , .render_area{.width{size.x}
                             , .height{size.y}}
                 ,
@@ -101,7 +101,7 @@ void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pi
    , .name{"draw_vertices_task"}});
 }
 
-int main(int argc, char const* argv[])
+int main(const int argc, char const* argv[])
 {
     std::cout << argc << " " << argv[0] << std::endl;
     // Create a window
@@ -160,7 +160,7 @@ int main(int argc, char const* argv[])
 
     auto task_swapchain_image{TaskImage({.swapchain_image{true}
                                        , .name{"task swapchain image"}})};
-   const auto task_vertex_buffer{
+    const auto task_vertex_buffer{
         TaskBuffer({.initial_buffers =
                     {
                         .buffers{std::span{&buffer_id
