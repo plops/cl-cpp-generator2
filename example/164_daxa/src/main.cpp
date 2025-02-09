@@ -20,7 +20,7 @@ void upload_vertex_data_task(TaskGraph& tg, const TaskBufferView vertices)
     // Task that will send data to the GPU
     tg.add_task({
         .attachments{{inl_attachment(TaskBufferAccess::TRANSFER_WRITE, vertices)}}
-      , .task{[=](TaskInterface ti)
+      , .task{[=](const TaskInterface& ti)
         {
             // The triangle coordinates are fixed here
             constexpr float n{-.5f}, p{.5f}, z{.0f}, o{1.f};
@@ -66,14 +66,14 @@ void upload_vertex_data_task(TaskGraph& tg, const TaskBufferView vertices)
 }
 
 void draw_vertices_task(TaskGraph& tg, const std::shared_ptr<RasterPipeline>& pipeline, const TaskBufferView vertices,
-                        TaskImageView render_target
+                        const TaskImageView& render_target
     )
 {
     // Create Rendering task
     tg.add_task(
     {.attachments{inl_attachment(TaskBufferAccess::VERTEX_SHADER_READ, vertices)
                 , inl_attachment(TaskImageAccess::COLOR_ATTACHMENT, ImageViewType::REGULAR_2D, render_target)}
-   , .task{[=](TaskInterface ti)
+   , .task{[=](const TaskInterface& ti)
      {
          // Get screen dimensions from the target image
          auto size = ti.device.info(ti.get(render_target).ids[0]).value().size;
