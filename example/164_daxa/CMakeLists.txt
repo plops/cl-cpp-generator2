@@ -10,13 +10,15 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
             -g -g3 -ggdb -gdwarf-4
     )
-    add_link_options(-Wl,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
+    add_link_options(-Wl,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
 else ()
 
-    set(CMAKE_UNITY_BUILD true) # merge c++ files
+    #set(CMAKE_UNITY_BUILD true) # merge c++ files
     add_compile_options(
             #-O0
-            -Os  -ffunction-sections -fdata-sections # don't use together with flto
+            #-Os
+            -O3
+            -ffunction-sections -fdata-sections # don't use together with flto
             #-g -g3 -ggdb -gdwarf-4   # useful if you want line numbers in *.nm output
     )
     #set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
@@ -90,7 +92,7 @@ target_link_libraries(
         X11
 
         glslang::glslang
-        glslang::SPIRV
+        #glslang::SPIRV
         GPUOpen::VulkanMemoryAllocator
         Vulkan::Vulkan
 )

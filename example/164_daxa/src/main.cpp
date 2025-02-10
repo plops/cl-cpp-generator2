@@ -162,7 +162,8 @@ int main(const int argc, char const* argv[])
         }
         //std::cout << "pipeline created" << std::endl;
         // This returns a shared pointer of the pipeline, the pipeline manager retains ownership. Note that the pipeline
-        // manager is meant to be used during development only. Don't use in shipped code.
+        // manager is meant to be used during development only. The pipeline manager provides hot-reloading via its
+        // reload_all() method. Don't use in shipped code.
         return result.value();
     }()};
 
