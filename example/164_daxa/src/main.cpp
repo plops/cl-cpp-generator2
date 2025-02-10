@@ -107,10 +107,7 @@ void draw_vertices_task(TaskGraph& tg, std::shared_ptr<RasterPipeline> pipeline,
 void msg(const std::string& message)
 {
     constexpr bool debug{true};
-    if constexpr (debug)
-    {
-        std::cout << message << std::endl;
-    }
+    if constexpr (debug) { std::cout << message << std::endl; }
 }
 
 int main(const int argc, char const* argv[])
@@ -144,7 +141,7 @@ int main(const int argc, char const* argv[])
 
     auto pipeline_manager{
         PipelineManager({.device{device}
-                       , .shader_compile_options{.root_paths{"/home/martin/src/Daxa/include"
+                       , .shader_compile_options{.root_paths{DAXA_INCLUDE
                                                            , "."
                                                            , "../src"}
                                                , .language{ShaderLanguage::GLSL}
@@ -152,9 +149,10 @@ int main(const int argc, char const* argv[])
                        , .name{"my pipeline manager"}})};
 
     auto pipeline
-    {[&pipeline_manager,&swapchain](){
-        constexpr auto fn{"/home/martin/stage/cl-cpp-generator2/example/164_daxa/src/main.glsl"};
-        const auto shaderFile{ShaderFile{fn}};
+    {[&pipeline_manager,&swapchain]()
+    {
+        std::string fn{SHADER_PATH};
+        const auto shaderFile{ShaderFile{fn+"/main.glsl"}};
         const auto result = pipeline_manager.add_raster_pipeline({
             .vertex_shader_info{ShaderCompileInfo{.source{shaderFile}}}
           , .fragment_shader_info{ShaderCompileInfo{.source{shaderFile}}}

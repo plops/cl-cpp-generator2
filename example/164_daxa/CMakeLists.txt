@@ -74,6 +74,7 @@ add_executable(
         /home/martin/src/Daxa/src/utils/impl_pipeline_manager.cpp
 
 )
+set(HOME_PATH /home/martin)
 target_compile_definitions(${PROJECT_NAME}
         PUBLIC
         DAXA_BUILT_WITH_UTILS_PIPELINE_MANAGER_GLSLANG=true
@@ -81,7 +82,8 @@ target_compile_definitions(${PROJECT_NAME}
         "DAXA_CMAKE_EXPORT="
         DAXA_BUILT_WITH_X11=true
         DAXA_BUILT_WITH_UTILS_MEM=true
-
+        DAXA_INCLUDE="${HOME_PATH}/src/Daxa/include"
+        SHADER_PATH="${CMAKE_SOURCE_DIR}/src"
 )
 #target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
