@@ -104,12 +104,21 @@ void draw_vertices_task(TaskGraph& tg, std::shared_ptr<RasterPipeline> pipeline,
    , .name{"draw_vertices_task"}});
 }
 
+void msg(const std::string& message)
+{
+    constexpr bool debug{true};
+    if constexpr (debug)
+    {
+        std::cout << message << std::endl;
+    }
+}
+
 int main(const int argc, char const* argv[])
 {
     //std::cout << argc << " " << argv[0] << std::endl;
     // Create a window
     auto window{AppWindow("Learn Daxa", 860, 640)};
-    //std::cout << "App window created" << std::endl;
+    msg("App window created");
 
     auto instance{create_instance({})};
     auto device{instance.create_device_2(instance.choose_device({}, {}))};
@@ -160,7 +169,8 @@ int main(const int argc, char const* argv[])
             std::cerr << result.message() << std::endl;
             throw std::runtime_error("failed to create raster pipeline");
         }
-        //std::cout << "pipeline created" << std::endl;
+
+        msg("pipeline created");
         // This returns a shared pointer of the pipeline, the pipeline manager retains ownership. Note that the pipeline
         // manager is meant to be used during development only. The pipeline manager provides hot-reloading via its
         // reload_all() method. Don't use in shipped code.
@@ -197,7 +207,7 @@ int main(const int argc, char const* argv[])
     loop_task_graph.present({});
     // Compile the dependency graph between tasks
     loop_task_graph.complete({});
-    //std::cout << "render task graph completed" << std::endl;
+    msg("render task graph prepared");
 
     // Secondary task graph that transfers the vertices. Only runs once
     {
@@ -211,7 +221,7 @@ int main(const int argc, char const* argv[])
         upload_task_graph.submit({});
         upload_task_graph.complete({});
         upload_task_graph.execute({});
-        //std::cout << "upload vertex buffer task graph executed" << std::endl;
+        msg("upload vertex buffer task graph executed");
     }
 
 
@@ -246,7 +256,7 @@ int main(const int argc, char const* argv[])
     device.wait_idle();
     device.collect_garbage();
 
-    //std::cout << "cleaned up" << std::endl;
+    msg("cleaned up");
 
     return 0;
 }
