@@ -9,16 +9,17 @@ set(CMAKE_PREFIX_PATH ~/vulkan/)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
             -g -g3 -ggdb -gdwarf-4
+            -Og
     )
     add_link_options(-Wl,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
 else ()
 
     #set(CMAKE_UNITY_BUILD true) # merge c++ files
     add_compile_options(
-            #-O0
+            -O0
             #-Os
-            -O3
-            -ffunction-sections -fdata-sections # don't use together with flto
+            #-O3
+            #-ffunction-sections -fdata-sections # don't use together with flto
             #-g -g3 -ggdb -gdwarf-4   # useful if you want line numbers in *.nm output
     )
     #set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
@@ -30,7 +31,7 @@ else ()
     #   -Map=...: Generates a map file that details the memory layout of your linked executable.
     #   --cref: Enables the generation of a cross-reference table. This table provides information about how symbols (functions, variables) are defined and used throughout your codebase.
 
-    add_link_options(-Wl,-gc-sections,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
+    #add_link_options(-Wl,-gc-sections,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
 endif ()
 
 
