@@ -9,7 +9,9 @@
 #include <iostream>
 #include <memory> // shared_ptr
 #include <string>
+#include <vector>
 #include <array>
+#include <exception>
 #include <stdexcept>
 #include <daxa/instance.hpp>
 #include <daxa/types.hpp>
@@ -20,9 +22,10 @@
 #include <daxa/utils/task_graph.hpp> //
 #include <utility> // move
 
-
+#include <daxa/utils/imgui.hpp>
+#include <backends/imgui_impl_glfw.h>
+#include <imgui.h>
 #include "daxa/command_recorder.hpp"
-#include "daxa/instance.hpp"
 #include "shared.inl"
 #include "window.h"
 
@@ -96,7 +99,7 @@ namespace
      * @param vertices
      * @param render_target
      */
-    void draw_vertices_task(TaskGraph &   tg, std::shared_ptr<RasterPipeline> pipeline, const TaskBufferView vertices,
+    void draw_vertices_task(TaskGraph &   tg, const std::shared_ptr<RasterPipeline> & pipeline, const TaskBufferView vertices,
                             TaskImageView render_target
         )
     {
@@ -142,7 +145,7 @@ namespace
 
 int main(const int argc, char const * argv[])
 {
-    //std::cout << argc << " " << argv[0] << std::endl;
+    std::cout << argc << " " << argv[0] << '\n';
     // Create a window
     constexpr auto w{860};
     constexpr auto h{640};
@@ -168,6 +171,17 @@ int main(const int argc, char const * argv[])
                                                , .language{ShaderLanguage::GLSL}
                                                , .enable_debug_info{true}}
                        , .name{"my pipeline manager"}})};
+
+    auto imgui_renderer{[&device, &swapchain, &window]() -> ImGuiRenderer
+    {
+        ImGui::CreateContext();
+        ImGui_ImplGlfw_InitForVulkan(window.glfw_window_ptr, true);
+        return ImGuiRenderer({
+            .device = device
+          , .format = swapchain.get_format()
+        });
+    }()};
+    std::vector<TaskAttachmentInfo> imgui_task_attachments{};
 
     try
     {
@@ -221,6 +235,19 @@ int main(const int argc, char const * argv[])
         // Fill the rendering task graph
         draw_vertices_task(loop_task_graph, pipeline, task_vertex_buffer, task_swapchain_image);
 
+        imgui_task_attachments.push_back(daxa::inl_attachment(daxa::TaskImageAccess::COLOR_ATTACHMENT, task_swapchain_image));
+        auto imgui_task_info = InlineTaskInfo{
+            .attachments = std::move(imgui_task_attachments)
+          , .task = [&](daxa::TaskInterface const & ti)
+            {
+                auto size{ti.device.info(ti.get(task_swapchain_image).ids[0]).value().size};
+                imgui_renderer.record_commands(ImGui::GetDrawData(), ti.recorder, ti.get(task_swapchain_image).ids[0], size.x, size.y);
+            }
+          , .name = "ImGui Task"
+           ,
+        };
+        loop_task_graph.add_task(imgui_task_info);
+
         // Tell the task graph that we are done filling it
         loop_task_graph.submit({});
         // Do the present step
@@ -254,12 +281,31 @@ int main(const int argc, char const * argv[])
                 window.swapchain_out_of_date = false;
             }
 
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+            ImGui::ShowDemoWindow();
+            ImGui::Begin("Settings");
+
+            // ImGui::Image(
+            //     imgui_renderer.create_texture_id({
+            //         .image_view_id = render_image.default_view(),
+            //         .sampler_id = sampler,
+            //     }),
+            //     ImVec2(200, 200));
+            //
+            // if (ImGui::Checkbox("MY_TOGGLE", &my_toggle))
+            // {
+            //     update_virtual_shader();
+            // }
+            ImGui::End();
+            ImGui::Render();
+
             try
             {
                 // Acquire the next image
                 auto swapchain_image{swapchain.acquire_next_image()};
                 if (swapchain_image.is_empty()) { continue; }
-                // Update image idC
+                // Update image id
                 task_swapchain_image.set_images({.images{std::span{&swapchain_image
                                                                  , 1}}});
             }
@@ -269,6 +315,7 @@ int main(const int argc, char const * argv[])
             loop_task_graph.execute({});
             device.collect_garbage();
         }
+        ImGui_ImplGlfw_Shutdown();
 
         device.destroy_buffer(buffer_id);
 

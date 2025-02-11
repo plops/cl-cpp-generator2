@@ -12,36 +12,36 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     )
     add_link_options(-Wl,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
 
-#    set(CPPCHECK_TEMPLATE "gcc")
-#    find_program(CPPCHECK cppcheck)
-#    find_program(CLANG_TIDY clang-tidy)
-#    if(CPPCHECK)
-#        set(CMAKE_CXX_CPPCHECK
-#                ${CPPCHECK}
-#                --template=${CPPCHECK_TEMPLATE}
-#                --enable=style,performance,warning,portability
-#                --inline-suppr
-#                --suppress=cppcheckError
-#                --suppress=internalAstError
-#                --suppress=unmatchedSuppression
-#                --suppress=preprocessorErrorDirective
-#                --suppress=exceptThrowInDestructor
-#                --suppress=functionStatic
-#                --inconclusive)
-#    endif()
-#    if(CLANG_TIDY)
-#        set(CMAKE_CXX_CLANG_TIDY
-#                ${CLANG_TIDY}
-#                --fix)
-#    endif()
+    #    set(CPPCHECK_TEMPLATE "gcc")
+    #    find_program(CPPCHECK cppcheck)
+    #    find_program(CLANG_TIDY clang-tidy)
+    #    if(CPPCHECK)
+    #        set(CMAKE_CXX_CPPCHECK
+    #                ${CPPCHECK}
+    #                --template=${CPPCHECK_TEMPLATE}
+    #                --enable=style,performance,warning,portability
+    #                --inline-suppr
+    #                --suppress=cppcheckError
+    #                --suppress=internalAstError
+    #                --suppress=unmatchedSuppression
+    #                --suppress=preprocessorErrorDirective
+    #                --suppress=exceptThrowInDestructor
+    #                --suppress=functionStatic
+    #                --inconclusive)
+    #    endif()
+    #    if(CLANG_TIDY)
+    #        set(CMAKE_CXX_CLANG_TIDY
+    #                ${CLANG_TIDY}
+    #                --fix)
+    #    endif()
 
 else ()
 
     #set(CMAKE_UNITY_BUILD true) # merge c++ files
     add_compile_options(
-            -O0
+            #-O0
             #-Os
-            #-O3
+            -O3
             #-ffunction-sections -fdata-sections # don't use together with flto
             #-g -g3 -ggdb -gdwarf-4   # useful if you want line numbers in *.nm output
     )
@@ -69,6 +69,7 @@ find_package(Threads REQUIRED)
 include_directories(
         ~/src/Daxa/include
         ~/vulkan/include
+        ~/src/imgui
 )
 
 
@@ -91,10 +92,18 @@ add_executable(
         /home/martin/src/Daxa/src/impl_timeline_query.cpp
 
         /home/martin/src/Daxa/src/utils/impl_task_graph.cpp
-        #/home/martin/src/Daxa/src/utils/impl_imgui.cpp
+        /home/martin/src/Daxa/src/utils/impl_imgui.cpp
         #/home/martin/src/Daxa/src/utils/impl_fsr2.cpp
         /home/martin/src/Daxa/src/utils/impl_mem.cpp
         /home/martin/src/Daxa/src/utils/impl_pipeline_manager.cpp
+
+        /home/martin/src/imgui/imgui.cpp
+        /home/martin/src/imgui/imgui_demo.cpp
+        /home/martin/src/imgui/imgui_draw.cpp
+        /home/martin/src/imgui/imgui_tables.cpp
+        /home/martin/src/imgui/imgui_widgets.cpp
+        /home/martin/src/imgui/backends/imgui_impl_glfw.cpp
+        # /home/martin/src/imgui/backends/imgui_impl_vulkan.cpp
 
 )
 set(HOME_PATH /home/martin)
@@ -105,6 +114,7 @@ target_compile_definitions(${PROJECT_NAME}
         "DAXA_CMAKE_EXPORT="
         DAXA_BUILT_WITH_X11=true
         DAXA_BUILT_WITH_UTILS_MEM=true
+        DAXA_BUILT_WITH_UTILS_IMGUI=true
         DAXA_INCLUDE="${HOME_PATH}/src/Daxa/include"
         SHADER_PATH="${CMAKE_SOURCE_DIR}/src"
 )
