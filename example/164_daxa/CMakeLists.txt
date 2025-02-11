@@ -5,13 +5,36 @@ set(DAXA_ENABLE_UTILS_PIPELINE_MANAGER_GLSLANG ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_PREFIX_PATH ~/vulkan/)
 
-
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
             -g -g3 -ggdb -gdwarf-4
             -Og
     )
     add_link_options(-Wl,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
+
+#    set(CPPCHECK_TEMPLATE "gcc")
+#    find_program(CPPCHECK cppcheck)
+#    find_program(CLANG_TIDY clang-tidy)
+#    if(CPPCHECK)
+#        set(CMAKE_CXX_CPPCHECK
+#                ${CPPCHECK}
+#                --template=${CPPCHECK_TEMPLATE}
+#                --enable=style,performance,warning,portability
+#                --inline-suppr
+#                --suppress=cppcheckError
+#                --suppress=internalAstError
+#                --suppress=unmatchedSuppression
+#                --suppress=preprocessorErrorDirective
+#                --suppress=exceptThrowInDestructor
+#                --suppress=functionStatic
+#                --inconclusive)
+#    endif()
+#    if(CLANG_TIDY)
+#        set(CMAKE_CXX_CLANG_TIDY
+#                ${CLANG_TIDY}
+#                --fix)
+#    endif()
+
 else ()
 
     #set(CMAKE_UNITY_BUILD true) # merge c++ files
