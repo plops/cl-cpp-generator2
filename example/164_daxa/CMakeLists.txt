@@ -42,7 +42,7 @@ else ()
             #-O0
             #-Os
             -O3
-            #-ffunction-sections -fdata-sections # don't use together with flto
+            -ffunction-sections -fdata-sections # don't use together with flto
             #-g -g3 -ggdb -gdwarf-4   # useful if you want line numbers in *.nm output
     )
     #set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
@@ -54,7 +54,7 @@ else ()
     #   -Map=...: Generates a map file that details the memory layout of your linked executable.
     #   --cref: Enables the generation of a cross-reference table. This table provides information about how symbols (functions, variables) are defined and used throughout your codebase.
 
-    #add_link_options(-Wl,-gc-sections,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
+    add_link_options(-Wl,-gc-sections,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
 endif ()
 
 
@@ -70,6 +70,7 @@ include_directories(
         ~/src/Daxa/include
         ~/vulkan/include
         ~/src/imgui
+        ~/src/implot
 )
 
 
@@ -104,6 +105,11 @@ add_executable(
         /home/martin/src/imgui/imgui_widgets.cpp
         /home/martin/src/imgui/backends/imgui_impl_glfw.cpp
         # /home/martin/src/imgui/backends/imgui_impl_vulkan.cpp
+
+        /home/martin/src/implot/implot.cpp
+        /home/martin/src/implot/implot_demo.cpp
+        /home/martin/src/implot/implot_items.cpp
+
 
 )
 set(HOME_PATH /home/martin)

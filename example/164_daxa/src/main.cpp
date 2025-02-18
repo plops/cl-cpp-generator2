@@ -28,6 +28,7 @@
 #include "daxa/command_recorder.hpp"
 #include "shared.inl"
 #include "window.h"
+#include <implot.h>
 
 using namespace daxa;
 
@@ -175,6 +176,7 @@ int main(const int argc, char const * argv[])
     auto imgui_renderer{[&device, &swapchain, &window]() -> ImGuiRenderer
     {
         ImGui::CreateContext();
+        ImPlot::CreateContext();
         ImGui_ImplGlfw_InitForVulkan(window.glfw_window_ptr, true);
         return ImGuiRenderer({
             .device = device
@@ -284,6 +286,7 @@ int main(const int argc, char const * argv[])
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
             ImGui::ShowDemoWindow();
+            ImPlot::ShowDemoWindow();
             ImGui::Begin("Settings");
 
             // ImGui::Image(
@@ -317,6 +320,8 @@ int main(const int argc, char const * argv[])
         }
         ImGui_ImplGlfw_Shutdown();
 
+        ImPlot::DestroyContext();
+        ImGui::DestroyContext();
         device.destroy_buffer(buffer_id);
 
         device.wait_idle();
