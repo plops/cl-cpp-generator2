@@ -37,7 +37,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 else ()
 
-    set(CMAKE_UNITY_BUILD true) # merge c++ files
+    #set(CMAKE_UNITY_BUILD true) # merge c++ files
     add_compile_options(
             #-O0
             #-Os
@@ -73,42 +73,43 @@ include_directories(
         ~/src/implot
 )
 
+set(DEP_SRC_PATH /home/martin/src)
 
 add_executable(
         ${PROJECT_NAME}
         src/main.cpp
         #src/main_tut.cpp
-        /home/martin/src/Daxa/src/cpp_wrapper.cpp
+        ${DEP_SRC_PATH}/Daxa/src/cpp_wrapper.cpp
 
-        /home/martin/src/Daxa/src/impl_device.cpp
-        /home/martin/src/Daxa/src/impl_features.cpp
-        /home/martin/src/Daxa/src/impl_instance.cpp
-        /home/martin/src/Daxa/src/impl_core.cpp
-        /home/martin/src/Daxa/src/impl_pipeline.cpp
-        /home/martin/src/Daxa/src/impl_swapchain.cpp
-        /home/martin/src/Daxa/src/impl_command_recorder.cpp
-        /home/martin/src/Daxa/src/impl_gpu_resources.cpp
-        /home/martin/src/Daxa/src/impl_sync.cpp
-        /home/martin/src/Daxa/src/impl_dependencies.cpp
-        /home/martin/src/Daxa/src/impl_timeline_query.cpp
+        ${DEP_SRC_PATH}/Daxa/src/impl_device.cpp
+        ${DEP_SRC_PATH}/Daxa/src/impl_features.cpp
+        ${DEP_SRC_PATH}/Daxa/src/impl_instance.cpp
+        ${DEP_SRC_PATH}/Daxa/src/impl_core.cpp
+        ${DEP_SRC_PATH}/Daxa/src/impl_pipeline.cpp
+        ${DEP_SRC_PATH}/Daxa/src/impl_swapchain.cpp
+        ${DEP_SRC_PATH}/Daxa/src/impl_command_recorder.cpp
+        ${DEP_SRC_PATH}/Daxa/src/impl_gpu_resources.cpp
+        ${DEP_SRC_PATH}/Daxa/src/impl_sync.cpp
+        ${DEP_SRC_PATH}/Daxa/src/impl_dependencies.cpp
+        ${DEP_SRC_PATH}/Daxa/src/impl_timeline_query.cpp
 
-        /home/martin/src/Daxa/src/utils/impl_task_graph.cpp
-        /home/martin/src/Daxa/src/utils/impl_imgui.cpp
-        #/home/martin/src/Daxa/src/utils/impl_fsr2.cpp
-        /home/martin/src/Daxa/src/utils/impl_mem.cpp
-        /home/martin/src/Daxa/src/utils/impl_pipeline_manager.cpp
+        ${DEP_SRC_PATH}/Daxa/src/utils/impl_task_graph.cpp
+        ${DEP_SRC_PATH}/Daxa/src/utils/impl_imgui.cpp
+        #${DEP_SRC_PATH}/Daxa/src/utils/impl_fsr2.cpp
+        ${DEP_SRC_PATH}/Daxa/src/utils/impl_mem.cpp
+        ${DEP_SRC_PATH}/Daxa/src/utils/impl_pipeline_manager.cpp
 
-        /home/martin/src/imgui/imgui.cpp
-        /home/martin/src/imgui/imgui_demo.cpp
-        /home/martin/src/imgui/imgui_draw.cpp
-        /home/martin/src/imgui/imgui_tables.cpp
-        /home/martin/src/imgui/imgui_widgets.cpp
-        /home/martin/src/imgui/backends/imgui_impl_glfw.cpp
-        # /home/martin/src/imgui/backends/imgui_impl_vulkan.cpp
+        ${DEP_SRC_PATH}/imgui/imgui.cpp
+        ${DEP_SRC_PATH}/imgui/imgui_demo.cpp
+        ${DEP_SRC_PATH}/imgui/imgui_draw.cpp
+        ${DEP_SRC_PATH}/imgui/imgui_tables.cpp
+        ${DEP_SRC_PATH}/imgui/imgui_widgets.cpp
+        ${DEP_SRC_PATH}/imgui/backends/imgui_impl_glfw.cpp
+        # ${DEP_SRC_PATH}/imgui/backends/imgui_impl_vulkan.cpp
 
-        /home/martin/src/implot/implot.cpp
-        /home/martin/src/implot/implot_demo.cpp
-        /home/martin/src/implot/implot_items.cpp
+        ${DEP_SRC_PATH}/implot/implot.cpp
+        ${DEP_SRC_PATH}/implot/implot_demo.cpp
+        ${DEP_SRC_PATH}/implot/implot_items.cpp
 
 
 )
