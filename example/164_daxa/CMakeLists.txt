@@ -37,7 +37,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 else ()
 
-    #set(CMAKE_UNITY_BUILD true) # merge c++ files
+    set(CMAKE_UNITY_BUILD true) # merge c++ files
     add_compile_options(
             #-O0
             #-Os
@@ -45,7 +45,7 @@ else ()
             -ffunction-sections -fdata-sections # don't use together with flto
             #-g -g3 -ggdb -gdwarf-4   # useful if you want line numbers in *.nm output
     )
-    #set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
+    #Cset(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
 
 
     #   -gc-sections: Enables "garbage collection" at the linker stage. The linker will analyze your code and discard any unused functions or data sections to reduce the final executable size.

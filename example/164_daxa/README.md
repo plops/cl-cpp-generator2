@@ -6,6 +6,8 @@
 cd ~/src
 git clone --recursive https://github.com/Ipotrick/Daxa
 git clone --recursive https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+git clone --recursive https://github.com/ocornut/imgui
+git clone --recursive https://github.com/epezent/implot
 ```
 
 patch impl_task_graph of daxa:
