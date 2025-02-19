@@ -173,10 +173,17 @@ int main(const int argc, char const * argv[])
                                                , .enable_debug_info{true}}
                        , .name{"my pipeline manager"}})};
 
+
+
+
     auto imgui_renderer{[&device, &swapchain, &window]() -> ImGuiRenderer
     {
         ImGui::CreateContext();
         ImPlot::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        //auto fn = "/home/martin/src/imgui/misc/fonts/DroidSans.ttf";
+        auto fn = "/home/martin/src/imgui/misc/fonts/Roboto-Medium.ttf";
+        io.Fonts->AddFontFromFileTTF(fn, 16.0);
         ImGui_ImplGlfw_InitForVulkan(window.glfw_window_ptr, true);
         return ImGuiRenderer({
             .device = device
