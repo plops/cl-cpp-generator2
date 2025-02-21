@@ -2,6 +2,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+// simple container that keeps things together
 template <class T, size_t ChunkSize> class stable_vector {
   static_assert(0 == (ChunkSize % 2), "ChunkSize needs to be a multiple of 2");
   void operator[](size_t i) {

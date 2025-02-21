@@ -51,6 +51,7 @@
       unordered_map
       )
 
+     (comments "simple container that keeps things together")
      (space
       template
       (angle "class T"
