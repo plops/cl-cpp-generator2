@@ -19,4 +19,5 @@ int main() {}
 stable_vector<float, 1024> mFloats;
 std::unordered_map<int, float *> mInstruments;
 // Working set size (WSS) is the memory you work with, not how much memory you
-// allocated or mapped. Measured in cache lines or pages
+// allocated or mapped. Measured in cache lines or pages (Brendan Gregg WSS
+// estimation tool)
