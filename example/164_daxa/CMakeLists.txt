@@ -41,7 +41,7 @@ else ()
     add_compile_options(
             #-O0
             #-Os
-            -O3
+            -O3 -march=native
             -ffunction-sections -fdata-sections # don't use together with flto
             #-g -g3 -ggdb -gdwarf-4   # useful if you want line numbers in *.nm output
     )

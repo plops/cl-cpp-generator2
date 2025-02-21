@@ -45,27 +45,25 @@
      (include<>
 					;iostream
 					;format
-					vector
-      ;memory
-  
+      vector
+      memory
+      boost/container/static_vector.hpp
       )
-
-          
 
      (space
       template
       (angle "class T"
 	     "size_t ChunkSize")
-      (defclass stable_vector ()
+      (defclass+ stable_vector ()
 	(static_assert (== 0 (% ChunkSize 2))
-	 (string "ChunkSize needs to be a multiple of 2"))
+		       (string "ChunkSize needs to be a multiple of 2"))
 	(defmethod operator[] (i)
 	  (declare (type size_t i))
 	  (return (aref (aref *mChunks (/ i
 					  ChunkSize))
 			(% i ChunkSize))))
-	(space using (setf Chunk boost--container--static_vector (angle T ChunkSize)))
-	(space std--vector (angle std--unique_ptr (angle Chunk))
+	(space using (setf Chunk "boost::container::static_vector<T,ChunkSize>"))
+	(space "std::vector<std::unique_ptr<Chunk>>"
 	       mChunks)))
      
      (defun main ()

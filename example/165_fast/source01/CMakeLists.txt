@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 3.6)
-project(triangle)
+cmake_minimum_required(VERSION 3.31)
+project(fast)
 set(CMAKE_CXX_STANDARD 26)
-set(DAXA_ENABLE_UTILS_PIPELINE_MANAGER_GLSLANG ON)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_PREFIX_PATH ~/vulkan/)
+
+find_package(Boost COMPONENTS container)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
@@ -58,86 +59,14 @@ else ()
 endif ()
 
 
-find_package(Vulkan REQUIRED)
-find_package(VulkanMemoryAllocator CONFIG REQUIRED)
-
-find_package(glslang CONFIG REQUIRED)
-find_package(Threads REQUIRED)
-
-#find_package(x11)
-
-include_directories(
-        ~/src/Daxa/include
-        ~/vulkan/include
-        ~/src/imgui
-        ~/src/implot
-)
-
-set(DEP_SRC_PATH /home/martin/src)
-
 add_executable(
         ${PROJECT_NAME}
         src/main.cpp
-        #src/main_tut.cpp
-        ${DEP_SRC_PATH}/Daxa/src/cpp_wrapper.cpp
-
-        ${DEP_SRC_PATH}/Daxa/src/impl_device.cpp
-        ${DEP_SRC_PATH}/Daxa/src/impl_features.cpp
-        ${DEP_SRC_PATH}/Daxa/src/impl_instance.cpp
-        ${DEP_SRC_PATH}/Daxa/src/impl_core.cpp
-        ${DEP_SRC_PATH}/Daxa/src/impl_pipeline.cpp
-        ${DEP_SRC_PATH}/Daxa/src/impl_swapchain.cpp
-        ${DEP_SRC_PATH}/Daxa/src/impl_command_recorder.cpp
-        ${DEP_SRC_PATH}/Daxa/src/impl_gpu_resources.cpp
-        ${DEP_SRC_PATH}/Daxa/src/impl_sync.cpp
-        ${DEP_SRC_PATH}/Daxa/src/impl_dependencies.cpp
-        ${DEP_SRC_PATH}/Daxa/src/impl_timeline_query.cpp
-
-        ${DEP_SRC_PATH}/Daxa/src/utils/impl_task_graph.cpp
-        ${DEP_SRC_PATH}/Daxa/src/utils/impl_imgui.cpp
-        #${DEP_SRC_PATH}/Daxa/src/utils/impl_fsr2.cpp
-        ${DEP_SRC_PATH}/Daxa/src/utils/impl_mem.cpp
-        ${DEP_SRC_PATH}/Daxa/src/utils/impl_pipeline_manager.cpp
-
-        ${DEP_SRC_PATH}/imgui/imgui.cpp
-        ${DEP_SRC_PATH}/imgui/imgui_demo.cpp
-        ${DEP_SRC_PATH}/imgui/imgui_draw.cpp
-        ${DEP_SRC_PATH}/imgui/imgui_tables.cpp
-        ${DEP_SRC_PATH}/imgui/imgui_widgets.cpp
-        ${DEP_SRC_PATH}/imgui/backends/imgui_impl_glfw.cpp
-        # ${DEP_SRC_PATH}/imgui/backends/imgui_impl_vulkan.cpp
-
-        ${DEP_SRC_PATH}/implot/implot.cpp
-        ${DEP_SRC_PATH}/implot/implot_demo.cpp
-        ${DEP_SRC_PATH}/implot/implot_items.cpp
-
-
 )
-set(HOME_PATH /home/martin)
-target_compile_definitions(${PROJECT_NAME}
-        PUBLIC
-        DAXA_BUILT_WITH_UTILS_PIPELINE_MANAGER_GLSLANG=true
-        DAXA_BUILT_WITH_UTILS_TASK_GRAPH=true
-        "DAXA_CMAKE_EXPORT="
-        DAXA_BUILT_WITH_X11=true
-        DAXA_BUILT_WITH_UTILS_MEM=true
-        DAXA_BUILT_WITH_UTILS_IMGUI=true
-        DAXA_INCLUDE="${HOME_PATH}/src/Daxa/include"
-        SHADER_PATH="${CMAKE_SOURCE_DIR}/src"
-)
-#target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
 target_link_libraries(
         ${PROJECT_NAME}
-        # /home/martin/vulkan/lib64/libdaxa.a
-        glfw
-        #vulkan
-        X11
-
-        glslang::glslang
-        #glslang::SPIRV
-        GPUOpen::VulkanMemoryAllocator
-        Vulkan::Vulkan
+        Boost::container
 )
 
 target_compile_options(${PROJECT_NAME}
