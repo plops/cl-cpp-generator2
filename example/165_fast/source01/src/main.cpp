@@ -24,6 +24,7 @@ void BM_StableVector() {
   stable_vector<int, 4 * 4096> v;
   std::list<int> tmp;
   for (decltype(0 + 100'000 + 1) i = 0; i < 100'000; i += 1) {
+    // randomize heap
     for (decltype(0 + 1000 + 1) x = 0; x < 1000; x += 1) {
       tmp.push_back(x);
     }

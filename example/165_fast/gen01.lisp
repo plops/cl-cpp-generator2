@@ -80,6 +80,7 @@
        "stable_vector<int, 4*4096> v;"
        "std::list<int> tmp;"
        (dotimes (i "100'000")
+	 (comments "randomize heap")
 	 (dotimes (x 1000)
 	   (tmp.push_back x))
 	 (v.push_back i))
