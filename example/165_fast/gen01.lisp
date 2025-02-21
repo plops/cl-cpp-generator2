@@ -74,6 +74,8 @@
      "stable_vector<float,32> mFloats;"
      "std::unordered_map<int,float*> mInstruments;"
 
+     (comments "Working set size (WSS) is the memory you work with, not how much memory you allocated or mapped. Measured in cache lines or pages")
+
      )
    :omit-parens t
    :format t
