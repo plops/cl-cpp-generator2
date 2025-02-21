@@ -48,6 +48,8 @@
       vector
       memory
       boost/container/static_vector.hpp
+      boost/container/devector.hpp
+      boost/multi_array.hpp
       unordered_map
       list
       )
@@ -68,7 +70,7 @@
 			(% i ChunkSize))))
 	(defmethod push_back (value)
 	  (declare (type "T&&" value))
-	  (setf (aref *mChunks 0) value)
+	  (dot *mChunks  (push_back value))
 	  )
 	"private:"
 	(comments "similar to std::deque but that doesn't have a configurable chunk size, which is usually chosen too small by the compiler")
@@ -83,18 +85,23 @@
 	 (comments "randomize heap")
 	 (dotimes (x 1000)
 	   (tmp.push_back x))
-	 (v.push_back i))
+	 ;(v.push_back i)
+	 )
        #+nil 
        (for-range (_ state)))
      
      (defun main ()
        (declare (values int))
 
-
+       "boost::multi_array<float,3> a;"
+       (dotimes (i 10)
+	 (setf (aref a i i i) i))
+					;
+       ;"boost::container::devector d;"
        "stable_vector<float,1024> mFloats;"
        "std::unordered_map<int,float*> mInstruments;"
 
-       (BM_StableVector)
+      (BM_StableVector)
 
        (comments "Working set size (WSS) is the memory you work with, not how much memory you allocated or mapped. Measured in cache lines or pages (Brendan Gregg WSS estimation tool wss.pl)"))
 

@@ -1,4 +1,6 @@
+#include <boost/container/devector.hpp>
 #include <boost/container/static_vector.hpp>
+#include <boost/multi_array.hpp>
 #include <list>
 #include <memory>
 #include <unordered_map>
@@ -11,7 +13,7 @@ public:
   void operator[](size_t i) {
     return *mChunks[(i / ChunkSize)][(i % ChunkSize)];
   }
-  void push_back(T &&value) { *mChunks[0] = value; }
+  void push_back(T &&value) { *mChunks.push_back(value); }
 
 private:
   // similar to std::deque but that doesn't have a configurable chunk size,
@@ -28,11 +30,14 @@ void BM_StableVector() {
     for (decltype(0 + 1000 + 1) x = 0; x < 1000; x += 1) {
       tmp.push_back(x);
     }
-    v.push_back(i);
   }
 }
 
 int main() {
+  boost::multi_array<float, 3> a;
+  for (decltype(0 + 10 + 1) i = 0; i < 10; i += 1) {
+    a[i][i][i] = i;
+  }
   stable_vector<float, 1024> mFloats;
   std::unordered_map<int, float *> mInstruments;
   BM_StableVector();
