@@ -49,6 +49,7 @@
       memory
       boost/container/static_vector.hpp
       unordered_map
+      list
       )
 
      (comments "simple container that keeps things together")
@@ -59,24 +60,42 @@
       (defclass+ stable_vector ()
 	(static_assert (== 0 (% ChunkSize 2))
 		       (string "ChunkSize needs to be a multiple of 2"))
+	"public:"
 	(defmethod operator[] (i)
 	  (declare (type size_t i))
 	  (return (aref (aref *mChunks (/ i
 					  ChunkSize))
 			(% i ChunkSize))))
+	(defmethod push_back (value)
+	  (declare (type "T&&" value))
+	  (setf (aref *mChunks 0) value)
+	  )
+	"private:"
 	(comments "similar to std::deque but that doesn't have a configurable chunk size, which is usually chosen too small by the compiler")
 	(space using (setf Chunk "boost::container::static_vector<T,ChunkSize>"))
 	(space "std::vector<std::unique_ptr<Chunk>>"
 	       mChunks)))
+
+     (defun BM_StableVector ()
+       "stable_vector<int, 4*4096> v;"
+       "std::list<int> tmp;"
+       (dotimes (i "100'000")
+	 (dotimes (x 1000)
+	   (tmp.push_back x))
+	 (v.push_back i))
+       #+nil 
+       (for-range (_ state)))
      
      (defun main ()
-       (declare (values int)))
+       (declare (values int))
 
 
-     "stable_vector<float,1024> mFloats;"
-     "std::unordered_map<int,float*> mInstruments;"
+       "stable_vector<float,1024> mFloats;"
+       "std::unordered_map<int,float*> mInstruments;"
 
-     (comments "Working set size (WSS) is the memory you work with, not how much memory you allocated or mapped. Measured in cache lines or pages (Brendan Gregg WSS estimation tool)")
+       (BM_StableVector)
+
+       (comments "Working set size (WSS) is the memory you work with, not how much memory you allocated or mapped. Measured in cache lines or pages (Brendan Gregg WSS estimation tool)"))
 
      )
    :omit-parens t
