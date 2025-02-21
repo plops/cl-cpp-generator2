@@ -1,5 +1,6 @@
 #include <boost/container/static_vector.hpp>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 template <class T, size_t ChunkSize> class stable_vector {
   static_assert(0 == (ChunkSize % 2), "ChunkSize needs to be a multiple of 2");
@@ -11,3 +12,6 @@ template <class T, size_t ChunkSize> class stable_vector {
 };
 
 int main() {}
+
+stable_vector<float, 32> mFloats;
+std::unordered_map<int, float *> mInstruments;

@@ -48,6 +48,7 @@
       vector
       memory
       boost/container/static_vector.hpp
+      unordered_map
       )
 
      (space
@@ -68,6 +69,10 @@
      
      (defun main ()
        (declare (values int)))
+
+
+     "stable_vector<float,32> mFloats;"
+     "std::unordered_map<int,float*> mInstruments;"
 
      )
    :omit-parens t
