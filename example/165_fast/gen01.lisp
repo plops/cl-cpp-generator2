@@ -63,6 +63,7 @@
 	  (return (aref (aref *mChunks (/ i
 					  ChunkSize))
 			(% i ChunkSize))))
+	(comments "similar to std::deque but that doesn't have a configurable chunk size, which is usually chosen too small by the compiler")
 	(space using (setf Chunk "boost::container::static_vector<T,ChunkSize>"))
 	(space "std::vector<std::unique_ptr<Chunk>>"
 	       mChunks)))
@@ -71,7 +72,7 @@
        (declare (values int)))
 
 
-     "stable_vector<float,32> mFloats;"
+     "stable_vector<float,1024> mFloats;"
      "std::unordered_map<int,float*> mInstruments;"
 
      (comments "Working set size (WSS) is the memory you work with, not how much memory you allocated or mapped. Measured in cache lines or pages")
