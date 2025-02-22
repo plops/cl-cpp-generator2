@@ -65,29 +65,46 @@
 		       (string "ChunkSize needs to be a multiple of 2"))
 	"public:"
 	(defmethod operator[] (i)
-	  (declare (type size_t i))
-	  (return (aref (aref *mChunks (/ i
-					  ChunkSize))
+	  (declare (type size_t i)
+		   (values T))
+	  (return (aref (paren (aref *mChunks (/ i
+					   ChunkSize)))
 			(% i ChunkSize))))
 	(defmethod push_back (value)
-	  (declare (type "T&&" value))
+	  (declare (type "T&" value))
+	  (incf mN)
 	  (dot *mChunks  (push_back value))
 	  )
+	(defmethod size ()
+	  (declare (values size_t))
+	  (return mN))
+	
 	"private:"
+	
 	(comments "similar to std::deque but that doesn't have a configurable chunk size, which is usually chosen too small by the compiler")
 	(space using (setf Chunk "boost::container::static_vector<T,ChunkSize>"))
-	(space "std::vector<std::unique_ptr<Chunk>>"
-	       mChunks)))
+	"std::vector<std::unique_ptr<Chunk>> mChunks;"
 
+	"size_t mN;"
+	
+	))
+
+     (defun Sum (v)
+       (declare (type "stable_vector<int,4*4096>" v)
+		(values int))
+       "int sum{0};"
+       (dotimes (i (v.size))
+	 (incf sum (aref v i)))
+       )
      (defun BM_StableVector (state)
        (declare (type "benchmark::State&" state))
        "stable_vector<int, 4*4096> v;"
        "std::list<int> tmp;"
        (dotimes (i "100'000")
-	 (comments "randomize heap")
+	 (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
 	 (dotimes (x 1000)
 	   (tmp.push_back x))
-	 ;(v.push_back i)
+	 (v.push_back i)
 	 )
        
        (for-range (_ state)
@@ -97,15 +114,17 @@
      (defun main ()
        (declare (values int))
 
-       "boost::multi_array<float,3> a;"
-       (dotimes (i 10)
-	 (setf (aref a i i i) i))
+       #+nil
+       (do0
+	"boost::multi_array<float,3> a;"
+	(dotimes (i 10)
+	  (setf (aref a i i i) i)))
 					;
        ;"boost::container::devector d;"
        "stable_vector<float,1024> mFloats;"
        "std::unordered_map<int,float*> mInstruments;"
 
-      (BM_StableVector)
+      (BENCHMARK BM_StableVector)
 
        (comments "Working set size (WSS) is the memory you work with, not how much memory you allocated or mapped. Measured in cache lines or pages (Brendan Gregg WSS estimation tool wss.pl)"))
 

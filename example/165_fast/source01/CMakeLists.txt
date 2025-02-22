@@ -4,6 +4,9 @@ set(CMAKE_CXX_STANDARD 26)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(CMAKE_PREFIX_PATH /home/martin/vulkan)
+
+find_package(benchmark)
 find_package(Boost COMPONENTS container)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -67,6 +70,7 @@ add_executable(
 target_link_libraries(
         ${PROJECT_NAME}
         Boost::container
+	benchmark::benchmark
 )
 
 target_compile_options(${PROJECT_NAME}
