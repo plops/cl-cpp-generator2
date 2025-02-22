@@ -11,12 +11,12 @@ template <class T, size_t ChunkSize> class stable_vector {
   static_assert(0 == (ChunkSize % 2), "ChunkSize needs to be a multiple of 2");
 
 public:
-  T operator[](size_t i) {
-    return (*mChunks[(i / ChunkSize)])[(i % ChunkSize)];
+  T &operator[](size_t index) {
+    return (*mChunks[(index / ChunkSize)])[(index % ChunkSize)];
   }
-  void push_back(T &value) {
+  void push_back(T value) {
     mN++;
-    *mChunks.push_back(value);
+    *(mChunks.push_back(value));
   }
   size_t size() { return mN; }
 

@@ -64,16 +64,23 @@
 	(static_assert (== 0 (% ChunkSize 2))
 		       (string "ChunkSize needs to be a multiple of 2"))
 	"public:"
-	(defmethod operator[] (i)
-	  (declare (type size_t i)
-		   (values T))
-	  (return (aref (paren (aref *mChunks (/ i
-					   ChunkSize)))
-			(% i ChunkSize))))
+	(defmethod operator[] (index)
+	  (declare (type size_t index)
+		   (values T&))
+	  #+nil (let ((frob (lambda (i)
+			      (return (aref (paren (aref *mChunks (/ i
+							       ChunkSize)))
+				      (% i ChunkSize)))))
+		      )
+		  (return (frob index)))
+	  (return (aref (paren (deref (aref mChunks (/ index
+						 ChunkSize))))
+				      (% index ChunkSize))))
 	(defmethod push_back (value)
-	  (declare (type "T&" value))
+	  (declare (type "T" value))
 	  (incf mN)
-	  (dot *mChunks  (push_back value))
+	  (deref (paren (dot mChunks
+			     (push_back value))))
 	  )
 	(defmethod size ()
 	  (declare (values size_t))
