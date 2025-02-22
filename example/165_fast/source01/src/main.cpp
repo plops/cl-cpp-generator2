@@ -1,3 +1,4 @@
+#include <benchmark/benchmark.h>
 #include <boost/container/devector.hpp>
 #include <boost/container/static_vector.hpp>
 #include <boost/multi_array.hpp>
@@ -22,7 +23,7 @@ private:
   std::vector<std::unique_ptr<Chunk>> mChunks;
 };
 
-void BM_StableVector() {
+void BM_StableVector(benchmark::State &state) {
   stable_vector<int, 4 * 4096> v;
   std::list<int> tmp;
   for (decltype(0 + 100'000 + 1) i = 0; i < 100'000; i += 1) {
@@ -30,6 +31,10 @@ void BM_StableVector() {
     for (decltype(0 + 1000 + 1) x = 0; x < 1000; x += 1) {
       tmp.push_back(x);
     }
+  }
+  for (auto &&_ : state) {
+    auto sum{Sum(v)};
+    benchmark::DoNotOptimize(sum);
   }
 }
 

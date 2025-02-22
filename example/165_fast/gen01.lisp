@@ -52,6 +52,7 @@
       boost/multi_array.hpp
       unordered_map
       list
+      benchmark/benchmark.h
       )
 
      (comments "simple container that keeps things together")
@@ -78,7 +79,8 @@
 	(space "std::vector<std::unique_ptr<Chunk>>"
 	       mChunks)))
 
-     (defun BM_StableVector ()
+     (defun BM_StableVector (state)
+       (declare (type "benchmark::State&" state))
        "stable_vector<int, 4*4096> v;"
        "std::list<int> tmp;"
        (dotimes (i "100'000")
@@ -87,8 +89,10 @@
 	   (tmp.push_back x))
 	 ;(v.push_back i)
 	 )
-       #+nil 
-       (for-range (_ state)))
+       
+       (for-range (_ state)
+		  (let ((sum (Sum v)))
+		    (benchmark--DoNotOptimize sum))))
      
      (defun main ()
        (declare (values int))
