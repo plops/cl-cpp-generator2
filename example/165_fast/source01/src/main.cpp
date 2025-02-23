@@ -1,6 +1,8 @@
 #include <benchmark/benchmark.h>
 #include <list>
+#include <map>
 #include <stable_vector.h>
+#include <unordered_map>
 template <typename T> int Sum(T v) {
   int sum{0};
   for (decltype(0 + v.size() + 1) i = 0; i < v.size(); i += 1) {
@@ -61,7 +63,25 @@ void BM_UnorderedMapReserved(benchmark::State &state) {
   }
 }
 
+void BM_Map(benchmark::State &state) {
+  std::map<int, int> v;
+  std::list<int> tmp;
+  for (decltype(0 + 100'000 + 1) i = 0; i < 100'000; i += 1) {
+    // randomize heap by filling list (this makes the micro-benchmark more like
+    // the real thing)
+    for (decltype(0 + 1000 + 1) x = 0; x < 1000; x += 1) {
+      tmp.push_back(x);
+    }
+    v.emplace(i, i);
+  }
+  for (auto &&_ : state) {
+    auto sum{Sum<std::map<int, int>>(v)};
+    benchmark::DoNotOptimize(sum);
+  }
+}
+
 BENCHMARK(BM_StableVector);
 BENCHMARK(BM_UnorderedMap);
 BENCHMARK(BM_UnorderedMapReserved);
+BENCHMARK(BM_Map);
 BENCHMARK_MAIN();
