@@ -32,3 +32,8 @@ intel tdmaam
 top down microarchitacture analysis method
 
 30:51 perf record -g -p <pid>
+33:00 hw counters libpapi
+
+37:00 [[likely]]
+
+50:00 fast queue write counter and read countre
