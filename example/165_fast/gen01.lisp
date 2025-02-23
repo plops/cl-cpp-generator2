@@ -52,6 +52,7 @@
       ;boost/multi_array.hpp
       unordered_map
       map
+      vector
       list
       benchmark/benchmark.h
       stable_vector.h)
@@ -126,6 +127,53 @@
 		  (let ((sum ("Sum<stable_vector<int,4*4096>>" v)))
 		    (benchmark--DoNotOptimize sum))))
 
+     (defun BM_StableVectorReserved (state)
+       (declare (type "benchmark::State&" state))
+       "stable_vector<int, 4*4096> v;"
+       (v.reserve "100'000")
+       "std::list<int> tmp;"
+       (dotimes (i "100'000")
+	 (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
+	 (dotimes (x 1000)
+	   (tmp.push_back x))
+	 (v.push_back i)
+	 )
+       
+       (for-range (_ state)
+		  (let ((sum ("Sum<stable_vector<int,4*4096>>" v)))
+		    (benchmark--DoNotOptimize sum))))
+
+     (defun BM_Vector (state)
+       (declare (type "benchmark::State&" state))
+       "std::vector<int> v;"
+       "std::list<int> tmp;"
+       (dotimes (i "100'000")
+	 (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
+	 (dotimes (x 1000)
+	   (tmp.push_back x))
+	 (v.push_back i)
+	 )
+       
+       (for-range (_ state)
+		  (let ((sum ("Sum<std::vector<int>>" v)))
+		    (benchmark--DoNotOptimize sum))))
+
+     (defun BM_VectorReserved (state)
+       (declare (type "benchmark::State&" state))
+       "std::vector<int> v;"
+       (v.reserve "100'000")
+       "std::list<int> tmp;"
+       (dotimes (i "100'000")
+	 (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
+	 (dotimes (x 1000)
+	   (tmp.push_back x))
+	 (v.push_back i)
+	 )
+       
+       (for-range (_ state)
+		  (let ((sum ("Sum<std::vector<int>>" v)))
+		    (benchmark--DoNotOptimize sum))))
+
      (defun BM_UnorderedMap (state)
        (declare (type "benchmark::State&" state))
        "std::unordered_map<int, int> v;"
@@ -191,6 +239,9 @@
 	     (comments "Working set size (WSS) is the memory you work with, not how much memory you allocated or mapped. Measured in cache lines or pages (Brendan Gregg WSS estimation tool wss.pl)")
 	     (return 0))
      (BENCHMARK BM_StableVector)
+     (BENCHMARK BM_StableVectorReserved)
+     (BENCHMARK BM_Vector)
+     (BENCHMARK BM_VectorReserved)
      (BENCHMARK BM_UnorderedMap)
      (BENCHMARK BM_UnorderedMapReserved)
      (BENCHMARK BM_Map)
