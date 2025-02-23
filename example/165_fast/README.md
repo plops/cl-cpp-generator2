@@ -2,6 +2,13 @@
 
 A cache friendly storage solution
 
+# Files
+
+|       |                            |
+| gen01 | stable vector              |
+| gen02 | random walk through memory |
+|       |                            |
+
 
 # Dependencies:
 
@@ -37,3 +44,7 @@ top down microarchitacture analysis method
 37:00 [[likely]]
 
 50:00 fast queue write counter and read countre
+
+1:00:00 xray clang (nops at every function can be patched with function calls during profiling)
+
+1:11:00 share l3 cache with others (you need to think about the system as a whole)
