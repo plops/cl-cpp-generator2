@@ -29,5 +29,5 @@ void BM_Walk(benchmark::State &state) {
   state.SetBytesProcessed(n * sizeof(uint64_t) * state.iterations());
 }
 
-BENCHMARK(BM_Walk)->DenseRange(8, 8 << 123);
+BENCHMARK(BM_Walk)->RangeMultiplier(2)->Range(8, 8 << 13);
 BENCHMARK_MAIN();

@@ -91,7 +91,8 @@
      
      
      (-> (BENCHMARK BM_Walk)
-	 (DenseRange 8 (<< 8 123)))
+	 (RangeMultiplier 2)
+	 (Range 8 (<< 8 13)))
      (BENCHMARK_MAIN)
      )
    :omit-parens t
