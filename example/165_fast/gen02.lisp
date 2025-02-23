@@ -120,6 +120,7 @@
 	 (ThreadRange 1 6))
      (BENCHMARK_MAIN)
      ;; ninja && ./fast --benchmark_out_format=csv --benchmark_out=out.csv
+     ;; ninja && ./fast --benchmark_out_format=json --benchmark_out=out.json
      )
    :omit-parens t
    :format t
