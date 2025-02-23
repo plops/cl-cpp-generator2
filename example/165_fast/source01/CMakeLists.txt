@@ -67,10 +67,12 @@ add_executable(
         src/main.cpp
 )
 
+include_directories(/home/martin/src/stable_vector)
+
 target_link_libraries(
         ${PROJECT_NAME}
-        Boost::container
-	benchmark::benchmark
+        #Boost::container
+        benchmark::benchmark
 )
 
 target_compile_options(${PROJECT_NAME}
