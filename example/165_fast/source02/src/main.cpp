@@ -29,5 +29,20 @@ void BM_Walk(benchmark::State &state) {
   state.SetBytesProcessed(n * sizeof(uint64_t) * state.iterations());
 }
 
+void BM_WalkMultiThreaded(benchmark::State &state) {
+  auto kbytes{static_cast<size_t>(state.range(0))};
+  auto n{(kbytes * 1024) / sizeof(uint64_t)};
+  auto v{GenerateShuffledIndices(n)};
+  for (auto &&_ : state) {
+    auto sum{Sum(v, n)};
+    benchmark::DoNotOptimize(sum);
+  }
+  state.SetBytesProcessed(n * sizeof(uint64_t) * state.iterations());
+}
+
 BENCHMARK(BM_Walk)->RangeMultiplier(2)->Range(8, 8 << 13);
+BENCHMARK(BM_WalkMultiThreaded)
+    ->ThreadRange(1, 6)
+    ->RangeMultiplier(2)
+    ->Range(8, 8 << 13);
 BENCHMARK_MAIN();
