@@ -98,13 +98,18 @@
 	 
 	 )))
 
-     (defun Sum (v)
-       (declare (type "stable_vector<int,4*4096>" v)
-		(values int))
-       "int sum{0};"
-       (dotimes (i (v.size))
-	 (incf sum (aref v i)))
-       (return sum))
+     (space
+      "template<typename T>"
+      (defun Sum (v)
+	(declare (type T ;"stable_vector<int,4*4096>"
+		       v
+		       )
+		 (values int))
+	"int sum{0};"
+	(dotimes (i (v.size))
+	  (incf sum (aref v i)))
+	(return sum)))
+     
      (defun BM_StableVector (state)
        (declare (type "benchmark::State&" state))
        "stable_vector<int, 4*4096> v;"
@@ -117,27 +122,60 @@
 	 )
        
        (for-range (_ state)
-		  (let ((sum (Sum v)))
+		  (let ((sum ("Sum<stable_vector<int,4*4096>>" v)))
+		    (benchmark--DoNotOptimize sum))))
+
+     (defun BM_UnorderedMap (state)
+       (declare (type "benchmark::State&" state))
+       "std::unordered_map<int, int> v;"
+       "std::list<int> tmp;"
+       (dotimes (i "100'000")
+	 (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
+	 (dotimes (x 1000)
+	   (tmp.push_back x))
+	 (v.emplace i i)
+	 )
+       
+       (for-range (_ state)
+		  (let ((sum ("Sum<std::unordered_map<int,int>>" v)))
+		    (benchmark--DoNotOptimize sum))))
+
+     (defun BM_UnorderedMapReserved (state)
+       (declare (type "benchmark::State&" state))
+       "std::unordered_map<int, int> v;"
+       (v.reserve "200'000")
+       "std::list<int> tmp;"
+       (dotimes (i "100'000")
+	 (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
+	 (dotimes (x 1000)
+	   (tmp.push_back x))
+	 (v.emplace i i)
+	 )
+       
+       (for-range (_ state)
+		  (let ((sum ("Sum<std::unordered_map<int,int>>" v)))
 		    (benchmark--DoNotOptimize sum))))
      
-    #+nil (defun main ()
-       (declare (values int))
+     #+nil (defun main ()
+	     (declare (values int))
 
-       #+nil
-       (do0
-	"boost::multi_array<float,3> a;"
-	(dotimes (i 10)
-	  (setf (aref a i i i) i)))
+	     #+nil
+	     (do0
+	      "boost::multi_array<float,3> a;"
+	      (dotimes (i 10)
+		(setf (aref a i i i) i)))
 					;
 					;"boost::container::devector d;"
-       ; "stable_vector<float,1024> mFloats;"
-       ;"std::unordered_map<int,float*> mInstruments;"
+					; "stable_vector<float,1024> mFloats;"
+					;"std::unordered_map<int,float*> mInstruments;"
 
        
 
-       (comments "Working set size (WSS) is the memory you work with, not how much memory you allocated or mapped. Measured in cache lines or pages (Brendan Gregg WSS estimation tool wss.pl)")
-       (return 0))
+	     (comments "Working set size (WSS) is the memory you work with, not how much memory you allocated or mapped. Measured in cache lines or pages (Brendan Gregg WSS estimation tool wss.pl)")
+	     (return 0))
      (BENCHMARK BM_StableVector)
+     (BENCHMARK BM_UnorderedMap)
+     (BENCHMARK BM_UnorderedMapReserved)
      (BENCHMARK_MAIN)
      )
    :omit-parens t
