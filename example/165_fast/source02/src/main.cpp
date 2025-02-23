@@ -42,7 +42,7 @@ void BM_WalkMultiThreaded(benchmark::State &state) {
 
 BENCHMARK(BM_Walk)->RangeMultiplier(2)->Range(8, 8 << 13);
 BENCHMARK(BM_WalkMultiThreaded)
-    ->ThreadRange(1, 6)
     ->RangeMultiplier(2)
-    ->Range(8, 8 << 13);
+    ->Range(8, 8 << 13)
+    ->ThreadRange(1, 6);
 BENCHMARK_MAIN();

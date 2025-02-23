@@ -114,10 +114,12 @@
 	 (Range 8 (<< 8 13)))
 
      (-> (BENCHMARK BM_WalkMultiThreaded)
-	 (ThreadRange 1 6)
+	 
 	 (RangeMultiplier 2)
-	 (Range 8 (<< 8 13)))
+	 (Range 8 (<< 8 13))
+	 (ThreadRange 1 6))
      (BENCHMARK_MAIN)
+     ;; ninja && ./fast --benchmark_out_format=csv --benchmark_out=out.csv
      )
    :omit-parens t
    :format t
