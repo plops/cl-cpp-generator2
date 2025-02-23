@@ -10,17 +10,24 @@ std::vector<uint64_t> GenerateShuffledIndices(uint64_t n) {
   return v;
 }
 
-void BM_Map(benchmark::State &state) {
-  auto kbytes{size_t(10'000)};
-  auto n{(kbytes * 1024) / sizeof(uint64_t)};
-  auto v{GenerateShuffledIndices()};
-  for (auto &&_ : state) {
-    auto sum{Sum<std::map<int, int>>(v)};
-    benchmark::DoNotOptimize(sum);
+uint64_t Sum(std::vector<uint64_t> const &v, size_t n) {
+  uint64_t sum{0};
+  for (decltype(0 + n + 1) pos = 0; pos < n; pos += 1) {
+    sum += v[v[pos]];
   }
-  state.SetBytesProcessed(n * sizeof(uint64_t) * state.iterations() *
-                          state.range(0));
+  return sum;
 }
 
-BENCHMARK(BM_Map);
+void BM_Walk(benchmark::State &state) {
+  auto kbytes{static_cast<size_t>(state.range(0))};
+  auto n{(kbytes * 1024) / sizeof(uint64_t)};
+  auto v{GenerateShuffledIndices(n)};
+  for (auto &&_ : state) {
+    auto sum{Sum(v, n)};
+    benchmark::DoNotOptimize(sum);
+  }
+  state.SetBytesProcessed(n * sizeof(uint64_t) * state.iterations());
+}
+
+BENCHMARK(BM_Walk)->Range(8, 8 << 10);
 BENCHMARK_MAIN();

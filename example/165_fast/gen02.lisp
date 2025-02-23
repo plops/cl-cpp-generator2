@@ -63,22 +63,35 @@
 		     gen)
        (return v))
 
-     (defun BM_Map (state)
+     (defun Sum (v n)
+       (declare (type "std::vector<uint64_t> const&" v)
+		(type size_t n)
+		(values uint64_t))
+       "uint64_t sum{0};"
+       (dotimes (pos n)
+	 (incf sum (aref v (aref v pos))))
+       (return sum))
+
+     (defun BM_Walk (state)
        (declare (type "benchmark::State&" state))
 
-       (let ((kbytes (size_t "10'000"))
+       (let ((kbytes (static_cast<size_t> (state.range 0) ;"64"
+					  ))
 	     (n (/ (* kbytes 1024)
 		   (sizeof uint64_t)))
-	     (v (GenerateShuffledIndices))))
+	     (v (GenerateShuffledIndices n ))))
        (for-range (_ state)
-		  (let ((sum ("Sum<std::map<int,int>>" v)))
+		  (let ((sum ("Sum" v n)))
 		    (benchmark--DoNotOptimize sum)))
-       (state.SetBytesProcessed (* n (sizeof uint64_t)
+       
+       (state.SetBytesProcessed (* n
+				   (sizeof uint64_t)
 				   (state.iterations)
-				   (state.range 0))))
+				   )))
      
-
-     (BENCHMARK BM_Map)
+     
+     (-> (BENCHMARK BM_Walk)
+	 (Range 8 (<< 8 10)))
      (BENCHMARK_MAIN)
      )
    :omit-parens t
