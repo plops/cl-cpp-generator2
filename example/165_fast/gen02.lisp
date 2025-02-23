@@ -91,7 +91,7 @@
      
      
      (-> (BENCHMARK BM_Walk)
-	 (Range 8 (<< 8 10)))
+	 (Range 8 (<< 8 14)))
      (BENCHMARK_MAIN)
      )
    :omit-parens t
