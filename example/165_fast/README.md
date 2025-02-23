@@ -31,3 +31,4 @@ intel tdmaam
 
 top down microarchitacture analysis method
 
+30:51 perf record -g -p <pid>
