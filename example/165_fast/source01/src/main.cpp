@@ -1,3 +1,4 @@
+#include "papipp.h"
 #include <benchmark/benchmark.h>
 #include <list>
 #include <map>
@@ -15,6 +16,8 @@ template <typename T> int Sum(T v) {
 void BM_StableVector(benchmark::State &state) {
   stable_vector<int, 4 * 4096> v;
   std::list<int> tmp;
+  papi::event_set<PAPI_TOT_INS, PAPI_TOT_CYC, PAPI_BR_MSP, PAPI_L1_DCM> events;
+  events.start_counters();
   for (decltype(0 + 100'000 + 1) i = 0; i < 100'000; i += 1) {
     // randomize heap by filling list (this makes the micro-benchmark more like
     // the real thing)
@@ -27,6 +30,7 @@ void BM_StableVector(benchmark::State &state) {
     auto sum{Sum<stable_vector<int, 4 * 4096>>(v)};
     benchmark::DoNotOptimize(sum);
   }
+  events.stop_counters();
 }
 
 void BM_StableVectorReserved(benchmark::State &state) {

@@ -67,7 +67,10 @@ add_executable(
         src/main.cpp
 )
 
-include_directories(/home/martin/src/stable_vector)
+include_directories(
+  /home/martin/src/stable_vector
+  /home/martin/vulkan/include
+)
 
 target_link_libraries(
         ${PROJECT_NAME}

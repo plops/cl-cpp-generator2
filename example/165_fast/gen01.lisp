@@ -55,57 +55,15 @@
       vector
       list
       benchmark/benchmark.h
-      stable_vector.h)
+      stable_vector.h
 
-     #+nil
-     (do0
-      (comments "simple container that keeps things together")
-      (space
-       template
-       (angle "class T"
-	      "size_t ChunkSize")
-       (defclass+ stable_vector ()
-	 (static_assert (== 0 (% ChunkSize 2))
-			(string "ChunkSize needs to be a multiple of 2"))
-	 "public:"
-	 (defmethod operator[] (index)
-	   (declare (type size_t index)
-		    (values T&))
-	   #+nil (let ((frob (lambda (i)
-			       (return (aref (paren (aref *mChunks (/ i
-								      ChunkSize)))
-					     (% i ChunkSize)))))
-		       )
-		   (return (frob index)))
-	   (return (aref (paren (deref (aref mChunks (/ index
-							ChunkSize))))
-			 (% index ChunkSize))))
-	 (defmethod push_back (value)
-	   (declare (type "T" value))
-	   (incf mN)
-	   (deref (paren (dot mChunks
-			      (push_back value))))
-	   )
-	 (defmethod size ()
-	   (declare (values size_t))
-	   (return mN))
-	 
-	 "private:"
-	 
-	 (comments "similar to std::deque but that doesn't have a configurable chunk size, which is usually chosen too small by the compiler")
-	 (space using (setf Chunk "boost::container::static_vector<T,ChunkSize>"))
-	 "std::vector<std::unique_ptr<Chunk>> mChunks;"
-
-	 "size_t mN;"
-	 
-	 )))
-
+      
+      )
+     (include papipp.h)
      (space
       "template<typename T>"
       (defun Sum (v)
-	(declare (type T ;"stable_vector<int,4*4096>"
-		       v
-		       )
+	(declare (type T v)
 		 (values int))
 	"int sum{0};"
 	(dotimes (i (v.size))
@@ -116,6 +74,8 @@
        (declare (type "benchmark::State&" state))
        "stable_vector<int, 4*4096> v;"
        "std::list<int> tmp;"
+       "papi::event_set<PAPI_TOT_INS, PAPI_TOT_CYC, PAPI_BR_MSP, PAPI_L1_DCM> events;"
+       (events.start_counters)
        (dotimes (i "100'000")
 	 (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
 	 (dotimes (x 1000)
@@ -125,7 +85,8 @@
        
        (for-range (_ state)
 		  (let ((sum ("Sum<stable_vector<int,4*4096>>" v)))
-		    (benchmark--DoNotOptimize sum))))
+		    (benchmark--DoNotOptimize sum)))
+       (events.stop_counters))
 
      (defun BM_StableVectorReserved (state)
        (declare (type "benchmark::State&" state))

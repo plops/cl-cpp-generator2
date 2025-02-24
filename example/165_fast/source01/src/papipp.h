@@ -7,7 +7,12 @@
 
 extern "C"
 {
-#include <papi.h>
+
+//#define PAPI_VERSION_NUMBER(maj,min,rev) (((maj)<<16) | ((min)<<8) | (rev))
+    /* This is the PAPI version on which we are running */
+//#define PAPI_VERSION  			PAPI_VERSION_NUMBER(3,0,6)
+#include "/home/martin/vulkan/include/papi.h"
+#include "/home/martin/src/papi-7.2.0b1/src/papivi.h"
 }
 
 #include <cstddef>
@@ -15,8 +20,8 @@ extern "C"
 #include <string>
 #include <stdexcept>
 
-#define likely_true(x)   __builtin_expect(!!(x), 1)
-#define likely_false(x)  __builtin_expect(!!(x), 0)
+//#define likely_true(x)   __builtin_expect(!!(x), 1)
+//#define likely_false(x)  __builtin_expect(!!(x), 0)
 
 namespace papi
 {

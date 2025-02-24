@@ -21,6 +21,24 @@ git clone https://github.com/google/benchmark
 git clone https://github.com/david-grs/stable_vector
 ```
 
+## Papi
+
+```
+cd ~/src
+wget -c https://icl.utk.edu/projects/papi/downloads/papi-7.2.0b1.tar.gz
+tar xaf papi-7.2.0b1.tar.gz
+cd papi-7.2.0b1/src
+./configure --prefix=/home/martin/vulkan
+make -j12
+make install
+cd ~/src
+git clone https://github.com/david-grs/papipp
+cd papipp
+mkdir b
+cd b
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/martin/vulkan
+```
+
 
 
 # References:
