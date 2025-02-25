@@ -7,6 +7,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_PREFIX_PATH /home/martin/vulkan)
 
 find_package(benchmark)
+find_package(PkgConfig)
+set(PKG_CONFIG_PATH /home/martin/vulkan/lib/pkgconfig/)
+pkg_check_modules(PAPI REQUIRED papi)
 find_package(Boost COMPONENTS container)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -58,7 +61,7 @@ else ()
     #   -Map=...: Generates a map file that details the memory layout of your linked executable.
     #   --cref: Enables the generation of a cross-reference table. This table provides information about how symbols (functions, variables) are defined and used throughout your codebase.
 
-    add_link_options(-Wl,-gc-sections,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
+    add_link_options(-L/home/martin/vulkan/lib -Wl,-gc-sections,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
 endif ()
 
 
@@ -76,6 +79,7 @@ target_link_libraries(
         ${PROJECT_NAME}
         #Boost::container
         benchmark::benchmark
+        ${PAPI_LIBRARIES}
 )
 
 target_compile_options(${PROJECT_NAME}

@@ -92,8 +92,8 @@ namespace papi
         {
             int ret;
 
-            // if (likely_false((ret = ::PAPI_read_counters(_counters.data(), size())) != PAPI_OK))
-            //     throw std::runtime_error(std::string("PAPI_read_counters failed with error: ") + PAPI_strerror(ret));
+             if (likely_false((ret = ::PAPI_reset(_event_set)) != PAPI_OK))
+                 throw std::runtime_error(std::string("PAPI_reset failed with error: ") + PAPI_strerror(ret));
         }
 
         void stop_counters()
