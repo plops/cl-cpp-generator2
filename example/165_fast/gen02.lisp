@@ -82,31 +82,31 @@
 	     (v (GenerateShuffledIndices n ))))
        (for-range (_ state)
 		  (let ((sum ("Sum" v n)))
-		    (benchmark--DoNotOptimize sum)))
-       
-       (state.SetBytesProcessed (* n
-				   (sizeof uint64_t)
-				   (state.iterations)
-				   )))
+		    (benchmark--DoNotOptimize sum))
+		  
+		  (state.SetBytesProcessed (* n
+					      (sizeof uint64_t)
+					      (state.iterations)
+					      )))
 
 
-     (defun BM_WalkMultiThreaded (state)
-       (declare (type "benchmark::State&" state))
-       
-       (do0 ;when (== 0 (state.thread_index))
-	 (let ((kbytes (static_cast<size_t> (state.range 0) ;"64"
-					    ))
-	       (n (/ (* kbytes 1024)
-		     (sizeof uint64_t)))
-	       (v (GenerateShuffledIndices n )))))
-       (for-range (_ state)
-		  (let ((sum ("Sum" v n)))
-		    (benchmark--DoNotOptimize sum)))
-       (do0 ;when (== 0 (state.thread_index))
-	(state.SetBytesProcessed (* n
-				    (sizeof uint64_t)
-				    (state.iterations)
-				    ))))
+       (defun BM_WalkMultiThreaded (state)
+	 (declare (type "benchmark::State&" state))
+	 
+	 (do0 ;when (== 0 (state.thread_index))
+	  (let ((kbytes (static_cast<size_t> (state.range 0) ;"64"
+					     ))
+		(n (/ (* kbytes 1024)
+		      (sizeof uint64_t)))
+		(v (GenerateShuffledIndices n )))))
+	 (for-range (_ state)
+		    (let ((sum ("Sum" v n)))
+		      (benchmark--DoNotOptimize sum)))
+	 (do0 ;when (== 0 (state.thread_index))
+	  (state.SetBytesProcessed (* n
+				      (sizeof uint64_t)
+				      (state.iterations)
+				      )))))
      
      
      (-> (BENCHMARK BM_Walk)

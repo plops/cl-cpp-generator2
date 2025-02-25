@@ -33,6 +33,16 @@ void BM_StableVector(benchmark::State &state) {
   }
   events.stop_counters();
   std::cout << events << "\n";
+  auto papi_tot_ins{events.get<PAPI_TOT_INS>().counter()};
+  std::cout << std::format("(:papi_tot_ins '{}')\n", papi_tot_ins);
+  auto papi_tot_cyc{events.get<PAPI_TOT_CYC>().counter()};
+  std::cout << std::format("(:papi_tot_cyc '{}')\n", papi_tot_cyc);
+  auto papi_br_msp{events.get<PAPI_BR_MSP>().counter()};
+  std::cout << std::format("(:papi_br_msp '{}')\n", papi_br_msp);
+  auto papi_l1_dcm{events.get<PAPI_L1_DCM>().counter()};
+  std::cout << std::format("(:papi_l1_dcm '{}')\n", papi_l1_dcm);
+  auto insPerCyc{static_cast<float>(papi_tot_ins) / papi_tot_cyc};
+  std::cout << std::format("(:insPerCyc '{}')\n", insPerCyc);
 }
 
 void BM_StableVectorReserved(benchmark::State &state) {

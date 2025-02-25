@@ -79,7 +79,7 @@ target_link_libraries(
         ${PROJECT_NAME}
         #Boost::container
         benchmark::benchmark
-        ${PAPI_LIBRARIES}
+        papi.a #${PAPI_LIBRARIES}
 )
 
 target_compile_options(${PROJECT_NAME}
