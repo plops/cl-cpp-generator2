@@ -1,5 +1,6 @@
 #include "papipp.h"
 #include <benchmark/benchmark.h>
+#include <iostream>
 #include <list>
 #include <map>
 #include <stable_vector.h>
@@ -31,6 +32,8 @@ void BM_StableVector(benchmark::State &state) {
     benchmark::DoNotOptimize(sum);
   }
   events.stop_counters();
+  std::cout << std::format("(:events.get<PAPI_L1_DCM>().counter() '{}')\n",
+                           events.get<PAPI_L1_DCM>().counter());
 }
 
 void BM_StableVectorReserved(benchmark::State &state) {

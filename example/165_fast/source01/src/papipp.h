@@ -99,8 +99,7 @@ namespace papi
         void stop_counters()
         {
             int ret;
-            long long values;
-            if (likely_false((ret = ::PAPI_stop(_event_set, &values)) != PAPI_OK))
+            if (likely_false((ret = ::PAPI_stop(_event_set, _counters.data())) != PAPI_OK))
                 throw std::runtime_error(std::string("PAPI_stop_counters failed with error: ") + PAPI_strerror(ret));
         }
 

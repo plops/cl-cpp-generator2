@@ -43,7 +43,7 @@
 		     *source-dir*))
    `(do0
      (include<>
-					;iostream
+      iostream
 					;format
       ;vector
       ;memory
@@ -86,7 +86,10 @@
        (for-range (_ state)
 		  (let ((sum ("Sum<stable_vector<int,4*4096>>" v)))
 		    (benchmark--DoNotOptimize sum)))
-       (events.stop_counters))
+       (events.stop_counters)
+       ,(lprint :vars `((dot events
+			     (get<PAPI_L1_DCM>)
+			     (counter)))))
 
      (defun BM_StableVectorReserved (state)
        (declare (type "benchmark::State&" state))
