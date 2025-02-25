@@ -49,6 +49,8 @@ void BM_StableVectorReserved(benchmark::State &state) {
   stable_vector<int, 4 * 4096> v;
   v.reserve(100'000);
   std::list<int> tmp;
+  papi::event_set<PAPI_TOT_INS, PAPI_TOT_CYC, PAPI_BR_MSP, PAPI_L1_DCM> events;
+  events.start_counters();
   for (decltype(0 + 100'000 + 1) i = 0; i < 100'000; i += 1) {
     // randomize heap by filling list (this makes the micro-benchmark more like
     // the real thing)
@@ -61,11 +63,25 @@ void BM_StableVectorReserved(benchmark::State &state) {
     auto sum{Sum<stable_vector<int, 4 * 4096>>(v)};
     benchmark::DoNotOptimize(sum);
   }
+  events.stop_counters();
+  std::cout << events << "\n";
+  auto papi_tot_ins{events.get<PAPI_TOT_INS>().counter()};
+  std::cout << std::format("(:papi_tot_ins '{}')\n", papi_tot_ins);
+  auto papi_tot_cyc{events.get<PAPI_TOT_CYC>().counter()};
+  std::cout << std::format("(:papi_tot_cyc '{}')\n", papi_tot_cyc);
+  auto papi_br_msp{events.get<PAPI_BR_MSP>().counter()};
+  std::cout << std::format("(:papi_br_msp '{}')\n", papi_br_msp);
+  auto papi_l1_dcm{events.get<PAPI_L1_DCM>().counter()};
+  std::cout << std::format("(:papi_l1_dcm '{}')\n", papi_l1_dcm);
+  auto insPerCyc{static_cast<float>(papi_tot_ins) / papi_tot_cyc};
+  std::cout << std::format("(:insPerCyc '{}')\n", insPerCyc);
 }
 
 void BM_Vector(benchmark::State &state) {
   std::vector<int> v;
   std::list<int> tmp;
+  papi::event_set<PAPI_TOT_INS, PAPI_TOT_CYC, PAPI_BR_MSP, PAPI_L1_DCM> events;
+  events.start_counters();
   for (decltype(0 + 100'000 + 1) i = 0; i < 100'000; i += 1) {
     // randomize heap by filling list (this makes the micro-benchmark more like
     // the real thing)
@@ -78,12 +94,26 @@ void BM_Vector(benchmark::State &state) {
     auto sum{Sum<std::vector<int>>(v)};
     benchmark::DoNotOptimize(sum);
   }
+  events.stop_counters();
+  std::cout << events << "\n";
+  auto papi_tot_ins{events.get<PAPI_TOT_INS>().counter()};
+  std::cout << std::format("(:papi_tot_ins '{}')\n", papi_tot_ins);
+  auto papi_tot_cyc{events.get<PAPI_TOT_CYC>().counter()};
+  std::cout << std::format("(:papi_tot_cyc '{}')\n", papi_tot_cyc);
+  auto papi_br_msp{events.get<PAPI_BR_MSP>().counter()};
+  std::cout << std::format("(:papi_br_msp '{}')\n", papi_br_msp);
+  auto papi_l1_dcm{events.get<PAPI_L1_DCM>().counter()};
+  std::cout << std::format("(:papi_l1_dcm '{}')\n", papi_l1_dcm);
+  auto insPerCyc{static_cast<float>(papi_tot_ins) / papi_tot_cyc};
+  std::cout << std::format("(:insPerCyc '{}')\n", insPerCyc);
 }
 
 void BM_VectorReserved(benchmark::State &state) {
   std::vector<int> v;
   v.reserve(100'000);
   std::list<int> tmp;
+  papi::event_set<PAPI_TOT_INS, PAPI_TOT_CYC, PAPI_BR_MSP, PAPI_L1_DCM> events;
+  events.start_counters();
   for (decltype(0 + 100'000 + 1) i = 0; i < 100'000; i += 1) {
     // randomize heap by filling list (this makes the micro-benchmark more like
     // the real thing)
@@ -96,6 +126,18 @@ void BM_VectorReserved(benchmark::State &state) {
     auto sum{Sum<std::vector<int>>(v)};
     benchmark::DoNotOptimize(sum);
   }
+  events.stop_counters();
+  std::cout << events << "\n";
+  auto papi_tot_ins{events.get<PAPI_TOT_INS>().counter()};
+  std::cout << std::format("(:papi_tot_ins '{}')\n", papi_tot_ins);
+  auto papi_tot_cyc{events.get<PAPI_TOT_CYC>().counter()};
+  std::cout << std::format("(:papi_tot_cyc '{}')\n", papi_tot_cyc);
+  auto papi_br_msp{events.get<PAPI_BR_MSP>().counter()};
+  std::cout << std::format("(:papi_br_msp '{}')\n", papi_br_msp);
+  auto papi_l1_dcm{events.get<PAPI_L1_DCM>().counter()};
+  std::cout << std::format("(:papi_l1_dcm '{}')\n", papi_l1_dcm);
+  auto insPerCyc{static_cast<float>(papi_tot_ins) / papi_tot_cyc};
+  std::cout << std::format("(:insPerCyc '{}')\n", insPerCyc);
 }
 
 void BM_UnorderedMap(benchmark::State &state) {
@@ -119,6 +161,8 @@ void BM_UnorderedMapReserved(benchmark::State &state) {
   std::unordered_map<int, int> v;
   v.reserve(200'000);
   std::list<int> tmp;
+  papi::event_set<PAPI_TOT_INS, PAPI_TOT_CYC, PAPI_BR_MSP, PAPI_L1_DCM> events;
+  events.start_counters();
   for (decltype(0 + 100'000 + 1) i = 0; i < 100'000; i += 1) {
     // randomize heap by filling list (this makes the micro-benchmark more like
     // the real thing)
@@ -131,11 +175,25 @@ void BM_UnorderedMapReserved(benchmark::State &state) {
     auto sum{Sum<std::unordered_map<int, int>>(v)};
     benchmark::DoNotOptimize(sum);
   }
+  events.stop_counters();
+  std::cout << events << "\n";
+  auto papi_tot_ins{events.get<PAPI_TOT_INS>().counter()};
+  std::cout << std::format("(:papi_tot_ins '{}')\n", papi_tot_ins);
+  auto papi_tot_cyc{events.get<PAPI_TOT_CYC>().counter()};
+  std::cout << std::format("(:papi_tot_cyc '{}')\n", papi_tot_cyc);
+  auto papi_br_msp{events.get<PAPI_BR_MSP>().counter()};
+  std::cout << std::format("(:papi_br_msp '{}')\n", papi_br_msp);
+  auto papi_l1_dcm{events.get<PAPI_L1_DCM>().counter()};
+  std::cout << std::format("(:papi_l1_dcm '{}')\n", papi_l1_dcm);
+  auto insPerCyc{static_cast<float>(papi_tot_ins) / papi_tot_cyc};
+  std::cout << std::format("(:insPerCyc '{}')\n", insPerCyc);
 }
 
 void BM_Map(benchmark::State &state) {
   std::map<int, int> v;
   std::list<int> tmp;
+  papi::event_set<PAPI_TOT_INS, PAPI_TOT_CYC, PAPI_BR_MSP, PAPI_L1_DCM> events;
+  events.start_counters();
   for (decltype(0 + 100'000 + 1) i = 0; i < 100'000; i += 1) {
     // randomize heap by filling list (this makes the micro-benchmark more like
     // the real thing)
@@ -148,6 +206,18 @@ void BM_Map(benchmark::State &state) {
     auto sum{Sum<std::map<int, int>>(v)};
     benchmark::DoNotOptimize(sum);
   }
+  events.stop_counters();
+  std::cout << events << "\n";
+  auto papi_tot_ins{events.get<PAPI_TOT_INS>().counter()};
+  std::cout << std::format("(:papi_tot_ins '{}')\n", papi_tot_ins);
+  auto papi_tot_cyc{events.get<PAPI_TOT_CYC>().counter()};
+  std::cout << std::format("(:papi_tot_cyc '{}')\n", papi_tot_cyc);
+  auto papi_br_msp{events.get<PAPI_BR_MSP>().counter()};
+  std::cout << std::format("(:papi_br_msp '{}')\n", papi_br_msp);
+  auto papi_l1_dcm{events.get<PAPI_L1_DCM>().counter()};
+  std::cout << std::format("(:papi_l1_dcm '{}')\n", papi_l1_dcm);
+  auto insPerCyc{static_cast<float>(papi_tot_ins) / papi_tot_cyc};
+  std::cout << std::format("(:insPerCyc '{}')\n", insPerCyc);
 }
 
 BENCHMARK(BM_StableVector);

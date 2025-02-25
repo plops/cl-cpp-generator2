@@ -103,136 +103,172 @@
 			PAPI_FDV_INS
 			PAPI_FSQ_INS
 			PAPI_FP_OPS)))
-	
-	`(defun BM_StableVector (state)
-	   (declare (type "benchmark::State&" state))
-	   "stable_vector<int, 4*4096> v;"
-	   "std::list<int> tmp;"
-	   ,(format nil "papi::event_set<~{~a~^, ~}> events;" l-events)
-	   (events.start_counters)
-	   (dotimes (i "100'000")
-	     (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
-	     (dotimes (x 1000)
-	       (tmp.push_back x))
-	     (v.push_back i)
-	     )
-       
-	   (for-range (_ state)
-		      (let ((sum ("Sum<stable_vector<int,4*4096>>" v)))
-			(benchmark--DoNotOptimize sum)))
-	   (events.stop_counters)
+	(flet ((papi (code)
+		 `(do0
+		   ,(format nil "papi::event_set<~{~a~^, ~}> events;" l-events)
+		   (events.start_counters)
+		   ,code
+		   (events.stop_counters)
+		   (do0
+		    (<< std--cout
+			events
+			(string "\\n"))
+		    ,@(loop for e in l-events
+			    collect
+			    (let ((en (string-downcase (format nil "~a" e))))
+			      `(do0
+				(let ((,en
+					(dot events
+					     (,(format nil "get<~a>" e))
+					     (counter))))
+				  ,(lprint :vars `(,en))))))
+		    (let ((insPerCyc (/ (static_cast<float> papi_tot_ins) papi_tot_cyc)))
+		      ,(lprint :vars `(insPerCyc))))
+		   )))
+	  
+	  `(do0
+	    (defun BM_StableVector (state)
+	      (declare (type "benchmark::State&" state))
+	      "stable_vector<int, 4*4096> v;"
+	      "std::list<int> tmp;"
+	      
+	      ,(papi
+		`(do0
+		  (dotimes (i "100'000")
+		    (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
+		    (dotimes (x 1000)
+		      (tmp.push_back x))
+		    (v.push_back i)
+		    )
+		  
+		  (for-range (_ state)
+			     (let ((sum ("Sum<stable_vector<int,4*4096>>" v)))
+			       (benchmark--DoNotOptimize sum)))))
+	      
 
-	   (<< std--cout
-	       events
-	       (string "\\n"))
-	   ;,(lprint :vars `(events))
-	   (do0
-	    ,@(loop for e in l-events
-		    collect
-		    (let ((en (string-downcase (format nil "~a" e))))
-		      `(do0
-			(let ((,en
-				(dot events
-				     (,(format nil "get<~a>" e))
-				     (counter))))
-			  ,(lprint :vars `(,en))))))
-	    (let ((insPerCyc (/ (static_cast<float> papi_tot_ins) papi_tot_cyc)))
-	     ,(lprint :vars `(insPerCyc))))
-	   ))
+	      
+	      
+	      
+	      )
+	    (defun BM_StableVectorReserved (state)
+	      (declare (type "benchmark::State&" state))
+	      "stable_vector<int, 4*4096> v;"
+	      (v.reserve "100'000")
+	      "std::list<int> tmp;"
 
-     (defun BM_StableVectorReserved (state)
-       (declare (type "benchmark::State&" state))
-       "stable_vector<int, 4*4096> v;"
-       (v.reserve "100'000")
-       "std::list<int> tmp;"
-       (dotimes (i "100'000")
-	 (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
-	 (dotimes (x 1000)
-	   (tmp.push_back x))
-	 (v.push_back i)
-	 )
-       
-       (for-range (_ state)
-		  (let ((sum ("Sum<stable_vector<int,4*4096>>" v)))
-		    (benchmark--DoNotOptimize sum))))
+	      ,(papi
+		`(do0
+		 (dotimes (i "100'000")
+		   (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
+		   (dotimes (x 1000)
+		     (tmp.push_back x))
+		   (v.push_back i)
+		   )
+	       
+		 (for-range (_ state)
+			    (let ((sum ("Sum<stable_vector<int,4*4096>>" v)))
+			      (benchmark--DoNotOptimize sum))))))
 
-     (defun BM_Vector (state)
-       (declare (type "benchmark::State&" state))
-       "std::vector<int> v;"
-       "std::list<int> tmp;"
-       (dotimes (i "100'000")
-	 (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
-	 (dotimes (x 1000)
-	   (tmp.push_back x))
-	 (v.push_back i)
-	 )
-       
-       (for-range (_ state)
-		  (let ((sum ("Sum<std::vector<int>>" v)))
-		    (benchmark--DoNotOptimize sum))))
+	    (defun BM_Vector (state)
+	      (declare (type "benchmark::State&" state))
+	      "std::vector<int> v;"
+	      "std::list<int> tmp;"
 
-     (defun BM_VectorReserved (state)
-       (declare (type "benchmark::State&" state))
-       "std::vector<int> v;"
-       (v.reserve "100'000")
-       "std::list<int> tmp;"
-       (dotimes (i "100'000")
-	 (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
-	 (dotimes (x 1000)
-	   (tmp.push_back x))
-	 (v.push_back i)
-	 )
-       
-       (for-range (_ state)
-		  (let ((sum ("Sum<std::vector<int>>" v)))
-		    (benchmark--DoNotOptimize sum))))
+	      ,(papi `(do0
+		 (dotimes (i "100'000")
+		   (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
+		   (dotimes (x 1000)
+		     (tmp.push_back x))
+		   (v.push_back i)
+		   )
+	       
+		 (for-range (_ state)
+			    (let ((sum ("Sum<std::vector<int>>" v)))
+			      (benchmark--DoNotOptimize sum))))))
 
-     (defun BM_UnorderedMap (state)
-       (declare (type "benchmark::State&" state))
-       "std::unordered_map<int, int> v;"
-       "std::list<int> tmp;"
-       (dotimes (i "100'000")
-	 (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
-	 (dotimes (x 1000)
-	   (tmp.push_back x))
-	 (v.emplace i i)
-	 )
-       
-       (for-range (_ state)
-		  (let ((sum ("Sum<std::unordered_map<int,int>>" v)))
-		    (benchmark--DoNotOptimize sum))))
 
-     (defun BM_UnorderedMapReserved (state)
-       (declare (type "benchmark::State&" state))
-       "std::unordered_map<int, int> v;"
-       (v.reserve "200'000")
-       "std::list<int> tmp;"
-       (dotimes (i "100'000")
-	 (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
-	 (dotimes (x 1000)
-	   (tmp.push_back x))
-	 (v.emplace i i)
-	 )
-       
-       (for-range (_ state)
-		  (let ((sum ("Sum<std::unordered_map<int,int>>" v)))
-		    (benchmark--DoNotOptimize sum))))
+	    (defun BM_VectorReserved (state)
+	      (declare (type "benchmark::State&" state))
+	      "std::vector<int> v;"
+	      (v.reserve "100'000")
+	      "std::list<int> tmp;"
+	      ,(papi `(do0
+		 (dotimes (i "100'000")
+		   (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
+		   (dotimes (x 1000)
+		     (tmp.push_back x))
+		   (v.push_back i)
+		   )
+	       
+		 (for-range (_ state)
+			    (let ((sum ("Sum<std::vector<int>>" v)))
+			      (benchmark--DoNotOptimize sum))))))
 
-     (defun BM_Map (state)
-       (declare (type "benchmark::State&" state))
-       "std::map<int, int> v;"
-       
-       "std::list<int> tmp;"
-       (dotimes (i "100'000")
-	 (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
-	 (dotimes (x 1000)
-	   (tmp.push_back x))
-	 (v.emplace i i)
-	 )
-       
-       (for-range (_ state)
-		  (let ((sum ("Sum<std::map<int,int>>" v)))
-		    (benchmark--DoNotOptimize sum))))
+
+	    (defun BM_UnorderedMap (state)
+	      (declare (type "benchmark::State&" state))
+	      "std::unordered_map<int, int> v;"
+	      "std::list<int> tmp;"
+	      (dotimes (i "100'000")
+		(comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
+		(dotimes (x 1000)
+		  (tmp.push_back x))
+		(v.emplace i i)
+		)
+	      
+	      (for-range (_ state)
+			 (let ((sum ("Sum<std::unordered_map<int,int>>" v)))
+			   (benchmark--DoNotOptimize sum))))
+
+
+	    (defun BM_UnorderedMapReserved (state)
+	      (declare (type "benchmark::State&" state))
+	      "std::unordered_map<int, int> v;"
+	      (v.reserve "200'000")
+	      "std::list<int> tmp;"
+
+	      ,(papi `(do0
+		  (dotimes (i "100'000")
+		    (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
+		    (dotimes (x 1000)
+		      (tmp.push_back x))
+		    (v.emplace i i)
+		    )
+	       
+		  (for-range (_ state)
+			     (let ((sum ("Sum<std::unordered_map<int,int>>" v)))
+			       (benchmark--DoNotOptimize sum))))))
+
+	    (defun BM_Map (state)
+	      (declare (type "benchmark::State&" state))
+	      "std::map<int, int> v;"
+	      
+	      "std::list<int> tmp;"
+	      ,(papi `(do0 (dotimes (i "100'000")
+			(comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
+			(dotimes (x 1000)
+			  (tmp.push_back x))
+			(v.emplace i i)
+			    )
+			  
+			  (for-range (_ state)
+				     (let ((sum ("Sum<std::map<int,int>>" v)))
+				       (benchmark--DoNotOptimize sum))))))
+
+	    
+	    )))
+
+     
+
+     
+
+     
+
+     
+
+     
+
+     
      
      #+nil (defun main ()
 	     (declare (values int))
