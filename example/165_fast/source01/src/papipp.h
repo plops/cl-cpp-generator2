@@ -76,6 +76,11 @@ namespace papi
                 /* Initialize the EventSet */
                 if (auto retval = PAPI_create_eventset(&_event_set); retval != PAPI_OK)
                     throw std::runtime_error("PAPI create eventset failed");
+                for (auto const& e : s_events)
+                {
+                    if (auto retval = PAPI_add_event(_event_set, e); retval != PAPI_OK)
+                        throw std::runtime_error("PAPI add event failed");
+                }
                 _init = true;
             }
         }

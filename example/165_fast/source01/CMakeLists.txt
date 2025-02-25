@@ -17,7 +17,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             -g -g3 -ggdb -gdwarf-4
             -Og
     )
-    add_link_options(-Wl,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
+    add_link_options(-L/home/martin/vulkan/lib -Wl,--print-memory-usage,--print-gc-sections,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref)
 
     #    set(CPPCHECK_TEMPLATE "gcc")
     #    find_program(CPPCHECK cppcheck)
