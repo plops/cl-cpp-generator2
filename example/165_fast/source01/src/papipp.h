@@ -20,7 +20,7 @@ extern "C" {
 #include <stdexcept>
 
 //#define likely_true(x)   __builtin_expect(!!(x), 1)
-//#define likely_false(x)  __builtin_expect(!!(x), 0)
+#define likely_false(x)  __builtin_expect(!!(x), 0)
 
 namespace papi
 {
@@ -77,14 +77,14 @@ namespace papi
                 if (auto retval = PAPI_create_eventset(&_event_set); retval != PAPI_OK)
                     throw std::runtime_error("PAPI create eventset failed");
                 _init = true;
-            }1
+            }
         }
 
         void start_counters()
         {
             int ret;
 
-            if (likely_false((ret = ::PAPI_start(s_events.data(), size())) != PAPI_OK))
+            if (likely_false((ret = ::PAPI_start(_event_set)) != PAPI_OK))
                 throw std::runtime_error(std::string("PAPI_start_counters failed with error: ") + PAPI_strerror(ret));
         }
 
@@ -99,8 +99,8 @@ namespace papi
         void stop_counters()
         {
             int ret;
-
-            if (likely_false((ret = ::PAPI_stop(_counters.data(), size())) != PAPI_OK))
+            long long values;
+            if (likely_false((ret = ::PAPI_stop(_event_set, &values)) != PAPI_OK))
                 throw std::runtime_error(std::string("PAPI_stop_counters failed with error: ") + PAPI_strerror(ret));
         }
 
