@@ -32,14 +32,7 @@ void BM_StableVector(benchmark::State &state) {
     benchmark::DoNotOptimize(sum);
   }
   events.stop_counters();
-  (std::cout << std::format("(:events.get<PAPI_TOT_INS>().counter() '{}')\n",
-                            events.get<PAPI_TOT_INS>().counter()))(
-      std::cout << std::format("(:events.get<PAPI_TOT_CYC>().counter() '{}')\n",
-                               events.get<PAPI_TOT_CYC>().counter()),
-      std::cout << std::format("(:events.get<PAPI_BR_MSP>().counter() '{}')\n",
-                               events.get<PAPI_BR_MSP>().counter()),
-      std::cout << std::format("(:events.get<PAPI_L1_DCM>().counter() '{}')\n",
-                               events.get<PAPI_L1_DCM>().counter()));
+  std::cout << events << "\n";
 }
 
 void BM_StableVectorReserved(benchmark::State &state) {

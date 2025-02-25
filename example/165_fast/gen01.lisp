@@ -76,29 +76,34 @@
 			PAPI_L1_DCM)))
 	
 	`(defun BM_StableVector (state)
-	  (declare (type "benchmark::State&" state))
-	  "stable_vector<int, 4*4096> v;"
-	  "std::list<int> tmp;"
-	  ,(format nil "papi::event_set<~{~a~^, ~}> events;" l-events)
-	  (events.start_counters)
-	  (dotimes (i "100'000")
-	    (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
-	    (dotimes (x 1000)
-	      (tmp.push_back x))
-	    (v.push_back i)
-	    )
+	   (declare (type "benchmark::State&" state))
+	   "stable_vector<int, 4*4096> v;"
+	   "std::list<int> tmp;"
+	   ,(format nil "papi::event_set<~{~a~^, ~}> events;" l-events)
+	   (events.start_counters)
+	   (dotimes (i "100'000")
+	     (comments "randomize heap by filling list (this makes the micro-benchmark more like the real thing)")
+	     (dotimes (x 1000)
+	       (tmp.push_back x))
+	     (v.push_back i)
+	     )
        
-	  (for-range (_ state)
-		     (let ((sum ("Sum<stable_vector<int,4*4096>>" v)))
-		       (benchmark--DoNotOptimize sum)))
-	  (events.stop_counters)
-	   
+	   (for-range (_ state)
+		      (let ((sum ("Sum<stable_vector<int,4*4096>>" v)))
+			(benchmark--DoNotOptimize sum)))
+	   (events.stop_counters)
+
+	   (<< std--cout
+	       events
+	       (string "\\n"))
+	   ;,(lprint :vars `(events))
+	   #+nil
 	   ,(loop for e in l-events
-			   collect
-			   (lprint :vars `((dot events
-						(,(format nil "get<~a>" e))
-						(counter)))))
-	  ))
+		  collect
+		  (lprint :vars `((dot events
+				       (,(format nil "get<~a>" e))
+				       (counter)))))
+	   ))
 
      (defun BM_StableVectorReserved (state)
        (declare (type "benchmark::State&" state))
