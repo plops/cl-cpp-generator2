@@ -144,6 +144,59 @@ namespace
     }
 }
 
+ImGuiRenderer CreateRenderer(AppWindow const & window, Device const & device, Swapchain const & swapchain)
+{
+    ImGui::CreateContext();
+    ImPlot::CreateContext();
+    ImGuiIO & io = ImGui::GetIO();
+
+    std::vector<std::string> const fonts{"ProggyClean"
+                                       , "ProggyTiny"
+                                       , "DroidSans"
+                                       , "Roboto-Medium"
+                                       , "Karla-Regular"
+                                       , "Cousine-Regular"};
+    std::vector<float> const size{13
+                                , 10
+                                , 16
+                                , 16
+                                , 16
+                                , 16};
+    constexpr auto idx{1};
+    auto           fn{std::string("/home/martin/src/imgui/misc/fonts/") + fonts[idx] + ".ttf"};
+    io.Fonts->AddFontFromFileTTF(fn.c_str(), size[idx]);
+    ImGui_ImplGlfw_InitForVulkan(window.glfw_window_ptr, true);
+    return ImGuiRenderer({
+        .device = device
+      , .format = swapchain.get_format()
+    });
+}
+
+auto CreatePipeline(Swapchain const & swapchain, PipelineManager & pipeline_manager)
+{
+    const std::string fn{SHADER_PATH};
+    const auto        shaderFile{ShaderFile{fn + "/main.glsl"}};
+    const auto        result = pipeline_manager.add_raster_pipeline({
+        .vertex_shader_info{ShaderCompileInfo{.source{shaderFile}}}
+      , .fragment_shader_info{ShaderCompileInfo{.source{shaderFile}}}
+      , .color_attachments{{{.format{swapchain.get_format()}}}}
+      , .raster = {}
+      , .push_constant_size{sizeof(MyPushConstant)}
+      , .name{"my pipeline"}
+    });
+    if (result.is_err())
+    {
+        std::cerr << result.message() << '\n';
+        throw std::runtime_error("failed to create raster pipeline");
+    }
+
+    msg("pipeline created");
+    // This returns a shared pointer of the pipeline, the pipeline manager retains ownership. Note that the pipeline
+    // manager is meant to be used during development only. The pipeline manager provides hot-reloading via its
+    // reload_all() method. Don't use in shipped code.
+    return result.value();
+}
+
 int main(const int argc, char const * argv[])
 {
     std::cout << argc << " " << argv[0] << '\n';
@@ -173,52 +226,12 @@ int main(const int argc, char const * argv[])
                                                , .enable_debug_info{true}}
                        , .name{"my pipeline manager"}})};
 
-
-
-
-    auto imgui_renderer{[&device, &swapchain, &window]() -> ImGuiRenderer
-    {
-        ImGui::CreateContext();
-        ImPlot::CreateContext();
-        ImGuiIO& io = ImGui::GetIO();
-        //auto fn = "/home/martin/src/imgui/misc/fonts/DroidSans.ttf";
-        auto fn = "/home/martin/src/imgui/misc/fonts/Roboto-Medium.ttf";
-        io.Fonts->AddFontFromFileTTF(fn, 16.0);
-        ImGui_ImplGlfw_InitForVulkan(window.glfw_window_ptr, true);
-        return ImGuiRenderer({
-            .device = device
-          , .format = swapchain.get_format()
-        });
-    }()};
+    auto                            imgui_renderer{CreateRenderer(window, device, swapchain)};
     std::vector<TaskAttachmentInfo> imgui_task_attachments{};
 
     try
     {
-        const auto pipeline
-        {[&pipeline_manager,&swapchain]
-        {
-            const std::string fn{SHADER_PATH};
-            const auto        shaderFile{ShaderFile{fn + "/main.glsl"}};
-            const auto        result = pipeline_manager.add_raster_pipeline({
-                .vertex_shader_info{ShaderCompileInfo{.source{shaderFile}}}
-              , .fragment_shader_info{ShaderCompileInfo{.source{shaderFile}}}
-              , .color_attachments{{{.format{swapchain.get_format()}}}}
-              , .raster = {}
-              , .push_constant_size{sizeof(MyPushConstant)}
-              , .name{"my pipeline"}
-            });
-            if (result.is_err())
-            {
-                std::cerr << result.message() << '\n';
-                throw std::runtime_error("failed to create raster pipeline");
-            }
-
-            msg("pipeline created");
-            // This returns a shared pointer of the pipeline, the pipeline manager retains ownership. Note that the pipeline
-            // manager is meant to be used during development only. The pipeline manager provides hot-reloading via its
-            // reload_all() method. Don't use in shipped code.
-            return result.value();
-        }()};
+        const auto pipeline{CreatePipeline(swapchain, pipeline_manager)};
 
         auto buffer_id{device.create_buffer({.size{3 * sizeof(MyVertex)}
                                            , .name{"my vertex data"}})};
