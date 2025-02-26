@@ -197,6 +197,44 @@ auto CreatePipeline(Swapchain const & swapchain, PipelineManager & pipeline_mana
     return result.value();
 }
 
+auto CreateLoopTaskGraph(Device & device, Swapchain &swapchain, ImGuiRenderer &imgui_renderer,
+    std::vector<TaskAttachmentInfo>& imgui_task_attachments, const std::shared_ptr<RasterPipeline>& pipeline,
+    TaskImage& task_swapchain_image, const TaskBuffer& task_vertex_buffer)
+{
+    auto l{TaskGraph({.device{device}
+                    , .swapchain{swapchain}
+                    , .name{"my loop"}})};
+
+    // Manually mark used resources (this is needed to detect errors in graph)
+    l.use_persistent_buffer(task_vertex_buffer);
+    l.use_persistent_image(task_swapchain_image);
+
+    // Fill the rendering task graph
+    draw_vertices_task(l, pipeline, task_vertex_buffer, task_swapchain_image);
+
+    imgui_task_attachments.push_back(daxa::inl_attachment(daxa::TaskImageAccess::COLOR_ATTACHMENT, task_swapchain_image));
+    auto imgui_task_info = InlineTaskInfo{
+        .attachments = std::move(imgui_task_attachments)
+      , .task = [&](daxa::TaskInterface const & ti)
+        {
+            auto size{ti.device.info(ti.get(task_swapchain_image).ids[0]).value().size};
+            imgui_renderer.record_commands(ImGui::GetDrawData(), ti.recorder, ti.get(task_swapchain_image).ids[0], size.x, size.y);
+        }
+      , .name = "ImGui Task"
+       ,
+    };
+    l.add_task(imgui_task_info);
+
+    // Tell the task graph that we are done filling it
+    l.submit({});
+    // Do the present step
+    l.present({});
+    // Compile the dependency graph between tasks
+    l.complete({});
+    msg("render task graph prepared");
+    return l;
+}
+
 int main(const int argc, char const * argv[])
 {
     std::cout << argc << " " << argv[0] << '\n';
@@ -245,38 +283,8 @@ int main(const int argc, char const * argv[])
                                              , 1}}
                         }
                       , .name{"my task vertex buffer"}})};
-
-        auto loop_task_graph{TaskGraph({.device{device}
-                                      , .swapchain{swapchain}
-                                      , .name{"my loop"}})};
-
-        // Manually mark used resources (this is needed to detect errors in graph)
-        loop_task_graph.use_persistent_buffer(task_vertex_buffer);
-        loop_task_graph.use_persistent_image(task_swapchain_image);
-
-        // Fill the rendering task graph
-        draw_vertices_task(loop_task_graph, pipeline, task_vertex_buffer, task_swapchain_image);
-
-        imgui_task_attachments.push_back(daxa::inl_attachment(daxa::TaskImageAccess::COLOR_ATTACHMENT, task_swapchain_image));
-        auto imgui_task_info = InlineTaskInfo{
-            .attachments = std::move(imgui_task_attachments)
-          , .task = [&](daxa::TaskInterface const & ti)
-            {
-                auto size{ti.device.info(ti.get(task_swapchain_image).ids[0]).value().size};
-                imgui_renderer.record_commands(ImGui::GetDrawData(), ti.recorder, ti.get(task_swapchain_image).ids[0], size.x, size.y);
-            }
-          , .name = "ImGui Task"
-           ,
-        };
-        loop_task_graph.add_task(imgui_task_info);
-
-        // Tell the task graph that we are done filling it
-        loop_task_graph.submit({});
-        // Do the present step
-        loop_task_graph.present({});
-        // Compile the dependency graph between tasks
-        loop_task_graph.complete({});
-        msg("render task graph prepared");
+        auto loop_task_graph = CreateLoopTaskGraph(device, swapchain, imgui_renderer,
+            imgui_task_attachments, pipeline, task_swapchain_image, task_vertex_buffer);
 
         // Secondary task graph that transfers the vertices. Only runs once
         {
