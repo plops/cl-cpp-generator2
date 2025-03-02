@@ -197,9 +197,10 @@ auto CreatePipeline(Swapchain const & swapchain, PipelineManager & pipeline_mana
     return result.value();
 }
 
-auto CreateLoopTaskGraph(Device & device, Swapchain &swapchain, ImGuiRenderer &imgui_renderer,
-    std::vector<TaskAttachmentInfo>& imgui_task_attachments, const std::shared_ptr<RasterPipeline>& pipeline,
-    TaskImage& task_swapchain_image, const TaskBuffer& task_vertex_buffer)
+auto CreateLoopTaskGraph(Device &                          device, Swapchain &                                             swapchain, ImGuiRenderer & imgui_renderer,
+                         std::vector<TaskAttachmentInfo> & imgui_task_attachments, const std::shared_ptr<RasterPipeline> & pipeline,
+                         TaskImage &                       task_swapchain_image, const TaskBuffer &                        task_vertex_buffer
+    )
 {
     auto l{TaskGraph({.device{device}
                     , .swapchain{swapchain}
@@ -233,6 +234,35 @@ auto CreateLoopTaskGraph(Device & device, Swapchain &swapchain, ImGuiRenderer &i
     l.complete({});
     msg("render task graph prepared");
     return l;
+}
+
+auto CreateUploadTaskGraph(Device & device, const TaskBuffer & task_vertex_buffer)
+{
+    auto g{TaskGraph({
+        .device{device}
+      , .name{"upload vertex buffer task graph"}
+       ,
+    })};
+    g.use_persistent_buffer(task_vertex_buffer);
+    upload_vertex_data_task(g, task_vertex_buffer);
+    g.submit({});
+    g.complete({});
+    g.execute({});
+    msg("upload vertex buffer task graph executed");
+    return g;
+}
+
+void CleanUp(Device& device, BufferId& buffer_id) {
+    ImGui_ImplGlfw_Shutdown();
+
+    ImPlot::DestroyContext();
+    ImGui::DestroyContext();
+    device.destroy_buffer(buffer_id);
+
+    device.wait_idle();
+    device.collect_garbage();
+
+    msg("cleaned up");
 }
 
 int main(const int argc, char const * argv[])
@@ -284,22 +314,10 @@ int main(const int argc, char const * argv[])
                         }
                       , .name{"my task vertex buffer"}})};
         auto loop_task_graph = CreateLoopTaskGraph(device, swapchain, imgui_renderer,
-            imgui_task_attachments, pipeline, task_swapchain_image, task_vertex_buffer);
+                                                   imgui_task_attachments, pipeline, task_swapchain_image, task_vertex_buffer);
 
         // Secondary task graph that transfers the vertices. Only runs once
-        {
-            auto upload_task_graph{TaskGraph({
-                .device{device}
-              , .name{"upload vertex buffer task graph"}
-               ,
-            })};
-            upload_task_graph.use_persistent_buffer(task_vertex_buffer);
-            upload_vertex_data_task(upload_task_graph, task_vertex_buffer);
-            upload_task_graph.submit({});
-            upload_task_graph.complete({});
-            upload_task_graph.execute({});
-            msg("upload vertex buffer task graph executed");
-        }
+        auto upload_task_graph = CreateUploadTaskGraph(device, task_vertex_buffer);
 
         // Main loop
         while (!window.should_close())
@@ -315,20 +333,6 @@ int main(const int argc, char const * argv[])
             ImGui::NewFrame();
             ImGui::ShowDemoWindow();
             ImPlot::ShowDemoWindow();
-            ImGui::Begin("Settings");
-
-            // ImGui::Image(
-            //     imgui_renderer.create_texture_id({
-            //         .image_view_id = render_image.default_view(),
-            //         .sampler_id = sampler,
-            //     }),
-            //     ImVec2(200, 200));
-            //
-            // if (ImGui::Checkbox("MY_TOGGLE", &my_toggle))
-            // {
-            //     update_virtual_shader();
-            // }
-            ImGui::End();
             ImGui::Render();
 
             try
@@ -346,16 +350,7 @@ int main(const int argc, char const * argv[])
             loop_task_graph.execute({});
             device.collect_garbage();
         }
-        ImGui_ImplGlfw_Shutdown();
-
-        ImPlot::DestroyContext();
-        ImGui::DestroyContext();
-        device.destroy_buffer(buffer_id);
-
-        device.wait_idle();
-        device.collect_garbage();
-
-        msg("cleaned up");
+        CleanUp(device, buffer_id);
     }
     catch (const std::exception & e) { std::cerr << e.what() << '\n'; }
     return 0;
