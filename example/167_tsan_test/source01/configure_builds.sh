@@ -1,10 +1,9 @@
 #!/bin/bash
 
-
 # Release build without sanitizers
 mkdir -p build_amd64_release
 cd build_amd64_release
-cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DFETCHCONTENT_BASE_DIR=../fetchcontent
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
 ninja
 cd ..
 
@@ -23,7 +22,7 @@ for sanitizer in "${sanitizers[@]}"; do
   cd $build_dir
     
   # Configure with CMake
-  cmake_args="-G Ninja -DCMAKE_BUILD_TYPE=Debug -DFETCHCONTENT_BASE_DIR=../fetchcontent  -DENABLE_${sanitizer^^}=ON"
+  cmake_args="-G Ninja -DCMAKE_BUILD_TYPE=Debug  -DENABLE_${sanitizer^^}=ON"
   cmake .. $cmake_args
   ninja 
   # Go back to the original directory
