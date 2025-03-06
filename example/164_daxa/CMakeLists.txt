@@ -5,6 +5,37 @@ set(DAXA_ENABLE_UTILS_PIPELINE_MANAGER_GLSLANG ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_PREFIX_PATH ~/vulkan/)
 
+
+# AddressSanitizer
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+if (ENABLE_ASAN)
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
+endif ()
+
+# UndefinedBehaviorSanitizer
+option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
+if (ENABLE_UBSAN)
+    add_compile_options(-fsanitize=undefined)
+    add_link_options(-fsanitize=undefined)
+endif ()
+
+# ThreadSanitizer
+option(ENABLE_TSAN "Enable ThreadSanitizer" OFF)
+if (ENABLE_TSAN)
+    add_compile_options(-fsanitize=thread)
+    add_link_options(-fsanitize=thread)
+endif ()
+
+# LeakSanitizer
+option(ENABLE_LSAN "Enable LeakSanitizer" OFF)
+if (ENABLE_LSAN)
+    add_compile_options(-fsanitize=leak)
+    add_link_options(-fsanitize=leak)
+endif ()
+
+
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
             -g -g3 -ggdb -gdwarf-4
