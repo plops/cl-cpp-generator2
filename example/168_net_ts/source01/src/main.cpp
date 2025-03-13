@@ -8,7 +8,7 @@
 
 using namespace std::experimental;
 using namespace std;
-
+void cb (error_code ec2, size_t)  { }
 int main(int argc, char** argv)
 {
     error_code ec;
@@ -53,17 +53,17 @@ int main(int argc, char** argv)
         // a.commit(128); // move bytes from write are to read area
         // a.consume(20);
 
+        // if (sock.is_open())
+        // {
+        //     sock.write_some(net::buffer(string("hellow world")), ec);
+        //     check();
+        // }
+
         if (sock.is_open())
         {
-            sock.write_some(net::buffer(string("hellow world")), ec);
-            check();
+           // [](error_code ec2, size_t) -> void { }
+            sock.async_write_some(net::buffer(string("hello world")), cb);
         }
-
-        sock.async_write_some(net::buffer(string("hello world")),
-                              [&](error_code ec, size_t bytes_transferred)
-                              {
-                                  check();
-                              });
     };
     auto t_client = thread{client};
     t_client.join();
