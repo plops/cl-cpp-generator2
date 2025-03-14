@@ -47,7 +47,7 @@ endif ()
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
-            -g -g3 -ggdb -gdwarf-4
+            -Og -g -g3 -ggdb -gdwarf-4
     )
 else ()
     add_compile_options(
@@ -65,3 +65,7 @@ add_executable(
         ${PROJECT_NAME}
         ${SOURCE_FILES}
 )
+
+find_package(Boost COMPONENTS system thread REQUIRED)
+target_link_libraries(${PROJECT_NAME} INTERFACE ${Boost_LIBRARIES})
+target_include_directories(${PROJECT_NAME} INTERFACE ${Boost_INCLUDE_DIR})
