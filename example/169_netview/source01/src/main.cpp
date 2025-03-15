@@ -2,10 +2,56 @@
 
 #include <filesystem>
 #include <iostream>
-#include <regex>
 #include <map>
+#include <regex>
+
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+
+/*
+ * Main components
+ *
+ * Format (Container) - a wrapper, providing sync, metadata and muxing for the streams.
+ * Stream - a continuous stream (audio or video) of data over time.
+ * Codec - defines how data are enCOded (from Frame to Packet)
+ *         and DECoded (from Packet to Frame).
+ * Packet - are the data (kind of slices of the stream data) to be decoded as raw frames.
+ * Frame - a decoded raw frame (to be encoded or filtered).
+ */
+
 using namespace std;
 using namespace std::filesystem;
+
+
+auto collect_videos = [](const path& p)
+{
+    map<size_t, path> res;
+    try
+    {
+        if (is_directory(p))
+        {
+            for (const auto& entry : recursive_directory_iterator(p))
+            {
+                if (entry.is_regular_file())
+                {
+                    const auto fn{entry.path().filename().string()};
+                    const regex video_extension_pattern{R"(.*\.(webm|mp4|mkv)(\.part)?$)"};
+                    if (regex_match(fn, video_extension_pattern))
+                    {
+                        auto s{file_size(entry)};
+                        res.emplace(s, entry.path());
+                    }
+                }
+            }
+        }
+    }
+    catch (const filesystem_error& e)
+    {
+        cerr << e.what() << endl;
+    }
+    return res;
+};
+
 int main(int argc, char* argv[])
 {
     if (argc < 2)
@@ -14,36 +60,19 @@ int main(int argc, char* argv[])
         return 1;
     }
     path p{argv[1]};
-    auto collect_videos = [](const path& p)
-    {
-        map<size_t,path> res;
-        try
-        {
-            if (is_directory(p))
-            {
-                for (const auto& entry : recursive_directory_iterator(p))
-                {
-                    if (entry.is_regular_file())
-                    {
-                        const auto fn{entry.path().filename().string()};
-                        const regex video_extension_pattern{R"(.*\.(webm|mp4|mkv)(\.part)?$)"};
-                        if (regex_match(fn, video_extension_pattern))
-                        {
-                            auto s{file_size(entry)};
-                            res.emplace(s,entry.path());
-                        }
-                    }
-                }
-            }
-        }
-        catch (const filesystem_error& e)
-        {
-            cerr << e.what() << endl;
-        }
-        return res;
-    };
-    auto videos = collect_videos(p);
+
+    const auto videos = collect_videos(p);
+    path last;
     for (const auto& [size, video_path] : videos)
-        cout << size << " " << video_path << endl;
+    {
+        cout << size << " " << video_path.stem() << endl;
+        last = video_path;
+    }
+    auto ctx = avformat_alloc_context();
+    if (!ctx)
+    {
+        cerr << "Could not allocate video context" << endl;
+        return 1;
+    }
     return 0;
 }

@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 3.17)
 project(cxxnet)
+
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+find_package(FFmpeg)
+
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+
+
 if (NOT WIN32)
     add_compile_options(
             -Wall -Wextra -Wconversion -Wdouble-promotion
@@ -67,3 +74,8 @@ add_executable(
         ${SOURCE_FILES}
 )
 
+target_link_libraries(
+        ${PROJECT_NAME}
+        FFmpeg::avcodec
+        FFmpeg::avformat
+)
