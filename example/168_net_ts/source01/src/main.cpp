@@ -53,13 +53,8 @@ int main(int argc, char** argv)
             // a.commit(128); // move bytes from write are to read area
             // a.consume(20);
 
-            if (sock.is_open())
-            {
-                sock.write_some(buffer(string("hellow world")));
-            }
-
-            // sock.async_write_some(buffer(string("hello world")),
-            //     [](boost::system::error_code& ec, size_t) -> void {});
+            // sock.write_some(buffer(string("hellow world")));
+            sock.async_write_some(buffer(string("hello world"))); //, [](boost::system::error_code& ec, size_t) -> void {});
         }
     };
     auto t_client = thread{client};
