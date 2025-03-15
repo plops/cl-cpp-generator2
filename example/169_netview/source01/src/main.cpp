@@ -89,21 +89,68 @@ kj::Promise<void> VideoArchiveImpl::getVideoList(GetVideoListContext context)
 
 int main(int argc, char* argv[])
 {
-    if (argc < 2)
+    string program{argv[0]};
+    bool isClient = program.find("client") != string_view::npos;
+
+    if (isClient)
     {
-        cerr << "Usage: " << argv[0] << " <path>" << endl;
-        return 1;
+        if (argc < 2)
+        {
+            cerr << "Usage: " << program << " SERVER_ADDRESS[:PORT]" << endl;
+            return EXIT_FAILURE;
+        }
+        try
+        {
+            capnp::EzRpcClient client(argv[1]);
+            auto& waitScope{client.getWaitScope()};
+            VideoArchive::Client server = client.getMain<VideoArchive>();
+            while (true)
+            {
+                cout << "Enter command (list, quit): " << endl;
+                string line;
+                getline(cin, line);
+                stringstream ss(line);
+                string command;
+                ss >> command;
+                if (command == "quit")
+                {
+                    break;
+                } else if (command == "list")
+                {
+                    auto request = server.getVideoListRequest();
+                    auto response = request.send().wait(waitScope);
+                    for (const auto& video : response.getVideoList().getVideos())
+                    {
+                        cout << video.getSize() << " "
+                        << video.getName().cStr() << endl;
+                    }
+                }
+            }
+
+        } catch (const std::exception& e)
+        {
+            cerr << e.what() << endl;
+            return EXIT_FAILURE;
+        }
+        return 0;
     }
-    path p{argv[1]};
+    // if (argc < 2)
+    // {
+    //     cerr << "Usage: " << argv[0] << " <path>" << endl;
+    //     return EXIT_FAILURE;
+    // }
+    // path p{argv[1]};
 
-    capnp::EzRpcServer server(kj::heap<VideoArchiveImpl>(),"*");
-
-    const auto videos = collect_videos(p);
-    path last;
-    for (const auto& [size, video_path] : videos)
+    try
     {
-        cout << size << " " << video_path.stem() << endl;
-        last = video_path;
+        capnp::EzRpcServer server(kj::heap<VideoArchiveImpl>(),"localhost:4321");
+        auto& waitScope{server.getWaitScope()};
+        uint port = server.getPort().wait(waitScope);
+        cout << "serving on port " << port << endl;
+        kj::NEVER_DONE.wait(waitScope);
+    } catch (const std::exception& e)
+    {
+        cerr << e.what() << endl;
     }
 
     auto version = avformat_version();
