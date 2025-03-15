@@ -28,22 +28,14 @@ auto collect_videos = [](const path& p)
     map<size_t, path> res;
     try
     {
-        if (is_directory(p))
-        {
-            for (const auto& entry : recursive_directory_iterator(p))
+        for (const auto& entry : recursive_directory_iterator(p))
+            if (entry.is_regular_file())
             {
-                if (entry.is_regular_file())
-                {
-                    const auto fn{entry.path().filename().string()};
-                    const regex video_extension_pattern{R"(.*\.(webm|mp4|mkv)(\.part)?$)"};
-                    if (regex_match(fn, video_extension_pattern))
-                    {
-                        auto s{file_size(entry)};
-                        res.emplace(s, entry.path());
-                    }
-                }
+                const auto fn{entry.path().filename().string()};
+                const regex video_extension_pattern{R"(.*\.(webm|mp4|mkv)(\.part)?$)"};
+                if (regex_match(fn, video_extension_pattern))
+                    res.emplace(file_size(entry), entry.path());
             }
-        }
     }
     catch (const filesystem_error& e)
     {

@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.17)
 project(cxxnet)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-find_package(FFmpeg)
+#set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+#find_package(FFmpeg)
 
 
 set(CMAKE_CXX_STANDARD 20)
@@ -61,7 +61,7 @@ else ()
             -Ofast
             -ffunction-sections -fdata-sections
             -Wpadded
-	    -march=znver3
+            -march=znver3
     )
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
@@ -76,6 +76,5 @@ add_executable(
 
 target_link_libraries(
         ${PROJECT_NAME}
-        FFmpeg::avcodec
-        FFmpeg::avformat
+        avformat
 )
