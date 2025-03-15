@@ -7,6 +7,10 @@
 #include <format>
 #include "proto/video.capnp.h"
 
+#include <kj/debug.h>
+#include <capnp/ez-rpc.h>
+#include <capnp/message.h>
+
 extern "C" {
 // #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -48,6 +52,10 @@ auto collect_videos = [](const path& p)
     return res;
 };
 
+class TubeImpl final: public Tube::Server
+{
+};
+
 int main(int argc, char* argv[])
 {
     if (argc < 2)
@@ -56,6 +64,8 @@ int main(int argc, char* argv[])
         return 1;
     }
     path p{argv[1]};
+
+    capnp::EzRpcServer server(kj::heap<TubeImpl>(),"*");
 
     const auto videos = collect_videos(p);
     path last;
