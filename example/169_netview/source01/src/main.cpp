@@ -52,9 +52,40 @@ auto collect_videos = [](const path& p)
     return res;
 };
 
-class TubeImpl final: public Tube::Server
+class VideoArchiveImpl final: public VideoArchive::Server
 {
+public:
+    VideoArchiveImpl();
+    kj::Promise<void> getVideoList(GetVideoListContext context) override;
 };
+
+VideoArchiveImpl::VideoArchiveImpl()
+{
+
+}
+
+kj::Promise<void> VideoArchiveImpl::getVideoList(GetVideoListContext context)
+{
+    cout << "ServerImpl::getVideoList" << endl;
+
+    const auto videos = collect_videos("/mnt5/tmp/bb");
+
+    auto builder = kj::heap<capnp::MallocMessageBuilder>();
+    auto root = builder->initRoot<VideoList>();
+    auto videoList = root.initVideos(videos.size());
+    size_t i = 0;
+    for (const auto& [video_size, video_path] : videos)
+    {
+        auto elementBuilder = kj::heap<capnp::MallocMessageBuilder>();
+        auto elementRoot = elementBuilder->initRoot<Video>();
+        elementRoot.setName(video_path.generic_string());
+        elementRoot.setSize(video_size);
+        videoList.setWithCaveats(i++, elementRoot);
+    }
+
+    context.getResults().setVideoList(root.asReader());
+    return kj::READY_NOW;
+}
 
 int main(int argc, char* argv[])
 {
@@ -65,7 +96,7 @@ int main(int argc, char* argv[])
     }
     path p{argv[1]};
 
-    capnp::EzRpcServer server(kj::heap<TubeImpl>(),"*");
+    capnp::EzRpcServer server(kj::heap<VideoArchiveImpl>(),"*");
 
     const auto videos = collect_videos(p);
     path last;

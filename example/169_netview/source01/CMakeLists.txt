@@ -4,7 +4,7 @@ project(cxxnet CXX)
 #set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #find_package(FFmpeg)
 
-set(CMAKE_PREFIX_PATH /home/martin/vulkan)
+#set(CMAKE_PREFIX_PATH /home/martin/vulkan)
 find_package(CapnProto CONFIG REQUIRED)
 
 
