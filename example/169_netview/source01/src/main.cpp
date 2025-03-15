@@ -5,8 +5,10 @@
 #include <map>
 #include <regex>
 
-#include <libavcodec/avcodec.h>
+extern "C" {
+// #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+}
 
 /*
  * Main components
@@ -60,11 +62,12 @@ int main(int argc, char* argv[])
         cout << size << " " << video_path.stem() << endl;
         last = video_path;
     }
-    auto ctx = avformat_alloc_context();
-    if (!ctx)
-    {
-        cerr << "Could not allocate video context" << endl;
-        return 1;
-    }
+    auto version = avformat_version();
+    // auto ctx = avformat_alloc_context();
+    // if (!ctx)
+    // {
+    //     cerr << "Could not allocate video context" << endl;
+    //     return 1;
+    // }
     return 0;
 }
