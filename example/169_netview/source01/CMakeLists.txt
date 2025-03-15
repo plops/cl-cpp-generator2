@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.17)
-project(cxxnet)
+project(cxxnet CXX)
 
 #set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #find_package(FFmpeg)
+
+set(CMAKE_PREFIX_PATH /home/martin/vulkan)
+find_package(CapnProto CONFIG REQUIRED)
 
 
 set(CMAKE_CXX_STANDARD 20)
@@ -69,12 +72,17 @@ endif ()
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
+capnp_generate_cpp(videoSources videoHeaders proto/video.capnp)
+
 add_executable(
         ${PROJECT_NAME}
         ${SOURCE_FILES}
+        ${videoSources}
 )
 
 target_link_libraries(
         ${PROJECT_NAME}
+        PRIVATE
+        CapnProto::capnp
         avformat
 )
