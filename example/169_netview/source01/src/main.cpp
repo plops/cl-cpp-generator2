@@ -63,6 +63,11 @@ int main(int argc, char* argv[])
         last = video_path;
     }
     auto version = avformat_version();
+    cout << "libavformat: " <<
+         AV_VERSION_MAJOR(version) << "."
+    << AV_VERSION_MINOR(version) << "."
+    << AV_VERSION_MICRO(version)
+    << endl;
     // auto ctx = avformat_alloc_context();
     // if (!ctx)
     // {
