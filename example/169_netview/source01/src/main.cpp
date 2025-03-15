@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <iostream>
 #include <regex>
+#include <map>
 using namespace std;
 using namespace std::filesystem;
 int main(int argc, char* argv[])
@@ -15,6 +16,7 @@ int main(int argc, char* argv[])
     path p{argv[1]};
     auto collect_videos = [](const path& p)
     {
+        map<size_t,path> res;
         try
         {
             if (is_directory(p))
@@ -23,12 +25,12 @@ int main(int argc, char* argv[])
                 {
                     if (entry.is_regular_file())
                     {
-                        auto fn{entry.path().filename().string()};
-                        regex pat{R"(.*\.(webm|mp4|mkv)(\.part)?$)"};
-                        auto match = regex_match(fn, pat);
-                        if (match)
+                        const auto fn{entry.path().filename().string()};
+                        const regex video_extension_pattern{R"(.*\.(webm|mp4|mkv)(\.part)?$)"};
+                        if (regex_match(fn, video_extension_pattern))
                         {
-                            cout << fn << endl;
+                            auto s{file_size(entry)};
+                            res.emplace(s,entry.path());
                         }
                     }
                 }
@@ -38,7 +40,10 @@ int main(int argc, char* argv[])
         {
             cerr << e.what() << endl;
         }
+        return res;
     };
-    collect_videos(p);
+    auto videos = collect_videos(p);
+    for (const auto& [size, video_path] : videos)
+        cout << size << " " << video_path << endl;
     return 0;
 }
