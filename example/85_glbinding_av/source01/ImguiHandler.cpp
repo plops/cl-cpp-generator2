@@ -17,20 +17,20 @@ ImguiHandler::ImguiHandler(GLFWwindow *window) {
   ImGui::CreateContext();
   ImGui::StyleColorsLight();
   {
-    const auto installCallbacks = true;
+    const auto installCallbacks{true};
     ImGui_ImplGlfw_InitForOpenGL(window, installCallbacks);
   }
-  const auto glslVersion = "#version 150";
+  const auto glslVersion{"#version 150"};
   ImGui_ImplOpenGL3_Init(glslVersion);
-  auto &io = ImGui::GetIO();
+  auto &io{ImGui::GetIO()};
   spdlog::info("enable keyboard input for imgui");
-  io.ConfigFlags = ((io.ConfigFlags) | (ImGuiConfigFlags_NavEnableKeyboard));
+  (io.ConfigFlags) = ((io.ConfigFlags) || (ImGuiConfigFlags_NavEnableKeyboard));
 }
 void ImguiHandler::NewFrame() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
-  auto showDemoWindow = true;
+  auto showDemoWindow{true};
   ImGui::ShowDemoWindow(&showDemoWindow);
 }
 void ImguiHandler::Render() { ImGui::Render(); }

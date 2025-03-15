@@ -22,10 +22,10 @@ GlfwWindow::GlfwWindow() {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   spdlog::info("create GLFW3 window");
-  const auto startWidth = 800;
-  const auto startHeight = 600;
-  auto window =
-      glfwCreateWindow(startWidth, startHeight, "glfw", nullptr, nullptr);
+  const auto startWidth{800};
+  const auto startHeight{600};
+  auto window{
+      glfwCreateWindow(startWidth, startHeight, "glfw", nullptr, nullptr)};
   if (!(window)) {
     spdlog::info("can't create glfw window");
   }
@@ -33,7 +33,7 @@ GlfwWindow::GlfwWindow() {
   glfwMakeContextCurrent(window);
   // configure Vsync, 1 locks to 60Hz, FIXME: i should really check glfw errors
   glfwSwapInterval(0);
-  m_window = window;
+  (m_window) = (window);
 }
 GlfwWindow::~GlfwWindow() {
   spdlog::info("");
@@ -49,8 +49,8 @@ GLFWglproc GlfwWindow::GetProcAddress(const char *name) {
   return glfwGetProcAddress(name);
 }
 std::pair<int, int> GlfwWindow::GetWindowSize() const {
-  auto width = int(0);
-  auto height = int(0);
+  auto width{int(0)};
+  auto height{int(0)};
   glfwGetWindowSize(m_window, &width, &height);
   return std::make_pair(width, height);
 }

@@ -11,9 +11,9 @@ extern const std::chrono::time_point<std::chrono::high_resolution_clock>
 #include <avcpp/ffmpeg.h>
 #include <avcpp/formatcontext.h>
 bool Video::GetSuccess() { return success; }
-bool Video::Seekable_p() { return ((success) && (ctx.seekable())); }
+bool Video::Seekable_p() { return (success) & (ctx.seekable()); }
 Video::Video(std::string filename)
-    : ctx(av::FormatContext()), fn(filename), success(false) {
+    : ctx{av::FormatContext()}, fn{filename}, success{false} {
   spdlog::info("open video file  fn='{}'", fn);
   ctx.openInput(fn, ec);
   if (ec) {
@@ -32,24 +32,23 @@ Video::Video(std::string filename)
       ctx.seekable(), ctx.startTime().seconds(), ctx.duration().seconds(),
       ctx.streamsCount());
   if (ctx.seekable()) {
-    const auto center = (0.50f);
-    const auto timeResolution = 100;
+    const auto center{0.50F};
+    const auto timeResolution{100};
     // split second into 100 parts
-    ctx.seek(
-        {static_cast<long int>(floor(
-             ((timeResolution) * (((center) * (ctx.duration().seconds())))))),
-         {1, timeResolution}},
-        ec);
+    ctx.seek({static_cast<long int>(floor(
+                  (timeResolution) * ((center) * (ctx.duration().seconds())))),
+              {1, timeResolution}},
+             ec);
     if (ec) {
       spdlog::info("can't seek  ec.message()='{}'", ec.message());
       return;
     }
   }
-  for (size_t i = 0; (i) < (ctx.streamsCount()); i++) {
-    auto st = ctx.stream(i);
+  for ((size_t i) = (0); (i) < (ctx.streamsCount()); i++) {
+    auto st{ctx.stream(i)};
     if ((AVMEDIA_TYPE_VIDEO) == (st.mediaType())) {
-      videoStream = i;
-      vst = st;
+      (videoStream) = (i);
+      (vst) = (st);
       break;
     }
   }
@@ -58,8 +57,8 @@ Video::Video(std::string filename)
     return;
   }
   if (vst.isValid()) {
-    vdec = av::VideoDecoderContext(vst);
-    codec = av::findDecodingCodec(vdec.raw()->codec_id);
+    (vdec) = (av::VideoDecoderContext(vst));
+    (codec) = (av::findDecodingCodec((vdec.raw())->(codec_id)));
     vdec.setCodec(codec);
     vdec.setRefCountedFrames(true);
     vdec.open({{"threads", "1"}}, av::Codec(), ec);
@@ -67,27 +66,27 @@ Video::Video(std::string filename)
       spdlog::info("can't open codec");
       return;
     }
-    success = true;
+    (success) = (true);
   }
 }
 av::Packet Video::readPacket() {
-  pkt = ctx.readPacket(ec);
+  (pkt) = (ctx.readPacket(ec));
   if (ec) {
     spdlog::info("packet reading error  ec.message()='{}'", ec.message());
   }
   return pkt;
 }
 av::VideoFrame Video::decode() {
-  auto frame = vdec.decode(pkt, ec);
+  auto frame{vdec.decode(pkt, ec)};
   if (ec) {
     spdlog::info("error  ec.message()='{}'", ec.message());
   }
   return frame;
 }
 void Video::seek(float val) {
-  const auto timeResolution = 1000;
-  if (((success) && (Seekable_p()))) {
-    ctx.seek({static_cast<long int>(floor(((timeResolution) * (val)))),
+  const auto timeResolution{1000};
+  if ((success) & (Seekable_p())) {
+    ctx.seek({static_cast<long int>(floor((timeResolution) * (val))),
               {1, timeResolution}},
              ec);
     if (ec) {
@@ -100,12 +99,12 @@ float Video::startTime() {
   if (success) {
     return static_cast<float>(ctx.startTime().seconds());
   }
-  return (0.f);
+  return 0.F;
 }
 float Video::duration() {
   if (success) {
     return static_cast<float>(ctx.duration().seconds());
   }
-  return (1.0f);
+  return 1.0F;
 }
 Video::~Video() {}
