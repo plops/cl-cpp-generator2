@@ -31,12 +31,13 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
     if (ec) { cerr << "Error finding stream information " << ec.message() << endl; }
     ssize_t videoStream{-1};
     auto    streamsCount = ctx->streamsCount();
-    for (auto i{streamsCount - 1}; i; --i) {
+    for (auto i = 0; i < streamsCount; i++) {
         auto stream = ctx->stream(i);
         auto type   = stream.mediaType();
 
         if (debug) { cout << "Stream #=" << i << " type=" << type << endl; }
         if (type == AVMEDIA_TYPE_VIDEO) {
+            if (debug) { cout << "Found video stream" << endl; }
             vst         = stream;
             videoStream = i;
             break;
