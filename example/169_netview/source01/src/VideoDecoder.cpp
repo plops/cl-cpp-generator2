@@ -11,8 +11,7 @@
 
 using namespace std;
 
-bool VideoDecoder::initialize(const string& uri, bool debug)
-{
+bool VideoDecoder::initialize(const string& uri, bool debug) {
     cout << "Initializing video decoder " << endl;
     auto version    = avformat_version();
     auto versionStr = format("libavformat: {}.{}.{}", AV_VERSION_MAJOR(version), AV_VERSION_MINOR(version),
@@ -21,47 +20,33 @@ bool VideoDecoder::initialize(const string& uri, bool debug)
     cout << versionStr << endl;
 
     av::init();
-    if (debug)
-    {
-        av::setFFmpegLoggingLevel(AV_LOG_DEBUG);
-    }
+    if (debug) { av::setFFmpegLoggingLevel(AV_LOG_DEBUG); }
     ctx = make_unique<av::FormatContext>();
     ctx->openInput(uri, ec);
-    if (ec)
-    {
+    if (ec) {
         cerr << "Error opening input file " << uri << " " << ec.message() << endl;
         return false;
     }
     ctx->findStreamInfo(ec);
-    if (ec)
-    {
-        cerr << "Error finding stream information " << ec.message() << endl;
-    }
+    if (ec) { cerr << "Error finding stream information " << ec.message() << endl; }
     ssize_t videoStream{-1};
     auto    streamsCount = ctx->streamsCount();
-    for (auto i{streamsCount - 1}; i; --i)
-    {
+    for (auto i{streamsCount - 1}; i; --i) {
         auto stream = ctx->stream(i);
         auto type   = stream.mediaType();
 
-        if (debug)
-        {
-            cout << "Stream #=" << i << " type=" << type << endl;
-        }
-        if (type == AVMEDIA_TYPE_VIDEO)
-        {
+        if (debug) { cout << "Stream #=" << i << " type=" << type << endl; }
+        if (type == AVMEDIA_TYPE_VIDEO) {
             vst         = stream;
             videoStream = i;
             break;
         }
     }
-    if ((videoStream == -1) || vst.isNull())
-    {
+    if ((videoStream == -1) || vst.isNull()) {
         cerr << "Video stream not found streamsCount=" << streamsCount << endl;
         return false;
     }
-    if (!vst.isValid())
-    {
+    if (!vst.isValid()) {
         cerr << "Video stream is not valid." << endl;
         return false;
     }
@@ -71,10 +56,7 @@ bool VideoDecoder::initialize(const string& uri, bool debug)
     vdec.setCodec(codec);
     vdec.setRefCountedFrames(true);
     vdec.open({{"threads", "12"}}, av::Codec(), ec);
-    if (ec)
-    {
-        cerr << "Error opening video decoder codec id=" << id << " " << ec.message() << endl;
-    }
+    if (ec) { cerr << "Error opening video decoder codec id=" << id << " " << ec.message() << endl; }
     isInitialized = true;
     return true;
 }
