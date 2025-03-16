@@ -4,8 +4,10 @@ project(cxxnet CXX)
 #set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #find_package(FFmpeg)
 
-set(CMAKE_PREFIX_PATH /home/martin/vulkan)
+# Use system-wide capnproto installation
 find_package(CapnProto CONFIG REQUIRED)
+
+set(CMAKE_PREFIX_PATH /home/martin/vulkan)
 find_package(avcpp CONFIG)
 
 set(CMAKE_CXX_STANDARD 20)
