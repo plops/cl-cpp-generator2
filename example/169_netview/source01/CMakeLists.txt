@@ -8,7 +8,10 @@ project(cxxnet CXX)
 find_package(CapnProto CONFIG REQUIRED)
 
 set(CMAKE_PREFIX_PATH /home/martin/vulkan)
-find_package(avcpp CONFIG)
+# in ~/vulkan//lib64/cmake/avcpp/avcpp-config.cmake change this line
+# include("${CMAKE_CURRENT_LIST_DIR}/../../../lib/cmake/avcpp/avcpp-targets.cmake")
+
+find_package(avcpp REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -28,6 +31,8 @@ endif ()
 
 set(SOURCE_FILES src/main.cpp
         src/VideoArchiveImpl.cpp
+        src/VideoDecoder.cpp
+        src/VideoDecoder.h
 )
 
 # AddressSanitizer
@@ -88,8 +93,8 @@ add_executable(
 target_link_libraries(
         ${PROJECT_NAME}
         PRIVATE
-#        CapnProto::capnp
-        avformat
+        #        CapnProto::capnp
+        avcpp::avcpp
         CapnProto::capnp-rpc
 )
 
@@ -98,4 +103,5 @@ target_include_directories(
         ${PROJECT_NAME}
         PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
+        /home/martin/vulkan/include
 )

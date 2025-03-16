@@ -11,7 +11,7 @@
 
 extern "C" {
 // #include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
+// #include <libavformat/avformat.h>
 }
 
 /*
@@ -83,17 +83,17 @@ int main(int argc, char* argv[]) {
     cerr << e.what() << endl;
   }
 
-  auto version = avformat_version();
-  auto versionStr =
-      format("libavformat: {}.{}.{}", AV_VERSION_MAJOR(version),
-             AV_VERSION_MINOR(version), AV_VERSION_MICRO(version));
-
-  cout << versionStr << endl;
-
-  auto ctx = avformat_alloc_context();
-  if (!ctx) {
-    cerr << "Could not allocate video context" << endl;
-    return 1;
-  }
+  // auto version = avformat_version();
+  // auto versionStr =
+  //     format("libavformat: {}.{}.{}", AV_VERSION_MAJOR(version),
+  //            AV_VERSION_MINOR(version), AV_VERSION_MICRO(version));
+  //
+  // cout << versionStr << endl;
+  //
+  // auto ctx = avformat_alloc_context();
+  // if (!ctx) {
+  //   cerr << "Could not allocate video context" << endl;
+  //   return 1;
+  // }
   return 0;
 }
