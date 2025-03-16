@@ -4,9 +4,9 @@ project(cxxnet CXX)
 #set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #find_package(FFmpeg)
 
-#set(CMAKE_PREFIX_PATH /home/martin/vulkan)
+set(CMAKE_PREFIX_PATH /home/martin/vulkan)
 find_package(CapnProto CONFIG REQUIRED)
-
+find_package(avcpp CONFIG)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -23,7 +23,10 @@ if (NOT WIN32)
     )
 
 endif ()
-set(SOURCE_FILES src/main.cpp)
+
+set(SOURCE_FILES src/main.cpp
+        src/VideoArchiveImpl.cpp
+)
 
 # AddressSanitizer
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
@@ -83,7 +86,7 @@ add_executable(
 target_link_libraries(
         ${PROJECT_NAME}
         PRIVATE
-       # CapnProto::capnp
+#        CapnProto::capnp
         avformat
         CapnProto::capnp-rpc
 )

@@ -8,7 +8,7 @@ interface VideoArchive {
 
 struct Video {
     name @0 :Text;
-    size @1 :UInt64;
+    sizeBytes @1 :UInt64;
 }
 
 struct VideoList {
