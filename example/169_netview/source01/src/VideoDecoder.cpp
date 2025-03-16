@@ -4,9 +4,22 @@
 
 #include "VideoDecoder.h"
 
-#include <bits/ostream.tcc>
+#include <avcpp/av.h>
+#include <format.h>
+
 #include <iostream>
-void VideoDecoder::initialize(int width, int height) {
-  std::cout << "Initializing video decoder "
-  << width << " " << height << std::endl;
+
+using namespace std;
+
+void VideoDecoder::initialize() {
+  cout << "Initializing video decoder " << endl;
+  auto version = avformat_version();
+  auto versionStr =
+      format("libavformat: {}.{}.{}", AV_VERSION_MAJOR(version),
+             AV_VERSION_MINOR(version), AV_VERSION_MICRO(version));
+
+  cout << versionStr << endl;
+
+  av::init();
+  m_isInitialized = true;
 }

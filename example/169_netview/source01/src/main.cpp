@@ -8,11 +8,8 @@
 #include <iostream>
 
 #include "VideoArchiveImpl.h"
+#include "VideoDecoder.h"
 
-extern "C" {
-// #include <libavcodec/avcodec.h>
-// #include <libavformat/avformat.h>
-}
 
 /*
  * Main components
@@ -30,6 +27,8 @@ using namespace std::filesystem;
 
 int main(int argc, char* argv[]) {
   string program{argv[0]};
+  VideoDecoder decoder;
+  decoder.initialize();
   bool isClient = program.find("client") != string_view::npos;
 
   if (isClient) {
@@ -83,12 +82,7 @@ int main(int argc, char* argv[]) {
     cerr << e.what() << endl;
   }
 
-  // auto version = avformat_version();
-  // auto versionStr =
-  //     format("libavformat: {}.{}.{}", AV_VERSION_MAJOR(version),
-  //            AV_VERSION_MINOR(version), AV_VERSION_MICRO(version));
-  //
-  // cout << versionStr << endl;
+
   //
   // auto ctx = avformat_alloc_context();
   // if (!ctx) {

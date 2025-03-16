@@ -19,12 +19,23 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 if (NOT WIN32)
     add_compile_options(
-            -Wall -Wextra -Wconversion -Wdouble-promotion
-            -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
-            -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
-            -Wshadow -Wformat=2 -fno-common -fstack-usage
+            -Wall
+            -Wextra
+            -Wconversion
+            -Wdouble-promotion
+            -Wno-unused-parameter
+            -Wno-unused-function
+            -Wno-sign-conversion
+            -Wvla
+            -Wframe-larger-than=5000
+            -Wstack-usage=10000
+            -Wshadow
+            -Wformat=2
+            -fno-common
+            -fstack-usage
             -fvisibility=hidden
-            -fno-strict-overflow -Wno-strict-overflow
+            -fno-strict-overflow
+            -Wno-strict-overflow
     )
 
 endif ()
@@ -72,12 +83,16 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 else ()
     add_compile_options(
             -Ofast
-            -ffunction-sections -fdata-sections
+            -ffunction-sections
+            -fdata-sections
             -Wpadded
             -march=znver3
     )
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-    add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
+#    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    add_link_options(
+          #  -Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map
+        -Wl,-gc-sections
+    )
 endif ()
 
 include_directories(${CMAKE_SOURCE_DIR}/src)

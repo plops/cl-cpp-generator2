@@ -5,7 +5,6 @@
 #ifndef VIDEODECODER_H
 #define VIDEODECODER_H
 
-#include <avcpp/av.h>
 // #include <avcpp/ffmpeg.h>
 // #include <avcpp/formatcontext.h>
 // #include <avcpp/codec.h>
@@ -16,7 +15,7 @@ class VideoDecoder {
   public:
   ~VideoDecoder() = default;
   VideoDecoder() = default;
-  void initialize(int width, int height);
+  void initialize();
 private:
   bool m_isInitialized{false};
 };
