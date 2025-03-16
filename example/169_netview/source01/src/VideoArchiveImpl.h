@@ -6,11 +6,10 @@
 #define VIDEOARCHIVEIMPL_H
 #include "proto/video.capnp.h"
 
-class VideoArchiveImpl final: public VideoArchive::Server
-{
-public:
-    VideoArchiveImpl();
-    kj::Promise<void> getVideoList(GetVideoListContext context) override;
+class VideoArchiveImpl final : public VideoArchive::Server {
+ public:
+  VideoArchiveImpl();
+  kj::Promise<void> getVideoList(GetVideoListContext context) override;
 };
 
-#endif //VIDEOARCHIVEIMPL_H
+#endif  // VIDEOARCHIVEIMPL_H
