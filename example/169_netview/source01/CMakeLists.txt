@@ -29,7 +29,7 @@ if (NOT WIN32)
             -Wvla
             -Wframe-larger-than=5000
             -Wstack-usage=10000
-            -Wshadow
+            #-Wshadow
             -Wformat=2
             -fno-common
             -fstack-usage
@@ -85,7 +85,7 @@ else ()
             -Ofast
             -ffunction-sections
             -fdata-sections
-            -Wpadded
+            # -Wpadded
             -march=znver3
     )
 #    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)

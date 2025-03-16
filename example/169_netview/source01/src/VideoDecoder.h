@@ -22,7 +22,7 @@ class VideoDecoder {
    * @param uri filename for a video file
    * @return success
    */
-  bool initialize(const std::string& uri);
+  bool initialize(const std::string& uri, bool debug = false);
 private:
   std::unique_ptr<av::FormatContext> ctx;
   av::Stream vst;
