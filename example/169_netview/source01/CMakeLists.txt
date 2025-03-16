@@ -44,6 +44,9 @@ set(SOURCE_FILES src/main.cpp
         src/VideoArchiveImpl.cpp
         src/VideoDecoder.cpp
         src/VideoDecoder.h
+        src/VideoStreamStatistics.cpp
+        src/VideoStreamStatistics.h
+        src/Histogram.h
 )
 
 # AddressSanitizer
