@@ -64,8 +64,8 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
     av::Timestamp timestamp_prev;
     bool histIsInitialized = false;
     const int n=128;
-    double durationMin = .0;
-    double durationMax = 6330.;
+    double durationMin = .0158;
+    double durationMax = .0175;
     double durationRealMin = 1000000000.;
     double durationRealMax = -100000000.;
     array<uint64_t,n> histogram;
@@ -76,9 +76,8 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
             histIsInitialized = true;
             return;
         }
-        ts -= timestamp_prev;
+        auto duration = ts.seconds() - timestamp_prev.seconds();
         timestamp_prev = ts;
-        auto duration = ts.seconds();
         durationRealMin = min(durationRealMin, duration);
         durationRealMax = max(durationRealMax, duration);
         duration = clamp(duration, durationMin, durationMax);
