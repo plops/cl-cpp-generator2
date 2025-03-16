@@ -58,6 +58,21 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
     vdec.setRefCountedFrames(true);
     vdec.open({{"threads", "12"}}, av::Codec(), ec);
     if (ec) { cerr << "Error opening video decoder codec id=" << id << " " << ec.message() << endl; }
+
+    auto videoPacketCount = 0;
+    while (pkt = ctx->readPacket(ec)) {
+        if (ec) {
+            cerr << "Packet reading error: " << ec.message() << endl;
+        }
+        if (pkt.streamIndex() != videoStream) {
+            continue;
+        }
+        auto timeStamp = pkt.ts();
+        videoPacketCount++;
+        if (debug) {
+            cout << "Packet #=" << videoPacketCount << " timeStamp=" << timeStamp << endl;
+        }
+    }
     isInitialized = true;
     return true;
 }
