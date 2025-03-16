@@ -60,6 +60,23 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
     if (ec) { cerr << "Error opening video decoder codec id=" << id << " " << ec.message() << endl; }
 
     auto videoPacketCount = 0;
+    av::Timestamp timestamp;
+    av::Timestamp timestamp_prev(-1,0);
+    const int n=128;
+    double time_min = .0;
+    double time_max = .1;
+    array<uint64_t,n> histogram;
+    histogram.fill(0);
+    auto accum = [&](av::Timestamp ts) {
+        if (timestamp_prev.timestamp() == -1)
+            return;
+        ts -= timestamp_prev;
+        auto duration = ts.seconds();
+        duration = clamp(duration, time_min, time_max);
+        const auto tau = (duration-time_min)/(time_max-time_min);
+        const auto durationIdx = tau*(n-1);
+        histogram[durationIdx]++;
+    };
     while (pkt = ctx->readPacket(ec)) {
         if (ec) {
             cerr << "Packet reading error: " << ec.message() << endl;
@@ -67,10 +84,16 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
         if (pkt.streamIndex() != videoStream) {
             continue;
         }
-        auto timeStamp = pkt.ts();
+        timestamp = pkt.ts();
+        if (debug)
+            accum(timestamp);
         videoPacketCount++;
-        if (debug) {
-            cout << "Packet #=" << videoPacketCount << " timeStamp=" << timeStamp << endl;
+    }
+    if (debug) {
+        cout << "Packet #=" << videoPacketCount << " timestamp=" << timestamp.seconds() << "s" <<
+            endl;
+        for (const auto& h : histogram) {
+            cout << "hist " << h << endl;
         }
     }
     isInitialized = true;
