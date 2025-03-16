@@ -6,7 +6,7 @@
 
 #include <avcpp/av.h>
 #include <format.h>
-
+#include "Histogram.h"
 #include <iostream>
 
 using namespace std;
@@ -59,37 +59,21 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
     vdec.open({{"threads", "12"}}, av::Codec(), ec);
     if (ec) { cerr << "Error opening video decoder codec id=" << id << " " << ec.message() << endl; }
 
-    auto               videoPacketCount = 0;
-    av::Timestamp      timestamp;
-    av::Timestamp      timestamp_prev;
-    bool               histIsInitialized = false;
-    const int          n                 = 128;
-    double             durationMin       = .0158;
-    double             durationMax       = .0175;
-    double             durationRealMin   = 1000000000.;
-    double             durationRealMax   = -100000000.;
-    array<uint64_t, n> histogram;
-    array<double, n>   histogramX;
-    auto               count = 0;
-    for (auto&& x : histogramX) {
-        x = durationMin + count * (durationMax - durationMin) / (n - 1);
-        count++;
-    }
-    histogram.fill(0);
-    auto accum = [&](av::Timestamp ts) {
-        if (!histIsInitialized) {
+    auto                 videoPacketCount = 0;
+    av::Timestamp        timestamp;
+    av::Timestamp        timestamp_prev;
+    bool                 prevIsInitialized = false;
+    const int            N                 = 32;
+    Histogram<double, N> histogram(.0158, .0175);
+    auto                 accum = [&](av::Timestamp ts) {
+        if (!prevIsInitialized) {
             timestamp_prev    = ts;
-            histIsInitialized = true;
+            prevIsInitialized = true;
             return;
         }
-        auto duration          = ts.seconds() - timestamp_prev.seconds();
-        timestamp_prev         = ts;
-        durationRealMin        = min(durationRealMin, duration);
-        durationRealMax        = max(durationRealMax, duration);
-        duration               = clamp(duration, durationMin, durationMax);
-        const auto tau         = (duration - durationMin) / (durationMax - durationMin);
-        const auto durationIdx = static_cast<uint64_t>(tau * (n - 1));
-        histogram[durationIdx]++;
+        auto duration = ts.seconds() - timestamp_prev.seconds();
+        histogram.insert(duration);
+        timestamp_prev = ts;
     };
     while ((pkt = ctx->readPacket(ec))) {
         if (ec) { cerr << "Packet reading error: " << ec.message() << endl; }
@@ -102,10 +86,15 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
     if (debug) {
         cout << "Packet #=" << videoPacketCount << " timestamp=" << timestamp.seconds() << "s" <<
                 endl;
-        cout << "durationRealMin=" << durationRealMin << endl;
-        cout << "durationRealMax=" << durationRealMax << endl;
+        cout << "durationRealMin=" << histogram.getObservedMin() << endl;
+        cout << "durationRealMax=" << histogram.getObservedMax() << endl;
 
-        for (int i = 0; i < n; i++) { cout << "hist " << histogramX[i] << " " << histogram[i] << endl; }
+
+        for (int i = 0; i < N; i++) {
+            cout << "hist "
+                    << histogram.getBinX(i) << " "
+                    << histogram.getBinY(i) << endl;
+        }
     }
     isInitialized = true;
     return true;

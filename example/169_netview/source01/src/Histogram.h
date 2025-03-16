@@ -11,40 +11,47 @@
 
 template <typename T, int N>
 class Histogram {
-    using namespace std;
-
 public:
-    Histogram(T mi, T ma, T bins = 128) noexcept :
-        binMin{mi}, binMax{ma}, binCount{bins} {
+    Histogram(T mi, T ma) noexcept :
+        binMin{mi}, binMax{ma} {
         assert(binMin < binMax);
         binY.fill(0);
-        {
-            auto count = 0;
-            for (auto&& x : binX) {
-                x = mi + count * (mi - mi) / (bins - 1);
-                count++;
-            }
-        }
+        // {
+        //     auto count = 0;
+        //     for (auto&& x : binX) {
+        //         x = mi + count * (mi - mi) / (N - 1);
+        //         count++;
+        //     }
+        // }
     }
 
     void insert(T value) noexcept {
-        realMin   = min(realMin, value);
-        realMax   = max(realMax, value);
-        auto tau  = (value - binMin) / (binMax - binMin);
-        tau       = clamp(tau, 0, 1);
-        auto idx  = static_cast<uint64_t>(round(tau * (binCount - 1)));
+        observedMin = std::min(observedMin, value);
+        observedMax = std::max(observedMax, value);
+        auto tau    = (value - binMin) / (binMax - binMin);
+        tau         = std::clamp(tau, T(0), T(1));
+        auto idx    = static_cast<uint64_t>(round(tau * (N - 1)));
         binY[idx]++;
         elementCount++;
     }
 
+    [[nodiscard]] T        getObservedMin() const { return observedMin; }
+    [[nodiscard]] T        getObservedMax() const { return observedMax; }
+    [[nodiscard]] uint64_t getElementCount() const { return elementCount; }
+
+    // T getBinX(uint64_t idx) const {return binX[idx];}
+    T getBinX(uint64_t idx) const {
+        return binMin + T(idx)3 * (binMin - binMax) / (N - 1);
+    }
+    uint64_t getBinY(uint64_t idx) const {return binY[idx];}
+
 private:
     const T                 binMin;
     const T                 binMax;
-    T                       realMin{std::numeric_limits<T>::infinity};
-    T                       realMax{-std::numeric_limits<T>::infinity};
-    const uint64_t          binCount;
+    T                       observedMin{std::numeric_limits<double>::infinity()};
+    T                       observedMax{-std::numeric_limits<double>::infinity()};
     uint64_t                elementCount{0};
-    std::array<T, N>        binX;
+    // std::array<T, N>        binX;
     std::array<uint64_t, N> binY;
 };
 
