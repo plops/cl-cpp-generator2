@@ -28,7 +28,6 @@ using namespace std::filesystem;
 int main(int argc, char* argv[]) {
   string program{argv[0]};
   VideoDecoder decoder;
-  decoder.initialize();
   bool isClient = program.find("client") != string_view::npos;
 
   if (isClient) {
@@ -37,6 +36,7 @@ int main(int argc, char* argv[]) {
       return EXIT_FAILURE;
     }
     try {
+      cerr << "Client tries to connect to server address: " << argv[1] << endl;
       capnp::EzRpcClient client(argv[1]);
       auto& waitScope{client.getWaitScope()};
       VideoArchive::Client server = client.getMain<VideoArchive>();
@@ -52,10 +52,14 @@ int main(int argc, char* argv[]) {
         } else if (command == "list") {
           auto request = server.getVideoListRequest();
           auto response = request.send().wait(waitScope);
+          string largest;
           for (const auto& video : response.getVideoList().getVideos()) {
             cout << video.getSizeBytes() << " " << video.getName().cStr()
                  << endl;
+            largest = video.getName().cStr();
           }
+          decoder.initialize(largest);
+
         }
       }
 

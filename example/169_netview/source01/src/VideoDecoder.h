@@ -6,18 +6,31 @@
 #define VIDEODECODER_H
 
 // #include <avcpp/ffmpeg.h>
-// #include <avcpp/formatcontext.h>
-// #include <avcpp/codec.h>
-// #include <avcpp/codeccontext.h>
+#include <avcpp/formatcontext.h>
+#include <avcpp/codec.h>
+#include <avcpp/codeccontext.h>
+#include <memory>
+#include <string>
 
 
 class VideoDecoder {
   public:
   ~VideoDecoder() = default;
   VideoDecoder() = default;
-  void initialize();
+  /** @brief initialize avformat, start parsing video file
+   *
+   * @param uri filename for a video file
+   * @return success
+   */
+  bool initialize(const std::string& uri);
 private:
-  bool m_isInitialized{false};
+  std::unique_ptr<av::FormatContext> ctx;
+  av::Stream vst;
+  av::Codec codec;
+  std::error_code ec;
+  av::VideoDecoderContext vdec;
+  av::Packet pkt;
+  bool isInitialized{false};
 };
 
 

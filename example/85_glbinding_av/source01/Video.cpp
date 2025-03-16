@@ -1,15 +1,17 @@
 // no preamble
+#include <spdlog/spdlog.h>
+
 #include <chrono>
 #include <iostream>
-#include <spdlog/spdlog.h>
 #include <thread>
 extern const std::chrono::time_point<std::chrono::high_resolution_clock>
     g_start_time;
-#include "Video.h"
 #include <avcpp/codec.h>
 #include <avcpp/codeccontext.h>
 #include <avcpp/ffmpeg.h>
 #include <avcpp/formatcontext.h>
+
+#include "Video.h"
 bool Video::GetSuccess() { return success; }
 bool Video::Seekable_p() { return (success) & (ctx.seekable()); }
 Video::Video(std::string filename)

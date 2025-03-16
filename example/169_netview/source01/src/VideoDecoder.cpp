@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void VideoDecoder::initialize() {
+bool VideoDecoder::initialize(const string& uri) {
   cout << "Initializing video decoder " << endl;
   auto version = avformat_version();
   auto versionStr =
@@ -21,5 +21,17 @@ void VideoDecoder::initialize() {
   cout << versionStr << endl;
 
   av::init();
-  m_isInitialized = true;
+  av::setFFmpegLoggingLevel(AV_LOG_DEBUG);
+  ctx = make_unique<av::FormatContext>();
+  ctx->openInput(uri, ec);
+  if (ec) {
+    cerr << "Error opening input file " << uri << " " << ec.message() << endl;
+    return false;
+  }
+  ctx->findStreamInfo(ec);
+  if (ec) {
+    cerr << "Error finding stream information " << ec.message() << endl;
+  }
+  isInitialized = true;
+  return true;
 }
