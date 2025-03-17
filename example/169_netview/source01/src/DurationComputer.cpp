@@ -7,7 +7,7 @@ double DurationComputer::insert(av::Timestamp timestamp) {
     if (!isInitialized) {
         previous = timestamp;
         isInitialized = true;
-        return NAN;
+        return std::nan("1");
     }
     auto duration = timestamp.seconds() - previous.seconds();
     previous = timestamp;

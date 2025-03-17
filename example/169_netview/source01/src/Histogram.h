@@ -8,7 +8,16 @@
 #include <limits>
 #include <ostream>
 
-
+/**
+ * @brief Compute histogram, maximum and minimum of data
+ *
+ * @note Initialize the histogram range using the constructor arguments binMin and binMax.
+ *       The histogram is updated using insert(T). Elements that are out of range are counted into the closest bin.
+ *       You can check observed{Max,Min} to see if the observed data fell outside the range of histogram bins.
+ *
+ * @tparam T Datatype to be fed into the histogram (typically double)
+ * @tparam N Number of bins of the histogram (e.g. 128)
+ */
 template <typename T, int N>
 class Histogram {
 public:
@@ -30,18 +39,20 @@ public:
 
     [[nodiscard]] T        getObservedMin() const { return observedMin; }
     [[nodiscard]] T        getObservedMax() const { return observedMax; }
+    [[nodiscard]] T        getBinMin() const { return binMin; }
+    [[nodiscard]] T        getBinMax() const { return binMax; }
     [[nodiscard]] uint64_t getElementCount() const { return elementCount; }
 
-    T getBinX(uint64_t idx) const { return binMin + T(idx) * (binMin - binMax) / (N - 1); }
+    T        getBinX(uint64_t idx) const { return binMin + T(idx) * (binMin - binMax) / (N - 1); }
     uint64_t getBinY(uint64_t idx) const { return binY[idx]; }
 
     friend std::ostream& operator<<(std::ostream& Os, const Histogram& Obj) {
         Os << "observedMin: " << Obj.observedMin << '\n'
-        << "observedMax: " << Obj.observedMax << '\n'
-        << "elementCount: " << Obj.elementCount << '\n';
-        auto s = 1.0/static_cast<double>(Obj.elementCount);
+                << "observedMax: " << Obj.observedMax << '\n'
+                << "elementCount: " << Obj.elementCount << '\n';
+        auto s = 1.0 / static_cast<double>(Obj.elementCount);
         for (auto i = 0; i < N; ++i) {
-            auto density = static_cast<double>(Obj.getBinY(i))*s*99;
+            auto density = static_cast<double>(Obj.getBinY(i)) * s * 99;
             Os << '\t' << Obj.getBinX(i) << '\t' << density << '\n';
         }
         return Os;

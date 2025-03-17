@@ -13,7 +13,15 @@
 class DurationComputer {
     public:
     DurationComputer() = default;
+    /**
+     * @brief Add timestamp and computes difference to previous timestamp
+     *
+     * @param timestamp Timestamp of the current packet
+     *
+     * @return Duration in seconds between current and last timestamp. NAN if no previous timestamp
+     */
     [[nodiscard]] double insert(av::Timestamp timestamp);
+
 private:
     av::Timestamp previous;
     bool isInitialized = false;

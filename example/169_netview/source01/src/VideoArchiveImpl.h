@@ -9,6 +9,11 @@
 class VideoArchiveImpl final : public VideoArchive::Server {
 public:
     VideoArchiveImpl();
+    /**
+     * @brief Capnproto RPC call. Will find all video files in a directory.
+     * @param context Capnproto boilerplate
+     * @return A list of all videofilenames with their sizes in bytes.
+     */
     kj::Promise<void> getVideoList(GetVideoListContext context) override;
 };
 
