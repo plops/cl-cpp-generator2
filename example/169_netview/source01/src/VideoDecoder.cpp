@@ -78,9 +78,10 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
     DurationComputer       dtsDuration;
     Histogram<uint64_t, N> sizeHistogram(0, 100'000);
     Histogram<uint64_t, N> keySizeHistogram(0, 100'000);
-    Histogram<ssize_t, N>  dataPtrHistogram( -46097531952048, 46097531952048);
+    Histogram<ptrdiff_t, N>  dataPtrHistogram( -46097531952048,-43123497632562 );
 
     vector<uint64_t> keyPacketNumber;
+    vector<uint8_t*> keyPacketDataPtr;
 
     while ((pkt = ctx->readPacket(ec))) {
         if (ec) { cerr << "Packet reading error: " << ec.message() << endl; }
@@ -98,8 +99,8 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
 
                 auto data = pkt.data();
                 if (previous_data) {
-                    ssize_t val = data - previous_data;
-                    dataPtrHistogram.insert(val);
+                    auto data_gap = std::distance(previous_data, data);
+                    dataPtrHistogram.insert(data_gap);
                 }
                 previous_data = data;
             }
@@ -107,6 +108,7 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         if (pkt.isKeyPacket()) {
             keyVideoPacketCount++;
             keyPacketNumber.push_back(videoPacketCount);
+            keyPacketDataPtr.push_back(pkt.data());
             if (debug) {
                 auto keyDur = keyDuration.insert(timestamp);
                 keyHistogram.insert(keyDur);
@@ -131,6 +133,14 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         cout << "pts " << ptsHistogram << endl;
         cout << "dts " << dtsHistogram << endl;
         cout << "dataPtr " << dataPtrHistogram << endl;
+        int i=0;
+        for (const auto& e : keyPacketNumber) {
+            cout << e << " "
+            << reinterpret_cast<int*>(keyPacketDataPtr.at(i))
+            // << format("{}",std::format::Ptr(keyPacketDataPtr[i])
+                << endl;
+            i ++;
+        }
     }
 }
 
