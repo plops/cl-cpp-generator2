@@ -1,8 +1,8 @@
 #!/bin/bash
 
-
-ln -s cmake-build-release/cxxnet server
-ln -s cmake-build-release/cxxnet client
+rm -rf server client
+ln -s cmake-build-release/cxxnet_client server
+ln -s cmake-build-release/cxxnet_client client
 
 cd cmake-build-release/
 ninja

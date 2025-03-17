@@ -5,8 +5,8 @@
 #ifndef HISTOGRAM_H
 #define HISTOGRAM_H
 #include <array>
-#include <cstdint>
 #include <limits>
+#include <ostream>
 
 
 template <typename T, int N>
@@ -16,13 +16,6 @@ public:
         binMin{mi}, binMax{ma} {
         assert(binMin < binMax);
         binY.fill(0);
-        // {
-        //     auto count = 0;
-        //     for (auto&& x : binX) {
-        //         x = mi + count * (mi - mi) / (N - 1);
-        //         count++;
-        //     }
-        // }
     }
 
     void insert(T value) noexcept {
@@ -31,7 +24,7 @@ public:
         auto tau    = (value - binMin) / (binMax - binMin);
         tau         = std::clamp(tau, T(0), T(1));
         auto idx    = static_cast<uint64_t>(round(tau * (N - 1)));
-        binY[idx]++;
+        ++binY[idx];
         elementCount++;
     }
 
@@ -39,11 +32,20 @@ public:
     [[nodiscard]] T        getObservedMax() const { return observedMax; }
     [[nodiscard]] uint64_t getElementCount() const { return elementCount; }
 
-    // T getBinX(uint64_t idx) const {return binX[idx];}
-    T getBinX(uint64_t idx) const {
-        return binMin + T(idx)3 * (binMin - binMax) / (N - 1);
+    T getBinX(uint64_t idx) const { return binMin + T(idx) * (binMin - binMax) / (N - 1); }
+    uint64_t getBinY(uint64_t idx) const { return binY[idx]; }
+
+    friend std::ostream& operator<<(std::ostream& Os, const Histogram& Obj) {
+        Os << "observedMin: " << Obj.observedMin << '\n'
+        << "observedMax: " << Obj.observedMax << '\n'
+        << "elementCount: " << Obj.elementCount << '\n';
+        auto s = 1.0/static_cast<double>(Obj.elementCount);
+        for (auto i = 0; i < N; ++i) {
+            auto density = static_cast<double>(Obj.getBinY(i))*s*99;
+            Os << '\t' << Obj.getBinX(i) << '\t' << density << '\n';
+        }
+        return Os;
     }
-    uint64_t getBinY(uint64_t idx) const {return binY[idx];}
 
 private:
     const T                 binMin;
@@ -51,9 +53,6 @@ private:
     T                       observedMin{std::numeric_limits<double>::infinity()};
     T                       observedMax{-std::numeric_limits<double>::infinity()};
     uint64_t                elementCount{0};
-    // std::array<T, N>        binX;
     std::array<uint64_t, N> binY;
 };
-
-
 #endif //HISTOGRAM_H

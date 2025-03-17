@@ -3,7 +3,7 @@
 //
 
 #include "VideoDecoder.h"
-
+#include "DurationComputer.h"
 #include <avcpp/av.h>
 #include <format.h>
 #include "Histogram.h"
@@ -29,8 +29,7 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
     }
     ctx->findStreamInfo(ec);
     if (ec) { cerr << "Error finding stream information " << ec.message() << endl; }
-    ssize_t videoStream{-1};
-    auto    streamsCount = ctx->streamsCount();
+    auto streamsCount = ctx->streamsCount();
     for (long unsigned int i = 0; i < streamsCount; i++) {
         auto stream = ctx->stream(i);
         auto type   = stream.mediaType();
@@ -59,43 +58,42 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
     vdec.open({{"threads", "12"}}, av::Codec(), ec);
     if (ec) { cerr << "Error opening video decoder codec id=" << id << " " << ec.message() << endl; }
 
-    auto                 videoPacketCount = 0;
-    av::Timestamp        timestamp;
-    av::Timestamp        timestamp_prev;
-    bool                 prevIsInitialized = false;
-    const int            N                 = 32;
-    Histogram<double, N> histogram(.0158, .0175);
-    auto                 accum = [&](av::Timestamp ts) {
-        if (!prevIsInitialized) {
-            timestamp_prev    = ts;
-            prevIsInitialized = true;
-            return;
-        }
-        auto duration = ts.seconds() - timestamp_prev.seconds();
-        histogram.insert(duration);
-        timestamp_prev = ts;
-    };
-    while ((pkt = ctx->readPacket(ec))) {
-        if (ec) { cerr << "Packet reading error: " << ec.message() << endl; }
-        if (pkt.streamIndex() != videoStream) { continue; }
-        timestamp = pkt.ts();
-        if (debug)
-            accum(timestamp);
-        videoPacketCount++;
-    }
-    if (debug) {
-        cout << "Packet #=" << videoPacketCount << " timestamp=" << timestamp.seconds() << "s" <<
-                endl;
-        cout << "durationRealMin=" << histogram.getObservedMin() << endl;
-        cout << "durationRealMax=" << histogram.getObservedMax() << endl;
-
-
-        for (int i = 0; i < N; i++) {
-            cout << "hist "
-                    << histogram.getBinX(i) << " "
-                    << histogram.getBinY(i) << endl;
-        }
-    }
     isInitialized = true;
     return true;
 }
+
+void VideoDecoder::computeStreamStatistics(bool debug) {
+    auto                 videoPacketCount = 0;
+    auto                 keyVideoPacketCount =0;
+    const int            N                 = 32;
+    Histogram<double, N> packetHistogram(.0158, .0175);
+    DurationComputer packetDuration;
+    Histogram<double, N> keyHistogram(.0158, .175);
+    DurationComputer keyDuration;
+
+    while ((pkt = ctx->readPacket(ec))) {
+        if (ec) { cerr << "Packet reading error: " << ec.message() << endl; }
+        if (pkt.streamIndex() != videoStream) { continue; }
+        auto timestamp = pkt.ts();
+        if (debug) {
+            auto dur = packetDuration.insert(timestamp);
+            if (isnan(dur))
+                packetHistogram.insert(dur);
+            auto keyDur = keyDuration.insert(timestamp);
+            if (isnan(keyDur))
+                keyHistogram.insert(keyDur);
+        }
+        if (pkt.isKeyPacket())
+            keyVideoPacketCount++;
+
+        videoPacketCount++;
+    }
+    if (debug) {
+        cout << "Packet #=" << videoPacketCount << endl;
+        cout << "Key #=" << keyVideoPacketCount << endl;
+        cout << packetHistogram << endl;
+        cout << keyHistogram << endl;
+    }
+}
+
+

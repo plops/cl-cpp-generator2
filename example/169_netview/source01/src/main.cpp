@@ -58,6 +58,7 @@ int main(int argc, char* argv[]) {
                         largest = video.getName().cStr();
                     }
                     decoder.initialize(largest, true);
+                    decoder.computeStreamStatistics(true);
                 }
             }
         }

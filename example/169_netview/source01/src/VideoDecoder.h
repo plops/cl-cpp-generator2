@@ -24,6 +24,8 @@ public:
      */
     bool initialize(const std::string& uri, bool debug = false);
 
+    void computeStreamStatistics(bool debug = true);
+
 private:
     std::unique_ptr<av::FormatContext> ctx;
     av::Stream                         vst;
@@ -31,6 +33,7 @@ private:
     std::error_code                    ec;
     av::VideoDecoderContext            vdec;
     av::Packet                         pkt;
+    ssize_t                            videoStream{-1};
     bool                               isInitialized{false};
 };
 
