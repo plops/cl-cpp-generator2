@@ -64,21 +64,21 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
 }
 
 void VideoDecoder::computeStreamStatistics(bool debug) {
-    auto                 videoPacketCount    = 0;
-    auto                 keyVideoPacketCount = 0;
-    auto                 completePacketCount = 0;
-    const int            N                   = 32;
-    Histogram<double, N> packetHistogram(.0158, .0175);
-    DurationComputer     packetDuration;
-    Histogram<double, N> keyHistogram(.0158, 6.5);
-    DurationComputer     keyDuration;
-    Histogram<double, N> ptsHistogram(.0158, .0175);
-    DurationComputer     ptsDuration;
-    Histogram<double, N> dtsHistogram(.0158, .0175);
-    DurationComputer     dtsDuration;
-    Histogram<uint64_t, N> sizeHistogram(0,100'000);
-    Histogram<uint64_t, N> keySizeHistogram(0,100'000);
-
+    auto                   videoPacketCount    = 0;
+    auto                   keyVideoPacketCount = 0;
+    auto                   completePacketCount = 0;
+    const int              N                   = 32;
+    Histogram<double, N>   packetHistogram(.0158, .0175);
+    DurationComputer       packetDuration;
+    Histogram<double, N>   keyHistogram(.0158, 6.5);
+    DurationComputer       keyDuration;
+    Histogram<double, N>   ptsHistogram(.0158, .0175);
+    DurationComputer       ptsDuration;
+    Histogram<double, N>   dtsHistogram(.0158, .0175);
+    DurationComputer       dtsDuration;
+    Histogram<uint64_t, N> sizeHistogram(0, 100'000);
+    Histogram<uint64_t, N> keySizeHistogram(0, 100'000);
+    Histogram<ssize_t, N>  dataPtrHistogram( -46097531952048, 46097531952048);
 
     vector<uint64_t> keyPacketNumber;
 
@@ -92,7 +92,18 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
             ptsHistogram.insert(ptsDuration.insert(timestamp));
             dtsHistogram.insert(dtsDuration.insert(timestamp));
             sizeHistogram.insert(pkt.size());
-     }
+
+            {
+                static uint8_t* previous_data = nullptr;
+
+                auto data = pkt.data();
+                if (previous_data) {
+                    ssize_t val = data - previous_data;
+                    dataPtrHistogram.insert(val);
+                }
+                previous_data = data;
+            }
+        }
         if (pkt.isKeyPacket()) {
             keyVideoPacketCount++;
             keyPacketNumber.push_back(videoPacketCount);
@@ -119,6 +130,7 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         cout << "keySize " << keySizeHistogram << endl;
         cout << "pts " << ptsHistogram << endl;
         cout << "dts " << dtsHistogram << endl;
+        cout << "dataPtr " << dataPtrHistogram << endl;
     }
 }
 
