@@ -10,6 +10,20 @@
 #include <iostream>
 #include <map>
 
+
+/*
+ * Main components
+ *
+ * Format (Container) - a wrapper, providing sync, metadata and muxing for the
+ *                      streams.
+ * Stream - a continuous stream (audio or video) of data over time.
+ * Codec - defines how data are enCOded (from Frame to Packet)
+ *         and DECoded (from Packet to Frame).
+ * Packet - are the data (kind of slices of the stream data) to be decoded as
+ *          raw frames.
+ * Frame - a decoded raw frame (to be encoded or filtered).
+ */
+
 using namespace std;
 
 bool VideoDecoder::initialize(const string& uri, bool debug) {
@@ -21,7 +35,7 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
     cout << versionStr << endl;
 
     av::init();
-    if (debug) { av::setFFmpegLoggingLevel(AV_LOG_DEBUG); }
+    // if (debug) { av::setFFmpegLoggingLevel(AV_LOG_DEBUG); }
     ctx = make_unique<av::FormatContext>();
     ctx->openInput(uri, ec);
     if (ec) {
@@ -56,7 +70,7 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
     codec   = av::findDecodingCodec(id);
     vdec.setCodec(codec);
     vdec.setRefCountedFrames(true);
-    vdec.open({{"threads", "12"}}, av::Codec(), ec);
+    vdec.open({{"threads", "1"}}, av::Codec(), ec);
     if (ec) { cerr << "Error opening video decoder codec id=" << id << " " << ec.message() << endl; }
 
     isInitialized = true;
@@ -64,24 +78,27 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
 }
 
 void VideoDecoder::computeStreamStatistics(bool debug) {
-    auto                   videoPacketCount    = 0;
-    auto                   keyVideoPacketCount = 0;
-    auto                   completePacketCount = 0;
-    const int              N                   = 32;
-    Histogram<double, N>   packetHistogram(.0158, .0175);
-    DurationComputer       packetDuration;
-    Histogram<double, N>   keyHistogram(.0158, 6.5);
-    DurationComputer       keyDuration;
-    Histogram<double, N>   ptsHistogram(.0158, .0175);
-    DurationComputer       ptsDuration;
-    Histogram<double, N>   dtsHistogram(.0158, .0175);
-    DurationComputer       dtsDuration;
-    Histogram<uint64_t, N> sizeHistogram(0, 100'000);
-    Histogram<uint64_t, N> keySizeHistogram(0, 100'000);
-    Histogram<ptrdiff_t, N>  dataPtrHistogram( -46097531952048,-43123497632562 );
+    auto                    videoPacketCount    = 0;
+    auto                    keyVideoPacketCount = 0;
+    auto                    completePacketCount = 0;
+    const int               N                   = 32;
+    Histogram<double, N>    packetHistogram(.0158, .0175);
+    DurationComputer        packetDuration;
+    Histogram<double, N>    keyHistogram(.0158, 6.5);
+    DurationComputer        keyDuration;
+    Histogram<double, N>    ptsHistogram(.0158, .0175);
+    DurationComputer        ptsDuration;
+    Histogram<double, N>    dtsHistogram(.0158, .0175);
+    DurationComputer        dtsDuration;
+    Histogram<uint64_t, N>  sizeHistogram(0, 10'000);
+    Histogram<uint64_t, N>  keySizeHistogram(10'000, 100'000);
+    Histogram<ptrdiff_t, N> dataPtrHistogram(-46097531952048, -43123497632562);
 
-    vector<uint64_t> keyPacketNumber;
-    vector<uint8_t*> keyPacketDataPtr;
+    vector<uint64_t>      keyPacketNumber;
+    vector<uint8_t*>      keyPacketDataPtr;
+    vector<av::Timestamp> keyTimes;
+
+    if (debug) { cout << "seekable " << ctx->seekable() << endl; }
 
     while ((pkt = ctx->readPacket(ec))) {
         if (ec) { cerr << "Packet reading error: " << ec.message() << endl; }
@@ -107,20 +124,36 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         }
         if (pkt.isKeyPacket()) {
             keyVideoPacketCount++;
-            keyPacketNumber.push_back(videoPacketCount);
-            keyPacketDataPtr.push_back(pkt.data());
-            if (debug) {
-                auto keyDur = keyDuration.insert(timestamp);
-                keyHistogram.insert(keyDur);
-                keySizeHistogram.insert(pkt.size());
-            }
         }
+
+        videoPacketCount++;
 
         if (pkt.isComplete())
             completePacketCount++;
 
+        auto frame = vdec.decode(pkt, ec);
+        if (ec) { cerr << "Error while decoding video frame: " << ec.message() << endl; }
+        else if (!frame) { cout << "Empty video frame" << endl; }
 
-        videoPacketCount++;
+        auto pts = frame.pts();
+        if (debug && pkt.isKeyPacket()) {
+
+            keyPacketNumber.push_back(videoPacketCount);
+            keyPacketDataPtr.push_back(pkt.data());
+            keyTimes.push_back(timestamp);
+
+            auto keyDur = keyDuration.insert(timestamp);
+            keyHistogram.insert(keyDur);
+            keySizeHistogram.insert(pkt.size());
+
+            clog << "pkt# " << videoPacketCount << "  Frame: " << frame.width() << "x" << frame.height() << ", pktsize="
+                    << pkt.
+                    size() << ", size=" <<
+                    frame.size() << ", tm: " << pts.
+                    seconds() << ", tb: " << frame.timeBase() << ", ref=" << frame.isReferenced() << ":" << frame.
+                    refCount()
+                    << ", key: " << frame.isKeyFrame() << endl;
+        }
     }
     if (debug) {
         cout << "Packet #=" << videoPacketCount << endl;
@@ -133,13 +166,13 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         cout << "pts " << ptsHistogram << endl;
         cout << "dts " << dtsHistogram << endl;
         cout << "dataPtr " << dataPtrHistogram << endl;
-        int i=0;
+        int i = 0;
         for (const auto& e : keyPacketNumber) {
             cout << e << " "
-            << reinterpret_cast<int*>(keyPacketDataPtr.at(i))
-            // << format("{}",std::format::Ptr(keyPacketDataPtr[i])
-                << endl;
-            i ++;
+                    << reinterpret_cast<int*>(keyPacketDataPtr.at(i))
+                    // << format("{}",std::format::Ptr(keyPacketDataPtr[i])
+                    << endl;
+            i++;
         }
     }
 }

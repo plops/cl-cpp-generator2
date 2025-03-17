@@ -22,7 +22,7 @@ template <typename T, int N>
 class Histogram {
 public:
     Histogram(T mi, T ma) noexcept :
-        binMin{mi}, binMax{ma} {
+        binMin{mi}, binMax{ma}, scale{1.0 / (binMax - binMin)} {
         assert(binMin < binMax);
         binY.fill(0);
     }
@@ -30,8 +30,8 @@ public:
     void insert(T value) noexcept {
         observedMin = std::min(observedMin, value);
         observedMax = std::max(observedMax, value);
-        auto tau    = (value - binMin) / (binMax - binMin);
-        tau         = std::clamp(tau, T(0), T(1));
+        auto tau    = (value - binMin) * scale;
+        tau         = std::clamp(tau, .0, 1.);
         auto idx    = static_cast<uint64_t>(round(tau * (N - 1)));
         ++binY[idx];
         elementCount++;
@@ -61,6 +61,7 @@ public:
 private:
     const T                 binMin;
     const T                 binMax;
+    const double            scale;
     T                       observedMin{std::numeric_limits<T>::max()};
     T                       observedMax{-std::numeric_limits<T>::max()};
     uint64_t                elementCount{0};
