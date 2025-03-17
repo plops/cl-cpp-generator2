@@ -124,19 +124,21 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         }
         if (pkt.isKeyPacket()) {
             keyVideoPacketCount++;
+        } else {
+            videoPacketCount++;
         }
-
-        videoPacketCount++;
-
         if (pkt.isComplete())
             completePacketCount++;
 
-        auto frame = vdec.decode(pkt, ec);
-        if (ec) { cerr << "Error while decoding video frame: " << ec.message() << endl; }
-        else if (!frame) { cout << "Empty video frame" << endl; }
 
-        auto pts = frame.pts();
+
         if (debug && pkt.isKeyPacket()) {
+
+            auto frame = vdec.decode(pkt, ec);
+            if (ec) { cerr << "Error while decoding video frame: " << ec.message() << endl; }
+            else if (!frame) { cout << "Empty video frame" << endl; }
+
+            auto pts = frame.pts();
 
             keyPacketNumber.push_back(videoPacketCount);
             keyPacketDataPtr.push_back(pkt.data());
