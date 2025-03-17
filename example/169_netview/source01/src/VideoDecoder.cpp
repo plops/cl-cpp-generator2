@@ -8,6 +8,7 @@
 #include <format.h>
 #include "Histogram.h"
 #include <iostream>
+#include <map>
 
 using namespace std;
 
@@ -70,6 +71,10 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
     DurationComputer     packetDuration;
     Histogram<double, N> keyHistogram(.0158, 6.5);
     DurationComputer     keyDuration;
+    Histogram<uint64_t, N> sizeHistogram(0,100'000);
+    Histogram<uint64_t, N> keySizeHistogram(0,100'000);
+
+    vector<uint64_t> keyPacketNumber;
 
     while ((pkt = ctx->readPacket(ec))) {
         if (ec) { cerr << "Packet reading error: " << ec.message() << endl; }
@@ -78,12 +83,15 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         if (debug) {
             auto dur = packetDuration.insert(timestamp);
             packetHistogram.insert(dur);
+            sizeHistogram.insert(pkt.size());
      }
         if (pkt.isKeyPacket()) {
             keyVideoPacketCount++;
+            keyPacketNumber.push_back(videoPacketCount);
             if (debug) {
                 auto keyDur = keyDuration.insert(timestamp);
                 keyHistogram.insert(keyDur);
+                keySizeHistogram.insert(pkt.size());
             }
         }
 
@@ -95,6 +103,8 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         cout << "Key #=" << keyVideoPacketCount << endl;
         cout << packetHistogram << endl;
         cout << keyHistogram << endl;
+        cout << sizeHistogram << endl;
+        cout << keySizeHistogram << endl;
     }
 }
 
