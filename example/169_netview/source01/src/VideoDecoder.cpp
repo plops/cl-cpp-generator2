@@ -68,7 +68,7 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
     const int            N                   = 32;
     Histogram<double, N> packetHistogram(.0158, .0175);
     DurationComputer     packetDuration;
-    Histogram<double, N> keyHistogram(.0158, 6);
+    Histogram<double, N> keyHistogram(.0158, 6.5);
     DurationComputer     keyDuration;
 
     while ((pkt = ctx->readPacket(ec))) {
