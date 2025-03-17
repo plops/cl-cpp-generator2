@@ -66,13 +66,19 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
 void VideoDecoder::computeStreamStatistics(bool debug) {
     auto                 videoPacketCount    = 0;
     auto                 keyVideoPacketCount = 0;
+    auto                 completePacketCount = 0;
     const int            N                   = 32;
     Histogram<double, N> packetHistogram(.0158, .0175);
     DurationComputer     packetDuration;
     Histogram<double, N> keyHistogram(.0158, 6.5);
     DurationComputer     keyDuration;
+    Histogram<double, N> ptsHistogram(.0158, .0175);
+    DurationComputer     ptsDuration;
+    Histogram<double, N> dtsHistogram(.0158, .0175);
+    DurationComputer     dtsDuration;
     Histogram<uint64_t, N> sizeHistogram(0,100'000);
     Histogram<uint64_t, N> keySizeHistogram(0,100'000);
+
 
     vector<uint64_t> keyPacketNumber;
 
@@ -83,6 +89,8 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         if (debug) {
             auto dur = packetDuration.insert(timestamp);
             packetHistogram.insert(dur);
+            ptsHistogram.insert(ptsDuration.insert(timestamp));
+            dtsHistogram.insert(dtsDuration.insert(timestamp));
             sizeHistogram.insert(pkt.size());
      }
         if (pkt.isKeyPacket()) {
@@ -95,16 +103,22 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
             }
         }
 
+        if (pkt.isComplete())
+            completePacketCount++;
+
 
         videoPacketCount++;
     }
     if (debug) {
         cout << "Packet #=" << videoPacketCount << endl;
+        cout << "Complete Packet #=" << completePacketCount << endl;
         cout << "Key #=" << keyVideoPacketCount << endl;
-        cout << packetHistogram << endl;
-        cout << keyHistogram << endl;
-        cout << sizeHistogram << endl;
-        cout << keySizeHistogram << endl;
+        cout << "packetHistogram " << packetHistogram << endl;
+        cout << "keyHistogram " << keyHistogram << endl;
+        cout << "sizeHistogram " << sizeHistogram << endl;
+        cout << "keySize " << keySizeHistogram << endl;
+        cout << "pts " << ptsHistogram << endl;
+        cout << "dts " << dtsHistogram << endl;
     }
 }
 
