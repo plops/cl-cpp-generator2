@@ -63,13 +63,13 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
 }
 
 void VideoDecoder::computeStreamStatistics(bool debug) {
-    auto                 videoPacketCount = 0;
-    auto                 keyVideoPacketCount =0;
-    const int            N                 = 32;
+    auto                 videoPacketCount    = 0;
+    auto                 keyVideoPacketCount = 0;
+    const int            N                   = 32;
     Histogram<double, N> packetHistogram(.0158, .0175);
-    DurationComputer packetDuration;
-    Histogram<double, N> keyHistogram(.0158, .175);
-    DurationComputer keyDuration;
+    DurationComputer     packetDuration;
+    Histogram<double, N> keyHistogram(.0158, 6);
+    DurationComputer     keyDuration;
 
     while ((pkt = ctx->readPacket(ec))) {
         if (ec) { cerr << "Packet reading error: " << ec.message() << endl; }
@@ -77,14 +77,16 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         auto timestamp = pkt.ts();
         if (debug) {
             auto dur = packetDuration.insert(timestamp);
-            if (isnan(dur))
-                packetHistogram.insert(dur);
-            auto keyDur = keyDuration.insert(timestamp);
-            if (isnan(keyDur))
-                keyHistogram.insert(keyDur);
-        }
-        if (pkt.isKeyPacket())
+            packetHistogram.insert(dur);
+     }
+        if (pkt.isKeyPacket()) {
             keyVideoPacketCount++;
+            if (debug) {
+                auto keyDur = keyDuration.insert(timestamp);
+                keyHistogram.insert(keyDur);
+            }
+        }
+
 
         videoPacketCount++;
     }

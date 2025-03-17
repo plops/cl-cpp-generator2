@@ -61,8 +61,8 @@ public:
 private:
     const T                 binMin;
     const T                 binMax;
-    T                       observedMin{std::numeric_limits<double>::infinity()};
-    T                       observedMax{-std::numeric_limits<double>::infinity()};
+    T                       observedMin{std::numeric_limits<T>::max()};
+    T                       observedMax{-std::numeric_limits<T>::max()};
     uint64_t                elementCount{0};
     std::array<uint64_t, N> binY;
 };
