@@ -4,7 +4,7 @@
 
 #ifndef DURATIONCOMPUTER_H
 #define DURATIONCOMPUTER_H
-#include <timestamp.h>
+#include <avcpp/timestamp.h>
 
 
 /**
