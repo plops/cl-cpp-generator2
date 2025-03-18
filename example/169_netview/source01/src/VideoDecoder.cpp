@@ -94,7 +94,6 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
     Histogram<uint64_t, N> keySizeHistogram(10'000, 100'000);
 
     vector<uint64_t>      keyPacketNumber;
-    vector<uint8_t*>      keyPacketDataPtr;
     vector<av::Timestamp> keyTimes;
 
     if (debug) { cout << "seekable " << ctx->seekable() << endl; }
@@ -116,14 +115,13 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
 
 
         if (debug && pkt.isKeyPacket()) {
-            auto frame = vdec.decode(pkt, ec);
+            av::VideoFrame frame = vdec.decode(pkt, ec);
             if (ec) { cerr << "Error while decoding video frame: " << ec.message() << endl; }
             else if (!frame) { cout << "Empty video frame" << endl; }
 
             auto pts = frame.pts();
 
             keyPacketNumber.push_back(videoPacketCount);
-            keyPacketDataPtr.push_back(pkt.data());
             keyTimes.push_back(timestamp);
 
             auto keyDur = keyDuration.insert(timestamp);
@@ -146,13 +144,39 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         cout << "keySize " << keySizeHistogram << endl;
         cout << "pts " << ptsHistogram << endl;
         cout << "dts " << dtsHistogram << endl;
-        int i = 0;
-        for (const auto& e : keyPacketNumber) {
-            cout << e << " "
-                 << reinterpret_cast<int*>(keyPacketDataPtr.at(i))
-                 // << format("{}",std::format::Ptr(keyPacketDataPtr[i])
-                 << endl;
-            i++;
+    }
+}
+void VideoDecoder::collectKeyFrames() {
+    keyFrames.clear();
+    size_t        packetCount   = 0;
+    size_t        keyFrameCount = 0;
+    av::Timestamp prevTimestamp;
+    bool          firstKeyFrame          = true;
+    double        timeToPreviousKeyFrame = 0.0;
+    while ((pkt = ctx->readPacket(ec))) {
+        if (ec) { cerr << "Packet reading error: " << ec.message() << endl; }
+        if (pkt.streamIndex() != videoStream) { continue; }
+        if (pkt.isKeyPacket()) {
+            auto           timestamp = pkt.ts();
+            av::VideoFrame frame     = vdec.decode(pkt, ec);
+            if (ec) { cerr << "Error while decoding video frame: " << ec.message() << endl; }
+            else if (!frame) { cout << "Empty video frame" << endl; }
+            else {
+                if (firstKeyFrame) { firstKeyFrame = false; }
+                else { timeToPreviousKeyFrame = timestamp.seconds() - prevTimestamp.seconds(); }
+                prevTimestamp = timestamp;
+                KeyFrameInfo keyFrameInfo{.timestamp              = timestamp,
+                                          .timeToPreviousKeyFrame = timeToPreviousKeyFrame,
+                                          .packetIndex            = packetCount,
+                                          .frameSize              = frame.size(),
+                                          .width                  = frame.width(),
+                                          .height                 = frame.height(),
+                                          .quality                = frame.quality(),
+                                          .bitsPerPixel           = frame.pixelFormat().bitsPerPixel()};
+                keyFrames.push_back(keyFrameInfo);
+            }
+            keyFrameCount++;
         }
+        packetCount++;
     }
 }

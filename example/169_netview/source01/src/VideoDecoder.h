@@ -26,6 +26,21 @@ public:
 
     void computeStreamStatistics(bool debug = true);
 
+    struct KeyFrameInfo {
+        av::Timestamp timestamp;
+        double timeToPreviousKeyFrame;
+        size_t packetByteOffset;
+        size_t packetIndex;
+        size_t packetSize;
+        size_t frameSize;
+        int width;
+        int height;
+        int quality;
+        int bitsPerPixel;
+    };
+
+    void collectKeyFrames();
+
 private:
     std::unique_ptr<av::FormatContext> ctx;
     av::Stream                         vst;
@@ -35,6 +50,7 @@ private:
     av::Packet                         pkt;
     ssize_t                            videoStream{-1};
     bool                               isInitialized{false};
+    std::vector<KeyFrameInfo>          keyFrames;
 };
 
 
