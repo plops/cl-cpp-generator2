@@ -10,6 +10,8 @@
 #include <iostream>
 #include <map>
 #include <regex>
+#include <kj/timer.h>
+#include <capnp/rpc-prelude.h>
 
 using namespace std;
 using namespace std::filesystem;
