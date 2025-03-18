@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(cxxnet_client CXX)
 
-#set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #find_package(FFmpeg)
 
 set(CMAKE_PREFIX_PATH /home/martin/vulkan)
@@ -11,7 +11,9 @@ find_package(CapnProto REQUIRED)
 # in ~/vulkan//lib64/cmake/avcpp/avcpp-config.cmake change this line
 # include("${CMAKE_CURRENT_LIST_DIR}/../../../lib/cmake/avcpp/avcpp-targets.cmake")
 
-find_package(avcpp REQUIRED)
+#find_package(avcpp REQUIRED)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -84,8 +86,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             -Og -g -g3 -ggdb -gdwarf-4
     )
 else ()
-    set(CMAKE_UNITY_BUILD true)
-    set(CMAKE_UNITY_BUILD_BATCH_SIZE 80)
+    #set(CMAKE_UNITY_BUILD true)
+    #set(CMAKE_UNITY_BUILD_BATCH_SIZE 6)
     add_compile_options(
             -Ofast
             -ffunction-sections
@@ -93,10 +95,10 @@ else ()
             # -Wpadded
             -march=znver3
     )
-    #    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     add_link_options(
             #  -Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map
-                        -Wl,-gc-sections
+            -Wl,-gc-sections
     )
 endif ()
 
@@ -175,23 +177,33 @@ set(kj-async_sources
         ${kj}/async-io-unix.c++
         ${kj}/timer.c++
 )
+
+file(GLOB_RECURSE AV_SOURCES "/home/martin/src/avcpp/src/*.cpp")
+include_directories(/home/martin/src/avcpp/src)
 add_executable(
         ${PROJECT_NAME}
         ${SOURCE_FILES}
         ${videoSources}
         ${capnp_sources_lite}
-       # ${capnp_sources_heavy}
+        # ${capnp_sources_heavy}
         ${capnp-rpc_sources}
         ${kj_sources_lite}
         #${kj_sources_heavy}
         ${kj-async_sources}
+        ${AV_SOURCES}
 )
+target_compile_definitions(${PROJECT_NAME} PUBLIC __STDC_CONSTANT_MACROS)
+
+find_package(FFmpeg
+    COMPONENTS AVCODEC AVFORMAT AVUTIL AVDEVICE AVFILTER SWSCALE SWRESAMPLE REQUIRED)
 
 target_link_libraries(
         ${PROJECT_NAME}
         PRIVATE
+        Threads::Threads
+        FFmpeg::FFmpeg
         #        CapnProto::capnp
-        avcpp::avcpp
+        #        avcpp::avcpp
         #   CapnProto::capnp-rpc
 )
 
