@@ -5,11 +5,11 @@
 #include "DurationComputer.h"
 double DurationComputer::insert(av::Timestamp timestamp) {
     if (!isInitialized) {
-        previous = timestamp;
+        previous      = timestamp;
         isInitialized = true;
         return std::nan("1");
     }
     auto duration = timestamp.seconds() - previous.seconds();
-    previous = timestamp;
+    previous      = timestamp;
     return duration;
 }

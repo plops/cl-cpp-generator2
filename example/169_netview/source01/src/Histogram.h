@@ -21,8 +21,7 @@
 template <typename T, int N>
 class Histogram {
 public:
-    Histogram(T mi, T ma) noexcept :
-        binMin{mi}, binMax{ma}, scale{1.0 / (binMax - binMin)} {
+    Histogram(T mi, T ma) noexcept : binMin{mi}, binMax{ma}, scale{1.0 / (binMax - binMin)} {
         assert(binMin < binMax);
         binY.fill(0);
     }
@@ -48,8 +47,8 @@ public:
 
     friend std::ostream& operator<<(std::ostream& Os, const Histogram& Obj) {
         Os << "observedMin: " << Obj.observedMin << '\n'
-                << "observedMax: " << Obj.observedMax << '\n'
-                << "elementCount: " << Obj.elementCount << '\n';
+           << "observedMax: " << Obj.observedMax << '\n'
+           << "elementCount: " << Obj.elementCount << '\n';
         auto s = 1.0 / static_cast<double>(Obj.elementCount);
         for (auto i = 0; i < N; ++i) {
             auto density = static_cast<double>(Obj.getBinY(i)) * s * 99;
@@ -67,4 +66,4 @@ private:
     uint64_t                elementCount{0};
     std::array<uint64_t, N> binY;
 };
-#endif //HISTOGRAM_H
+#endif // HISTOGRAM_H

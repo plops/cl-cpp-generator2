@@ -3,12 +3,12 @@
 //
 
 #include "VideoDecoder.h"
-#include "DurationComputer.h"
 #include <avcpp/av.h>
+#include "DurationComputer.h"
 // #include <format.h>
-#include "Histogram.h"
 #include <iostream>
 #include <map>
+#include "Histogram.h"
 
 
 /*
@@ -78,21 +78,20 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
 }
 
 void VideoDecoder::computeStreamStatistics(bool debug) {
-    auto                    videoPacketCount    = 0;
-    auto                    keyVideoPacketCount = 0;
-    auto                    completePacketCount = 0;
-    const int               N                   = 32;
-    Histogram<double, N>    packetHistogram(.0158, .0175);
-    DurationComputer        packetDuration;
-    Histogram<double, N>    keyHistogram(.0158, 6.5);
-    DurationComputer        keyDuration;
-    Histogram<double, N>    ptsHistogram(.0158, .0175);
-    DurationComputer        ptsDuration;
-    Histogram<double, N>    dtsHistogram(.0158, .0175);
-    DurationComputer        dtsDuration;
-    Histogram<uint64_t, N>  sizeHistogram(0, 10'000);
-    Histogram<uint64_t, N>  keySizeHistogram(10'000, 100'000);
-    Histogram<ptrdiff_t, N> dataPtrHistogram(-46097531952048, -43123497632562);
+    auto                   videoPacketCount    = 0;
+    auto                   keyVideoPacketCount = 0;
+    auto                   completePacketCount = 0;
+    const int              N                   = 32;
+    Histogram<double, N>   packetHistogram(.0158, .0175);
+    DurationComputer       packetDuration;
+    Histogram<double, N>   keyHistogram(.0158, 6.5);
+    DurationComputer       keyDuration;
+    Histogram<double, N>   ptsHistogram(.0158, .0175);
+    DurationComputer       ptsDuration;
+    Histogram<double, N>   dtsHistogram(.0158, .0175);
+    DurationComputer       dtsDuration;
+    Histogram<uint64_t, N> sizeHistogram(0, 10'000);
+    Histogram<uint64_t, N> keySizeHistogram(10'000, 100'000);
 
     vector<uint64_t>      keyPacketNumber;
     vector<uint8_t*>      keyPacketDataPtr;
@@ -110,30 +109,13 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
             ptsHistogram.insert(ptsDuration.insert(timestamp));
             dtsHistogram.insert(dtsDuration.insert(timestamp));
             sizeHistogram.insert(pkt.size());
-
-            {
-                static uint8_t* previous_data = nullptr;
-
-                auto data = pkt.data();
-                if (previous_data) {
-                    auto data_gap = std::distance(previous_data, data);
-                    dataPtrHistogram.insert(data_gap);
-                }
-                previous_data = data;
-            }
         }
-        if (pkt.isKeyPacket()) {
-            keyVideoPacketCount++;
-        } else {
-            videoPacketCount++;
-        }
-        if (pkt.isComplete())
-            completePacketCount++;
-
+        if (pkt.isKeyPacket()) { keyVideoPacketCount++; }
+        else { videoPacketCount++; }
+        if (pkt.isComplete()) completePacketCount++;
 
 
         if (debug && pkt.isKeyPacket()) {
-
             auto frame = vdec.decode(pkt, ec);
             if (ec) { cerr << "Error while decoding video frame: " << ec.message() << endl; }
             else if (!frame) { cout << "Empty video frame" << endl; }
@@ -148,13 +130,10 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
             keyHistogram.insert(keyDur);
             keySizeHistogram.insert(pkt.size());
 
-            clog << "pkt# " << videoPacketCount << "  Frame: " << frame.width() << "x" << frame.height() << ", pktsize="
-                    << pkt.
-                    size() << ", size=" <<
-                    frame.size() << ", tm: " << pts.
-                    seconds() << ", tb: " << frame.timeBase() << ", ref=" << frame.isReferenced() << ":" << frame.
-                    refCount()
-                    << ", key: " << frame.isKeyFrame() << endl;
+            clog << "pkt# " << videoPacketCount << "  Frame: " << frame.width() << "x" << frame.height()
+                 << ", pktsize=" << pkt.size() << ", size=" << frame.size() << ", tm: " << pts.seconds()
+                 << ", tb: " << frame.timeBase() << ", ref=" << frame.isReferenced() << ":" << frame.refCount()
+                 << ", key: " << frame.isKeyFrame() << endl;
         }
     }
     if (debug) {
@@ -167,16 +146,13 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         cout << "keySize " << keySizeHistogram << endl;
         cout << "pts " << ptsHistogram << endl;
         cout << "dts " << dtsHistogram << endl;
-        cout << "dataPtr " << dataPtrHistogram << endl;
         int i = 0;
         for (const auto& e : keyPacketNumber) {
             cout << e << " "
-                    << reinterpret_cast<int*>(keyPacketDataPtr.at(i))
-                    // << format("{}",std::format::Ptr(keyPacketDataPtr[i])
-                    << endl;
+                 << reinterpret_cast<int*>(keyPacketDataPtr.at(i))
+                 // << format("{}",std::format::Ptr(keyPacketDataPtr[i])
+                 << endl;
             i++;
         }
     }
 }
-
-

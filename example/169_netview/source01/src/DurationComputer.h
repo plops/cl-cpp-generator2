@@ -11,7 +11,7 @@
  * @brief Insert timestamps, with the second one this class returns the duration between consecutive timestamps
  */
 class DurationComputer {
-    public:
+public:
     DurationComputer() = default;
     /**
      * @brief Add timestamp and computes difference to previous timestamp
@@ -24,9 +24,8 @@ class DurationComputer {
 
 private:
     av::Timestamp previous;
-    bool isInitialized = false;
+    bool          isInitialized = false;
 };
 
 
-
-#endif //DURATIONCOMPUTER_H
+#endif // DURATIONCOMPUTER_H

@@ -43,10 +43,8 @@ int main(int argc, char* argv[]) {
                     string selectedFile;
                     int    count = 0;
                     for (const auto& video : response.getVideoList().getVideos()) {
-                        cout << video.getSizeBytes() << " " << video.getName().cStr()
-                                << endl;
-                        if (count == 12)
-                            selectedFile = video.getName().cStr();
+                        cout << video.getSizeBytes() << " " << video.getName().cStr() << endl;
+                        if (count == 12) selectedFile = video.getName().cStr();
                         count++;
                     }
                     decoder.initialize(selectedFile, true);
@@ -74,7 +72,9 @@ int main(int argc, char* argv[]) {
         cout << "serving on port " << port << endl;
         kj::NEVER_DONE.wait(waitScope);
     }
-    catch (const std::exception& e) { cerr << e.what() << endl; }
+    catch (const std::exception& e) {
+        cerr << e.what() << endl;
+    }
 
 
     //

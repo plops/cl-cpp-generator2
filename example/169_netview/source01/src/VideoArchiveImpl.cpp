@@ -23,13 +23,13 @@ kj::Promise<void> VideoArchiveImpl::getVideoList(GetVideoListContext context) {
             for (const auto& entry : recursive_directory_iterator(p))
                 if (entry.is_regular_file()) {
                     const auto  fn{entry.path().filename().string()};
-                    const regex video_extension_pattern{
-                            R"(.*\.(webm|mp4|mkv)(\.part)?$)"};
-                    if (regex_match(fn, video_extension_pattern))
-                        res.emplace(file_size(entry), entry.path());
+                    const regex video_extension_pattern{R"(.*\.(webm|mp4|mkv)(\.part)?$)"};
+                    if (regex_match(fn, video_extension_pattern)) res.emplace(file_size(entry), entry.path());
                 }
         }
-        catch (const filesystem_error& e) { cerr << e.what() << endl; }
+        catch (const filesystem_error& e) {
+            cerr << e.what() << endl;
+        }
         return res;
     };
     cout << "ServerImpl::getVideoList" << endl;

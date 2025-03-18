@@ -6,9 +6,9 @@
 #define VIDEODECODER_H
 
 // #include <avcpp/ffmpeg.h>
-#include <avcpp/formatcontext.h>
 #include <avcpp/codec.h>
 #include <avcpp/codeccontext.h>
+#include <avcpp/formatcontext.h>
 #include <memory>
 #include <string>
 
@@ -38,4 +38,4 @@ private:
 };
 
 
-#endif //VIDEODECODER_H
+#endif // VIDEODECODER_H

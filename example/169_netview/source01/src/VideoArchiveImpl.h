@@ -17,4 +17,4 @@ public:
     kj::Promise<void> getVideoList(GetVideoListContext context) override;
 };
 
-#endif  // VIDEOARCHIVEIMPL_H
+#endif // VIDEOARCHIVEIMPL_H
