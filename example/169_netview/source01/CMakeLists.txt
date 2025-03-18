@@ -84,6 +84,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             -Og -g -g3 -ggdb -gdwarf-4
     )
 else ()
+    set(CMAKE_UNITY_BUILD true)
+    set(CMAKE_UNITY_BUILD_BATCH_SIZE 80)
     add_compile_options(
             -Ofast
             -ffunction-sections
@@ -94,7 +96,7 @@ else ()
     #    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     add_link_options(
             #  -Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map
-            -Wl,-gc-sections
+                        -Wl,-gc-sections
     )
 endif ()
 
@@ -178,10 +180,10 @@ add_executable(
         ${SOURCE_FILES}
         ${videoSources}
         ${capnp_sources_lite}
-        ${capnp_sources_heavy}
+       # ${capnp_sources_heavy}
         ${capnp-rpc_sources}
         ${kj_sources_lite}
-        ${kj_sources_heavy}
+        #${kj_sources_heavy}
         ${kj-async_sources}
 )
 
