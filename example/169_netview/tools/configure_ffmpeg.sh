@@ -6,25 +6,46 @@
   #                          disable buffer boundary checking in bitreaders
   #                          (faster, but may crash)
 # --disable-asm
+#--disable-avformat
+#--disable-avcodec 
 
-./configure \
---enable-gpl \
+# ./configure \
+# --enable-gpl \
+# --enable-version3 \
+# --enable-nonfree \
+# --enable-static \
+# --disable-runtime-cpudetect \
+# --disable-autodetect \
+# --disable-programs \
+# 	    --disable-doc \
+# 	    --disable-iconv \
+#   --disable-avdevice \
+#   --disable-swresample \
+#   --disable-swscale \
+#   --disable-postproc \
+#   --disable-avfilter \
+#   --disable-muxers \
+#   --disable-bsfs \
+#   --disable-protocols \
+#   --disable-everything  \
+#   --enable-decoder=vp9,h264,av1,av1_decoder
+
+  ./configure \
+--disable-everything \
+      --enable-gpl \
 --enable-version3 \
 --enable-nonfree \
 --enable-static \
 --disable-runtime-cpudetect \
---disable-all \
 --disable-autodetect \
 --disable-programs \
---disable-doc \
+	    --disable-doc \
+	    --disable-iconv \
   --disable-avdevice \
-  --disable-avcodec  \
-  --disable-avformat \
   --disable-swresample \
   --disable-swscale \
   --disable-postproc \
   --disable-avfilter \
-  --disable-pthreads \
   --disable-w32threads \
   --disable-os2threads \
   --disable-network    \
@@ -33,12 +54,11 @@
   --disable-lsp      \
   --disable-faan     \
   --disable-pixelutils \
-  --disable-everything \
   --disable-encoders   \
-  --enable-decoder=vp9,h264,av1 \
+  --enable-decoder=vp9,h264,av1,av1_decoder \
   --enable-hwaccel=av1_vaapi,h264_vaapi,vp9_vaapi \
   --disable-muxers \
-  --enable-demuxer=matroska,mpegtsraw,webm_dash_manifest,av1,h264,m4v,mpegts,mpegtsraw \
+  --enable-demuxer=matroska,av1,h264 \
   --enable-parser=h264,vp9,av1 \
   --enable-bsf=av1_frame_merge,av1_frame_split,av1_metadata,h264_metadata,h264_mp4toannexb,h264_redundant_pps,vp9_metadata,vp9_raw_reorder,vp9_superframe,vp9_superframe_split \
   --disable-protocols \
@@ -46,13 +66,10 @@
   --disable-outdevs  \
   --disable-devices  \
   --disable-filters  \
-     --disable-xlib  \ 
-  --disable-zlib    \
+     --disable-xlib  \
   --enable-vaapi   \
   --enable-vulkan  \
-  --arch=znver3 \
-  --cpu=znver3
   --enable-lto \
-    --enable-hardcoded-tables use hardcoded tables instead of runtime generation
   --disable-debug  \
    --enable-extra-warnings 
+ 
