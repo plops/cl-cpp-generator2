@@ -5,6 +5,7 @@ option(NO_LIBS "Pull dependencies directly into project as source files" OFF)
 
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED yes)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 
@@ -412,9 +413,14 @@ ${libavcodec}/xiph.c
 file(GLOB_RECURSE AV_SOURCES "/home/martin/src/avcpp/src/*.cpp")
 
 if (NO_LIBS)
+    message("Building with direct avcpp sources (as opposed to linking with libavcpp)")
     set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-#    find_package(FFmpeg
-#            COMPONENTS AVCODEC AVFORMAT AVUTIL AVDEVICE AVFILTER SWSCALE SWRESAMPLE REQUIRED)
+    find_package(FFmpeg
+            COMPONENTS
+            #AVCODEC
+            AVFORMAT AVUTIL
+            #AVFILTER SWSCALE SWRESAMPLE
+            REQUIRED)
 
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads)
@@ -435,19 +441,18 @@ if (NO_LIBS)
             ${AV_SOURCES}
 
     )
-    add_library(ffmpeg
-            ${ffmpeg_sources})
+    # add_library(ffmpeg ${ffmpeg_sources})
     target_compile_definitions(
             ${PROJECT_NAME}
             PUBLIC
             __STDC_CONSTANT_MACROS
     )
-    target_compile_definitions(
-            ffmpeg
-            PUBLIC
-            FF_DISABLE_DEPRECATION_WARNINGS
-            FF_ENABLE_DEPRECATION_WARNINGS
-    )
+#    target_compile_definitions(
+#            ffmpeg
+#            PUBLIC
+#            FF_DISABLE_DEPRECATION_WARNINGS
+#            FF_ENABLE_DEPRECATION_WARNINGS
+#    )
 #    target_compile_options(
 #            ${PROJECT_NAME}
 #            PUBLIC
@@ -457,8 +462,40 @@ if (NO_LIBS)
             ${PROJECT_NAME}
             PRIVATE
             Threads::Threads
-            #FFmpeg::FFmpeg
-            ffmpeg
+            FFmpeg::FFmpeg
+            drm
+            va
+            va-drm
+            va-x11
+
+            dav1d
+            opus
+            x264
+            X11
+            xcb
+            xcb-shm
+            xcb-shape
+            xcb-xfixes
+            pulse
+            Xv
+            Xext
+            Xfixes
+            X11-xcb
+            xcb-dri3
+            Xdmcp
+            pulsecommon-17.0
+            sndfile
+            systemd
+            asyncns
+            FLAC
+            vorbis
+            vorbisenc
+            ogg
+            mpg123
+            mp3lame
+            cap
+            mvec
+            #ffmpeg
     )
     target_include_directories(
             ${PROJECT_NAME}
@@ -467,15 +504,16 @@ if (NO_LIBS)
             /home/martin/vulkan/include
             /home/martin/vulkan/include/avcpp/
     )
-    target_include_directories(
-            ffmpeg
-            PRIVATE
-            ${ffmpeg_path}
-            ${ffmpeg_path}/libavutil
-    )
+#    target_include_directories(
+#            ffmpeg
+#            PRIVATE
+#            ${ffmpeg_path}
+#            ${ffmpeg_path}/libavutil
+#    )
 else ()
     set(CMAKE_PREFIX_PATH /home/martin/vulkan)
     find_package(CapnProto REQUIRED)
+
     capnp_generate_cpp(videoSources videoHeaders proto/video.capnp)
     # in ~/vulkan//lib64/cmake/avcpp/avcpp-config.cmake change this line
     # include("${CMAKE_CURRENT_LIST_DIR}/../../../lib/cmake/avcpp/avcpp-targets.cmake")
@@ -488,6 +526,7 @@ else ()
     target_link_libraries(
             ${PROJECT_NAME}
             PRIVATE
+#            FFmpeg::FFmpeg
             avcpp::avcpp
             CapnProto::capnp-rpc
     )
