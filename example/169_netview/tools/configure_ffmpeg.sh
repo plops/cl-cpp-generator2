@@ -35,7 +35,8 @@
       --enable-gpl \
 --enable-version3 \
 --enable-nonfree \
---enable-static \
+      --enable-static \
+      --disable-shared \
 --disable-runtime-cpudetect \
 --disable-autodetect \
 --disable-programs \
