@@ -28,15 +28,15 @@ public:
 
     struct KeyFrameInfo {
         av::Timestamp timestamp;
-        double timeToPreviousKeyFrame;
-        size_t packetByteOffset;
-        size_t packetIndex;
-        size_t packetSize;
-        size_t frameSize;
-        int width;
-        int height;
-        int quality;
-        int bitsPerPixel;
+        double        timeToPreviousKeyFrame;
+        size_t        packetByteOffset;
+        size_t        packetIndex;
+        size_t        packetSize;
+        size_t        frameSize;
+        int           width;
+        int           height;
+        int           quality;
+        int           bitsPerPixel;
     };
 
     void collectKeyFrames();

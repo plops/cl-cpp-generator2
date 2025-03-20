@@ -165,7 +165,7 @@ void VideoDecoder::collectKeyFrames() {
             auto     timestamp = pkt.ts();
             AVPacket raw       = *pkt.raw();
             uint8_t* raw_data  = raw.data;
-            auto raw_size  = raw.size;
+            auto     raw_size  = raw.size;
 
             av::VideoFrame frame = vdec.decode(pkt, ec);
             if (ec) { cerr << "Error while decoding video frame: " << ec.message() << endl; }
