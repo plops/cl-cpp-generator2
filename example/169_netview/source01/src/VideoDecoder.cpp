@@ -158,6 +158,9 @@ void VideoDecoder::collectKeyFrames() {
     av::Timestamp prevTimestamp;
     bool          firstKeyFrame          = true;
     double        timeToPreviousKeyFrame = 0.0;
+    // From ffmpeg's packet.h: Packet is reference-counted (pkt->buf is set) and
+    // valid indefinitely. The packet must be freed with av_packet_unref() [I guess avcpp handles this] when
+    // it is no longer needed. For video, the packet contains exactly one frame.
     while ((pkt = ctx->readPacket(ec))) {
         if (ec) { cerr << "Packet reading error: " << ec.message() << endl; }
         if (pkt.streamIndex() != videoStream) { continue; }
@@ -171,18 +174,16 @@ void VideoDecoder::collectKeyFrames() {
                 else { timeToPreviousKeyFrame = timestamp.seconds() - prevTimestamp.seconds(); }
                 prevTimestamp    = timestamp;
                 AVPacket     raw = *pkt.raw();
-                KeyFrameInfo keyFrameInfo{
-                        .timestamp              = timestamp,
-                        .timeToPreviousKeyFrame = timeToPreviousKeyFrame,
-                        .packetIndex            = packetCount,
-                        .frameSize              = frame.size(),
-                        .width                  = frame.width(),
-                        .height                 = frame.height(),
-                        .quality                = frame.quality(),
-                        .bitsPerPixel           = frame.pixelFormat().bitsPerPixel(),
-                        .rawData                = raw.data,
-                        .rawSize                = raw.size
-                };
+                KeyFrameInfo keyFrameInfo{.timestamp              = timestamp,
+                                          .timeToPreviousKeyFrame = timeToPreviousKeyFrame,
+                                          .packetIndex            = packetCount,
+                                          .frameSize              = frame.size(),
+                                          .width                  = frame.width(),
+                                          .height                 = frame.height(),
+                                          .quality                = frame.quality(),
+                                          .bitsPerPixel           = frame.pixelFormat().bitsPerPixel(),
+                                          .rawData                = raw.data,
+                                          .rawSize                = raw.size};
                 keyFrames.push_back(keyFrameInfo);
             }
             keyFrameCount++;
