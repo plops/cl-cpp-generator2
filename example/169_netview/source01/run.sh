@@ -1,10 +1,12 @@
 #!/bin/bash
 
 rm -rf server client
-ln -s cmake-build-release/cxxnet_client server
-ln -s cmake-build-release/cxxnet_client client
 
-cd cmake-build-release/
+REL=cmake-build-release-nolibs
+ln -s $REL/cxxnet_client server
+ln -s $REL/cxxnet_client client
+
+cd $REL/
 ninja
 cd ..
 
