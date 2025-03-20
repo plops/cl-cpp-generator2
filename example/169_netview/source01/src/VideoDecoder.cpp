@@ -78,7 +78,6 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
 }
 
 void VideoDecoder::computeStreamStatistics(bool debug) {
-
     // AVFormatContext max_index_size might need to be increased for good seeking in large videos
     //    callback is called during blocking functions to allow abort
 
@@ -107,8 +106,8 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         if (pkt.streamIndex() != videoStream) { continue; }
         auto timestamp = pkt.ts();
         if (debug) {
-            auto dur = packetDuration.insert(timestamp); // 0.017
-            auto dur2 = pkt.duration(); // 16
+            auto dur  = packetDuration.insert(timestamp); // 0.017
+            auto dur2 = pkt.duration();                   // 16
             cout << "dur=" << dur << " dur2=" << dur2 << endl;
             packetHistogram.insert(dur);
             ptsHistogram.insert(ptsDuration.insert(timestamp));
@@ -163,8 +162,12 @@ void VideoDecoder::collectKeyFrames() {
         if (ec) { cerr << "Packet reading error: " << ec.message() << endl; }
         if (pkt.streamIndex() != videoStream) { continue; }
         if (pkt.isKeyPacket()) {
-            auto           timestamp = pkt.ts();
-            av::VideoFrame frame     = vdec.decode(pkt, ec);
+            auto     timestamp = pkt.ts();
+            AVPacket raw       = *pkt.raw();
+            uint8_t* raw_data  = raw.data;
+            auto raw_size  = raw.size;
+
+            av::VideoFrame frame = vdec.decode(pkt, ec);
             if (ec) { cerr << "Error while decoding video frame: " << ec.message() << endl; }
             else if (!frame) { cout << "Empty video frame" << endl; }
             else {
