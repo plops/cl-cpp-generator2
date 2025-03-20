@@ -162,26 +162,27 @@ void VideoDecoder::collectKeyFrames() {
         if (ec) { cerr << "Packet reading error: " << ec.message() << endl; }
         if (pkt.streamIndex() != videoStream) { continue; }
         if (pkt.isKeyPacket()) {
-            auto     timestamp = pkt.ts();
-            AVPacket raw       = *pkt.raw();
-            uint8_t* raw_data  = raw.data;
-            auto     raw_size  = raw.size;
-
-            av::VideoFrame frame = vdec.decode(pkt, ec);
+            auto           timestamp = pkt.ts();
+            av::VideoFrame frame     = vdec.decode(pkt, ec);
             if (ec) { cerr << "Error while decoding video frame: " << ec.message() << endl; }
             else if (!frame) { cout << "Empty video frame" << endl; }
             else {
                 if (firstKeyFrame) { firstKeyFrame = false; }
                 else { timeToPreviousKeyFrame = timestamp.seconds() - prevTimestamp.seconds(); }
-                prevTimestamp = timestamp;
-                KeyFrameInfo keyFrameInfo{.timestamp              = timestamp,
-                                          .timeToPreviousKeyFrame = timeToPreviousKeyFrame,
-                                          .packetIndex            = packetCount,
-                                          .frameSize              = frame.size(),
-                                          .width                  = frame.width(),
-                                          .height                 = frame.height(),
-                                          .quality                = frame.quality(),
-                                          .bitsPerPixel           = frame.pixelFormat().bitsPerPixel()};
+                prevTimestamp    = timestamp;
+                AVPacket     raw = *pkt.raw();
+                KeyFrameInfo keyFrameInfo{
+                        .timestamp              = timestamp,
+                        .timeToPreviousKeyFrame = timeToPreviousKeyFrame,
+                        .packetIndex            = packetCount,
+                        .frameSize              = frame.size(),
+                        .width                  = frame.width(),
+                        .height                 = frame.height(),
+                        .quality                = frame.quality(),
+                        .bitsPerPixel           = frame.pixelFormat().bitsPerPixel(),
+                        .rawData                = raw.data,
+                        .rawSize                = raw.size
+                };
                 keyFrames.push_back(keyFrameInfo);
             }
             keyFrameCount++;

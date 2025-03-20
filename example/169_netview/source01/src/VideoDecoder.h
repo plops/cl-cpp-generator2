@@ -37,6 +37,8 @@ public:
         int           height;
         int           quality;
         int           bitsPerPixel;
+        uint8_t*      rawData;
+        int           rawSize;
     };
 
     void collectKeyFrames();
