@@ -103,7 +103,9 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         if (pkt.streamIndex() != videoStream) { continue; }
         auto timestamp = pkt.ts();
         if (debug) {
-            auto dur = packetDuration.insert(timestamp);
+            auto dur = packetDuration.insert(timestamp); // 0.017
+            auto dur2 = pkt.duration(); // 16
+            cout << "dur=" << dur << " dur2=" << dur2 << endl;
             packetHistogram.insert(dur);
             ptsHistogram.insert(ptsDuration.insert(timestamp));
             dtsHistogram.insert(dtsDuration.insert(timestamp));
