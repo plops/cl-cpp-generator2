@@ -78,6 +78,10 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
 }
 
 void VideoDecoder::computeStreamStatistics(bool debug) {
+
+    // AVFormatContext max_index_size might need to be increased for good seeking in large videos
+    //    callback is called during blocking functions to allow abort
+
     auto                   videoPacketCount    = 0;
     auto                   keyVideoPacketCount = 0;
     auto                   completePacketCount = 0;
