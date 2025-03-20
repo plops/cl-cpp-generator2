@@ -417,9 +417,9 @@ if (NO_LIBS)
     set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
     find_package(FFmpeg
             COMPONENTS
-            #AVCODEC
+            AVCODEC
             AVFORMAT AVUTIL
-            #AVFILTER SWSCALE SWRESAMPLE
+            AVFILTER SWSCALE SWRESAMPLE
             REQUIRED)
 
     set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -457,17 +457,23 @@ if (NO_LIBS)
 #            ${PROJECT_NAME}
 #            PUBLIC
 #    )
-
+# media-video/ffmpeg-6.1.2 X dav1d encode gpl libdrm opus pulseaudio static-libs threads vaapi vulkan x264
     target_link_libraries(
             ${PROJECT_NAME}
             PRIVATE
             Threads::Threads
-            FFmpeg::FFmpeg
+            #FFmpeg::FFmpeg
+            avformat
+            avdevice
+            avfilter
+            avcodec
+            swscale
+            swresample
+            avutil
             drm
             va
             va-drm
             va-x11
-
             dav1d
             opus
             x264
