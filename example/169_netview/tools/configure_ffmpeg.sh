@@ -1,7 +1,6 @@
 #!/bin/bash
 
 ./configure \
-  --disable-everything \
   --enable-static \
   --disable-shared \
   --disable-runtime-cpudetect \
@@ -19,12 +18,8 @@
   --disable-faan     \
   --disable-pixelutils \
   --disable-encoders   \
-  --enable-decoder=h264,vp9,av1 \
   --disable-hwaccels \
   --disable-muxers \
-  --enable-demuxer=matroska,av1,h264 \
-  --enable-parser=vp9,av1,h264 \
-  --enable-bsf=av1_frame_merge,av1_frame_split,av1_metadata,h264_metadata,h264_mp4toannexb,h264_redundant_pps,vp9_metadata,vp9_raw_reorder,vp9_superframe,vp9_superframe_split \
   --disable-protocols \
   --disable-indevs \
   --disable-outdevs  \
@@ -36,5 +31,13 @@
   --enable-lto \
   --disable-debug  \
   --disable-asm \
-  --prefix=/home/martin/ffmpeg
-
+  --prefix=/home/martin/ffmpeg \
+  --disable-avfilter  \
+  --disable-swresample  \
+  --disable-swscale \
+  --disable-postproc
+#  --disable-everything \
+#  --enable-decoder=h264,vp9,av1 \
+#  --enable-demuxer=matroska,av1,h264 \
+#  --enable-parser=vp9,av1,h264 \
+#  --enable-bsf=av1_frame_merge,av1_frame_split,av1_metadata,h264_metadata,h264_mp4toannexb,h264_redundant_pps,vp9_metadata,vp9_raw_reorder,vp9_superframe,vp9_superframe_split
