@@ -41,3 +41,4 @@
 #  --enable-demuxer=matroska,av1,h264 \
 #  --enable-parser=vp9,av1,h264 \
 #  --enable-bsf=av1_frame_merge,av1_frame_split,av1_metadata,h264_metadata,h264_mp4toannexb,h264_redundant_pps,vp9_metadata,vp9_raw_reorder,vp9_superframe,vp9_superframe_split
+
