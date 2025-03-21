@@ -77,12 +77,5 @@ int main(int argc, char* argv[]) {
         cerr << e.what() << endl;
     }
 
-
-    //
-    // auto ctx = avformat_alloc_context();
-    // if (!ctx) {
-    //   cerr << "Could not allocate video context" << endl;
-    //   return 1;
-    // }
     return 0;
 }

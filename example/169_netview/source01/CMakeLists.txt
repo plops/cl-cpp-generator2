@@ -79,9 +79,8 @@ else ()
     #    set(CMAKE_UNITY_BUILD true)
     #    set(CMAKE_UNITY_BUILD_BATCH_SIZE 90)
     add_compile_options(
-            -O2
-            -ffunction-sections
-            -fdata-sections
+            #-ffunction-sections
+            #-fdata-sections
             -Wpadded
             -march=znver2
             -static
@@ -89,7 +88,7 @@ else ()
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     add_link_options(
             #  -Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map
-            -Wl,-gc-sections,--print-gc-sections
+            #-Wl,-gc-sections,--print-gc-sections
             -static
             #-Wl,-gc-sections
     )
@@ -450,7 +449,7 @@ if (NO_LIBS)
     target_compile_definitions(
             ${PROJECT_NAME}
             PUBLIC
-            __STDC_CONSTANT_MACROS
+            __STDC_CONSTANT_MACROS # needed for avcpp
     )
     #    target_compile_definitions(
     #            ffmpeg
@@ -470,25 +469,9 @@ if (NO_LIBS)
             Threads::Threads
             avformat
             avdevice
-            #            avfilter
+            # avfilter swscale swresample
             avcodec
-            #            swscale
-            #            swresample
             avutil
-            #            x264
-            #            pulse
-            #            pulsecommon-17.0
-            #            sndfile
-            #            systemd
-            #            asyncns
-            #            FLAC
-            #            vorbis
-            #            vorbisenc
-            #            ogg
-            #            mpg123
-            #            mp3lame
-            #            cap
-            #            mvec
     )
     target_include_directories(
             ${PROJECT_NAME}
