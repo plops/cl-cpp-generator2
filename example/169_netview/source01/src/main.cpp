@@ -44,8 +44,8 @@ int main(int argc, char* argv[]) {
                     int    count = 0;
                     for (const auto& video : response.getVideoList().getVideos()) {
                         cout << video.getSizeBytes() << " " << video.getName().cStr() << endl;
-                        // if (count == 0)
-                        selectedFile = video.getName().cStr();
+                        if (count == 1)
+                            selectedFile = video.getName().cStr();
                         count++;
                     }
                     decoder.initialize(selectedFile, true);
