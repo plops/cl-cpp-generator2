@@ -468,12 +468,12 @@ if (NO_LIBS)
             Threads::Threads
             avformat
             avdevice
-            avfilter
+#            avfilter
             avcodec
-            swscale
-            swresample
+#            swscale
+#            swresample
             avutil
-            x264
+#            x264
 #            pulse
 #            pulsecommon-17.0
 #            sndfile

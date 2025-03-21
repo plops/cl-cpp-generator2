@@ -45,9 +45,6 @@
  
 ./configure \
   --disable-everything \
-  --enable-gpl \
-  --enable-version3 \
-  --enable-nonfree \
   --enable-static \
   --disable-shared \
   --disable-runtime-cpudetect \
