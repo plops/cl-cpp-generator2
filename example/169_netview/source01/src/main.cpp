@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
     // path p{argv[1]};
 
     try {
-        capnp::EzRpcServer server(kj::heap<VideoArchiveImpl>(), "localhost:43211");
+        capnp::EzRpcServer server(kj::heap<VideoArchiveImpl>(), "0.0.0.0:43211");
         auto&              waitScope{server.getWaitScope()};
         uint               port = server.getPort().wait(waitScope);
         cout << "serving on port " << port << endl;

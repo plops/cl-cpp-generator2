@@ -34,7 +34,7 @@ kj::Promise<void> VideoArchiveImpl::getVideoList(GetVideoListContext context) {
     };
     cout << "ServerImpl::getVideoList" << endl;
 
-    const auto videos = collect_videos("/mnt5/tmp/bb");
+    const auto videos = collect_videos("/mnt6/b");
 
     auto   builder   = kj::heap<capnp::MallocMessageBuilder>();
     auto   root      = builder->initRoot<VideoList>();
