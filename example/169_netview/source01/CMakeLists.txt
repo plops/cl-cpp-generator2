@@ -84,11 +84,13 @@ else ()
             -fdata-sections
             -Wpadded
             -march=znver2
+            -static
     )
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     add_link_options(
             #  -Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map
             -Wl,-gc-sections,--print-gc-sections
+            -static
             #-Wl,-gc-sections
     )
 endif ()
