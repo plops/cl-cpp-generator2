@@ -415,19 +415,20 @@ file(GLOB_RECURSE AV_SOURCES "/home/martin/src/avcpp/src/*.cpp")
 if (NO_LIBS)
     message("Building with direct avcpp sources (as opposed to linking with libavcpp)")
     set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-    find_package(FFmpeg
-            COMPONENTS
-            AVCODEC
-            AVFORMAT AVUTIL
-            AVFILTER SWSCALE SWRESAMPLE
-            REQUIRED)
+    set(CMAKE_PREFIX_PATH "/home/martin/vulkan")
+
+#    find_package(FFmpeg
+#            COMPONENTS
+#            AVCODEC
+#            AVFORMAT AVUTIL
+#            AVFILTER SWSCALE SWRESAMPLE
+#            REQUIRED)
+
 
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads)
-    set(CMAKE_PREFIX_PATH /home/martin/vulkan)
     find_package(CapnProto REQUIRED)
     capnp_generate_cpp(videoSources videoHeaders proto/video.capnp)
-
     add_executable(
             ${PROJECT_NAME}
             ${SOURCE_FILES}
@@ -441,6 +442,8 @@ if (NO_LIBS)
             ${AV_SOURCES}
 
     )
+#    target_link_directories(${PROJECT_NAME} PRIVATE /home/martin/ffmpeg/lib)
+
     # add_library(ffmpeg ${ffmpeg_sources})
     target_compile_definitions(
             ${PROJECT_NAME}
@@ -458,11 +461,11 @@ if (NO_LIBS)
     #            PUBLIC
     #    )
     # media-video/ffmpeg-6.1.2 X dav1d encode gpl libdrm opus pulseaudio static-libs threads vaapi vulkan x264
+    target_link_directories(${PROJECT_NAME} PRIVATE /home/martin/ffmpeg/lib)
     target_link_libraries(
             ${PROJECT_NAME}
             PRIVATE
             Threads::Threads
-            #FFmpeg::FFmpeg
             avformat
             avdevice
             avfilter
@@ -470,25 +473,8 @@ if (NO_LIBS)
             swscale
             swresample
             avutil
-            drm
-            va
-            va-drm
-            va-x11
-            dav1d
-            opus
             x264
-            X11
-            xcb
-            xcb-shm
-            xcb-shape
-            xcb-xfixes
             pulse
-            Xv
-            Xext
-            Xfixes
-            X11-xcb
-            xcb-dri3
-            Xdmcp
             pulsecommon-17.0
             sndfile
             systemd
@@ -501,7 +487,6 @@ if (NO_LIBS)
             mp3lame
             cap
             mvec
-            #ffmpeg
     )
     target_include_directories(
             ${PROJECT_NAME}
