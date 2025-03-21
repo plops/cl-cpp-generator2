@@ -15,6 +15,8 @@ public:
      * @return A list of all videofilenames with their sizes in bytes.
      */
     kj::Promise<void> getVideoList(GetVideoListContext context) override;
+
+    kj::Promise<void> getVideoInfo(GetVideoListContext context) override;
 };
 
 #endif // VIDEOARCHIVEIMPL_H

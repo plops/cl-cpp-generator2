@@ -16,6 +16,10 @@ using namespace std::filesystem;
 
 VideoArchiveImpl::VideoArchiveImpl() = default;
 
+kj::Promise<void> VideoArchiveImpl::getVideoInfo(GetVideoListContext context) {
+    return kj::READY_NOW;
+}
+
 kj::Promise<void> VideoArchiveImpl::getVideoList(GetVideoListContext context) {
     auto collect_videos = [](const path& p) {
         map<size_t, path> res;
