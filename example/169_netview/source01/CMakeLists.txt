@@ -79,11 +79,11 @@ else ()
     #    set(CMAKE_UNITY_BUILD true)
     #    set(CMAKE_UNITY_BUILD_BATCH_SIZE 90)
     add_compile_options(
-            -Ofast
+            -O2
             -ffunction-sections
             -fdata-sections
             -Wpadded
-            -march=znver3
+            -march=znver2
     )
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     add_link_options(
@@ -417,12 +417,12 @@ if (NO_LIBS)
     set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
     set(CMAKE_PREFIX_PATH "/home/martin/vulkan")
 
-#    find_package(FFmpeg
-#            COMPONENTS
-#            AVCODEC
-#            AVFORMAT AVUTIL
-#            AVFILTER SWSCALE SWRESAMPLE
-#            REQUIRED)
+    #    find_package(FFmpeg
+    #            COMPONENTS
+    #            AVCODEC
+    #            AVFORMAT AVUTIL
+    #            AVFILTER SWSCALE SWRESAMPLE
+    #            REQUIRED)
 
 
     set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -442,7 +442,7 @@ if (NO_LIBS)
             ${AV_SOURCES}
 
     )
-#    target_link_directories(${PROJECT_NAME} PRIVATE /home/martin/ffmpeg/lib)
+    #    target_link_directories(${PROJECT_NAME} PRIVATE /home/martin/ffmpeg/lib)
 
     # add_library(ffmpeg ${ffmpeg_sources})
     target_compile_definitions(
@@ -468,25 +468,25 @@ if (NO_LIBS)
             Threads::Threads
             avformat
             avdevice
-#            avfilter
+            #            avfilter
             avcodec
-#            swscale
-#            swresample
+            #            swscale
+            #            swresample
             avutil
-#            x264
-#            pulse
-#            pulsecommon-17.0
-#            sndfile
-#            systemd
-#            asyncns
-#            FLAC
-#            vorbis
-#            vorbisenc
-#            ogg
-#            mpg123
-#            mp3lame
-#            cap
-#            mvec
+            #            x264
+            #            pulse
+            #            pulsecommon-17.0
+            #            sndfile
+            #            systemd
+            #            asyncns
+            #            FLAC
+            #            vorbis
+            #            vorbisenc
+            #            ogg
+            #            mpg123
+            #            mp3lame
+            #            cap
+            #            mvec
     )
     target_include_directories(
             ${PROJECT_NAME}
