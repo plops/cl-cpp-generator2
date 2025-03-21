@@ -474,19 +474,19 @@ if (NO_LIBS)
             swresample
             avutil
             x264
-            pulse
-            pulsecommon-17.0
-            sndfile
-            systemd
-            asyncns
-            FLAC
-            vorbis
-            vorbisenc
-            ogg
-            mpg123
-            mp3lame
-            cap
-            mvec
+#            pulse
+#            pulsecommon-17.0
+#            sndfile
+#            systemd
+#            asyncns
+#            FLAC
+#            vorbis
+#            vorbisenc
+#            ogg
+#            mpg123
+#            mp3lame
+#            cap
+#            mvec
     )
     target_include_directories(
             ${PROJECT_NAME}
