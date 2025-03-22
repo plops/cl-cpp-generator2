@@ -84,7 +84,7 @@ else ()
             -Wpadded
             -march=znver2
     )
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    #    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     add_link_options(
             #  -Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map
             #-Wl,-gc-sections,--print-gc-sections
@@ -216,6 +216,12 @@ if (NO_LIBS)
     find_package(Threads)
     find_package(CapnProto REQUIRED)
     capnp_generate_cpp(videoSources videoHeaders proto/video.capnp)
+#    add_library(cxxnet_parser
+#            ${AV_SOURCES}
+#    )
+#    add_library(
+#            cxxnet_protocol
+#    )
     add_executable(
             ${PROJECT_NAME}
             ${SOURCE_FILES}
@@ -227,9 +233,9 @@ if (NO_LIBS)
             ${kj_sources_heavy}
             ${kj-async_sources}
             ${AV_SOURCES}
-
     )
     target_compile_definitions(
+           # cxxnet_parser
             ${PROJECT_NAME}
             PUBLIC
             __STDC_CONSTANT_MACROS # needed for avcpp
@@ -238,6 +244,8 @@ if (NO_LIBS)
     target_link_libraries(
             ${PROJECT_NAME}
             PRIVATE
+#            cxxnet_parser
+#            cxxnet_protocol
             Threads::Threads
             avformat
             avdevice
