@@ -26,9 +26,9 @@ int main(int argc, char* argv[]) {
         }
         try {
             cerr << "Client tries to connect to server address: " << argv[1] << endl;
-            capnp::EzRpcClient   client(argv[1]);
-            auto&                waitScope{client.getWaitScope()};
-            VideoArchive::Client server = client.getMain<VideoArchive>();
+            capnp::EzRpcClient       client(argv[1]);
+            auto&                    waitScope{client.getWaitScope()};
+            VideoArchive::Client     server = client.getMain<VideoArchive>();
             std::vector<std::string> filenames;
             while (true) {
                 cout << "Enter command (list, quit, key): " << endl;
@@ -54,17 +54,20 @@ int main(int argc, char* argv[]) {
                     // decoder.computeStreamStatistics(true);
                 }
                 else if (command == "key") {
-                    auto request2 = server.getVideoInfoRequest();
-                    if (filenames.size() >= 29) {
-                        request2.setFilePath(filenames[29]);
+                    auto                             request2 = server.getVideoInfoRequest();
+                    default_random_engine            generator{};
+                    uniform_int_distribution<size_t> distribution{0, filenames.size() - 1};
+                    auto                             rnd    = [&]() { return distribution(generator); };
+                    auto                             choice = rnd();
+                    if (filenames.size() >= choice) {
+                        request2.setFilePath(filenames[choice]);
                         auto response2 = request2.send().wait(waitScope);
                         auto videoInfo = response2.getVideoInfo();
                         cout << "filename: " << videoInfo.getFilePath().cStr() << endl;
                         cout << "filesize: " << videoInfo.getFileSize() << endl;
                         cout << "Number of keyframes: " << videoInfo.getKeyFrames().size() << endl;
-                    } else {
-                        cout << "Only {} files" << filenames.size() << endl;
                     }
+                    else { cout << "Only {} files" << filenames.size() << endl; }
                 }
             }
         }
@@ -91,7 +94,8 @@ int main(int argc, char* argv[]) {
     catch (const std::exception& e) {
         cerr << "server failure: " << e.what() << endl;
         return EXIT_FAILURE;
-    } catch (...) {
+    }
+    catch (...) {
         cerr << "Maybe a server is already running." << endl;
         return EXIT_FAILURE;
     }

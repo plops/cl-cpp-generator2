@@ -82,6 +82,7 @@ kj::Promise<void> VideoArchiveImpl::getVideoList(GetVideoListContext context) {
                 if (entry.is_regular_file()) {
                     const auto  fn{entry.path().filename().string()};
                     const regex video_extension_pattern{R"(.*\.(webm|mp4|mkv)(\.part)?$)"};
+                    // const regex video_extension_pattern{R"(.*\.(mp4)(\.part)?$)"};
                     if (regex_match(fn, video_extension_pattern)) res.emplace(file_size(entry), entry.path());
                 }
         }
@@ -92,7 +93,9 @@ kj::Promise<void> VideoArchiveImpl::getVideoList(GetVideoListContext context) {
     };
     cout << "VideoArchiveImpl::getVideoList" << endl;
 
-    const auto videos = collect_videos("/mnt6/b");
+    // auto dir = "/mnt6/b";
+    auto dir = "/mnt5/tmp/bb";
+    const auto videos = collect_videos(dir);
 
     auto   builder   = kj::heap<capnp::MallocMessageBuilder>();
     auto   root      = builder->initRoot<VideoList>();
