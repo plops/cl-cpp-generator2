@@ -201,7 +201,7 @@ set(AV_SOURCES
         #${avcpp_root}/./filters/buffersink.cpp
         #${avcpp_root}/./filters/buffersrc.cpp
         ${avcpp_root}/./codeccontext.cpp
-        ${avcpp_root}/./avutils.cpp
+        ${avcpp_root}/./avutils.cpp # modify deleters for filterInOut and swsContext
         ${avcpp_root}/./formatcontext.cpp
         ${avcpp_root}/./frame.cpp
         ${avcpp_root}/./codecparameters.cpp
