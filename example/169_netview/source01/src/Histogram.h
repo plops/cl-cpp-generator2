@@ -7,6 +7,10 @@
 #include <array>
 #include <limits>
 #include <ostream>
+#include <cstdint>
+#include <algorithm>
+#include <assert.h>
+#include <cmath>
 
 /**
  * @brief Compute histogram, maximum and minimum of data

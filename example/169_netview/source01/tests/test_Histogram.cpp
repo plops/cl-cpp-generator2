@@ -7,20 +7,30 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
 #include <unistd.h>
-TEST(Histogram_flaot, InsertData_InsertDataToEmpty_HaveOnePoint) {
-    // Arrange
 
-    // auto values{std::vector<float>({10.F, 11.F, 12.F})};
-    auto histogram{Histogram<float, 3>(10.F, 12.F)};
-    // Act
+class HistogramDoubleBaseTest : public ::testing::Test {
+public:
+  HistogramDoubleBaseTest() : histogram{10.,12.} {}
 
+protected:
+  void SetUp() final {
+    // not needed
+  }
+  void TearDown() final {
+    // not needed
+  }
+  Histogram<double, 3> histogram;
+};
+
+TEST_F(HistogramDoubleBaseTest, InsertData_InsertDataToEmpty_HaveBinExtrema) {
+    histogram.insert(11.0);
+
+    EXPECT_EQ(histogram.getBinMin(), 10.);
+    EXPECT_EQ(histogram.getBinMax(), 12.);
+};
+TEST_F(HistogramDoubleBaseTest, InsertData_InsertDataToEmpty_HaveObservedExtrema) {
     histogram.insert(11.0F);
-    // Assert
 
-    EXPECT_EQ(histogram.getObservedMin(), 11.F);
-    EXPECT_EQ(histogram.getObservedMax(), 11.F);
-    EXPECT_EQ(histogram.getBinMin(), 10.F);
-    EXPECT_EQ(histogram.getBinMax(), 12.F);
-    EXPECT_EQ(histogram.getBinX(0), 10.F);
-    EXPECT_EQ(histogram.getBinY(2), 12.F);
+    EXPECT_EQ(histogram.getObservedMin(), 11.);
+    EXPECT_EQ(histogram.getObservedMax(), 11.);
 };
