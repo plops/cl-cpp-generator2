@@ -16,7 +16,7 @@ using namespace std::filesystem;
 
 VideoArchiveImpl::VideoArchiveImpl() = default;
 
-kj::Promise<void> VideoArchiveImpl::getVideoInfo(GetVideoListContext context) {
+kj::Promise<void> VideoArchiveImpl::getVideoInfo(GetVideoInfoContext context) {
     return kj::READY_NOW;
 }
 
