@@ -310,6 +310,7 @@ if (ENABLE_VID_TESTS)
     set(test_sources
             tests/test_VideoDecoder.cpp
             tests/test_Histogram.cpp
+            tests/test_DurationComputer.cpp
     )
     set_source_files_properties(${test_sources} PROPERTIES UNITY_GROUP "Tests")
 
