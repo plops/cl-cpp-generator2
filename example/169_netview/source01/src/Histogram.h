@@ -42,7 +42,7 @@ public:
     [[nodiscard]] T        getBinMax() const { return binMax; }
     [[nodiscard]] uint64_t getElementCount() const { return elementCount; }
 
-    T        getBinX(uint64_t idx) const { return binMin + T(idx) * (binMax - binMin) / (N - 1); }
+    T        getBinX(uint64_t idx) const { return static_cast<T>(binMin + idx * (static_cast<double>(binMax) - binMin) / (N - 1)); }
     uint64_t getBinY(uint64_t idx) const { return binY[idx]; }
 
     friend std::ostream& operator<<(std::ostream& Os, const Histogram& Obj) {

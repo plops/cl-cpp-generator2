@@ -7,9 +7,9 @@
 #include <format>
 #include <iostream>
 
+#include <random>
 #include "VideoArchiveImpl.h"
 #include "VideoDecoder.h"
-
 
 using namespace std;
 using namespace std::filesystem;
@@ -29,8 +29,9 @@ int main(int argc, char* argv[]) {
             capnp::EzRpcClient   client(argv[1]);
             auto&                waitScope{client.getWaitScope()};
             VideoArchive::Client server = client.getMain<VideoArchive>();
+            std::vector<std::string> filenames;
             while (true) {
-                cout << "Enter command (list, quit): " << endl;
+                cout << "Enter command (list, quit, key): " << endl;
                 string line;
                 getline(cin, line);
                 stringstream ss(line);
@@ -38,18 +39,32 @@ int main(int argc, char* argv[]) {
                 ss >> command;
                 if (command == "quit") { break; }
                 else if (command == "list") {
+                    filenames.clear();
                     auto   request  = server.getVideoListRequest();
                     auto   response = request.send().wait(waitScope);
                     string selectedFile;
                     int    count = 0;
                     for (const auto& video : response.getVideoList().getVideos()) {
                         cout << video.getSizeBytes() << " " << video.getName().cStr() << endl;
-                        if (count == 1)
-                            selectedFile = video.getName().cStr();
+                        filenames.push_back(video.getName().cStr());
+                        if (count == 1) selectedFile = video.getName().cStr();
                         count++;
                     }
-                    decoder.initialize(selectedFile, true);
-                    decoder.computeStreamStatistics(true);
+                    // decoder.initialize(selectedFile, true);
+                    // decoder.computeStreamStatistics(true);
+                }
+                else if (command == "key") {
+                    auto request2 = server.getVideoInfoRequest();
+                    if (filenames.size() >= 29) {
+                        request2.setFilePath(filenames[29]);
+                        auto response2 = request2.send().wait(waitScope);
+                        auto videoInfo = response2.getVideoInfo();
+                        cout << "filename: " << videoInfo.getFilePath().cStr() << endl;
+                        cout << "filesize: " << videoInfo.getFileSize() << endl;
+                        cout << "Number of keyframes: " << videoInfo.getKeyFrames().size() << endl;
+                    } else {
+                        cout << "Only {} files" << filenames.size() << endl;
+                    }
                 }
             }
         }

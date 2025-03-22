@@ -60,6 +60,8 @@ kj::Promise<void> VideoArchiveImpl::getVideoInfo(GetVideoInfoContext context) {
         keyFrameList.setWithCaveats(static_cast<capnp::uint>(i++), elementRoot);
     }
     root.setKeyFrames(keyFrameList);
+    auto fileSize = file_size(path(filename));
+    root.setFileSize(fileSize);
     context.getResults().setVideoInfo(root);
     return kj::READY_NOW;
 }

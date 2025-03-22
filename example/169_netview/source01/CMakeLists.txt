@@ -175,8 +175,37 @@ set(kj-async_sources
 #set(ffmpeg_sources
 #        ${libavutil}/adler32.c
 
-file(GLOB_RECURSE AV_SOURCES "/home/martin/src/avcpp/src/*.cpp")
-
+#file(GLOB_RECURSE AV_SOURCES "/home/martin/src/avcpp/src/*.cpp")
+# cd /home/martin/src/avcpp/src/;find . -type f|grep \.cpp$ |awk '{print "${avcpp_root}/"$1}'
+set(avcpp_root /home/martin/src/avcpp/src)
+set(AV_SOURCES
+        ${avcpp_root}/./averror.cpp
+        #${avcpp_root}/./videorescaler.cpp
+        ${avcpp_root}/./dictionary.cpp
+        ${avcpp_root}/./format.cpp
+        ${avcpp_root}/./channellayout.cpp
+        #${avcpp_root}/./audioresampler.cpp
+        ${avcpp_root}/./avtime.cpp
+        ${avcpp_root}/./rational.cpp
+        ${avcpp_root}/./packet.cpp
+        ${avcpp_root}/./sampleformat.cpp
+        ${avcpp_root}/./rect.cpp
+        ${avcpp_root}/./pixelformat.cpp
+        ${avcpp_root}/./codec.cpp
+        ${avcpp_root}/./timestamp.cpp
+        ${avcpp_root}/./stream.cpp
+        #${avcpp_root}/./filters/filterpad.cpp
+        #${avcpp_root}/./filters/filtergraph.cpp
+        #${avcpp_root}/./filters/filtercontext.cpp
+        #${avcpp_root}/./filters/filter.cpp
+        #${avcpp_root}/./filters/buffersink.cpp
+        #${avcpp_root}/./filters/buffersrc.cpp
+        ${avcpp_root}/./codeccontext.cpp
+        ${avcpp_root}/./avutils.cpp
+        ${avcpp_root}/./formatcontext.cpp
+        ${avcpp_root}/./frame.cpp
+        ${avcpp_root}/./codecparameters.cpp
+)
 if (NO_LIBS)
     message("Building with static linkage and with direct avcpp sources (as opposed to linking with libavcpp)")
     add_compile_options(-static)
