@@ -36,3 +36,11 @@ TEST_F(VideoDecoderBaseTest, OtherShortVideo_CollectKeyFrames_CountCorrect) {
     auto kf = dec.collectKeyFrames();
     ASSERT_EQ(kf.size(), 21);
 };
+
+TEST_F(VideoDecoderBaseTest, WrongVideo_Open_Fails) {
+    ASSERT_FALSE(dec.initialize("/dev/zero"));
+};
+
+TEST_F(VideoDecoderBaseTest, NonexistingFile_Open_Fails) {
+    ASSERT_FALSE(dec.initialize("/nonexistingfile"));
+};
