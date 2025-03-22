@@ -17,7 +17,7 @@ EXTRA_OPTIONS=" \
   --disable-runtime-cpudetect \
   --disable-autodetect"
 
-ONLY_YT_FORMATS=" \
+SELECTED_FORMATS=" \
   --disable-everything \
   --enable-protocol=file \
   --enable-decoder=$FORMATS \
@@ -25,7 +25,7 @@ ONLY_YT_FORMATS=" \
   --enable-parser=$FORMATS \
   --enable-bsf=$FILTERS"
 
-ALL_FORMATS=""
+#SELECTED_FORMATS=""
 
 NO_DISTRIB="--enable-gpl --enable-version3 --enable-nonfree"
 #  --disable-programs
@@ -61,6 +61,6 @@ NO_DISTRIB="--enable-gpl --enable-version3 --enable-nonfree"
   --disable-swresample  \
   --disable-swscale \
   --disable-postproc \
-  $ALL_FORMATS
+  $SELECTED_FORMATS
 
 
