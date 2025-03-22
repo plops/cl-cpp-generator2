@@ -308,14 +308,17 @@ if (ENABLE_VID_TESTS)
     #        FetchContent_MakeAvailable(googletest)
 
     set(test_sources
-            #tests/test_VideoDecoder.cpp
+            tests/test_VideoDecoder.cpp
             tests/test_Histogram.cpp
-            #src/VideoDecoder.cpp  # Include the source file with actual implementation
     )
     set_source_files_properties(${test_sources} PROPERTIES UNITY_GROUP "Tests")
 
     add_executable(unit_tests
             ${test_sources}
+            ${AV_SOURCES}
+#            ${SOURCE_FILES}
+            src/VideoDecoder.cpp
+            src/DurationComputer.cpp
     )
 
     # Set specific compiler options for the unit_tests target (turn off optimizations for coverage)
@@ -327,8 +330,21 @@ if (ENABLE_VID_TESTS)
     target_link_libraries(unit_tests
             gtest_main
             gtest
+            Threads::Threads
+            avformat
+            avdevice
+            avcodec
+            avutil
     )
-    target_include_directories(unit_tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(unit_tests PRIVATE
+            ${PROJECT_SOURCE_DIR}/src
+            /home/martin/vulkan/include
+    )
+    target_compile_definitions(
+            unit_tests
+            PUBLIC
+            __STDC_CONSTANT_MACROS # needed for avcpp
+    )
 
     # Register the test with CTest
     add_test(NAME unit_tests COMMAND unit_tests)
