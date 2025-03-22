@@ -10,4 +10,7 @@ ninja &&
 ./unit_tests &&
 mkdir -p gcov &&
 cd gcov &&
-find ..|grep gcda|xargs gcov
+find ..|grep gcda |xargs \
+gcov --human-readable \
+--demangled-names \
+--use-colors
