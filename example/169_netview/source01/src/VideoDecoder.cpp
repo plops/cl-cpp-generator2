@@ -151,7 +151,8 @@ void VideoDecoder::computeStreamStatistics(bool debug) {
         cout << "dts " << dtsHistogram << endl;
     }
 }
-void VideoDecoder::collectKeyFrames() {
+
+std::vector<VideoDecoder::KeyFrameInfo>& VideoDecoder::collectKeyFrames() {
     keyFrames.clear();
     size_t        packetCount   = 0;
     size_t        keyFrameCount = 0;
@@ -190,4 +191,5 @@ void VideoDecoder::collectKeyFrames() {
         }
         packetCount++;
     }
+    return keyFrames;
 }

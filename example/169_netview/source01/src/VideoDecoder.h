@@ -41,7 +41,7 @@ public:
         int           rawSize;
     };
 
-    void collectKeyFrames();
+    std::vector<KeyFrameInfo>& collectKeyFrames();
 
 private:
     std::unique_ptr<av::FormatContext> ctx;

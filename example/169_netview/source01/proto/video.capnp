@@ -4,7 +4,7 @@
 
 interface VideoArchive {
     getVideoList @0 () -> (videoList :VideoList);
-    getVideoInfo @1 (name :Text) -> (videoInfo :VideoInfo);
+    getVideoInfo @1 (filePath :Text) -> (videoInfo :VideoInfo);
 }
 
 struct Rational {
@@ -17,12 +17,13 @@ struct KeyFrame {
     timebase @1 :Rational;
     durationSincePreviousKeyframe @2 :Float32;
     packetIndex @3 :UInt64;
-    frameSize @4 :UInt64;
-    frameWidth @5 :Int32;
-    frameHeight @6 :Int32;
-    quality @7 :Int32;
-    bitsPerPixel @8 :Int32;
-    rawSize @9 :Int32;
+    packetSize @4 :UInt64;
+    frameSize @5 :UInt64;
+    frameWidth @6 :Int32;
+    frameHeight @7 :Int32;
+    quality @8 :Int32;
+    bitsPerPixel @9 :Int32;
+    rawSize @10 :Int32;
 }
 
 struct VideoInfo {
