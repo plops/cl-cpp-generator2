@@ -30,7 +30,6 @@ int main(int argc, char* argv[]) {
             auto&                    waitScope{client.getWaitScope()};
             VideoArchive::Client     server = client.getMain<VideoArchive>();
             std::vector<std::string> filenames;
-            auto                     request2 = server.getVideoInfoRequest();
             while (true) {
                 cout << "Enter command (list, quit, key): " << endl;
                 string line;
@@ -56,14 +55,15 @@ int main(int argc, char* argv[]) {
                     // decoder.computeStreamStatistics(true);
                 }
                 else if (command == "key") {
-                    default_random_engine            generator{};
+                    default_random_engine generator{};
                     generator.seed(chrono::system_clock::now().time_since_epoch().count());
                     uniform_int_distribution<size_t> distribution(0, filenames.size() - 1);
-                    auto rnd    = [&]() { return distribution(generator); };
-                    auto choice = rnd();
+                    auto                             rnd    = [&]() { return distribution(generator); };
+                    auto                             choice = rnd();
                     cout << "selected random index: " << choice << endl;
                     if (filenames.size() >= choice) {
                         cout << "selected filename: " << filenames[choice] << endl;
+                        auto request2 = server.getVideoInfoRequest();
                         request2.setFilePath(filenames[choice]);
                         auto response2 = request2.send().wait(waitScope);
                         auto videoInfo = response2.getVideoInfo();

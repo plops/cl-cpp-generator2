@@ -311,12 +311,16 @@ if (ENABLE_VID_TESTS)
             tests/test_VideoDecoder.cpp
             tests/test_Histogram.cpp
             tests/test_DurationComputer.cpp
+            tests/test_VideoArchiveImpl.cpp
     )
     set_source_files_properties(${test_sources} PROPERTIES UNITY_GROUP "Tests")
-
+    set(CMAKE_PREFIX_PATH /home/martin/vulkan)
+    find_package(CapnProto REQUIRED)
+    capnp_generate_cpp(videoSources videoHeaders proto/video.capnp)
     add_executable(unit_tests
             ${test_sources}
             ${AV_SOURCES}
+            ${videoSources}
 #            ${SOURCE_FILES}
             src/VideoDecoder.cpp
             src/DurationComputer.cpp
