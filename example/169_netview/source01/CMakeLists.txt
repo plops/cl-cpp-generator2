@@ -318,7 +318,7 @@ if (ENABLE_VID_TESTS)
             ${test_sources}
     )
 
-    # Set specific compiler options for the unit_tests target (turn of optimizations for coverage)
+    # Set specific compiler options for the unit_tests target (turn off optimizations for coverage)
     target_compile_options(unit_tests PRIVATE
             -O0 -fprofile-arcs -ftest-coverage --coverage)
     target_link_options(unit_tests PRIVATE --coverage)  # Link with the coverage library
