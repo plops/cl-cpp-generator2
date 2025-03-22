@@ -14,3 +14,5 @@ find ..|grep gcda |xargs \
 gcov --human-readable \
 --demangled-names \
 --use-colors
+
+# --function-summaries
