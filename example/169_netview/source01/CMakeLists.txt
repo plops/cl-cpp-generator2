@@ -216,12 +216,12 @@ if (NO_LIBS)
     find_package(Threads)
     find_package(CapnProto REQUIRED)
     capnp_generate_cpp(videoSources videoHeaders proto/video.capnp)
-#    add_library(cxxnet_parser
-#            ${AV_SOURCES}
-#    )
-#    add_library(
-#            cxxnet_protocol
-#    )
+    #    add_library(cxxnet_parser
+    #            ${AV_SOURCES}
+    #    )
+    #    add_library(
+    #            cxxnet_protocol
+    #    )
     add_executable(
             ${PROJECT_NAME}
             ${SOURCE_FILES}
@@ -235,7 +235,7 @@ if (NO_LIBS)
             ${AV_SOURCES}
     )
     target_compile_definitions(
-           # cxxnet_parser
+            # cxxnet_parser
             ${PROJECT_NAME}
             PUBLIC
             __STDC_CONSTANT_MACROS # needed for avcpp
@@ -244,8 +244,8 @@ if (NO_LIBS)
     target_link_libraries(
             ${PROJECT_NAME}
             PRIVATE
-#            cxxnet_parser
-#            cxxnet_protocol
+            #            cxxnet_parser
+            #            cxxnet_protocol
             Threads::Threads
             avformat
             avdevice
@@ -288,7 +288,47 @@ else ()
 endif ()
 
 
+# Define the test executable
+option(ENABLE_VID_TESTS "Enable unit tests for the network video viewer" OFF)
 
+if (ENABLE_VID_TESTS)
+    enable_testing()
 
+    #        set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake")
+    #include(coverage)
+    #add_coverage_target("*/tests/*")
+
+    #        # Fetch Google Test
+    #        include(FetchContent)
+    #        FetchContent_Declare(
+    #                googletest
+    #                GIT_REPOSITORY https://github.com/google/googletest.git
+    #                GIT_TAG v1.14.0  # specify the commit hash or tag here
+    #        )
+    #        FetchContent_MakeAvailable(googletest)
+
+    set(test_sources
+            #tests/test_VideoDecoder.cpp
+            tests/test_Histogram.cpp
+            #src/VideoDecoder.cpp  # Include the source file with actual implementation
+    )
+    set_source_files_properties(${test_sources} PROPERTIES UNITY_GROUP "Tests")
+
+    add_executable(unit_tests
+            ${test_sources}
+    )
+
+    # Set specific compiler options for the unit_tests target (turn of optimizations for coverage)
+    target_compile_options(unit_tests PRIVATE
+            -O0 -fprofile-arcs -ftest-coverage --coverage)
+    target_link_options(unit_tests PRIVATE --coverage)  # Link with the coverage library
+
+    # Link the test executable with Google Test and the necessary libraries
+    target_link_libraries(unit_tests gtest_main)
+    target_include_directories(unit_tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
+
+    # Register the test with CTest
+    add_test(NAME unit_tests COMMAND unit_tests)
+endif ()
 
 

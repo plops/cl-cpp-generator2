@@ -12,10 +12,18 @@
 #include <memory>
 #include <string>
 
-
+using namespace std;
 class VideoDecoder {
 public:
-    ~VideoDecoder() = default;
+    ~VideoDecoder() {
+        cout << "VideoDecoder::~VideoDecoder()" << endl;
+        // vdec.close(ec);
+        // if (ec) {
+        //     clog << "VideoDecoder::~VideoDecoder() error" << endl;
+        // }
+        ctx->close();
+
+    };
     VideoDecoder()  = default;
     /** @brief initialize avformat, start parsing video file
      *

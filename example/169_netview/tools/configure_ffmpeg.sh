@@ -27,11 +27,15 @@ ONLY_YT_FORMATS=" \
 
 ALL_FORMATS=""
 
+NO_DISTRIB="--enable-gpl --enable-version3 --enable-nonfree"
+#  --disable-programs
+
 ./configure \
+  $NO_DISTRIB \
   $EXTRA_OPTIONS \
+  --disable-autodetect \
   --enable-static \
   --disable-shared \
-  --disable-programs \
 	--disable-doc \
 	--disable-iconv \
   --disable-postproc \

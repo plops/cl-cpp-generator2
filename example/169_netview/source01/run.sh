@@ -2,7 +2,7 @@
 
 rm -rf server client
 
-REL=cmake-build-release-nolibs
+REL=cmake-build-release
 ln -s $REL/cxxnet_client server
 ln -s $REL/cxxnet_client client
 
