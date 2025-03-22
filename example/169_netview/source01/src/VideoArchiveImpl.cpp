@@ -23,15 +23,24 @@ kj::Promise<void> VideoArchiveImpl::getVideoInfo(GetVideoInfoContext context) {
 
     VideoDecoder decoder;
     auto filename = context.getParams().getFilePath();
+
+    // Look at the file
+    auto   builder   = kj::heap<capnp::MallocMessageBuilder>();
+    auto   root      = builder->initRoot<VideoInfo>();
+    root.setFilePath(filename);
+    auto fileSize = file_size(path(filename));
+    root.setFileSize(fileSize);
+    context.getResults().setVideoInfo(root); // set information in case avcpp exits early
+
+    // Parse the video
     decoder.initialize(filename);
     auto keyFrames = decoder.collectKeyFrames();
     if (keyFrames.size() == 0) {
         cerr << "VideoArchiveImpl::getVideoInfo: No keyframes found" << endl;
         return kj::READY_NOW;
     }
-    auto   builder   = kj::heap<capnp::MallocMessageBuilder>();
-    auto   root      = builder->initRoot<VideoInfo>();
-    root.setFilePath(filename);
+
+    // Process keyframes
     auto   keyFrameList = root.initKeyFrames(keyFrames.size());
     size_t i         = 0;
     for (const auto& kf : keyFrames) {
@@ -60,8 +69,7 @@ kj::Promise<void> VideoArchiveImpl::getVideoInfo(GetVideoInfoContext context) {
         keyFrameList.setWithCaveats(static_cast<capnp::uint>(i++), elementRoot);
     }
     root.setKeyFrames(keyFrameList);
-    auto fileSize = file_size(path(filename));
-    root.setFileSize(fileSize);
+
     context.getResults().setVideoInfo(root);
     return kj::READY_NOW;
 }

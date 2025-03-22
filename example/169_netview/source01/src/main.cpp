@@ -89,7 +89,11 @@ int main(int argc, char* argv[]) {
         kj::NEVER_DONE.wait(waitScope);
     }
     catch (const std::exception& e) {
-        cerr << e.what() << endl;
+        cerr << "server failure: " << e.what() << endl;
+        return EXIT_FAILURE;
+    } catch (...) {
+        cerr << "Maybe a server is already running." << endl;
+        return EXIT_FAILURE;
     }
 
     return 0;
