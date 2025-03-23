@@ -4,19 +4,23 @@
 
 #ifndef TCPSOCKET_H
 #define TCPSOCKET_H
+#include "ISocket.h"
+
+// extern "C" {
+#include <netinet/in.h>
+// }
 
 class TCPSocket : public ISocket {
 public:
-  ~TCPSocket() override {
-    if (-1 != sockfd) {
-      ::close(sockfd);
-      sockfd = -1;
-    }
-  }
+  ~TCPSocket() override;
+  bool open(int port) override;
+  void close() override;
+  bool send(const std::string &data) override;
+  std::string receive() override;
 
 private:
   int sockfd;
-  sockaddr_in address;
+  sockaddr_in serverAddress;
 };
 
 #endif // TCPSOCKET_H
