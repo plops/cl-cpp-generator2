@@ -1,0 +1,448 @@
+https://www.hackerfactor.com/blog/index.php?/archives/307-Picture-Go-Back.html
+Picture Go Back
+￼Friday, 28 August 2009
+I've been playing with the FFmpeg library and I've come across a significant limitation. There are three things that any video application needs to do. First, it needs to play the video. FFmpeg is very good at that. This open source library supports nearly all video formats in existence.
+
+The second requirement is to pause. That's easy enough: just stop playing for a moment.
+
+The final requirement is to rewind. In my experience, rewind is usually more important than fast-forward, play backwards, step forward/backwards, or any other common functions provided by most video editing systems.
+
+Amazingly, the FFmpeg library really sucks for doing rewind. With the mplayer and Totem media players (both which uses FFmpeg), rewind usually makes the audio and video get out of sync.
+
+Implementing Rewind
+The basis of any rewind function is a reliable frame seek. Given a frame number, you want to jump into the video stream and be at that specific frame. To rewind, or step backwards, you just subtract from your current frame number. For example, if you are currently showing frame 14,000 then one push of the rewind button should take you back a few seconds -- like back 500 frames to frame 13,500.
+
+As it turns out, this is far more difficult that you might suspect. Most video formats don't encode every frame. Instead, they encode a single full frame (I-frame) and a bunch of differences between adjacent frames (P- and B-frames). If you just rewind, then you are likely to land on a partial frame.
+
+Ideally, you want to rewind to the nearest I-frame and then apply every P-frame and B-frame until you get to the frame you want. This assumes, of course, that every few frames is an I-frame. Depending on the encoder's configuration, I-frames may occur often (e.g., every 30 frames) or less often (e.g., every 600 frames) -- neither is a huge issue. It isn't until you start talking about thousands of frames that this becomes a noticeable delay.
+
+The bigger problem appears when there are no intermediate I-frames. This ruins rewind since you really either need to start back at the beginning and step forward (slow for very large videos), or jump back a "good enough" amount (e.g., 2000 frames) and hope that there are enough partial refreshes to cover the entire screen.
+
+When playing files that lack periodic I-frames, the program can periodically cache frames. For example, at 25 frames per second, a two hour video will have 180,000 frames. If every 500 frames is cached as an arbitrary I-frame, then that is 360 cached frames. What I've found is that this kind of caching really takes very little memory (store image cache, audio cache, and stream position) and permits real-time responses to rewind requests.
+
+FFmpeg Frame Counts
+Of course, the whole concept of seeking requires you to track frame numbers. Unfortunately, this is where FFmpeg fails. As far as I can tell, FFmpeg does not accurately track frame numbers. At any given moment, your program really has no real clue where it is in the video.
+
+There are a number of discussions on the FFmpeg mailing lists about methods to determine the frame number. Most of these discussions come down to an issue with packet ordering. There is the presentation time stamp (PTS) and the decompression time stamp (DTS). The frames may be decompressed in one order (1 2 3 4) but presented in a different order (1 4 2 3).
+
+FFmpeg does provide a function called av_seek_frame(). The parameters include the open stream handle, time stamp to index (because some file formats track frames by time, while others use frame numbers), and where to jump to. For example, AVSEEK_FLAG_ANY means that you can jump to any I-, P-, or B-frame. In contrast, AVSEEK_FLAG_BACKWARD jumps to the first I-frame before the position you want. This allows you to step forward from the I-frame.
+
+The big problem is, av_seek_frame() is unreliable. I implemented something similar to the example found in ffplay.c for seeking the video stream:
+ret = av_seek_frame(is->ic, stream_index, seek_target, is->seek_flags);
+packet_queue_flush(&is->videoq);
+packet_queue_put(&is->videoq, &flush_pkt);
+
+Basically, you seek to the desired location, flush the queue, and reload the queue. Unfortunately, the frame number (CodecContext->frame_number) is usually wrong.
+
+I repeatedly tried to seek forward and backwards to different frames -- frame 5000, 10,000, and 15,000 in divx, avi, and other video formats. Each time, the resulting location is close, but not exact. FFmpeg thinks it knows the frame number after seeking, but usually it is off. Frankly, when I want to jump to frame 5000, I want to be at frame 5000 and not 5015, 4079, or some other nearby frame.
+
+According to one posting on the FFmpeg mailing list (from 2007!):
+For most containers (perhaps all, I haven't checked), literally the only way to find the exact frame number of any given frame is to scan through the entire file from the beginning until you get to that frame. This is not a limitation of FFmpeg; it's a limitation of the container. As far as I understand, based on years of reading these lists, there is fundamentally no way to get around it.
+
+IOW, you're out of luck.
+
+Sadly, this seems correct. I ended up implementing my own seek function: rewind and step through each frame until I get to the exact frame I want.
+
+Flipping the Index
+I have also spent some time looking over various file formats. While the 2007 posting blamed the container for problems with seeking, I'm just not seeing where the containers make it hard.
+
+For example, DIVX and many AVI files use a file format called RIFF. RIFF includes indexes that reference every frame. For example:
+tag='00dc' frame='32667' offset='0x14d0c3d8' length='16' field='Stream #00: Index Video' value='keyframe; offset 0x14bdd87a (rel); length 0x3dd5'
+tag='00dc' frame='32668' offset='0x14d0c3f8' length='16' field='Stream #00: Index Video' value='keyframe; offset 0x14be18e0 (rel); length 0x105a'
+tag='00dc' frame='32669' offset='0x14d0c418' length='16' field='Stream #00: Index Video' value='offset 0x14be2bca (rel); length 0xc2'
+tag='00dc' frame='32670' offset='0x14d0c438' length='16' field='Stream #00: Index Video' value='offset 0x14be2f1c (rel); length 0xc2'
+tag='00dc' frame='32671' offset='0x14d0c458' length='16' field='Stream #00: Index Video' value='offset 0x14be326e (rel); length 0xb91'
+tag='00dc' frame='32672' offset='0x14d0c478' length='16' field='Stream #00: Index Video' value='offset 0x14be4090 (rel); length 0x155'
+
+What this tells me: if I want to jump to frame 32671, then I should jump in the stream to position 0x14be326e. But, that frame is not a keyframe. I should really jump to frame 32668 and step forward to frame 32671. At least with AVI and DIVX (RIFF formats), I know exactly how to seek around the file.
+
+RealMedia are almost as easy. Their indexes are based on timestamps rather than frame numbers. Since I know the frame rate, seeking to a specific frame just requires converting frame number to time and obeying the index. Again, the container specifically supports seeking.
+
+How about other formats? Well, FLV seems to be a problem child (few I-frames), but most FLV files are not hundreds of thousands of frames. In general, if the container supports large videos then it likely has indexes for seeking within the data stream.
+
+Sadly, FFmpeg does not appear to support these indexes. Or if it knows about them, then it uses them wrong. In any case, FFmpeg seems incapable of accurately tracking frame numbers, particularly when seeking around frames.
+
+Functionally Impaired
+All of this reminds me of the TV show "Monk". Mr. Monk really does not understand technology. When watching a video, he doesn't call it "pause", he calls it "Picture stop". Fast forward is "Picture go fast!", and rewind is "Picture go back". Mr. Monk's inability to interact with current technology resulted in his nickname: the "Defective Detective".
+
+FFmpeg seems to have a similar functional impairment. It does not accurately track frame numbers, seeks to something close but not correct, and really has no idea where it is within the video stream. It would be one thing if the video containers didn't support seeking, but that isn't the case here. For a video player as complete and ubiquitous as FFmpeg, its inability to accurately seek within a video file is nothing less than a functional impairment based on a lack of understanding. FFmpeg is the Monk equivalent for video libraries.
+
+And don't get me started on its limitations with GPL licensing. I actually considered discussing this on the FFmpeg mailing list, but that forum is still full of trolls.
+
+
+
+can i use libavformat and libavcodec to only decode the keyframes of a video?
+
+
+Yes, you can use libavformat and libavcodec to decode only the keyframes (I-frames) of a video.  This requires some careful manipulation of the seeking and decoding process. Here's a breakdown of the approach, the relevant API functions, and important considerations:
+
+**Conceptual Approach**
+
+1.  **Open the Input:** Use `avformat_open_input` to open the video file and obtain an `AVFormatContext`.
+
+2.  **Find the Video Stream:** Iterate through the streams in the `AVFormatContext` using `AVFormatContext->streams` to locate the video stream (where `codec_type == AVMEDIA_TYPE_VIDEO`).  Store the stream index.
+
+3.  **Open the Codec:** Use `avcodec_find_decoder` to find the appropriate decoder based on the `codec_id` of the video stream.  Then, use `avcodec_alloc_context3` to allocate an `AVCodecContext`.  Copy the codec parameters from the stream to the context using `avcodec_parameters_to_context`. Finally, open the decoder with `avcodec_open2`.
+
+4.  **Seek to Keyframes:** This is the core part.  You'll use `av_seek_frame` with the `AVSEEK_FLAG_BACKWARD` and potentially `AVSEEK_FLAG_ANY`. `AVSEEK_FLAG_ANY` is important for some containers (like MP4).
+    *   `AVSEEK_FLAG_BACKWARD`:  Crucially, this flag tells `av_seek_frame` to seek to the *previous* keyframe if the specified timestamp is not exactly on a keyframe. This is essential because you won't know the exact keyframe timestamps beforehand in most cases.  You'll iterate, seeking slightly *past* where you expect the next keyframe to be, and relying on `AVSEEK_FLAG_BACKWARD` to land you on the keyframe itself.
+    *    `AVSEEK_FLAG_ANY`: This allows the seek operation to be inexact, needed for file formats where accurate keyframe locations might not be easily retrievable, it is particularly important with MP4 containers, where you should always use this flag.
+
+5.  **Decode Packets:**
+    *   Read packets using `av_read_frame`.
+    *   Send the packet to the decoder using `avcodec_send_packet`.
+    *   Receive decoded frames using `avcodec_receive_frame`.
+
+6.  **Check for Keyframes:** After decoding a frame, inspect the `AVFrame->pict_type` member.  If it's `AV_PICTURE_TYPE_I`, you've decoded a keyframe. Other picture types (P, B) should be ignored.  This check is *essential* to avoid decoding non-keyframes after your seek.  Seeking only gets you *close* to a keyframe; the decoder might still decode a few non-keyframes before hitting the I-frame.
+
+7.  **Iterate:**  After processing a keyframe, determine the timestamp of the *next* keyframe you want to seek to. A simple approach is to add a fixed duration (e.g., 1 second) to the current keyframe's timestamp. Then, repeat the seeking and decoding process.
+
+8. **Clean Up:** Release all resources (frames, packets, contexts) using the appropriate `av_..._free` functions.
+
+**Code Example (Illustrative - Not a complete program)**
+
+```c
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libavutil/imgutils.h>
+
+int main(int argc, char **argv) {
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <input_file>\n", argv[0]);
+        return 1;
+    }
+
+    const char *filename = argv[1];
+    AVFormatContext *fmt_ctx = NULL;
+    AVCodecContext *dec_ctx = NULL;
+    AVStream *video_stream = NULL;
+    int video_stream_index = -1;
+    AVPacket *pkt = NULL;
+    AVFrame *frame = NULL;
+    int ret;
+
+    // 1. Open the input
+    if ((ret = avformat_open_input(&fmt_ctx, filename, NULL, NULL)) < 0) {
+        fprintf(stderr, "Could not open input file '%s'\n", filename);
+        goto end;
+    }
+
+    // 2. Find the video stream
+    if ((ret = avformat_find_stream_info(fmt_ctx, NULL)) < 0) {
+        fprintf(stderr, "Could not find stream information\n");
+        goto end;
+    }
+
+    for (unsigned int i = 0; i < fmt_ctx->nb_streams; i++) {
+        if (fmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+            video_stream_index = i;
+            video_stream = fmt_ctx->streams[i];
+            break;
+        }
+    }
+
+    if (video_stream_index == -1) {
+        fprintf(stderr, "Could not find a video stream\n");
+        ret = AVERROR_STREAM_NOT_FOUND;
+        goto end;
+    }
+
+    // 3. Open the codec
+    const AVCodec *dec = avcodec_find_decoder(video_stream->codecpar->codec_id);
+    if (!dec) {
+        fprintf(stderr, "Failed to find decoder\n");
+        ret = AVERROR_DECODER_NOT_FOUND;
+        goto end;
+    }
+
+    dec_ctx = avcodec_alloc_context3(dec);
+    if (!dec_ctx) {
+        fprintf(stderr, "Failed to allocate decoder context\n");
+        ret = AVERROR(ENOMEM);
+        goto end;
+    }
+
+    if ((ret = avcodec_parameters_to_context(dec_ctx, video_stream->codecpar)) < 0) {
+        fprintf(stderr, "Failed to copy decoder parameters to context\n");
+        goto end;
+    }
+
+    if ((ret = avcodec_open2(dec_ctx, dec, NULL)) < 0) {
+        fprintf(stderr, "Failed to open decoder\n");
+        goto end;
+    }
+
+    pkt = av_packet_alloc();
+    if (!pkt) {
+        fprintf(stderr, "Failed to allocate packet\n");
+        ret = AVERROR(ENOMEM);
+        goto end;
+    }
+
+    frame = av_frame_alloc();
+    if (!frame) {
+      fprintf(stderr, "Could not allocate frame\n");
+      ret = AVERROR(ENOMEM);
+      goto end;
+    }
+
+    // 4. Seek and decode keyframes (iterate)
+    int64_t current_timestamp = 0;
+    int64_t seek_interval = video_stream->time_base.den; // 1 second (in stream time_base)
+
+    while (1) {
+        // Seek to the *previous* keyframe (AVSEEK_FLAG_BACKWARD)
+        // Seek to *any* frame, important with MP4 containers (AVSEEK_FLAG_ANY)
+        ret = av_seek_frame(fmt_ctx, video_stream_index, current_timestamp, AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY);
+        if (ret < 0) {
+          if (ret == AVERROR_EOF){
+            break; //End of file, stop loop
+          }
+          fprintf(stderr, "Seek failed\n");
+          break;  // Or handle the error appropriately
+        }
+
+        // Flush the decoder
+        avcodec_flush_buffers(dec_ctx);
+
+        while(1){
+          // Read a packet.  av_read_frame() *should* now give us a packet related to the keyframe.
+          ret = av_read_frame(fmt_ctx, pkt);
+          if (ret < 0) {
+            if (ret == AVERROR_EOF) break; // inner loop
+            fprintf(stderr, "Failed to read frame: %s\n", av_err2str(ret));
+            goto end; //Or handle differently
+          }
+
+          if (pkt->stream_index != video_stream_index) {
+            av_packet_unref(pkt);
+            continue;
+          }
+
+          ret = avcodec_send_packet(dec_ctx, pkt);
+          if (ret < 0) {
+            fprintf(stderr, "Error sending packet for decoding: %s\n", av_err2str(ret));
+            av_packet_unref(pkt);
+            goto end; // Or handle differently
+          }
+
+          while (ret >= 0){
+            ret = avcodec_receive_frame(dec_ctx, frame);
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+              break;
+            } else if (ret < 0) {
+              fprintf(stderr, "Error during decoding: %s\n", av_err2str(ret));
+              av_packet_unref(pkt);
+              goto end;
+            }
+            // 6. Check for keyframes
+            if (frame->pict_type == AV_PICTURE_TYPE_I) {
+              printf("Decoded keyframe at timestamp: %lld\n", frame->pts);
+              // Process the keyframe (e.g., save to image, display, etc.)
+
+              // Update the timestamp for the next seek
+              current_timestamp = frame->pts + seek_interval;
+
+              av_packet_unref(pkt);
+              av_frame_unref(frame);
+
+              goto next_keyframe; // Break out of inner loops, go to next seek.
+            }
+            av_frame_unref(frame);
+          }
+          av_packet_unref(pkt);
+        }
+    next_keyframe:;
+    }
+
+end:
+    // 8. Clean up
+    if (frame) av_frame_free(&frame);
+    if (pkt) av_packet_free(&pkt);
+    if (dec_ctx) avcodec_free_context(&dec_ctx);
+    if (fmt_ctx) avformat_close_input(&fmt_ctx);
+
+    return ret;
+}
+
+```
+
+Key improvements and explanations in this code:
+
+*   **Error Handling:**  The code includes more robust error handling with `goto` statements to ensure proper cleanup even if errors occur.  It checks return values of most FFmpeg functions.  Uses `av_err2str` for clearer error messages.
+*   **Flushing Decoder Buffers:** `avcodec_flush_buffers(dec_ctx);` is called *after* seeking.  This is crucial.  The decoder might have buffered frames from *before* the seek point.  Flushing ensures that you start decoding from the new position.
+*   **`AVSEEK_FLAG_BACKWARD` and `AVSEEK_FLAG_ANY`:** The code explicitly uses both flags, which are critical for correct seeking, especially with MP4.
+*   **Packet Handling:** The code correctly handles packets, checking their stream index and unreferencing them when no longer needed.
+*   **Inner Loop for Decoding:**  The decoding is done in an inner loop.  This is important because `avcodec_receive_frame` might return `AVERROR(EAGAIN)`, meaning it needs more input (packets) before it can produce a frame.  The inner loop continues reading and sending packets until a frame is decoded or an error occurs.
+* **Keyframe Check:**  The `frame->pict_type == AV_PICTURE_TYPE_I` check is *inside* the decoding loop.  This ensures that you only process I-frames.
+* **`goto next_keyframe;`:** After a keyframe is successfully decoded and processed, the `goto next_keyframe;` statement jumps back to the beginning of the outer loop, immediately initiating the next seek. This avoids unnecessary packet reads and decoding attempts after a keyframe has been found.
+* **Timestamp Calculation:** `current_timestamp = frame->pts + seek_interval;` updates the seek target.  Using `frame->pts` (Presentation Time Stamp) is generally more reliable than `frame->pkt_dts` (Decode Time Stamp) for seeking. The `seek_interval` is calculated using `video_stream->time_base.den` which represents one second.
+* **EOF Handling:** The code handles `AVERROR_EOF` in both the `av_read_frame` and `avcodec_receive_frame` loops, to stop the main loop once the end of the input file is reached.
+* **Complete Cleanup:**  The `end:` label ensures all allocated resources are freed correctly, in the reverse order of allocation.
+
+This improved example provides a much more robust and correct implementation for decoding only keyframes.  It handles various error conditions, ensures proper seeking and decoding logic, and demonstrates the essential steps for using libavformat and libavcodec for this specific task. Remember to compile this code linking against the FFmpeg libraries (libavformat, libavcodec, libavutil).
+
+
+i read the compressed video data from a server on the network. ideally i want to play the keyframes without having to transfer the full video. is it possible to send the minimum of information for the client to start decoding the key frames?
+
+Yes, it's absolutely possible to transfer only the minimum information needed to decode keyframes from a server to a client, optimizing network bandwidth and latency. This is a common requirement for applications like video scrubbing, thumbnail generation, and fast previews. Here's a breakdown of the strategy and considerations:
+
+**Core Strategy: Byte-Range Requests and Keyframe Indexing**
+
+The most efficient approach combines two key techniques:
+
+1.  **Byte-Range Requests (HTTP/1.1):** The client uses the `Range` header in HTTP requests to fetch only specific portions (byte ranges) of the video file from the server. The server must support byte-range requests (indicated by the `Accept-Ranges: bytes` header in its responses).  This is a standard feature of most modern web servers (Apache, Nginx, etc.).
+
+2.  **Keyframe Index (or Metadata):**  The client needs to know *where* the keyframes are located within the video file (their byte offsets).  This information is crucial for constructing the correct `Range` requests.  There are several ways to obtain this index:
+
+    *   **Server-Side Indexing (Ideal):** The server pre-processes the video and creates a keyframe index (a simple list of byte offsets or timestamps).  The client downloads this index *separately* before requesting video data.  This is the most efficient method.
+    *   **Partial Download and Parsing (Less Ideal, but often necessary):** If a pre-built index isn't available, the client can download and parse *parts* of the video file (e.g., the header and initial segments) to extract keyframe information. This is less efficient but avoids downloading the entire video. The specific parsing method depends on the video container format (MP4, MKV, WebM, etc.).
+    *   **Progressive Download and Scanning (Least Ideal):** The client starts downloading the video sequentially and scans it for keyframes as data arrives.  This is the *least* efficient because it requires downloading non-keyframe data, but it might be the only option if the server provides no indexing and you cannot parse the container format partially.
+
+**Detailed Steps (with Server-Side Indexing)**
+
+1.  **Server-Side (Pre-processing):**
+
+    *   The server uses FFmpeg (or a similar tool) to analyze the video:
+        ```bash
+        ffmpeg -i input.mp4 -skip_frame nokey -select_streams v:0 -show_entries frame=pkt_pos,pict_type -of csv=p=0 > keyframe_index.csv
+        ```
+        *   `-skip_frame nokey`: Skips non-key frames.
+        *   `-select_streams v:0`: Selects the first video stream.
+        *   `-show_entries frame=pkt_pos,pict_type`:  Outputs the packet position (`pkt_pos`, the byte offset) and picture type (`pict_type`, which will be 'I' for keyframes).
+        *   `-of csv=p=0`:  Outputs in CSV format without printing section headers.
+        *   `> keyframe_index.csv`:  Redirects the output to a CSV file.  Each line will be something like `12345,I`, `56789,I`, etc.
+
+    *   The server makes both the video file (`input.mp4`) and the index file (`keyframe_index.csv`) available for HTTP download.
+
+2.  **Client-Side:**
+
+    *   **Download the Index:**  The client first downloads `keyframe_index.csv`.
+    *   **Parse the Index:** The client parses the CSV file, creating an in-memory list of keyframe byte offsets (e.g., `[12345, 56789, ...]`).
+    *   **Request Keyframe Data (Loop):** For each keyframe:
+        *   Determine the byte range. You'll need to fetch data from the keyframe's offset *up to* the next keyframe's offset (or the end of the file).  For the first keyframe, you might need to also fetch the file header.  For example:
+            *   Keyframe 1:  Range: `0-12344` (header + potentially some data before the keyframe) or maybe `12345-56788` (if your index includes end-of-keyframe offsets)
+            *   Keyframe 2:  Range: `56789-NEXT_KEYFRAME_OFFSET`
+        *   Construct the HTTP request with the `Range` header:
+            ```http
+            GET /input.mp4 HTTP/1.1
+            Host: yourserver.com
+            Range: bytes=12345-56788
+            ```
+        *   Send the request and receive the response.  The response body will contain *only* the requested byte range.
+        *   **Decode the Data:** Feed the received data (from the response body) directly to your libavcodec decoding pipeline (as described in the previous response).  You'll use an in-memory `AVIOContext` (described below) to provide the data to libavformat.
+
+**Using `AVIOContext` for In-Memory Decoding**
+
+Since you're not reading from a file directly, you'll use `AVIOContext` to provide the data from the HTTP response to libavformat.
+
+```c
+#include <libavformat/avformat.h>
+#include <libavformat/avio.h>
+#include <libavcodec/avcodec.h>
+#include <libavutil/imgutils.h>
+#include <string.h> // For memcpy
+
+// ... (other includes)
+
+// Callback function for reading data
+static int read_packet(void *opaque, uint8_t *buf, int buf_size) {
+    // 'opaque' will point to your data structure containing the buffer
+    // and current position.
+
+    MyData *data = (MyData *)opaque;
+    int bytes_to_read = buf_size;
+    if (data->pos + bytes_to_read > data->size) {
+        bytes_to_read = data->size - data->pos;
+    }
+
+    if (bytes_to_read <= 0) {
+        return AVERROR_EOF; // End of data
+    }
+    memcpy(buf, data->buffer + data->pos, bytes_to_read);
+    data->pos += bytes_to_read;
+    return bytes_to_read;
+}
+//Structure to manage in-memory buffer
+typedef struct {
+    uint8_t *buffer;
+    int size;
+    int pos;
+} MyData;
+
+
+int main() {
+   // ... (HTTP request, index parsing, etc.)
+
+    // --- Example for one keyframe ---
+    // Assume you've received the keyframe data into a buffer:
+    // uint8_t *keyframe_data;
+    // int keyframe_data_size;
+
+    // 1. Create a custom data structure for the AVIOContext
+    MyData data;
+    data.buffer = keyframe_data; // Your received data from the server
+    data.size = keyframe_data_size;
+    data.pos = 0;
+
+    // 2. Allocate an AVIOContext
+    AVIOContext *avio_ctx = NULL;
+    unsigned char *avio_ctx_buffer = NULL;
+    size_t avio_ctx_buffer_size = 4096; // Adjust buffer size as needed
+
+    avio_ctx_buffer = (unsigned char*)av_malloc(avio_ctx_buffer_size);
+    if (!avio_ctx_buffer) {
+        // Handle allocation error
+    }
+
+    avio_ctx = avio_alloc_context(avio_ctx_buffer, avio_ctx_buffer_size,
+                                  0, &data, &read_packet, NULL, NULL);
+    if (!avio_ctx) {
+      av_free(avio_ctx_buffer);
+      //Handle error
+    }
+
+    // 3. Allocate an AVFormatContext
+    AVFormatContext *fmt_ctx = avformat_alloc_context();
+    if (!fmt_ctx) {
+       av_free(avio_ctx_buffer);
+       avio_context_free(&avio_ctx);
+       //Handle error
+    }
+
+    // 4. Assign the AVIOContext to the AVFormatContext
+    fmt_ctx->pb = avio_ctx;
+    fmt_ctx->flags |= AVFMT_FLAG_CUSTOM_IO; // Important! Tell FFmpeg we're using custom I/O
+
+    // 5. Open the input (using the AVIOContext)
+    int ret = avformat_open_input(&fmt_ctx, NULL, NULL, NULL);
+    if (ret < 0) {
+        // Handle error (e.g., format not recognized)
+        av_log(NULL, AV_LOG_ERROR, "Could not open input: %s\n", av_err2str(ret));
+        av_free(avio_ctx_buffer);
+        avio_context_free(&avio_ctx);
+        avformat_free_context(fmt_ctx);
+        return ret;
+    }
+
+    // ... (Rest of the decoding process as before - find stream, open codec, etc.)
+    //      You'll use av_read_frame() with this fmt_ctx, and it will call
+    //      your read_packet() function to get data.
+    // ... (Remember to check frame->pict_type for 'I' frames)
+
+    // Cleanup (VERY IMPORTANT!  Custom cleanup for AVIOContext)
+    avformat_close_input(&fmt_ctx); // This also calls avio_close() on fmt_ctx->pb internally
+    if (avio_ctx) {
+         avio_context_free(&avio_ctx); // Use avio_context_free()
+    }
+    av_free(avio_ctx_buffer); // Free the manually allocated buffer
+    if(fmt_ctx)avformat_free_context(fmt_ctx);
+    // ... free other resources (packets, frames, codec context) ...
+
+    return 0;
+}
+```
+
+Key changes and explanations:
+
+*   **`read_packet` Callback:** This function is the heart of the custom I/O. It's called by libavformat to read data.  It receives a pointer to your `MyData` structure (`opaque`), a buffer to fill (`buf`), and the requested buffer size (`buf_size`).  It copies data from your in-memory buffer into `buf` and updates the position (`data->pos`).  It returns the number of bytes read or `AVERROR_EOF` when there's no more data.
