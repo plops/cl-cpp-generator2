@@ -20,10 +20,10 @@ public:
 
 protected:
     void SetUp() final {
-        server     = make_unique<capnp::EzRpcServer>(address);
-        auto port =  server->getPort().wait(server->getWaitScope());
-        KJ_DBG("Server listening on port: ", port);
-        client     = make_unique<capnp::EzRpcClient>(address,port);
+        server    = make_unique<capnp::EzRpcServer>(kj::heap<VideoArchiveImpl>(), address);
+        auto port = server->getPort().wait(server->getWaitScope());
+        // KJ_DBG("Server listening on port: ", port);
+        client     = make_unique<capnp::EzRpcClient>(address, port);
         connection = make_unique<VideoArchive::Client>(client->getMain<VideoArchive>());
     }
     void TearDown() final {}
