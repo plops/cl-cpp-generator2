@@ -41,6 +41,7 @@ int main(int argc, char* argv[]) {
                 else if (command == "list") {
                     filenames.clear();
                     auto   request  = server.getVideoListRequest();
+                    request.setFolderPath("/sda3/");
                     auto   response = request.send().wait(waitScope);
                     string selectedFile;
                     int    count = 0;
@@ -89,10 +90,11 @@ int main(int argc, char* argv[]) {
     // path p{argv[1]};
 
     try {
-        capnp::EzRpcServer server(kj::heap<VideoArchiveImpl>(), "0.0.0.0:43211");
+        capnp::EzRpcServer server(kj::heap<VideoArchiveImpl>(), "localhost:43211");
         auto&              waitScope{server.getWaitScope()};
         uint               port = server.getPort().wait(waitScope);
-        cout << "serving on port " << port << endl;
+        KJ_DBG("Server listening on port ", port);
+        // cout << "serving on port " << port << endl;
         kj::NEVER_DONE.wait(waitScope);
     }
     catch (const std::exception& e) {

@@ -92,14 +92,9 @@ kj::Promise<void> VideoArchiveImpl::getVideoList(GetVideoListContext context) {
         }
         return res;
     };
-    cout << "VideoArchiveImpl::getVideoList" << endl;
-
-    // auto dir = "/mnt6/b";
-    // auto dir = "/mnt5/tmp/bb";
     auto dir = context.getParams().getFolderPath();
-
     const auto videos = collect_videos(dir);
-
+    KJ_DBG("VideoArchiveImpl::getVideoList", dir, videos.size());
     auto   builder   = kj::heap<capnp::MallocMessageBuilder>();
     auto   root      = builder->initRoot<VideoList>();
     auto   videoList = root.initVideos(static_cast<unsigned int>(videos.size()));
