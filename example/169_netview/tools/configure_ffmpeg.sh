@@ -3,7 +3,6 @@
  FORMATS="h264,vp9,av1"
  DEMUXERS="matroska,av1,h264"
  FILTERS="av1_frame_merge,av1_frame_split,av1_metadata,h264_metadata,h264_mp4toannexb,h264_redundant_pps,vp9_metadata,vp9_raw_reorder,vp9_superframe,vp9_superframe_split"
-
 #FORMATS="h264"
 #DEMUXERS="h264"
 #FILTERS="h264_metadata,h264_mp4toannexb,h264_redundant_pps"
@@ -25,7 +24,7 @@ SELECTED_FORMATS=" \
   --enable-parser=$FORMATS \
   --enable-bsf=$FILTERS"
 
-#SELECTED_FORMATS=""
+SELECTED_FORMATS=""
 
 NO_DISTRIB="--enable-gpl --enable-version3 --enable-nonfree"
 #  --disable-programs
