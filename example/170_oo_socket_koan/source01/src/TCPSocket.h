@@ -5,7 +5,7 @@
 #ifndef TCPSOCKET_H
 #define TCPSOCKET_H
 #include "ISocket.h"
-
+#include <cstdint>
 // extern "C" {
 #include <netinet/in.h>
 // }
