@@ -40,7 +40,7 @@ private:
 protected:
     void SetUp() final {
         serverThread = std::thread(&VideoArchiveBaseTest::runServer, this);
-        client       = make_unique<capnp::EzRpcClient>{address};
+        client       = make_unique<capnp::EzRpcClient>(address);
         connection   = make_unique<VideoArchive::Client>(client->getMain<VideoArchive>());
     }
     void         TearDown() final { serverThread.join(); }
@@ -54,11 +54,22 @@ protected:
 
 TEST_F(VideoArchiveBaseTest, StartServerClient_VideoList_ResultCorrect) {
     auto request = connection->getVideoInfoRequest();
+    auto videoPath = videoDir + "sonic.webm";
+    request.setFilePath(videoPath);
+    auto& waitScope{client->getWaitScope()};
+    auto  response = request.send().wait(waitScope);
+    auto videoInfo = response.getVideoInfo();
+    ASSERT_EQ(videoInfo.getFilePath(), videoPath);
+    ASSERT_EQ(videoInfo.getFileSize(), 2006194);
+};
+
+TEST_F(VideoArchiveBaseTest, StartServerClient_VideoList2_ResultCorrect) {
+    auto request = connection->getVideoInfoRequest();
     auto videoPath = videoDir + "ring.webm";
     request.setFilePath(videoPath);
     auto& waitScope{client->getWaitScope()};
     auto  response = request.send().wait(waitScope);
     auto videoInfo = response.getVideoInfo();
     ASSERT_EQ(videoInfo.getFilePath(), videoPath);
-    ASSERT_EQ(videoInfo.getFileSize(), 1110000);
+    ASSERT_EQ(videoInfo.getFileSize(), 1716911);
 };

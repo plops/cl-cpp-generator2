@@ -159,6 +159,7 @@ std::vector<VideoDecoder::KeyFrameInfo>& VideoDecoder::collectKeyFrames() {
     av::Timestamp prevTimestamp;
     bool          firstKeyFrame          = true;
     double        timeToPreviousKeyFrame = 0.0;
+
     // From ffmpeg's packet.h: Packet is reference-counted (pkt->buf is set) and
     // valid indefinitely. The packet must be freed with av_packet_unref() [I guess avcpp handles this] when
     // it is no longer needed. For video, the packet contains exactly one frame.

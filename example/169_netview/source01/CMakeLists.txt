@@ -324,6 +324,13 @@ if (ENABLE_VID_TESTS)
 #            ${SOURCE_FILES}
             src/VideoDecoder.cpp
             src/DurationComputer.cpp
+            src/VideoArchiveImpl.cpp
+            ${capnp_sources_lite}
+            ${capnp_sources_heavy}
+            ${capnp-rpc_sources}
+            ${kj_sources_lite}
+            ${kj_sources_heavy}
+            ${kj-async_sources}
     )
 
     # Set specific compiler options for the unit_tests target (turn off optimizations for coverage)
