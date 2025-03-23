@@ -3,7 +3,7 @@
 @0xb1039f6a7c611b12;
 
 interface VideoArchive {
-    getVideoList @0 () -> (videoList :VideoList);
+    getVideoList @0 (folderPath :Text) -> (videoList :VideoList);
     getVideoInfo @1 (filePath :Text) -> (videoInfo :VideoInfo);
 }
 

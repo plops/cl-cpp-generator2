@@ -75,7 +75,8 @@ kj::Promise<void> VideoArchiveImpl::getVideoInfo(GetVideoInfoContext context) {
 }
 
 kj::Promise<void> VideoArchiveImpl::getVideoList(GetVideoListContext context) {
-    auto collect_videos = [](const path& p) {
+    auto collect_videos = [](const string& ps) {
+        path p{ps};
         map<size_t, path> res;
         try {
             for (const auto& entry : recursive_directory_iterator(p))
@@ -94,7 +95,9 @@ kj::Promise<void> VideoArchiveImpl::getVideoList(GetVideoListContext context) {
     cout << "VideoArchiveImpl::getVideoList" << endl;
 
     // auto dir = "/mnt6/b";
-    auto dir = "/mnt5/tmp/bb";
+    // auto dir = "/mnt5/tmp/bb";
+    auto dir = context.getParams().getFolderPath();
+
     const auto videos = collect_videos(dir);
 
     auto   builder   = kj::heap<capnp::MallocMessageBuilder>();

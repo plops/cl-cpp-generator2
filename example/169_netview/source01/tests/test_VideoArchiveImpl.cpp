@@ -35,7 +35,7 @@ protected:
     unique_ptr<VideoArchive::Client> connection{};
 };
 
-TEST_F(VideoArchiveBaseTest, StartServerClient_VideoList_ResultCorrect) {
+TEST_F(VideoArchiveBaseTest, StartServerClient_VideoInfo_ResultCorrect) {
     auto request   = connection->getVideoInfoRequest();
     auto videoPath = videoDir + "sonic.webm";
     request.setFilePath(videoPath);
@@ -46,7 +46,7 @@ TEST_F(VideoArchiveBaseTest, StartServerClient_VideoList_ResultCorrect) {
     ASSERT_EQ(videoInfo.getFileSize(), 2006194);
 };
 
-TEST_F(VideoArchiveBaseTest, StartServerClient_VideoList2_ResultCorrect) {
+TEST_F(VideoArchiveBaseTest, StartServerClient_VideoInfo2_ResultCorrect) {
     auto request   = connection->getVideoInfoRequest();
     auto videoPath = videoDir + "ring.webm";
     request.setFilePath(videoPath);
@@ -55,4 +55,13 @@ TEST_F(VideoArchiveBaseTest, StartServerClient_VideoList2_ResultCorrect) {
     auto  videoInfo = response.getVideoInfo();
     ASSERT_EQ(videoInfo.getFilePath(), videoPath);
     ASSERT_EQ(videoInfo.getFileSize(), 1716911);
+};
+
+TEST_F(VideoArchiveBaseTest, StartServerClient_VideoList_ResultCorrect) {
+    auto request   = connection->getVideoListRequest();
+    request.setFolderPath(videoDir);
+    auto& waitScope{server->getWaitScope()};
+    auto  response  = request.send().wait(waitScope);
+    auto  videoList = response.getVideoList();
+    ASSERT_EQ(videoList.getVideos().size(), 2);
 };
