@@ -35,7 +35,7 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
     cout << versionStr << endl;
 
     av::init();
-    // if (debug) { av::setFFmpegLoggingLevel(AV_LOG_DEBUG); }
+    if (debug) { av::setFFmpegLoggingLevel(AV_LOG_DEBUG); }
     ctx = make_unique<av::FormatContext>();
     ctx->openInput(uri, ec);
     if (ec) {
@@ -193,4 +193,11 @@ std::vector<VideoDecoder::KeyFrameInfo>& VideoDecoder::collectKeyFrames() {
         packetCount++;
     }
     return keyFrames;
+}
+
+bool VideoDecoder::forEachPacket(function<bool(const av::Packet&)> callback) {
+    while ((pkt = ctx->readPacket(ec)))
+        if (!callback(pkt))
+            return false;
+    return true;
 }

@@ -42,6 +42,15 @@ public:
 
     std::vector<KeyFrameInfo>& collectKeyFrames();
 
+    /**
+     * \brief Process each packet using the callback
+     *
+     * \note If the callback returns false, the packet processing will be stopped early
+     *
+     * \return true if all packets were processed, false if bailed out early
+     */
+    bool forEachPacket(function<bool(const av::Packet&)> callback);
+
 private:
     std::unique_ptr<av::FormatContext> ctx;
     av::Stream                         vst;
