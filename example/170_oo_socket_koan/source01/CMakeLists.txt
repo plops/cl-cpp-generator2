@@ -63,6 +63,11 @@ if (ENABLE_LSAN)
     add_link_options(-fsanitize=leak)
 endif ()
 
+option(STATIC_LINK "Link statically" ON)
+if (STATIC_LINK)
+    add_compile_options(-static)
+    add_link_options(-static)
+endif ()
 
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -76,9 +81,10 @@ else ()
             -ffunction-sections
             -fdata-sections
             -Wpadded
-            -march=znver2
+            -march=znver3
+            -mtune=znver3
     )
-    #    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     add_link_options(
             #  -Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map
             #-Wl,-gc-sections,--print-gc-sections

@@ -1,5 +1,6 @@
 #include <ISocket.h>
 #include <TCPSocket.h>
+#include <UDPSocket.h>
 #include <iostream>
 #include <memory>
 
@@ -17,7 +18,7 @@ int main(int argc, char *argv[]) {
   if (protocolChoice == "tcp") {
     currentSocket = make_unique<TCPSocket>();
   } else if (protocolChoice == "udp") {
-    // currentSocket = make_unique<UDPSocket>();
+    currentSocket = make_unique<UDPSocket>();
   } else {
     perror("Unknown protocol choice");
     return EXIT_FAILURE;
@@ -28,6 +29,7 @@ int main(int argc, char *argv[]) {
   cin >> port;
 
   if (!currentSocket->open(port)) {
+    perror("Failed to open socket");
     return EXIT_FAILURE;
   }
 

@@ -4,8 +4,8 @@
 
 #ifndef ISOCKET_H
 #define ISOCKET_H
-#include <string>
 #include <cstdint>
+#include <string>
 
 class ISocket {
 public:
