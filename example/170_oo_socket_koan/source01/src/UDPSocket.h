@@ -9,7 +9,7 @@ extern "C" {
 }
 #include "ISocket.h"
 
-class UDPSocket : public ISocket {
+class UDPSocket final : public ISocket {
 public:
   ~UDPSocket() override;
   bool open(uint16_t port) override;

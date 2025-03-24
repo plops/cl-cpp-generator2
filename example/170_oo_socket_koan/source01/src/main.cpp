@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
     perror("Too few arguments");
     return EXIT_FAILURE;
   }
-  string protocolChoice = argv[1];
+  const string protocolChoice = argv[1];
 
   unique_ptr<ISocket> currentSocket;
 
@@ -43,8 +43,8 @@ int main(int argc, char *argv[]) {
     if (!currentSocket->send(message)) {
       perror("Send failed");
     } else if (command == "receive") {
-      string receivedData = currentSocket->receive();
-      if (!receivedData.empty()) {
+      if (const string receivedData = currentSocket->receive();
+          !receivedData.empty()) {
         cout << "Received: " << receivedData << endl;
       }
     } else if (command != "close") {

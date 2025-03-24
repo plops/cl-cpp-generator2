@@ -9,7 +9,7 @@ extern "C" {
 }
 #include "ISocket.h"
 
-class TCPSocket : public ISocket {
+class TCPSocket final : public ISocket {
 public:
   ~TCPSocket() override;
   bool open(uint16_t port) override;

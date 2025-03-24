@@ -16,7 +16,7 @@ UDPSocket::~UDPSocket() {
     sockfd = -1;
   }
 }
-bool UDPSocket::open(uint16_t port) {
+bool UDPSocket::open(const uint16_t port) {
   sockfd = ::socket(AF_INET, SOCK_DGRAM, 0);
   if (sockfd == -1) {
     perror("UDPSocket creation failed");
@@ -25,7 +25,7 @@ bool UDPSocket::open(uint16_t port) {
   serverAddress.sin_family = AF_INET;
   serverAddress.sin_addr.s_addr = INADDR_ANY;
   serverAddress.sin_port = htons(port);
-  if (::bind(sockfd, reinterpret_cast<const struct sockaddr *>(&serverAddress),
+  if (::bind(sockfd, reinterpret_cast<const sockaddr *>(&serverAddress),
              sizeof(serverAddress)) == -1) {
     perror("UDPSocket bind failed");
     ::close(sockfd);
@@ -45,7 +45,7 @@ bool UDPSocket::send(const std::string &data) {
     perror("client address length is 0");
     return false;
   }
-  auto bytesSent =
+  const auto bytesSent =
       ::sendto(sockfd, data.data(), data.size(), 0,
                reinterpret_cast<const struct sockaddr *>(&clientAddress),
                clientAddressLength);
@@ -56,9 +56,9 @@ bool UDPSocket::send(const std::string &data) {
   return true;
 }
 std::string UDPSocket::receive() {
-  array<char, 1024> buffer{0};
+  array<char, 1024> buffer{};
   clientAddressLength = sizeof(clientAddress); // Reest length each time
-  auto bytesReceived =
+  const auto bytesReceived =
       ::recvfrom(sockfd, buffer.data(), buffer.size() - 1, 0,
                  reinterpret_cast<struct sockaddr *>(&clientAddress),
                  &clientAddressLength);
@@ -67,5 +67,5 @@ std::string UDPSocket::receive() {
     return "";
   }
   buffer[bytesReceived] = '\0';
-  return string(buffer.begin(), buffer.begin() + bytesReceived);
+  return {buffer.begin(), buffer.begin() + bytesReceived};
 }

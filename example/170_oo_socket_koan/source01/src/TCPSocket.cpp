@@ -18,7 +18,7 @@ TCPSocket::~TCPSocket() {
     sockfd = -1;
   }
 }
-bool TCPSocket::open(uint16_t port) {
+bool TCPSocket::open(const uint16_t port) {
   sockfd = ::socket(AF_INET, SOCK_STREAM, 0);
   if (-1 == sockfd) {
     perror("socket creation failed");
@@ -28,7 +28,7 @@ bool TCPSocket::open(uint16_t port) {
   serverAddress.sin_addr.s_addr = INADDR_ANY; // Bind to all interfaces
   serverAddress.sin_port = htons(port);
 
-  if (-1 == ::bind(sockfd, reinterpret_cast<struct sockaddr *>(&serverAddress),
+  if (-1 == ::bind(sockfd, reinterpret_cast<sockaddr *>(&serverAddress),
                    sizeof(serverAddress))) {
     perror("bind failed");
     ::close(sockfd);
@@ -51,12 +51,12 @@ void TCPSocket::close() {
   }
 }
 bool TCPSocket::send(const std::string &data) {
-  int clientSockfd = ::accept(sockfd, nullptr, nullptr);
+  const int clientSockfd = ::accept(sockfd, nullptr, nullptr);
   if (-1 == clientSockfd) {
     perror("accept failed");
     return false;
   }
-  auto bytesSent = ::send(clientSockfd, data.c_str(), data.size(), 0);
+  const auto bytesSent = ::send(clientSockfd, data.c_str(), data.size(), 0);
   ::close(clientSockfd); // close connection after sending
   if (-1 == bytesSent) {
     perror("send failed");
@@ -65,13 +65,13 @@ bool TCPSocket::send(const std::string &data) {
   return true;
 }
 std::string TCPSocket::receive() {
-  auto clientSockfd = ::accept(sockfd, nullptr, nullptr);
+  const auto clientSockfd = ::accept(sockfd, nullptr, nullptr);
   if (-1 == clientSockfd) {
     perror("accept failed");
     return "";
   }
-  array<char, 1024> buffer{0};
-  auto bytesReceived =
+  array<char, 1024> buffer{};
+  const auto bytesReceived =
       ::recv(clientSockfd, buffer.data(), buffer.size() - 1, 0);
   ::close(clientSockfd);
   if (-1 == bytesReceived) {
