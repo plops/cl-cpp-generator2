@@ -4,11 +4,10 @@
 
 #ifndef TCPSOCKET_H
 #define TCPSOCKET_H
-#include "ISocket.h"
-#include <cstdint>
-// extern "C" {
+extern "C" {
 #include <netinet/in.h>
-// }
+}
+#include "ISocket.h"
 
 class TCPSocket : public ISocket {
 public:

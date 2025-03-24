@@ -7,13 +7,12 @@
 #include <string>
 
 extern "C" {
-#include <sys/socket.h>
 #include <unistd.h>
 }
 
 using namespace std;
 
-TCPSocket::~TCPSocket() override {
+TCPSocket::~TCPSocket() {
   if (-1 != sockfd) {
     ::close(sockfd);
     sockfd = -1;
