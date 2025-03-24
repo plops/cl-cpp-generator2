@@ -18,7 +18,7 @@ TCPSocket::~TCPSocket() {
     sockfd = -1;
   }
 }
-bool TCPSocket::open(int port) {
+bool TCPSocket::open(uint16_t port) {
   sockfd = ::socket(AF_INET, SOCK_STREAM, 0);
   if (-1 == sockfd) {
     perror("socket creation failed");

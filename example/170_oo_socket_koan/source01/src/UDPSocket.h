@@ -12,16 +12,16 @@ extern "C" {
 class UDPSocket : public ISocket {
 public:
   ~UDPSocket() override;
-  bool open(int port) override;
+  bool open(uint16_t port) override;
   void close() override;
   bool send(const std::string &data) override;
   std::string receive() override;
 
 private:
-  int sockfd;
-  sockaddr_in serverAddress;
-  sockaddr_in clientAddress;
-  socklen_t clientAddressLength;
+  int sockfd{-1};
+  sockaddr_in serverAddress{};
+  sockaddr_in clientAddress{};
+  socklen_t clientAddressLength{0};
 };
 
 #endif // UDPSOCKET_H

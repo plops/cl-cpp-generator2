@@ -12,14 +12,15 @@ extern "C" {
 class TCPSocket : public ISocket {
 public:
   ~TCPSocket() override;
-  bool open(int port) override;
+  bool open(uint16_t port) override;
   void close() override;
   bool send(const std::string &data) override;
   std::string receive() override;
 
 private:
-  int sockfd;
-  sockaddr_in serverAddress;
+  int sockfd{-1};
+  sockaddr_in serverAddress{};
+  int padding{0};
 };
 
 #endif // TCPSOCKET_H

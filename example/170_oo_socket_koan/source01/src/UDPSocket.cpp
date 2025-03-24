@@ -16,7 +16,7 @@ UDPSocket::~UDPSocket() {
     sockfd = -1;
   }
 }
-bool UDPSocket::open(int port) {
+bool UDPSocket::open(uint16_t port) {
   sockfd = ::socket(AF_INET, SOCK_DGRAM, 0);
   if (sockfd == -1) {
     perror("UDPSocket creation failed");

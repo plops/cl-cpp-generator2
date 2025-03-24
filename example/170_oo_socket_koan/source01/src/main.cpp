@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
   }
 
   cout << "Enter port: " << endl;
-  int port;
+  uint16_t port;
   cin >> port;
 
   if (!currentSocket->open(port)) {
