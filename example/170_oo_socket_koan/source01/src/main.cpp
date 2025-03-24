@@ -39,6 +39,7 @@ int main(int argc, char *argv[]) {
     string message;
     cout << "Enter message: " << endl;
     cin >> message;
+    cout << "Sending: " << message << "..." << endl;
     if (!currentSocket->send(message)) {
       perror("Send failed");
     } else if (command == "receive") {

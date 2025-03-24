@@ -32,6 +32,7 @@ endif ()
 set(SOURCE_FILES
         src/main.cpp
         src/TCPSocket.cpp
+        src/UDPSocket.cpp
 )
 
 # AddressSanitizer
