@@ -167,11 +167,14 @@ void fun2() {
 
   cout << "Pool<NormalArray<int>>" << endl;
   auto p2 = Pool<NormalArray<int>>(3,[](){return NormalArray<int>(7);});
-  auto qqq = p2.next();
+  // auto qqq = p2.next();
   // qqq.data()[1] = 3;
-  cout << "qqq " << qqq.aref(1) << endl;
+  // cout << "qqq " << qqq.aref(1) << endl;
 
-  // IPool<NormalArray<uint8_t>>* pool = new Pool<NormalArray<uint8_t>>(8);
+  cout << "Ptr IPool<NormalArray<float>>" << endl;
+
+  IPool<IArray<float>>* pool = new Pool<NormalArray<float>>(2,[](){return NormalArray<float>(3);});
+  delete pool;
 }
 int main(int argc, char *argv[]) {
   // cout << fun() << endl;
