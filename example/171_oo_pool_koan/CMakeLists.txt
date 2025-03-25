@@ -31,6 +31,8 @@ endif ()
 
 set(SOURCE_FILES
         src/main.cpp
+        src/GrayscaleImage.cpp
+        src/FixedSizeImagePool.cpp
 )
 
 # AddressSanitizer

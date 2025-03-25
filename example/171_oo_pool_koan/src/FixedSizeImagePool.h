@@ -18,13 +18,13 @@ public:
     void    releaseImage(IImage* image) override;
 
 private:
-    size_t                     capacity_;
-    int                        width_;
-    int                        height_;
-    unique_ptr<GrayscaleImage> images_;
-    vector<bool>               available_;
-    mutex                      mutex_;
-    condition_variable         cv_;
+    int                          width_;
+    int                          height_;
+    size_t                       capacity_;
+    unique_ptr<GrayscaleImage[]> images_{nullptr};
+    vector<bool>                 available_;
+    mutex                        mutex_;
+    condition_variable           cv_;
 };
 
 
