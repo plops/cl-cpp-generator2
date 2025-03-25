@@ -79,6 +79,7 @@ else ()
     #    set(CMAKE_UNITY_BUILD true)
     #    set(CMAKE_UNITY_BUILD_BATCH_SIZE 90)
     add_compile_options(
+            -O0 -fuse-ld=mold
             -ffunction-sections
             -fdata-sections
             -Wpadded
