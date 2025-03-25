@@ -49,7 +49,7 @@ template <typename T>
 class IPool {
   public:
   virtual ~IPool() noexcept(false) = default;
-  virtual T& next() = 0;
+  virtual T* next() = 0;
 };
 
 template <typename C>
@@ -117,7 +117,7 @@ private:
 template <typename T>
 class Pool final : public IPool<T> {
   public:
-  explicit Pool(size_t capacity, function<T()> element_creator =[](){cout << "Default Pool Filler"  << endl; return T();}) {
+  explicit Pool(size_t capacity, function<unique_ptr<T>()> element_creator =[](){cout << "Default Pool Filler"  << endl; return make_unique<T>();}) {
     cout << "Pool created" << endl;
     vec.reserve(capacity);
     for (size_t i = 0; i < capacity; ++i) {
@@ -128,13 +128,13 @@ class Pool final : public IPool<T> {
   ~Pool() noexcept(false) override {
     cout << "Pool destroyed" << endl;
   };
-  T& next() override {
+  T* next() override {
     if constexpr (std::is_same_v<T, float> || std::is_same_v<T, int>) {
       cout << "Pool next idx=" << current-vec.begin() << " val=" << *current <<  endl;
     } else {
-      cout << "Pool next idx=" << current-vec.begin() << " array=[" << current->aref(0) << "," << current->aref(1) << "...]" << endl;
+      cout << "Pool next idx=" << current-vec.begin() << " array=[" << (current->get()->aref(0)) << "," << (current->get()->aref(1)) << "...]" << endl;
     }
-    auto& val = *current;
+    auto* val = current->get();
     ++current;
     if (current == vec.end()) {
       current = vec.begin();
@@ -142,7 +142,7 @@ class Pool final : public IPool<T> {
     return val;
   }
 private:
-  vector<T> vec;
+  vector<unique_ptr<T>> vec;
   decltype(vec.begin()) current;
 };
 
@@ -159,21 +159,21 @@ void fun2() {
   auto p1 = Pool<float>(3);
   auto q= p1.next();
   cout << q << endl;
-  q=3.13f;
-  cout << q << endl;
+  *q=3.13f;
+  cout << *q << endl;
   auto qq = p1.next();
-  cout << qq << endl;
-  qq = 3.2f;
+  cout << *qq << endl;
+  *qq = 3.2f;
 
   cout << "Pool<NormalArray<int>>" << endl;
-  auto p2 = Pool<NormalArray<int>>(3,[](){return NormalArray<int>(7);});
+  auto p2 = Pool<NormalArray<int>>(3,[](){return make_unique<NormalArray<int>>(7);});
   // auto qqq = p2.next();
   // qqq.data()[1] = 3;
   // cout << "qqq " << qqq.aref(1) << endl;
 
   cout << "Ptr IPool<NormalArray<float>>" << endl;
 
-  IPool<IArray<float>>* pool = new Pool<NormalArray<float>>(2,[](){return NormalArray<float>(3);});
+  IPool<IArray<float>>* pool = new Pool<NormalArray<float>>(2,[](){return make_unique<NormalArray<float>>(3);});
   delete pool;
 }
 int main(int argc, char *argv[]) {
