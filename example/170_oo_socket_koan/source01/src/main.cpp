@@ -129,11 +129,11 @@ class Pool final : public IPool<T> {
     cout << "Pool destroyed" << endl;
   };
   T* next() override {
-    if constexpr (std::is_same_v<T, float> || std::is_same_v<T, int>) {
-      cout << "Pool next idx=" << current-vec.begin() << " val=" << *current <<  endl;
-    } else {
-      cout << "Pool next idx=" << current-vec.begin() << " array=[" << (current->get()->aref(0)) << "," << (current->get()->aref(1)) << "...]" << endl;
-    }
+    // if constexpr (std::is_same_v<T, float> || std::is_same_v<T, int>) {
+    //   cout << "Pool next idx=" << current-vec.begin() << " val=" << *current <<  endl;
+    // } else {
+    //   cout << "Pool next idx=" << current-vec.begin() << " array=[" << (current->get()->aref(0)) << "," << (current->get()->aref(1)) << "...]" << endl;
+    // }
     auto* val = current->get();
     ++current;
     if (current == vec.end()) {
@@ -180,6 +180,9 @@ int main(int argc, char *argv[]) {
   // cout << fun() << endl;
   fun2();
   return 0;
+}
+/*
+{
   if (argc < 2) {
     perror("Too few arguments");
     return EXIT_FAILURE;
@@ -229,3 +232,4 @@ int main(int argc, char *argv[]) {
   currentSocket->close();
   return EXIT_SUCCESS;
 }
+*/

@@ -95,6 +95,8 @@ endif ()
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
+add_executable(main2 src/main2.cpp)
+
 add_executable(
         ${PROJECT_NAME}
         ${SOURCE_FILES}
