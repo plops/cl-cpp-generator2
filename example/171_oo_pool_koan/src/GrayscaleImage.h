@@ -10,7 +10,7 @@
 using namespace std;
 class GrayscaleImage : public IImage {
 public:
-    GrayscaleImage(int width, int height);
+    GrayscaleImage(int width = 128, int height = 64);
     ~GrayscaleImage() override;
     int      getWidth() const override;
     int      getHeight() const override;

@@ -5,10 +5,9 @@
 #include "FixedSizeImagePool.h"
 #include <iostream>
 FixedSizeImagePool::FixedSizeImagePool(size_t capacity, int width, int height) :
-    width_{width}, height_{height}, capacity_{capacity},
-//images_{make_unique<GrayscaleImage[]>(capacity)},
-images_{new GrayscaleImage[]{{1,2},{3,4}}},
-    available_(capacity_, true) {}
+    width_{width}, height_{height}, capacity_{capacity}, images_{make_unique<GrayscaleImage[]>(capacity)},
+    available_(capacity_, true) {
+}
 FixedSizeImagePool::~FixedSizeImagePool() {}
 IImage* FixedSizeImagePool::acquireImage() {
     unique_lock lock{mutex_};
@@ -23,7 +22,7 @@ IImage* FixedSizeImagePool::acquireImage() {
         cv_.wait(lock); // wait for an image to become available
     }
 }
-void    FixedSizeImagePool::releaseImage(IImage* image) {
+void FixedSizeImagePool::releaseImage(IImage* image) {
     lock_guard lock{mutex_};
     for (size_t i = 0; i < capacity_; ++i) {
         if (&images_[i] == image) {
@@ -33,5 +32,4 @@ void    FixedSizeImagePool::releaseImage(IImage* image) {
         }
     }
     cerr << "Error: Image not found in pool." << endl;
-
 }
