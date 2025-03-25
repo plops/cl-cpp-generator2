@@ -36,14 +36,14 @@ set(SOURCE_FILES
 )
 
 # AddressSanitizer
-option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(ENABLE_ASAN "Enable AddressSanitizer" ON)
 if (ENABLE_ASAN)
     add_compile_options(-fsanitize=address)
     add_link_options(-fsanitize=address)
 endif ()
 
 # UndefinedBehaviorSanitizer
-option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
+option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" ON)
 if (ENABLE_UBSAN)
     add_compile_options(-fsanitize=undefined)
     add_link_options(-fsanitize=undefined)
@@ -57,13 +57,13 @@ if (ENABLE_TSAN)
 endif ()
 
 # LeakSanitizer
-option(ENABLE_LSAN "Enable LeakSanitizer" OFF)
+option(ENABLE_LSAN "Enable LeakSanitizer" ON)
 if (ENABLE_LSAN)
     add_compile_options(-fsanitize=leak)
     add_link_options(-fsanitize=leak)
 endif ()
 
-option(STATIC_LINK "Link statically" ON)
+option(STATIC_LINK "Link statically" OFF)
 if (STATIC_LINK)
     add_compile_options(-static)
     add_link_options(-static)
@@ -83,6 +83,7 @@ else ()
             -Wpadded
             -march=znver3
             -mtune=znver3
+            -fuse-ld=mold
     )
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     add_link_options(

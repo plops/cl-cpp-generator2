@@ -6,6 +6,7 @@
 
 #include <array>
 #include <vector>
+#include <functional>
 using namespace std;
 
 template <typename T = uint8_t> class IPointer {
@@ -88,14 +89,17 @@ template <typename T>
 class NormalArray final : public IArray<T> {
 public:
   using value_type = T;
-  explicit NormalArray(size_t capacity)
+  explicit NormalArray(size_t capacity = 1024)
   : capacity_{capacity}, array{new T[capacity_]} {
+    cout << "Normal array created" << endl;
     fill(array, array + capacity_, value_type(0));
   }
   ~NormalArray() override {
+    cout << "Normal array destroyed" << endl;
     delete[] array;
   }
   T aref(size_t index) override {
+    cout << "NormalArray::aref " << index << endl;
     if (index<capacity_)
       return array[index];
     return static_cast<T>(0);
@@ -113,16 +117,23 @@ private:
 template <typename T>
 class Pool final : public IPool<T> {
   public:
-  explicit Pool(size_t capacity) {
+  explicit Pool(size_t capacity, function<T()> element_creator =[](){cout << "Default Pool Filler"  << endl; return T();}) {
     cout << "Pool created" << endl;
-    vec.resize(capacity);
+    vec.reserve(capacity);
+    for (size_t i = 0; i < capacity; ++i) {
+      vec.emplace_back(element_creator());
+    }
     current = vec.begin();
   }
   ~Pool() noexcept(false) override {
     cout << "Pool destroyed" << endl;
   };
   T& next() override {
-    cout << "Pool next idx=" << current-vec.begin() << " val=" << *current <<  endl;
+    if constexpr (std::is_same_v<T, float> || std::is_same_v<T, int>) {
+      cout << "Pool next idx=" << current-vec.begin() << " val=" << *current <<  endl;
+    } else {
+      cout << "Pool next idx=" << current-vec.begin() << " array=[" << current->aref(0) << "," << current->aref(1) << "...]" << endl;
+    }
     auto& val = *current;
     ++current;
     if (current == vec.end()) {
@@ -148,12 +159,17 @@ void fun2() {
   auto p1 = Pool<float>(3);
   auto q= p1.next();
   cout << q << endl;
-  q=3.13;
+  q=3.13f;
   cout << q << endl;
   auto qq = p1.next();
   cout << qq << endl;
-  qq = 3.2;
+  qq = 3.2f;
 
+  cout << "Pool<NormalArray<int>>" << endl;
+  auto p2 = Pool<NormalArray<int>>(3,[](){return NormalArray<int>(7);});
+  auto qqq = p2.next();
+  // qqq.data()[1] = 3;
+  cout << "qqq " << qqq.aref(1) << endl;
 
   // IPool<NormalArray<uint8_t>>* pool = new Pool<NormalArray<uint8_t>>(8);
 }
