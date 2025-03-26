@@ -5,26 +5,29 @@
 #ifndef ARRAYITERATOR_H
 #define ARRAYITERATOR_H
 
-#include "IArrayIterator.h"
-
 template <typename T>
-class ArrayIterator : public IArrayIterator<T> {
+class ArrayIterator {
 public:
-    ArrayIterator(IArrayIterator<T>::PointerType ptr);
-    IArrayIterator<T>::ReferenceType operator*() const override;
-    IArrayIterator<T>&               operator++() override;
-    bool                             operator!=(const ArrayIterator<T>& other) const;
+    using ValueType     = T;
+    using PointerType   = T*;
+    using ReferenceType = T&;
+    ArrayIterator(PointerType ptr);
+    ReferenceType     operator*() const;
+    ArrayIterator<T>& operator++();
+    bool              operator!=(const ArrayIterator<T>& other) const;
 
 private:
-    IArrayIterator<T>::PointerType current;
+    PointerType current;
 };
 
 template <typename T>
-ArrayIterator<T>::ArrayIterator(IArrayIterator<T>::PointerType ptr) : current{ptr} {}
+ArrayIterator<T>::ArrayIterator(PointerType ptr) : current{ptr} {}
 template <typename T>
-typename IArrayIterator<T>::ReferenceType ArrayIterator<T>::operator*() const { return *current; }
+typename ArrayIterator<T>::ReferenceType ArrayIterator<T>::operator*() const {
+    return *current;
+}
 template <typename T>
-IArrayIterator<T>& ArrayIterator<T>::operator++() {
+ArrayIterator<T>& ArrayIterator<T>::operator++() {
     ++current;
     return *this;
 }

@@ -6,20 +6,17 @@
 #define ARRAY_H
 
 #include <memory>
-#include "ArrayIterator.h"
 #include "IArray.h"
-#include "IArrayIterator.h"
 template <typename T>
 class Array : public IArray<T> {
 public:
-    using ValueType = T;
     explicit Array(size_t size);
     ~Array() noexcept(false) override;
     T                aref(size_t index) override;
     T*               data() override;
     size_t           size() override;
-    ArrayIterator<T> begin();
-    ArrayIterator<T> end();
+    ArrayIterator<T> begin() override;
+    ArrayIterator<T> end() override;
 
 private:
     size_t               _size;
