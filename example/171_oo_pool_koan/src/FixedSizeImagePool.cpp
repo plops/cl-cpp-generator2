@@ -5,14 +5,14 @@
 #include "FixedSizeImagePool.h"
 #include <iostream>
 FixedSizeImagePool::FixedSizeImagePool(size_t capacity, const int width, const int height) :
-    width_{width}, height_{height}, capacity_{capacity}, images_{[this]() {
-        const int w= width_;
+    width_{width}, height_{height}, capacity_{capacity}, images_{[this,width]() {
+        const int w= width;
         const int h= height_;
         class FixedSizeGrayscaleImage : public GrayscaleImage {
         public:
-            FixedSizeGrayscaleImage() : GrayscaleImage(w, h) {}
+            FixedSizeGrayscaleImage() : GrayscaleImage(width, h) {}
         };
-        return make_unique<FixedSizeGrayscaleImage[]>(capacity_)
+        return make_unique<FixedSizeGrayscaleImage[]>(capacity_);
     }},
     available_(capacity_, true) {}
 FixedSizeImagePool::~FixedSizeImagePool() {}
