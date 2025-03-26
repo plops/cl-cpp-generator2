@@ -16,5 +16,9 @@ int main() {
         cout <<"Released image: "<<i<<endl;
     }
 
+    auto a = make_unique<int[]>(30);
+    auto b = new int[10](2);
+    cout << b[0] << endl;
+    delete [] b;
     return 0;
 }
