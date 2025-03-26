@@ -27,8 +27,8 @@ int main() {
     cout << c[0].getHeight() << endl; // 13
     delete [] c;
 
-    int defaultWidth = 12;
-    int defaultHeight = 13;
+    const int defaultWidth = 12;
+    const int defaultHeight = 13;
     class DefaultGrayscaleImage : public GrayscaleImage {
         public:
         DefaultGrayscaleImage() :GrayscaleImage(defaultWidth,defaultHeight) {}
