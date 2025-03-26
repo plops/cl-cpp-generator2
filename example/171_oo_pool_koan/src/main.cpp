@@ -18,10 +18,11 @@ int main() {
 
     auto a = make_unique<int[]>(30);
     auto b = new int[10](2);
-    cout << b[0] << endl;
+    cout << b[0] << endl; // 2
+    cout << b[1] << endl; // 0 should be 2
     delete [] b;
 
-auto c = new GrayscaleImage[5](12,13);
+    auto c = new GrayscaleImage[5](12,13);
     cout << c[0].getHeight() << endl; //  this prints 64 (i want it to print 13)
     delete [] c;
 
