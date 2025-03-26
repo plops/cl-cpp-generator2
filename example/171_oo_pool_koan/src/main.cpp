@@ -27,5 +27,14 @@ int main() {
     cout << c[0].getHeight() << endl; // 13
     delete [] c;
 
+    class DefaultGrayscaleImage : public GrayscaleImage {
+        public:
+        DefaultGrayscaleImage() :GrayscaleImage(12,13){}
+    };
+    auto d = new DefaultGrayscaleImage[5];
+    cout << d[0].getWidth() << endl; // 12
+    cout << d[2].getWidth() << endl; // 12 .. this works
+    delete [] d;
+
     return 0;
 }
