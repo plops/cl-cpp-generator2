@@ -13,7 +13,7 @@ public:
     ArrayIterator(IArrayIterator<T>::PointerType ptr);
     IArrayIterator<T>::ReferenceType operator*() const override;
     IArrayIterator<T>&               operator++() override;
-    bool                             operator!=(const IArrayIterator<T>& other) const override;
+    bool                             operator!=(const ArrayIterator<T>& other) const;
 
 private:
     IArrayIterator<T>::PointerType current;
@@ -29,7 +29,7 @@ IArrayIterator<T>& ArrayIterator<T>::operator++() {
     return *this;
 }
 template <typename T>
-bool ArrayIterator<T>::operator!=(const IArrayIterator<T>& other) const {
+bool ArrayIterator<T>::operator!=(const ArrayIterator<T>& other) const {
     return current != other.current;
 }
 #endif // ARRAYITERATOR_H

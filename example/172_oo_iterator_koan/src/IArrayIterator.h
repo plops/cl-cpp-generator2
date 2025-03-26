@@ -16,7 +16,7 @@ public:
 
     virtual ReferenceType operator*() const = 0; // Dereference operator to access the element
     virtual IArrayIterator& operator++() = 0; // Pre-increment
-    virtual bool operator!=(const IArrayIterator& other) const = 0; // Inequality comparison
+    // virtual bool operator!=(const ArrayIterator& other) const = 0; // Inequality comparison
 };
 
 #endif // IARRAYITERATOR_H
