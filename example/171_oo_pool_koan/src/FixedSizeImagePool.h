@@ -18,9 +18,9 @@ public:
     void    releaseImage(IImage* image) override;
 
 private:
-    int                          width_;
-    int                          height_;
-    size_t                       capacity_;
+    const int                    width_;
+    const int                    height_;
+    const size_t                 capacity_;
     unique_ptr<GrayscaleImage[]> images_{nullptr};
     vector<bool>                 available_;
     mutex                        mutex_;

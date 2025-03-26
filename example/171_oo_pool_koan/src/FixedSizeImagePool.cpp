@@ -4,10 +4,17 @@
 
 #include "FixedSizeImagePool.h"
 #include <iostream>
-FixedSizeImagePool::FixedSizeImagePool(size_t capacity, int width, int height) :
-    width_{width}, height_{height}, capacity_{capacity}, images_{make_unique<GrayscaleImage[]>(capacity)},
-    available_(capacity_, true) {
-}
+FixedSizeImagePool::FixedSizeImagePool(size_t capacity, const int width, const int height) :
+    width_{width}, height_{height}, capacity_{capacity}, images_{[this]() {
+        const int w= width_;
+        const int h= height_;
+        class FixedSizeGrayscaleImage : public GrayscaleImage {
+        public:
+            FixedSizeGrayscaleImage() : GrayscaleImage(w, h) {}
+        };
+        return make_unique<FixedSizeGrayscaleImage[]>(capacity_)
+    }},
+    available_(capacity_, true) {}
 FixedSizeImagePool::~FixedSizeImagePool() {}
 IImage* FixedSizeImagePool::acquireImage() {
     unique_lock lock{mutex_};

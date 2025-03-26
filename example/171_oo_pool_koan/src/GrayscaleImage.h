@@ -17,8 +17,8 @@ public:
     uint8_t* getData() override;
 
 private:
-    int                   width_;
-    int                   height_;
+    const int             width_;
+    const int             height_;
     unique_ptr<uint8_t[]> data_{nullptr};
 };
 #endif // GRAYSCALEIMAGE_H
