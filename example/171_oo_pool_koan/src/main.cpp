@@ -17,9 +17,10 @@ int main() {
     }
 
     auto a = make_unique<int[]>(30);
-    auto b = new int[10](2);
+    auto b = new int[10]({2},{2});
     cout << b[0] << endl; // 2
-    cout << b[1] << endl; // 0 should be 2
+    cout << b[1] << endl; // 2
+    cout << b[9] << endl; // 0 should be 2
     delete [] b;
 
     auto c = new GrayscaleImage[5](12,13);
