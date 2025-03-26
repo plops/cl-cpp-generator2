@@ -38,5 +38,9 @@ int main() {
     cout << d[2].getWidth() << endl; // 12 .. this works
     delete [] d;
 
+    auto e = make_unique<DefaultGrayscaleImage[]>(5);
+    cout << e[0].getWidth() << endl; // 12
+    cout << e[2].getWidth() << endl; // 12
+
     return 0;
 }
