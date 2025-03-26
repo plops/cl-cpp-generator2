@@ -20,5 +20,10 @@ int main() {
     auto b = new int[10](2);
     cout << b[0] << endl;
     delete [] b;
+
+auto c = new GrayscaleImage[5](12,13);
+    cout << c[0].getHeight() << endl; //  this prints 64 (i want it to print 13)
+    delete [] c;
+
     return 0;
 }
