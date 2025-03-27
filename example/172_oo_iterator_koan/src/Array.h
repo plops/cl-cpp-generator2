@@ -23,10 +23,14 @@ public:
 private:
     size_t               _size;
     std::unique_ptr<T[]> _data;
+    std::unique_ptr<IArrayIterator<T>> _iteratorBegin;
+    std::unique_ptr<IArrayIterator<T>> _iteratorEnd;
 };
 
 template <typename T, class TIterator>
-Array<T, TIterator>::Array(size_t size) : _size{size}, _data{std::make_unique<T[]>(size)} {}
+Array<T, TIterator>::Array(size_t size) : _size{size}, _data{std::make_unique<T[]>(size)},
+_iteratorBegin{std::make_unique<ArrayIterator<T>>(_data.get())},
+_iteratorEnd{std::make_unique<ArrayIterator<T>>(_data.get()+_size)}{}
 template <typename T, class TIterator>
 Array<T, TIterator>::~Array() noexcept(false) {}
 template <typename T, class TIterator>
@@ -43,14 +47,10 @@ size_t Array<T, TIterator>::size() {
 }
 template <typename T, class TIterator>
 TIterator Array<T, TIterator>::begin() {
-    TIterator iter;
-    iter.setCurrent(_data.get());
-    return iter;
+    return *_iteratorBegin.get();
 }
 template <typename T, class TIterator>
 TIterator Array<T, TIterator>::end() {
-    TIterator iter;
-    iter.setCurrent(_data.get()+_size);
-    return iter;
+    return *_iteratorEnd.get();
 }
 #endif // ARRAY_H
