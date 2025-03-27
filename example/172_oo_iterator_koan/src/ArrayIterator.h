@@ -14,8 +14,9 @@ public:
     using ReferenceType = T&;
     ArrayIterator(PointerType ptr);
     ReferenceType     operator*() const override;
-    ArrayIterator<T>& operator++() override;
+    IArrayIterator<T>& operator++() override;
     PointerType       getCurrent() const override;
+    void               setCurrent(PointerType) override;
     bool              operator!=(const IArrayIterator<T>& other) const override;
 
 private:
@@ -29,13 +30,17 @@ typename ArrayIterator<T>::ReferenceType ArrayIterator<T>::operator*() const {
     return *current;
 }
 template <typename T>
-ArrayIterator<T>& ArrayIterator<T>::operator++() {
+IArrayIterator<T>& ArrayIterator<T>::operator++() {
     ++current;
     return *this;
 }
 template <typename T>
 typename ArrayIterator<T>::PointerType ArrayIterator<T>::getCurrent() const {
     return current;
+}
+template <typename T>
+void ArrayIterator<T>::setCurrent(PointerType ptr) {
+    current = ptr;
 }
 
 template <typename T>

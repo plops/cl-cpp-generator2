@@ -10,13 +10,13 @@ int main(int argc, char *argv[]) {
     std::vector<int> q(3);
     auto vv = q.begin();
     int count = 0;
-    for (auto &i : a) {
-        count ++;
-        i=count;
-        cout << i << endl;
-    }
-    for (auto &i : a) {
-        cout << i << endl;
-    }
+    // for (auto &i : a) {
+    //     count ++;
+    //     i=count;
+    //     cout << i << endl;
+    // }
+    // for (auto &i : a) {
+    //     cout << i << endl;
+    // }
     return 0;
 }
