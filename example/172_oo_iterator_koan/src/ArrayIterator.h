@@ -13,11 +13,11 @@ public:
     using PointerType   = T*;
     using ReferenceType = T&;
     ArrayIterator(PointerType ptr);
-    ReferenceType     operator*() const override;
+    ReferenceType      operator*() const override;
     IArrayIterator<T>& operator++() override;
-    PointerType       getCurrent() const override;
+    PointerType        getCurrent() const override;
     void               setCurrent(PointerType) override;
-    bool              operator!=(const IArrayIterator<T>& other) const override;
+    bool               operator!=(const IArrayIterator<T>& other) const override;
 
 private:
     PointerType current;

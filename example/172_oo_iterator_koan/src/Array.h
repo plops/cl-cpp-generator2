@@ -9,7 +9,7 @@
 #include "IArray.h"
 #include "IArrayIterator.h"
 
-template <typename T, class TIterator = IArrayIterator<T>>
+template <typename T, class TIterator = ArrayIterator<T>>
 class Array : public IArray<T, TIterator> {
 public:
     explicit Array(size_t size);
@@ -21,16 +21,16 @@ public:
     TIterator end() override;
 
 private:
-    size_t               _size;
-    std::unique_ptr<T[]> _data;
-    std::unique_ptr<IArrayIterator<T>> _iteratorBegin;
-    std::unique_ptr<IArrayIterator<T>> _iteratorEnd;
+    size_t                             _size;
+    std::unique_ptr<T[]>               _data;
+    std::unique_ptr<ArrayIterator<T>> _iteratorBegin;
+    std::unique_ptr<ArrayIterator<T>> _iteratorEnd;
 };
 
 template <typename T, class TIterator>
-Array<T, TIterator>::Array(size_t size) : _size{size}, _data{std::make_unique<T[]>(size)},
-_iteratorBegin{std::make_unique<ArrayIterator<T>>(_data.get())},
-_iteratorEnd{std::make_unique<ArrayIterator<T>>(_data.get()+_size)}{}
+Array<T, TIterator>::Array(size_t size) :
+    _size{size}, _data{std::make_unique<T[]>(size)}, _iteratorBegin{std::make_unique<ArrayIterator<T>>(_data.get())},
+    _iteratorEnd{std::make_unique<ArrayIterator<T>>(_data.get() + _size)} {}
 template <typename T, class TIterator>
 Array<T, TIterator>::~Array() noexcept(false) {}
 template <typename T, class TIterator>
