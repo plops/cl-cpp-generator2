@@ -241,7 +241,8 @@ if (NO_LIBS)
             PUBLIC
             __STDC_CONSTANT_MACROS # needed for avcpp
     )
-    target_link_directories(${PROJECT_NAME} PRIVATE /home/martin/ffmpeg/lib)
+#    target_link_directories(${PROJECT_NAME} PRIVATE /home/martin/ffmpeg/lib)
+    include(/home/martin/stage/cl-cpp-generator2/example/169_netview/source01/cmake/ffmpeg.cmake)
     target_link_libraries(
             ${PROJECT_NAME}
             PRIVATE

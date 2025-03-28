@@ -1,10 +1,10 @@
-set(ffmpeg /home/martin/src/ffmpeg-6.1.2)
-set(libavutil_asm ${ffmpeg}/libavutil/x86)
-set(libavutil_c ${ffmpeg}/libavutil)
-set(libavcodec_asm ${ffmpeg}/libavcodec/x86)
-set(libavcodec_c ${ffmpeg}/libavcodec)
-set(libavformat_c ${ffmpeg}/libavformat)
-set(libavdevice_c ${ffmpeg}/libavdevice)
+set(ffmpeg_src /home/martin/src/ffmpeg-6.1.2/)
+set(libavutil_asm ${ffmpeg_src}/libavutil/x86)
+set(libavutil_c ${ffmpeg_src}/libavutil)
+set(libavcodec_asm ${ffmpeg_src}/libavcodec/x86)
+set(libavcodec_c ${ffmpeg_src}/libavcodec)
+set(libavformat_c ${ffmpeg_src}/libavformat)
+set(libavdevice_c ${ffmpeg_src}/libavdevice)
 
 
 set(avutil_asm
@@ -1191,3 +1191,14 @@ set(avdevice_c
         ${libavdevice_c}/utils.c
         ${libavdevice_c}/avdevice.c
 )
+
+add_library(avdevice ${avdevice_c})
+add_library(avcodec ${avcodec_c} ${avcodec_asm})
+add_library(avformat ${avformat_c})
+add_library(avutil ${avutil_c} ${avutil_asm})
+
+target_include_directories(avdevice PRIVATE ${libavdevice_c} ${ffmpeg_src})
+target_include_directories(avcodec PRIVATE ${libavcodec_c}  ${ffmpeg_src})
+target_include_directories(avutil PRIVATE ${libavutil_c} ${ffmpeg_src})
+target_include_directories(avformat PRIVATE ${libavformat_c} ${ffmpeg_src})
+
