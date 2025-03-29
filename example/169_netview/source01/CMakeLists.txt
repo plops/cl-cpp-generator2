@@ -78,13 +78,15 @@ endif ()
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
-            -Og -g -g3 -ggdb -gdwarf-4
+            -O0
+            -g -ggdb -ggdb3 -gdwarf-5
+            -fvar-tracking-assignments
     )
 else ()
     #    set(CMAKE_UNITY_BUILD true)
     #    set(CMAKE_UNITY_BUILD_BATCH_SIZE 90)
     add_compile_options(
-            -O0 -fuse-ld=mold
+            -O3 -fuse-ld=mold
             -ffunction-sections
             -fdata-sections
             -Wpadded

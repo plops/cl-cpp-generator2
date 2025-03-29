@@ -66,5 +66,25 @@ TEST_F(VideoDecoderBaseTest, ShortVideo_DecodeFirstPacket_Success) {
     ASSERT_FALSE(ec);
     Packet pkt{buffer.data(), buffer.size(), Packet::wrap_data_static{}};
     auto frame = vdec.decode(pkt);
+}
 
+
+
+
+TEST_F(VideoDecoderBaseTest, ShortVideo_TraceCustomIO_Success) {
+
+    ASSERT_EQ(dec.initialize(videoDir + "ring.webm"), 1);
+    int             count = 0;
+    vector<uint8_t> buffer;
+    auto            cb = [&](const av::Packet& pkt) {
+        if (count == 1) return false;
+        if (pkt.data()) {
+            buffer.resize(pkt.size());
+            copy_n(pkt.data(), pkt.size(), buffer.begin());
+        }
+        count++;
+        return true;
+    };
+    ASSERT_FALSE(dec.forEachPacket(cb));
+    KJ_DBG("first packet", count, buffer.size());
 }
