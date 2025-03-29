@@ -1197,9 +1197,7 @@ add_library(avcodec ${avcodec_c} ${avcodec_asm})
 add_library(avformat ${avformat_c})
 add_library(avutil ${avutil_c} ${avutil_asm})
 
-target_compile_definitions(
-        avcodec
-        PRIVATE
+set(av_definitions
         _ISOC99_SOURCE
         _FILE_OFFSET_BITS=64
         _LARGEFILE_SOURCE
@@ -1207,15 +1205,60 @@ target_compile_definitions(
         _XOPEN_SOURCE=600
         PIC
         HAVE_AV_CONFIG_H
+)
+set(av_options
+        -std=c11
+)
+target_compile_definitions(
+        avcodec
+        PRIVATE
+        ${av_definitions}
         BUILDING_avcodec
 )
 target_compile_options(avcodec
         PRIVATE
-        -std=c11
+        ${av_options}
 )
 
-target_include_directories(avdevice PUBLIC ${libavdevice_c} ${ffmpeg_src})
-target_include_directories(avcodec PUBLIC ${libavcodec_c}  ${ffmpeg_src})
-target_include_directories(avutil PUBLIC ${libavutil_c} ${ffmpeg_src})
-target_include_directories(avformat PUBLIC ${libavformat_c} ${ffmpeg_src})
+target_compile_definitions(
+        avformat
+        PRIVATE
+        ${av_definitions}
+        BUILDING_avformat
+)
+target_compile_options(avformat
+        PRIVATE
+        ${av_options}
+)
+
+#-D_ISOC99_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600 -DPIC -DHAVE_AV_CONFIG_H -DBUILDING_avutil -std=c11
+
+target_compile_definitions(
+        avutil
+        PRIVATE
+        ${av_definitions}
+        BUILDING_avutil
+)
+target_compile_options(avutil
+        PRIVATE
+        ${av_options}
+)
+
+target_include_directories(avdevice PUBLIC
+        ${libavdevice_c}
+        ${ffmpeg_src}
+)
+target_include_directories(avcodec PUBLIC
+        ${libavcodec_c}
+        ${ffmpeg_src}
+)
+target_include_directories(avutil PUBLIC
+        ${libavutil_c}
+        ${ffmpeg_src}
+        ${libavutil_c}/x86
+)
+target_include_directories(avformat PUBLIC
+        ${libavformat_c}
+        ${ffmpeg_src}
+)
 
