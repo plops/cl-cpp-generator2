@@ -6,6 +6,8 @@
 #define TRACEIO_H
 
 #include <avcpp/formatcontext.h>
+#include <fstream>
+
 
 /*
  * @param opaque An opaque pointer to user-specific data.
@@ -30,7 +32,7 @@
  */
 class TraceIO final : public av::CustomIO {
 public:
-    TraceIO(const std::string& uri_): uri{uri_} {}
+    explicit TraceIO(const std::string& uri_);
     ~TraceIO() {}
     int         write(const uint8_t* data, size_t size) override;
     int         read(uint8_t* data, size_t size) override;
@@ -39,6 +41,7 @@ public:
     const char* name() const override;
 private:
     std::string uri;
+    std::ifstream inputStream;
 };
 
 #endif // TRACEIO_H
