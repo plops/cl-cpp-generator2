@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bashF
 
  FORMATS="h264,vp9,av1"
  DEMUXERS="matroska,av1,h264"

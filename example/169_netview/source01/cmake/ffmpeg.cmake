@@ -17,8 +17,8 @@ set(avutil_asm
 )
 
 set(avcodec_asm
-        ${libavcodec_asm}/videodsp.asm
-        ${libavcodec_asm}/h264_idct_10bit.asm
+#        ${libavcodec_asm}/videodsp.asm
+#        ${libavcodec_asm}/h264_idct_10bit.asm
         ${libavcodec_asm}/vp9intrapred.asm
         ${libavcodec_asm}/h264_weight.asm
         ${libavcodec_asm}/vp9lpf.asm
@@ -103,7 +103,7 @@ set(avutil_c
         ${libavutil_c}/fifo.c
         ${libavutil_c}/integer.c
         ${libavutil_c}/x86/imgutils_init.c
-        ${libavutil_c}/x86/cpu.c
+        #${libavutil_c}/x86/cpu.c
         ${libavutil_c}/x86/fixed_dsp_init.c
         ${libavutil_c}/x86/lls_init.c
         ${libavutil_c}/x86/float_dsp_init.c
@@ -1193,9 +1193,15 @@ set(avdevice_c
 )
 
 add_library(avdevice ${avdevice_c})
-add_library(avcodec ${avcodec_c} ${avcodec_asm})
+add_library(avcodec
+        ${avcodec_c}
+#        ${avcodec_asm}
+)
 add_library(avformat ${avformat_c})
-add_library(avutil ${avutil_c} ${avutil_asm})
+add_library(avutil
+        ${avutil_c}
+#        ${avutil_asm}
+)
 
 set(av_definitions
         _ISOC99_SOURCE
@@ -1253,9 +1259,9 @@ target_include_directories(avcodec PUBLIC
         ${ffmpeg_src}
 )
 target_include_directories(avutil PUBLIC
-        ${libavutil_c}
+        #${libavutil_c}
         ${ffmpeg_src}
-        ${libavutil_c}/x86
+        #${libavutil_c}/x86
 )
 target_include_directories(avformat PUBLIC
         ${libavformat_c}
