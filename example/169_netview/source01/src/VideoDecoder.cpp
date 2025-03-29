@@ -38,7 +38,7 @@ bool VideoDecoder::initialize(const string& uri, bool traceIO, bool debug) {
     if (debug) { av::setFFmpegLoggingLevel(AV_LOG_DEBUG); }
         ctx = make_unique<av::FormatContext>();
         if (traceIO) {
-            customIO = make_unique<TraceIO>();
+            customIO = make_unique<TraceIO>(uri);
             ctx->openInput(customIO.get(), uri, ec);
         } else {
             ctx->openInput(uri, ec);

@@ -25,16 +25,20 @@
     int (*write_packet)(void *opaque, const uint8_t *buf, int buf_size),
 #endif
     int64_t (*seek)(void *opaque, int64_t offset, int whence));
+
+    *opaque is set to this by avcpp
  */
 class TraceIO final : public av::CustomIO {
 public:
-    TraceIO() {}
+    TraceIO(const std::string& uri_): uri{uri_} {}
     ~TraceIO() {}
     int         write(const uint8_t* data, size_t size) override;
     int         read(uint8_t* data, size_t size) override;
     int64_t     seek(int64_t offset, int whence) override;
     int         seekable() const override;
     const char* name() const override;
+private:
+    std::string uri;
 };
 
 #endif // TRACEIO_H

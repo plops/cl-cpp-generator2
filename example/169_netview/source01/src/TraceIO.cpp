@@ -7,17 +7,17 @@
 using namespace std;
 
 int TraceIO::write(const uint8_t* data, size_t size) {
-    cout << "write" << endl;
+    cout << "write " << uri << endl;
     return CustomIO::write(data, size);
 }
 
 int TraceIO::read(uint8_t* data, size_t size) {
-    cout << "read" << endl;
+    cout << "read " << uri << " " << size << endl;
     return CustomIO::read(data, size);
 }
 
 int64_t TraceIO::seek(int64_t offset, int whence) {
-    cout << "seek" << endl;
+    cout << "seek " << uri << " " << offset << endl;
     return CustomIO::seek(offset, whence);
 }
 
