@@ -9,7 +9,7 @@
 #include <iostream>
 #include <map>
 #include "Histogram.h"
-
+#include "TraceIO.h"
 
 /*
  * Main components
@@ -26,7 +26,7 @@
 
 using namespace std;
 
-bool VideoDecoder::initialize(const string& uri, bool debug) {
+bool VideoDecoder::initialize(const string& uri, bool traceIO, bool debug) {
     cout << "Initializing video decoder " << endl;
     auto version    = avformat_version();
     auto versionStr = format("libavformat: {}.{}.{}", AV_VERSION_MAJOR(version), AV_VERSION_MINOR(version),
@@ -37,7 +37,12 @@ bool VideoDecoder::initialize(const string& uri, bool debug) {
     av::init();
     if (debug) { av::setFFmpegLoggingLevel(AV_LOG_DEBUG); }
         ctx = make_unique<av::FormatContext>();
-        ctx->openInput(uri, ec);
+        if (traceIO) {
+            customIO = make_unique<TraceIO>();
+            ctx->openInput(customIO.get(), uri, ec);
+        } else {
+            ctx->openInput(uri, ec);
+        }
         if (ec) {
                 cerr << "Error opening input file " << uri << " " << ec.message() << endl;
                 return false;

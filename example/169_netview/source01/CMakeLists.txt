@@ -35,10 +35,11 @@ endif ()
 set(SOURCE_FILES src/main.cpp
         src/VideoArchiveImpl.cpp
         src/VideoDecoder.cpp
-        src/VideoDecoder.h
-        src/Histogram.h
+        src/TraceIO.cpp
+#        src/VideoDecoder.h
+#        src/Histogram.h
         src/DurationComputer.cpp
-        src/DurationComputer.h
+#        src/DurationComputer.h
 )
 
 # AddressSanitizer
@@ -331,6 +332,7 @@ if (ENABLE_VID_TESTS)
             ${videoSources}
             #            ${SOURCE_FILES}
             src/VideoDecoder.cpp
+            src/TraceIO.cpp
             src/DurationComputer.cpp
             src/VideoArchiveImpl.cpp
             ${capnp_sources_lite}

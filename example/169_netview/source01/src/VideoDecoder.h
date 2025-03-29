@@ -15,13 +15,13 @@
 using namespace std;
 class VideoDecoder {
 public:
-    VideoDecoder()  = default;
+    VideoDecoder() = default;
     /** @brief initialize avformat, start parsing video file
      *
      * @param uri filename for a video file
      * @return success
      */
-    bool initialize(const std::string& uri, bool debug = false);
+    bool initialize(const std::string& uri, bool traceIO = false, bool debug = false);
 
     void computeStreamStatistics(bool debug = true);
 
@@ -61,6 +61,7 @@ private:
     ssize_t                            videoStream{-1};
     bool                               isInitialized{false};
     std::vector<KeyFrameInfo>          keyFrames;
+    std::unique_ptr<av::CustomIO>      customIO{nullptr};
 };
 
 

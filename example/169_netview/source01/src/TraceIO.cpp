@@ -10,7 +10,21 @@ int TraceIO::write(const uint8_t* data, size_t size) {
     cout << "write" << endl;
     return CustomIO::write(data, size);
 }
-int         TraceIO::read(uint8_t* data, size_t size) { return CustomIO::read(data, size); }
-int64_t     TraceIO::seek(int64_t offset, int whence) { return CustomIO::seek(offset, whence); }
-int         TraceIO::seekable() const { return CustomIO::seekable(); }
-const char* TraceIO::name() const { return CustomIO::name(); }
+
+int TraceIO::read(uint8_t* data, size_t size) {
+    cout << "read" << endl;
+    return CustomIO::read(data, size);
+}
+
+int64_t TraceIO::seek(int64_t offset, int whence) {
+    cout << "seek" << endl;
+    return CustomIO::seek(offset, whence);
+}
+
+int TraceIO::seekable() const {
+    auto res = AVIO_SEEKABLE_NORMAL;
+    // res |= AVIO_SEEKABLE_TIME;
+    return res;
+}
+
+const char* TraceIO::name() const { return "TraceIO"; }

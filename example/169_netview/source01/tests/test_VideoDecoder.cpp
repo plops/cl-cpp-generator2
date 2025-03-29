@@ -73,7 +73,7 @@ TEST_F(VideoDecoderBaseTest, ShortVideo_DecodeFirstPacket_Success) {
 
 TEST_F(VideoDecoderBaseTest, ShortVideo_TraceCustomIO_Success) {
 
-    ASSERT_EQ(dec.initialize(videoDir + "ring.webm"), 1);
+    ASSERT_EQ(dec.initialize(videoDir + "ring.webm", true), 1);
     int             count = 0;
     vector<uint8_t> buffer;
     auto            cb = [&](const av::Packet& pkt) {
