@@ -69,6 +69,11 @@ if (ENABLE_LSAN)
     add_link_options(-fsanitize=leak)
 endif ()
 
+option(ENABLE_STATIC "Enable Static build (incompatible with sanitizers)" OFF)
+if (ENABLE_STATIC)
+    add_compile_options(-static)
+    add_link_options(-static)
+endif ()
 
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -208,9 +213,8 @@ set(AV_SOURCES
         ${avcpp_root}/./codecparameters.cpp
 )
 if (NO_LIBS)
-    message("Building with static linkage and with direct avcpp sources (as opposed to linking with libavcpp)")
-    add_compile_options(-static)
-    add_link_options(-static)
+    message("Building with direct avcpp sources (as opposed to linking with libavcpp)")
+
     set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
     set(CMAKE_PREFIX_PATH "/home/martin/vulkan")
     set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -241,7 +245,7 @@ if (NO_LIBS)
             PUBLIC
             __STDC_CONSTANT_MACROS # needed for avcpp
     )
-#    target_link_directories(${PROJECT_NAME} PRIVATE /home/martin/ffmpeg/lib)
+    #    target_link_directories(${PROJECT_NAME} PRIVATE /home/martin/ffmpeg/lib)
     include(/home/martin/stage/cl-cpp-generator2/example/169_netview/source01/cmake/ffmpeg.cmake)
     target_link_libraries(
             ${PROJECT_NAME}
@@ -323,7 +327,7 @@ if (ENABLE_VID_TESTS)
             ${test_sources}
             ${AV_SOURCES}
             ${videoSources}
-#            ${SOURCE_FILES}
+            #            ${SOURCE_FILES}
             src/VideoDecoder.cpp
             src/DurationComputer.cpp
             src/VideoArchiveImpl.cpp

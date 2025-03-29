@@ -60,7 +60,7 @@ TEST_F(VideoDecoderBaseTest, ShortVideo_DecodeFirstPacket_Success) {
     error_code          ec;
     VideoDecoderContext vdec;
     Stream              vst;
-    auto                codec = av::findDecodingCodec("h264");
+    auto                codec = av::findDecodingCodec("vp9");
     vdec                      = VideoDecoderContext{codec};
     vdec.open(ec);
     ASSERT_FALSE(ec);
