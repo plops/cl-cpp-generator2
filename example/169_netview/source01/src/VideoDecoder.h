@@ -5,10 +5,15 @@
 #ifndef VIDEODECODER_H
 #define VIDEODECODER_H
 
-// #include <avcpp/ffmpeg.h>
+#ifdef NO_LIBS
+#include <codec.h>
+#include <codeccontext.h>
+#include <formatcontext.h>
+#else
 #include <avcpp/codec.h>
 #include <avcpp/codeccontext.h>
 #include <avcpp/formatcontext.h>
+#endif
 #include <memory>
 #include <string>
 

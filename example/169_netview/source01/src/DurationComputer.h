@@ -4,8 +4,12 @@
 
 #ifndef DURATIONCOMPUTER_H
 #define DURATIONCOMPUTER_H
-#include <avcpp/timestamp.h>
 
+#ifdef NO_LIBS
+#include <timestamp.h>
+#else
+#include <avcpp/timestamp.h>
+#endif
 
 /**
  * @brief Insert timestamps, with the second one this class returns the duration between consecutive timestamps

@@ -5,7 +5,12 @@
 #ifndef TRACEIO_H
 #define TRACEIO_H
 
+#ifdef NO_LIBS
+#include <formatcontext.h>
+#else
 #include <avcpp/formatcontext.h>
+#endif
+
 #include <fstream>
 
 

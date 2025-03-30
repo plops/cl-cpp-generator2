@@ -3,9 +3,13 @@
 //
 
 #include "VideoDecoder.h"
-#include <avcpp/av.h>
 #include "DurationComputer.h"
-// #include <format.h>
+#ifdef NO_LIBS
+#include <av.h>
+#else
+#include <avcpp/av.h>
+#endif
+
 #include <iostream>
 #include <map>
 #include "Histogram.h"
