@@ -21,6 +21,13 @@ protected:
     VideoDecoder dec{};
 };
 
+TEST_F(VideoDecoderBaseTest, ShortVideo_CollectKeyFrameData_CountCorrect) {
+    auto r = dec.initialize(videoDir + "ring.webm", true);
+    ASSERT_EQ(r, 1);
+    auto kf = dec.collectKeyFrames();
+    ASSERT_EQ(kf.size(), 14);
+};
+
 TEST_F(VideoDecoderBaseTest, ShortVideo_CollectKeyFrames_CountCorrect) {
     auto r = dec.initialize(videoDir + "ring.webm");
     ASSERT_EQ(r, 1);
@@ -68,9 +75,6 @@ TEST_F(VideoDecoderBaseTest, ShortVideo_DecodeFirstPacket_Success) {
     auto frame = vdec.decode(pkt);
 }
 
-
-
-
 TEST_F(VideoDecoderBaseTest, ShortVideo_TraceCustomIO_Success) {
 
     ASSERT_EQ(dec.initialize(videoDir + "ring.webm", true), 1);
@@ -78,13 +82,11 @@ TEST_F(VideoDecoderBaseTest, ShortVideo_TraceCustomIO_Success) {
     vector<uint8_t> buffer;
     auto            cb = [&](const av::Packet& pkt) {
         if (count == 1) return false;
-        // if (pkt.data()) {
-        //     buffer.resize(pkt.size());
-        //     copy_n(pkt.data(), pkt.size(), buffer.begin());
-        // }
         count++;
         return true;
     };
     ASSERT_FALSE(dec.forEachPacket(cb));
     KJ_DBG("first packet", count, buffer.size());
 }
+
+

@@ -17,12 +17,12 @@ TraceIO::TraceIO(const std::string& uri_) :
     inputStream{uri, ios_base::binary} {}
 
 int TraceIO::write(const uint8_t* data, size_t size) {
-    cout << "write " << uri << endl;
+    cout << "TraceIO::write " << uri << endl << flush;
     return CustomIO::write(data, size);
 }
 
 int TraceIO::read(uint8_t* data, size_t size) {
-    cout << "read " << uri << " " << size << endl;
+    cout << "TraceIO::read " << uri << " " << size << endl << flush;
     inputStream.read(reinterpret_cast<char*>(data), size);
     return size;
 }
@@ -59,7 +59,7 @@ int TraceIO::read(uint8_t* data, size_t size) {
 // #define AVSEEK_FLAG_FRAME    8 ///< seeking based on frame numberc
 int64_t TraceIO::seek(int64_t offset, int whence) {
     whence &= ~AVSEEK_FORCE;
-    cout << "seek " << uri << " " << offset << " " << offset/1024/1024 << "MBytes, whence: " << whence << endl;
+    cout << "TraceIO::seek " << uri << " " << offset << " " << offset/1024/1024 << "MBytes, whence: " << whence << endl << flush;
     ios_base::seekdir seekDir{ios_base::beg};
     switch (whence) {
     case SEEK_CUR:
@@ -77,7 +77,7 @@ int64_t TraceIO::seek(int64_t offset, int whence) {
         return size;
     }
     default:
-        cout << "unknown whence " << whence << endl;
+        cout << "unknown whence " << whence << endl << flush;
         return -1;
         // throw std::runtime_error("unsupported whence");
     }
@@ -86,8 +86,9 @@ int64_t TraceIO::seek(int64_t offset, int whence) {
 }
 
 int TraceIO::seekable() const {
+    cout << "TraceIO::seekable" << endl << flush;
     auto res = AVIO_SEEKABLE_NORMAL;
-    // res |= AVIO_SEEKABLE_TIME;
+   // res |= AVIO_SEEKABLE_TIME;
     return res;
 }
 
