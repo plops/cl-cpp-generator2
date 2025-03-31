@@ -77,12 +77,12 @@ TEST_F(VideoDecoderBaseTest, ShortVideo_TraceCustomIO_Success) {
     int             count = 0;
     vector<uint8_t> buffer;
     auto            cb = [&](const av::Packet& pkt) {
-        // if (count == 1) return false;
+        if (count == 1) return false;
         // if (pkt.data()) {
         //     buffer.resize(pkt.size());
         //     copy_n(pkt.data(), pkt.size(), buffer.begin());
         // }
-        // count++;
+        count++;
         return true;
     };
     ASSERT_FALSE(dec.forEachPacket(cb));

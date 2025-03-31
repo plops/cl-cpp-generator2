@@ -40,8 +40,26 @@ int TraceIO::read(uint8_t* data, size_t size) {
  * This may be ignored by the seek code.
  */
 // #define AVSEEK_FORCE 0x20000
+
+// i'm not sure if the following flags can be in whence, i guess not
+/* If flags contain AVSEEK_FLAG_BYTE, then all timestamps are in bytes and
+ * are the file position (this may not be supported by all demuxers).
+ * If flags contain AVSEEK_FLAG_FRAME, then all timestamps are in frames
+ * in the stream with stream_index (this may not be supported by all demuxers).
+ * Otherwise all timestamps are in units of the stream selected by stream_index
+ * or if stream_index is -1, in AV_TIME_BASE units.
+ * If flags contain AVSEEK_FLAG_ANY, then non-keyframes are treated as
+ * keyframes (this may not be supported by all demuxers).
+ * If flags contain AVSEEK_FLAG_BACKWARD, it is ignored.
+ */
+//
+// #define AVSEEK_FLAG_BACKWARD 1 ///< seek backward
+// #define AVSEEK_FLAG_BYTE     2 ///< seeking based on position in bytes
+// #define AVSEEK_FLAG_ANY      4 ///< seek to any frame, even non-keyframes
+// #define AVSEEK_FLAG_FRAME    8 ///< seeking based on frame numberc
 int64_t TraceIO::seek(int64_t offset, int whence) {
-    cout << "seek " << uri << " " << offset << " whence: " << whence << endl;
+    whence &= ~AVSEEK_FORCE;
+    cout << "seek " << uri << " " << offset << " " << offset/1024/1024 << "MBytes, whence: " << whence << endl;
     ios_base::seekdir seekDir{ios_base::beg};
     switch (whence) {
     case SEEK_CUR:
@@ -60,7 +78,8 @@ int64_t TraceIO::seek(int64_t offset, int whence) {
     }
     default:
         cout << "unknown whence " << whence << endl;
-        throw std::runtime_error("unsupported whence");
+        return -1;
+        // throw std::runtime_error("unsupported whence");
     }
     inputStream.seekg(offset, seekDir);
     return offset;
