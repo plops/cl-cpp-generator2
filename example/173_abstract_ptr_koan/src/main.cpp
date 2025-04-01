@@ -39,3 +39,68 @@ protected:
     // Constructor for base class use only
     AbstractPtr() = default;
 };
+
+template <typename T>
+class UniquePtrWrapper : public AbstractPtr<T> {
+public:
+    explicit UniquePtrWrapper(unique_ptr<T> p):
+        ptr_{move(p)} {}
+
+    bool isValid() const override { return static_cast<bool>(ptr_); }
+    T*   get() const override { return ptr_.get(); }
+
+    T* operator->() const override {
+        assert(isValid() && "Attempting to access through null UniquePtrWrapper");
+        return ptr_.get();
+    }
+
+    T& operator*() const override {
+        assert(isValid() && "Attempting to dereference null UniquePtrWrapper");
+        return *ptr_;
+    }
+
+    ~UniquePtrWrapper() override = default;
+
+private:
+    unique_ptr<T> ptr_;
+};
+
+template <typename T>
+class SharedPtrWrapper : public AbstractPtr<T> {
+public:
+    explicit SharedPtrWrapper(shared_ptr<T> p) :
+        ptr_{move(p)} {}
+
+    bool isValid() const override { return static_cast<bool>(ptr_); }
+    T*   get() const override { ptr_.get(); }
+
+    T* operator->() const override {
+        assert(isValid() && "Attempting to access through null SharedPtrWrapper");
+        return ptr_.get();
+    }
+
+    T& operator*() const override {
+        assert(isValid() && "Attempting to dereference null SharedPtrWrapper");
+        return *get();
+    }
+
+    ~SharedPtrWrapper() override = default;
+
+private:
+    std::shared_ptr<T> ptr_;
+};
+
+void processWidget(const AbstractPtr<Widget>& abstractWidgetPtr) {
+    cout << "Processing via AbstractPtr: ";
+    if (abstractWidgetPtr.isValid()) { abstractWidgetPtr->display(); }
+}
+
+int main(int argc, char* argv[]) {
+    cout << "Koan start" << endl;
+
+    auto uniqueWidget = make_unique<Widget>(1,"Gizmo");
+    UniquePtrWrapper<Widget> uniqueWrapper(move(uniqueWidget));
+
+    processWidget(uniqueWrapper);
+    return 0;
+}
