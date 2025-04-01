@@ -131,3 +131,26 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+
+// Koan start
+// Widget 1 (Gizmo) created.
+// Processing via AbstractPtr: Widget ID: 1, Name: Gizmo
+// (Raw pointer: 0x504000000010)
+// Accessed via *: Widget ID 1
+// Widget 2 (Gadget) created.
+// Processing via AbstractPtr: Widget ID: 2, Name: Gadget
+// (Raw pointer: 0x506000000030)
+// Accessed via *: Widget ID 2
+// Processing via AbstractPtr: Pointer is null
+// Widget 3 (Thingamajig) created.
+// Widget 4 (Doodad) created.
+// Processing via AbstractPtr: Widget ID: 3, Name: Thingamajig
+// (Raw pointer: 0x504000000050)
+// Accessed via *: Widget ID 3
+// Processing via AbstractPtr: Widget ID: 4, Name: Doodad
+// (Raw pointer: 0x506000000090)
+// Accessed via *: Widget ID 4
+// Widget 3 (Thingamajig) destroyed.
+// Widget 4 (Doodad) destroyed.
+// Widget 2 (Gadget) destroyed.
+// Widget 1 (Gizmo) destroyed.
