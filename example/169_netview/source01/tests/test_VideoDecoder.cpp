@@ -21,12 +21,6 @@ protected:
     VideoDecoder dec{};
 };
 
-TEST_F(VideoDecoderBaseTest, ShortVideo_CollectKeyFrameData_CountCorrect) {
-    auto r = dec.initialize(videoDir + "ring.webm", true);
-    ASSERT_EQ(r, 1);
-    auto kf = dec.collectKeyFrames();
-    ASSERT_EQ(kf.size(), 14);
-};
 
 TEST_F(VideoDecoderBaseTest, ShortVideo_CollectKeyFrames_CountCorrect) {
     auto r = dec.initialize(videoDir + "ring.webm");
@@ -90,3 +84,10 @@ TEST_F(VideoDecoderBaseTest, ShortVideo_TraceCustomIO_Success) {
 }
 
 
+
+TEST_F(VideoDecoderBaseTest, ShortVideo_CollectKeyFrameData_CountCorrect) {
+    auto r = dec.initialize(videoDir + "ring.webm", true);
+    ASSERT_EQ(r, 1);
+    auto kf = dec.collectKeyFrames();
+    ASSERT_EQ(kf.size(), 14);
+};

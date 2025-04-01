@@ -3,8 +3,12 @@
 //
 
 #include "TraceIO.h"
+#define __cpp_lib_fstream_native_handle
 #include <filesystem>
 #include <iostream>
+extern "C" {
+#include <unistd.h> // lseek
+}
 using namespace std;
 using namespace std::filesystem;
 
@@ -58,8 +62,7 @@ int TraceIO::read(uint8_t* data, size_t size) {
 // #define AVSEEK_FLAG_ANY      4 ///< seek to any frame, even non-keyframes
 // #define AVSEEK_FLAG_FRAME    8 ///< seeking based on frame numberc
 int64_t TraceIO::seek(int64_t offset, int whence) {
-    whence &= ~AVSEEK_FORCE;
-    cout << "TraceIO::seek " << uri << " " << offset << " " << offset/1024/1024 << "MBytes, whence: " << whence << endl << flush;
+    if (whence & AVSEEK_FORCE) whence &= ~AVSEEK_FORCE;
     ios_base::seekdir seekDir{ios_base::beg};
     switch (whence) {
     case SEEK_CUR:
@@ -81,14 +84,26 @@ int64_t TraceIO::seek(int64_t offset, int whence) {
         return -1;
         // throw std::runtime_error("unsupported whence");
     }
-    inputStream.seekg(offset, seekDir);
-    return offset;
+    basic_filebuf<ifstream::char_type, ifstream::traits_type>* buf = inputStream.rdbuf();
+    int                                                        fd  = buf->native_handle();
+    auto                                                       res = lseek(fd, offset, whence);
+    cout << "TraceIO::seek " << uri << " " << offset << " " << offset / 1024 / 1024 << "MBytes, whence: " << whence
+         << " res=" << res << endl
+         << flush;
+
+    return res;
+    // inputStream.seekg(offset, seekDir);
+    // if (inputStream.failbit)
+    //     return -1;
+    // if (inputStream.eofbit)
+    //     return -1;
+    // return offset;
 }
 
 int TraceIO::seekable() const {
     cout << "TraceIO::seekable" << endl << flush;
     auto res = AVIO_SEEKABLE_NORMAL;
-   // res |= AVIO_SEEKABLE_TIME;
+    // res |= AVIO_SEEKABLE_TIME;
     return res;
 }
 

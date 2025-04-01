@@ -3,7 +3,7 @@ project(cxxnet_client CXX C ASM)
 
 option(NO_LIBS "Pull dependencies directly into project as source files" OFF)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED yes)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
