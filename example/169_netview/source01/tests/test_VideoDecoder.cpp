@@ -13,35 +13,40 @@ public:
     VideoDecoderBaseTest() {}
 
 protected:
-    void SetUp() final {}
+    void SetUp() final {
+        cout << "SetUp" << endl << flush;
+        dec = make_unique<VideoDecoder>();
+    }
     void TearDown() final {
-        // not needed
+        cout << "TearDown" << endl << flush;
+        dec.release();
+        dec=nullptr;
     }
     string       videoDir{"/home/martin/stage/cl-cpp-generator2/example/169_netview/source01/tests/"};
-    VideoDecoder dec{};
+    std::unique_ptr<VideoDecoder> dec{nullptr};
 };
 
 
 TEST_F(VideoDecoderBaseTest, ShortVideo_CollectKeyFrames_CountCorrect) {
-    auto r = dec.initialize(videoDir + "ring.webm");
+    auto r = dec->initialize(videoDir + "ring.webm");
     ASSERT_EQ(r, 1);
-    auto kf = dec.collectKeyFrames();
+    auto kf = dec->collectKeyFrames();
     ASSERT_EQ(kf.size(), 14);
 };
 
 TEST_F(VideoDecoderBaseTest, OtherShortVideo_CollectKeyFrames_CountCorrect) {
-    auto r = dec.initialize(videoDir + "sonic.webm");
+    auto r = dec->initialize(videoDir + "sonic.webm");
     ASSERT_EQ(r, 1);
-    auto kf = dec.collectKeyFrames();
+    auto kf = dec->collectKeyFrames();
     ASSERT_EQ(kf.size(), 21);
 };
 
-TEST_F(VideoDecoderBaseTest, WrongVideo_Open_Fails) { ASSERT_FALSE(dec.initialize("/dev/zero")); };
+TEST_F(VideoDecoderBaseTest, WrongVideo_Open_Fails) { ASSERT_FALSE(dec->initialize("/dev/zero")); };
 
-TEST_F(VideoDecoderBaseTest, NonexistingFile_Open_Fails) { ASSERT_FALSE(dec.initialize("/nonexistingfile")); };
+TEST_F(VideoDecoderBaseTest, NonexistingFile_Open_Fails) { ASSERT_FALSE(dec->initialize("/nonexistingfile")); };
 
 TEST_F(VideoDecoderBaseTest, ShortVideo_DecodeFirstPacket_Success) {
-    ASSERT_EQ(dec.initialize(videoDir + "ring.webm"), 1);
+    ASSERT_EQ(dec->initialize(videoDir + "ring.webm"), 1);
     int             count = 0;
     vector<uint8_t> buffer;
     auto            cb = [&](const av::Packet& pkt) {
@@ -53,7 +58,7 @@ TEST_F(VideoDecoderBaseTest, ShortVideo_DecodeFirstPacket_Success) {
         count++;
         return true;
     };
-    ASSERT_FALSE(dec.forEachPacket(cb));
+    ASSERT_FALSE(dec->forEachPacket(cb));
     KJ_DBG("first packet", count, buffer.size());
 
     using namespace av;
@@ -71,7 +76,7 @@ TEST_F(VideoDecoderBaseTest, ShortVideo_DecodeFirstPacket_Success) {
 
 TEST_F(VideoDecoderBaseTest, ShortVideo_TraceCustomIO_Success) {
 
-    ASSERT_EQ(dec.initialize(videoDir + "ring.webm", true), 1);
+    ASSERT_EQ(dec->initialize(videoDir + "ring.webm", false), 1);
     int             count = 0;
     vector<uint8_t> buffer;
     auto            cb = [&](const av::Packet& pkt) {
@@ -79,15 +84,15 @@ TEST_F(VideoDecoderBaseTest, ShortVideo_TraceCustomIO_Success) {
         count++;
         return true;
     };
-    ASSERT_FALSE(dec.forEachPacket(cb));
+    ASSERT_FALSE(dec->forEachPacket(cb));
     KJ_DBG("first packet", count, buffer.size());
 }
 
 
 
 TEST_F(VideoDecoderBaseTest, ShortVideo_CollectKeyFrameData_CountCorrect) {
-    auto r = dec.initialize(videoDir + "ring.webm", true);
+    auto r = dec->initialize(videoDir + "ring.webm", false);
     ASSERT_EQ(r, 1);
-    auto kf = dec.collectKeyFrames();
+    auto kf = dec->collectKeyFrames();
     ASSERT_EQ(kf.size(), 14);
 };

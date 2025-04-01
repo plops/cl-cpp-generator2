@@ -22,7 +22,7 @@ TraceIO::TraceIO(const std::string& uri_) :
 
 int TraceIO::write(const uint8_t* data, size_t size) {
     cout << "TraceIO::write " << uri << endl << flush;
-    return CustomIO::write(data, size);
+    return  CustomIO::write(data, size);
 }
 
 int TraceIO::read(uint8_t* data, size_t size) {
