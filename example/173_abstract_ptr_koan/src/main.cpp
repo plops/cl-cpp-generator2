@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <cassert>
+#include <vector>
 
 using namespace std;
 
@@ -98,9 +99,8 @@ void processWidget(const AbstractPtr<Widget>& abstractWidgetPtr) {
         cout << "(Raw pointer: " << abstractWidgetPtr.get() << ")" << endl;
         Widget& w = *abstractWidgetPtr;
         cout << "Accessed via *: Widget ID " << w.getId() << endl;
-    } else {
-        cout << "Pointer is null" << endl;
     }
+    else { cout << "Pointer is null" << endl; }
 }
 
 int main(int argc, char* argv[]) {
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 
     processWidget(uniqueWrapper);
 
-    auto sharedWidget = make_shared<Widget>(2, "Gadget");
+    auto                     sharedWidget = make_shared<Widget>(2, "Gadget");
     SharedPtrWrapper<Widget> sharedWrapper(sharedWidget);
 
     processWidget(sharedWrapper);
@@ -119,6 +119,14 @@ int main(int argc, char* argv[]) {
     UniquePtrWrapper<Widget> nullWrapper(nullptr);
 
     processWidget(nullWrapper);
+
+    // Demonstrate polymorphism with a vector
+
+    vector<unique_ptr<AbstractPtr<Widget>>> widgetPointers;
+
+    widgetPointers.push_back(make_unique<UniquePtrWrapper<Widget>>(make_unique<Widget>(3, "Thingamajig")));
+    widgetPointers.push_back(make_unique<SharedPtrWrapper<Widget>>(make_shared<Widget>(4, "Doodad")));
+    for (const auto& ptrWrapper : widgetPointers) { processWidget(*ptrWrapper); }
 
 
     return 0;
