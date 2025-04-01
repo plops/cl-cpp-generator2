@@ -16,6 +16,7 @@ public:
 
     virtual      ~Widget() { cout << "Widget " << id << " (" << name << ") destroyed." << endl; }
     virtual void display() const { cout << "Widget ID: " << id << ", Name: " << name << endl; }
+    int          getId() const { return id; }
 
 private:
     int    id;
@@ -72,7 +73,7 @@ public:
         ptr_{move(p)} {}
 
     bool isValid() const override { return static_cast<bool>(ptr_); }
-    T*   get() const override { ptr_.get(); }
+    T*   get() const override { return ptr_.get(); }
 
     T* operator->() const override {
         assert(isValid() && "Attempting to access through null SharedPtrWrapper");
@@ -92,15 +93,33 @@ private:
 
 void processWidget(const AbstractPtr<Widget>& abstractWidgetPtr) {
     cout << "Processing via AbstractPtr: ";
-    if (abstractWidgetPtr.isValid()) { abstractWidgetPtr->display(); }
+    if (abstractWidgetPtr.isValid()) {
+        abstractWidgetPtr->display();
+        cout << "(Raw pointer: " << abstractWidgetPtr.get() << ")" << endl;
+        Widget& w = *abstractWidgetPtr;
+        cout << "Accessed via *: Widget ID " << w.getId() << endl;
+    } else {
+        cout << "Pointer is null" << endl;
+    }
 }
 
 int main(int argc, char* argv[]) {
     cout << "Koan start" << endl;
 
-    auto uniqueWidget = make_unique<Widget>(1,"Gizmo");
+    auto                     uniqueWidget = make_unique<Widget>(1, "Gizmo");
     UniquePtrWrapper<Widget> uniqueWrapper(move(uniqueWidget));
 
     processWidget(uniqueWrapper);
+
+    auto sharedWidget = make_shared<Widget>(2, "Gadget");
+    SharedPtrWrapper<Widget> sharedWrapper(sharedWidget);
+
+    processWidget(sharedWrapper);
+
+    UniquePtrWrapper<Widget> nullWrapper(nullptr);
+
+    processWidget(nullWrapper);
+
+
     return 0;
 }
