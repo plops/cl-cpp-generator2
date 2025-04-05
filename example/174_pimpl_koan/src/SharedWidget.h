@@ -11,12 +11,12 @@
 class SharedWidget : public IWidget
 {
 public:
-  explicit SharedWidget(int start);
-  int add(int a, int b) override;
+    explicit SharedWidget(int start);
+    int add(int a, int b) override;
 
 private:
-  struct Impl;
-  std::shared_ptr<Impl> pImpl;
+    struct Impl;
+    std::shared_ptr<Impl> pImpl;
 };
 
 
