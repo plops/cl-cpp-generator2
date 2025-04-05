@@ -4,6 +4,7 @@
 
 #include "UniqueWidget.h"
 #include <memory>
+#include "Vec.h"
 using namespace std;
 
 
@@ -11,6 +12,13 @@ struct UniqueWidget::Impl
 {
     int start;
     unique_ptr<IContainer> container;
+    ~Impl() = default;
+
+    Impl(int start, unique_ptr<IContainer> container)
+        : start(start),
+          container(move(container))
+    {
+    }
 };
 
 
@@ -31,8 +39,13 @@ UniqueWidget::UniqueWidget(const UniqueWidget& other) // copy ctor
        pImpl{
           [&]()
           {
-              auto args = {other.pImpl->start, make_unique<IContainer>(*other.pImpl->container)};
-              return make_unique<Impl>(args);
+              // auto args = {other.pImpl->start, make_unique<IContainer>(*other.pImpl->container)};
+              // auto u = make_unique<Vec>(3);
+              // Impl* impl = new Impl(other.pImpl->start, move(u));
+              // unique_ptr<Impl> a = new Impl(other.pImpl->start, make_unique<IContainer>(*other.pImpl->container));
+
+              auto uv = make_unique<Vec>(3);
+              return make_unique<Impl>(other.pImpl->start, move(uv));
           }()
       }
 {
@@ -55,7 +68,8 @@ UniqueWidget& UniqueWidget::operator=(const UniqueWidget& other) // copy assign
 {
     if (this == &other)
         return *this;
-    IWidget::operator =(other);
+    // *pImpl = *other.pImpl;
+    // IWidget::operator =(other);
     pImpl->start = other.pImpl->start;
     *pImpl->container = *other.pImpl->container;
     return *this;
