@@ -3,6 +3,8 @@
 #include "SharedWidget.h"
 #include "UniqueWidget.h"
 #include <iostream>
+
+#include <array>
 using namespace std;
 
 int main(int argc, char* argv[]) {
@@ -11,5 +13,10 @@ int main(int argc, char* argv[]) {
 
     cout << w->add(1,2) << endl;
     cout << w2->add(1,2) << endl;
+
+    array<unique_ptr<IWidget>,2> a={make_unique<SharedWidget>(4), make_unique<UniqueWidget>(5)};
+
+    for (auto&& e : a)
+        cout << e->add(1,2) << endl;
     return 0;
 }
