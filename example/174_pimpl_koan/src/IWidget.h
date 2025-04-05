@@ -5,10 +5,11 @@
 #ifndef IWIDGET_H
 #define IWIDGET_H
 
-class IWidget {
+class IWidget
+{
 public:
-  ~IWidget() = default;
-  virtual int add(int a, int b);
+  virtual ~IWidget() = default;
+  virtual int add(int a, int b) = 0;
 };
 
 #endif //IWIDGET_H
