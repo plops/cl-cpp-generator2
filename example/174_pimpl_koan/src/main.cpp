@@ -23,11 +23,11 @@ int main(int argc, char* argv[]) {
 
     cout << w->add(1,2) << endl;
     w->insert(4);
-    // cout << w2->add(1,2) << endl;
+    cout << w2->add(1,2) << endl;
     //
-    // array<unique_ptr<IWidget>,2> a={make_unique<SharedWidget>(4,vv3), make_unique<UniqueWidget>(5,vv4)};
+    array<unique_ptr<IWidget>,2> a={make_unique<SharedWidget>(4,move(vv3)), make_unique<UniqueWidget>(5,move(vv4))};
     //
-    // for (auto&& e : a)
-    //     cout << e->add(1,2) << endl;
+    for (auto&& e : a)
+        cout << e->add(1,2) << endl;
     return 0;
 }

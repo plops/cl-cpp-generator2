@@ -44,8 +44,14 @@ UniqueWidget::UniqueWidget(const UniqueWidget& other) // copy ctor
               // Impl* impl = new Impl(other.pImpl->start, move(u));
               // unique_ptr<Impl> a = new Impl(other.pImpl->start, make_unique<IContainer>(*other.pImpl->container));
 
-              auto uv = make_unique<Vec>(3);
+              int n = other.pImpl->container->size();
+              auto uv = make_unique<Vec>(n);
+              for (int i=0;i<n;i++)
+                  (*uv)[i]  = (*other.pImpl->container)[i];
+              // auto uv = make_unique<Vec>(other.pImpl->container);
+
               return make_unique<Impl>(other.pImpl->start, move(uv));
+              // return make_unique<Impl>(other.pImpl->start, make_unique<IContainer>(*other.pImpl->container));
           }()
       }
 {

@@ -19,7 +19,12 @@ void Vec::resize(int n)
   v.resize(n);
 }
 
-float Vec::operator[](int idx)
+int Vec::size()
 {
-  return v.at(idx);
+  return v.size();
+}
+
+float& Vec::operator[](int idx)
+{
+  return v[idx];
 }

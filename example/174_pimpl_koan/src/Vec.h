@@ -14,7 +14,8 @@ public:
     explicit Vec(int n);
     void insert(float) override;
     void resize(int) override;
-    float operator[](int idx) override;
+    int size() override;
+    float& operator[](int idx) override;
 
 private:
     std::vector<float> v;
