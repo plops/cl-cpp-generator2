@@ -140,7 +140,7 @@ int main(int argc, char* argv[]) {
 // Widget 2 (Gadget) created.
 // Processing via AbstractPtr: Widget ID: 2, Name: Gadget
 // (Raw pointer: 0x506000000030)
-// Accessed via *: Widget ID 2
+// Accessed via *: Widget+ ID 2
 // Processing via AbstractPtr: Pointer is null
 // Widget 3 (Thingamajig) created.
 // Widget 4 (Doodad) created.
