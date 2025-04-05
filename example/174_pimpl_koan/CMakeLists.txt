@@ -95,7 +95,7 @@ add_executable(
 )
 add_library(
         Widget
-        src/Widget.cpp
+        src/SharedWidget.cpp
 )
 target_link_libraries(
         ${PROJECT_NAME}

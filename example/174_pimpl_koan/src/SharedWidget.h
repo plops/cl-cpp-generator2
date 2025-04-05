@@ -8,10 +8,10 @@
 #include <memory>
 #include "IWidget.h"
 
-class Widget : public IWidget
+class SharedWidget : public IWidget
 {
 public:
-  explicit Widget(int start);
+  explicit SharedWidget(int start);
   int add(int a, int b) override;
 
 private:
