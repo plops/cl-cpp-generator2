@@ -11,14 +11,20 @@ struct SharedWidget::Impl
     int b;
     float f;
     int start;
+    unique_ptr<IContainer> container;
 };
 
-SharedWidget::SharedWidget(int start_)
-    : pImpl(make_shared<Impl>(0, 0.0f, start_))
+SharedWidget::SharedWidget(int start_, unique_ptr<IContainer> container)
+    : pImpl(make_shared<Impl>(0, 0.0f, start_, move(container)))
 {
 }
 
 int SharedWidget::add(int a, int b)
 {
-    return a+b+pImpl->start;
+    return a + b + pImpl->start;
+}
+
+void SharedWidget::insert(float f)
+{
+    pImpl->container->insert(f);
 }

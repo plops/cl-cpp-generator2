@@ -92,6 +92,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 add_executable(
         ${PROJECT_NAME}
         src/main.cpp
+        src/Vec.cpp
 )
 add_library(
         SharedWidget
@@ -105,7 +106,7 @@ target_link_libraries(
         ${PROJECT_NAME}
         PRIVATE
         SharedWidget
-        UniqueWidget
+#        UniqueWidget
 )
 target_include_directories(
         ${PROJECT_NAME}

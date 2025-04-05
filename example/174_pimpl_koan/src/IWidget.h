@@ -10,6 +10,7 @@ class IWidget
 public:
   virtual ~IWidget() = default;
   virtual int add(int a, int b) = 0;
+  virtual void insert(float) = 0;
 };
 
 #endif //IWIDGET_H

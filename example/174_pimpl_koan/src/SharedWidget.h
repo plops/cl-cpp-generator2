@@ -7,12 +7,14 @@
 
 #include <memory>
 #include "IWidget.h"
+#include "IContainer.h"
 
 class SharedWidget : public IWidget
 {
 public:
-    explicit SharedWidget(int start);
+    explicit SharedWidget(int start, std::unique_ptr<IContainer> container);
     int add(int a, int b) override;
+    void insert(float) override;
 
 private:
     struct Impl;

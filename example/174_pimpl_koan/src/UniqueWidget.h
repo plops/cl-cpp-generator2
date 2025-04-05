@@ -7,17 +7,19 @@
 
 #include "IWidget.h"
 #include <memory>
+#include "IContainer.h"
 
 class UniqueWidget : public IWidget
 {
 public:
-    explicit UniqueWidget(int start);
+    explicit UniqueWidget(int start, std::unique_ptr<IContainer> container);
     int add(int a, int b) override;
     ~UniqueWidget() override;
     UniqueWidget(const UniqueWidget& other);
     UniqueWidget(UniqueWidget&& other) noexcept;
     UniqueWidget& operator=(const UniqueWidget& other);
     UniqueWidget& operator=(UniqueWidget&& other) noexcept;
+    void insert(float) override;
 
 private:
     struct Impl;
