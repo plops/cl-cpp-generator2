@@ -26,8 +26,7 @@ int UniqueWidget::add(int a, int b)
 UniqueWidget::~UniqueWidget() = default; // destructor
 
 UniqueWidget::UniqueWidget(const UniqueWidget& other) // copy ctor
-: //IWidget{other},
-      pImpl{make_unique<Impl>(*other.pImpl)}
+: IWidget{other}, pImpl{make_unique<Impl>(*other.pImpl)}
 {
 }
 
