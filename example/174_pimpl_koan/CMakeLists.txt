@@ -106,7 +106,7 @@ target_link_libraries(
         ${PROJECT_NAME}
         PRIVATE
         SharedWidget
-#        UniqueWidget
+        UniqueWidget
 )
 target_include_directories(
         ${PROJECT_NAME}

@@ -19,9 +19,10 @@ int main(int argc, char* argv[]) {
 
 
     unique_ptr<IWidget> w{make_unique<SharedWidget>(3,move(vv))};
-    // unique_ptr<IWidget> w2{make_unique<UniqueWidget>(3,vv2)};
+    unique_ptr<IWidget> w2{make_unique<UniqueWidget>(3,vv2)};
 
     cout << w->add(1,2) << endl;
+    w->insert(4);
     // cout << w2->add(1,2) << endl;
     //
     // array<unique_ptr<IWidget>,2> a={make_unique<SharedWidget>(4,vv3), make_unique<UniqueWidget>(5,vv4)};

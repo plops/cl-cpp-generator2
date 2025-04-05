@@ -27,7 +27,14 @@ int UniqueWidget::add(int a, int b)
 UniqueWidget::~UniqueWidget() = default; // destructor
 
 UniqueWidget::UniqueWidget(const UniqueWidget& other) // copy ctor
-    : IWidget{other}, pImpl{make_unique<Impl>(*other.pImpl)}
+    : //IWidget{other}
+       pImpl{
+          [&]()
+          {
+              auto args = {other.pImpl->start, make_unique<IContainer>(*other.pImpl->container)};
+              return make_unique<Impl>(args);
+          }()
+      }
 {
 }
 
@@ -49,7 +56,8 @@ UniqueWidget& UniqueWidget::operator=(const UniqueWidget& other) // copy assign
     if (this == &other)
         return *this;
     IWidget::operator =(other);
-    *pImpl = *other.pImpl;
+    pImpl->start = other.pImpl->start;
+    *pImpl->container = *other.pImpl->container;
     return *this;
 }
 
