@@ -94,13 +94,18 @@ add_executable(
         src/main.cpp
 )
 add_library(
-        Widget
+        SharedWidget
         src/SharedWidget.cpp
+)
+add_library(
+        UniqueWidget
+        src/UniqueWidget.cpp
 )
 target_link_libraries(
         ${PROJECT_NAME}
         PRIVATE
-        Widget
+        SharedWidget
+        UniqueWidget
 )
 target_include_directories(
         ${PROJECT_NAME}

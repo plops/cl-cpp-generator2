@@ -2,8 +2,8 @@
 // Created by martin on 4/5/25.
 //
 
-#ifndef WIDGET_H
-#define WIDGET_H
+#ifndef SHARED_WIDGET_H
+#define SHARED_WIDGET_H
 
 #include <memory>
 #include "IWidget.h"
@@ -20,4 +20,4 @@ private:
 };
 
 
-#endif //WIDGET_H
+#endif //SHARED_WIDGET_H
