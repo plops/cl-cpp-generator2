@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17)
-project(cxx_oo_pimpl_koan)
+project(cxx_semaphore_koan)
 
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED yes)
