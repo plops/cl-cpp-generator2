@@ -14,8 +14,8 @@ struct SharedWidget::Impl
     unique_ptr<IContainer> container;
 };
 
-SharedWidget::SharedWidget(int start_, unique_ptr<IContainer> container)
-    : pImpl(make_shared<Impl>(0, 0.0f, start_, move(container)))
+SharedWidget::SharedWidget(int start, unique_ptr<IContainer> container)
+    : pImpl(make_shared<Impl>(0, 0.0f, start, move(container)))
 {
 }
 

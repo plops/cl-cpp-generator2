@@ -37,21 +37,13 @@ UniqueWidget::~UniqueWidget() = default; // destructor
 UniqueWidget::UniqueWidget(const UniqueWidget& other) // copy ctor
     : //IWidget{other}
        pImpl{
-          [&]()
+          [&other]()
           {
-              // auto args = {other.pImpl->start, make_unique<IContainer>(*other.pImpl->container)};
-              // auto u = make_unique<Vec>(3);
-              // Impl* impl = new Impl(other.pImpl->start, move(u));
-              // unique_ptr<Impl> a = new Impl(other.pImpl->start, make_unique<IContainer>(*other.pImpl->container));
-
               int n = other.pImpl->container->size();
               auto uv = make_unique<Vec>(n);
               for (int i=0;i<n;i++)
                   (*uv)[i]  = (*other.pImpl->container)[i];
-              // auto uv = make_unique<Vec>(other.pImpl->container);
-
               return make_unique<Impl>(other.pImpl->start, move(uv));
-              // return make_unique<Impl>(other.pImpl->start, make_unique<IContainer>(*other.pImpl->container));
           }()
       }
 {
@@ -63,8 +55,8 @@ UniqueWidget::UniqueWidget(const UniqueWidget& other) // copy ctor
 //{
 //}
 
-UniqueWidget::UniqueWidget(UniqueWidget&& rhs) noexcept = default; // move ctor
-UniqueWidget& UniqueWidget::operator=(UniqueWidget&& rhs) noexcept = default; // move assign
+UniqueWidget::UniqueWidget(UniqueWidget&& other) noexcept = default; // move ctor
+UniqueWidget& UniqueWidget::operator=(UniqueWidget&& other) noexcept = default; // move assign
 void UniqueWidget::insert(float f)
 {
     pImpl->container->insert(f);
@@ -74,14 +66,11 @@ UniqueWidget& UniqueWidget::operator=(const UniqueWidget& other) // copy assign
 {
     if (this == &other)
         return *this;
-    // *pImpl = *other.pImpl;
-    // IWidget::operator =(other);
     pImpl->start = other.pImpl->start;
     *pImpl->container = *other.pImpl->container;
     return *this;
 }
 
-//
 //UniqueWidget& UniqueWidget::operator=(UniqueWidget&& other) noexcept // move assign
 //{
 //    if (this == &other)
