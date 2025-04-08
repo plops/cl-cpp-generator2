@@ -65,10 +65,11 @@
      (defclass+ Widget ()
 	      "int a;"
        "float f;")
-     (space template (angle "class CreationPolicy")
-	    (defclass+ WidgetManager "public CreationPolicy"
-	      ))
-     "using MyWidgetMgr = WidgetManager<OpNewCreator<Widget>>;"
+     (space ;template (angle "class CreationPolicy")
+     "template<template<class Created> class CreationPolicy>"
+      (defclass+ WidgetManager "public CreationPolicy<Widget>"
+	))
+     "using MyWidgetMgr = WidgetManager<OpNewCreator>;"
      
      (defun main (argc argv)
        (declare (values int)

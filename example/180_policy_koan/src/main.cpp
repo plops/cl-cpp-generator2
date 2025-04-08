@@ -29,9 +29,9 @@ class Widget {
     int   a;
     float f;
 };
-template <class CreationPolicy>
-class WidgetManager : public CreationPolicy {};
-using MyWidgetMgr = WidgetManager<OpNewCreator<Widget>>;
+template <template <class Created> class CreationPolicy>
+class WidgetManager : public CreationPolicy<Widget> {};
+using MyWidgetMgr = WidgetManager<OpNewCreator>;
 
 int main(int argc, char** argv) {
     auto wm{MyWidgetMgr()};
