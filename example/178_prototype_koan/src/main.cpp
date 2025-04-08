@@ -6,7 +6,7 @@ using namespace std;
 class Address {
 public:
     Address(const string& street, const string& city, int suite) :
-        street(street),
+        street(street),XXX
         city(city),
         suite(suite) {}
 
