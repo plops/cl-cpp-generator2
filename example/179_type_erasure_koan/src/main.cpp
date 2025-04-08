@@ -27,10 +27,12 @@ private:
 public:
     template <typename Deleter>
     smartptr(T* p, Deleter d) :
-        p_{p}, d_{new destroy<Deleter>(d)} { cout << "smartptr" << endl; }
+        p_{p}, d_{new destroy<Deleter>(d)} {
+        // cout << "smartptr" << endl;
+    }
 
     ~smartptr() {
-        cout << "~smartptr" << endl;
+        // cout << "~smartptr" << endl;
         (*d_)(p_);
         delete d_;
     }
@@ -95,22 +97,31 @@ int main(int argc, char* argv[]) {
         int   x;
         float y;
     };
+
     {
-        smartptr<Point> p(new Point({1, 2.3}), [](void* p) { delete p; });
+        smartptr_lbo<Point> p(new Point({1, 2.3}), [](void* p) {
+            cout << "smartptr_lbo deleter lambda" << endl;
+            // delete p;
+        });
         cout << p->x << " " << p->y << endl;
         auto q = p;
         q->x   = 3;
         cout << q->x << " " << q->y << endl;
         cout << p->x << " " << p->y << endl;
     }
-    // {
-    //     smartptr_lbo<Point> p(new Point({1, 2.3}), [](void* p) { delete p; });
-    //     cout << p->x << " " << p->y << endl;
-    //     auto q = p;
-    //     q->x   = 3;
-    //     cout << q->x << " " << q->y << endl;
-    //     cout << p->x << " " << p->y << endl;
-    // }
+
+    {
+        smartptr<Point> p(new Point({1, 2.3}), [](void* p) {
+            cout << "smartptr deleter lambda" << endl;
+            // delete p;
+        });
+        cout << p->x << " " << p->y << endl;
+        auto q = p;
+        q->x   = 3;
+        cout << q->x << " " << q->y << endl;
+        cout << p->x << " " << p->y << endl;
+    }
+
 
 
     return 0;
