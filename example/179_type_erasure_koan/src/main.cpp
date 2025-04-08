@@ -50,5 +50,10 @@ int main(int argc, char* argv[]) {
     struct Point {int x; float y;};
     smartptr<Point> p(new Point({1,2.3}), [](void*p){delete p;});
     cout << p->x << " " << p->y << endl;
+    auto q = p;
+    q->x=3;
+    cout << q->x << " " << q->y << endl;
+    cout << p->x << " " << p->y << endl;
+
     return 0;
 }
