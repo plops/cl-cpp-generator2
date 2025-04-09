@@ -61,7 +61,7 @@ public:
     WidgetManager() {}
     void switchPrototype(Widget* newPrototype) {
         CreationPolicy<Widget>& myPolicy = *this;
-        delete (myPolicy);
+        delete (myPolicy.getPrototype());
         myPolicy.setPrototype(newPrototype);
     }
 };
@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
     auto wm2{WidgetManager<PrototypeCreator>()};
     wm2.setPrototype(e1);
     auto e2{wm2.create()};
+    wm2.switchPrototype(e2);
     std::cout << "" << " sizeof(wm0)='" << sizeof(wm0) << "' " << " sizeof(wm1)='" << sizeof(wm1) << "' "
               << " sizeof(wm2)='" << sizeof(wm2) << "' " << std::endl;
     return 0;

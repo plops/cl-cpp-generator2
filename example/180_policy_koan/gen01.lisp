@@ -94,7 +94,7 @@
 	(defmethod switchPrototype (newPrototype)
 	  (declare (type Widget* newPrototype))
 	  "CreationPolicy<Widget>& myPolicy = *this;"
-	  (delete myPolicy)
+	  (delete (myPolicy.getPrototype))
 	  (myPolicy.setPrototype newPrototype)
 	  )
 	))
@@ -115,7 +115,7 @@
 	     )
 	 (wm2.setPrototype e1)
 	 (let ((e2 (wm2.create)))))
-
+       (wm2.switchPrototype e2)
        ,(lprint :vars `((sizeof wm0)
 			(sizeof wm1)
 			(sizeof wm2)))
