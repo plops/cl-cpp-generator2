@@ -70,14 +70,24 @@
      (defclass+ Widget ()
 	      "int a;"
        "float f;"
-       "array<char,20> c;")
+       "array<char,20> c;"
+       "public:"
+       (defmethod clone ()
+	 (declare (values Widget*)
+		  )
+	 (return (new Widget))
+	 ))
      (space ;template (angle "class CreationPolicy")
      "template<template<class Created> class CreationPolicy = OpNewCreator>"
       (defclass+ WidgetManager "public CreationPolicy<Widget>"
 	"public:"
+
 	(defmethod WidgetManager ()
 	  (declare (values :constructor))
 	  )
+
+	
+	
 	(defmethod switchPrototype (newPrototype)
 	  (declare (type Widget* newPrototype))
 	  "CreationPolicy<Widget>& myPolicy = *this;"
@@ -96,10 +106,12 @@
 	     (e0 (wm0.create)))
 	 )
        (let ((wm1 (WidgetManager<MallocCreator>))
-	     (e1 (wm0.create))))
+	     (e1 (wm1.create))))
 
-       #+nil (let ((wm2 (WidgetManager<PrototypeCreator>))
-	     (e2 (wm2.create))))
+       (let ((wm2 (WidgetManager<PrototypeCreator>))
+	     )
+	 (wm2.setPrototype e1)
+	 (let ((e2 (wm2.create)))))
        
        (return 0)))
    :omit-parens t

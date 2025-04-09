@@ -42,6 +42,9 @@ class Widget {
     int             a;
     float           f;
     array<char, 20> c;
+
+public:
+    Widget* clone() { return new Widget; }
 };
 template <template <class Created> class CreationPolicy = OpNewCreator>
 class WidgetManager : public CreationPolicy<Widget> {
@@ -59,6 +62,9 @@ int main(int argc, char** argv) {
     auto wm0{MyWidgetMgr()};
     auto e0{wm0.create()};
     auto wm1{WidgetManager<MallocCreator>()};
-    auto e1{wm0.create()};
+    auto e1{wm1.create()};
+    auto wm2{WidgetManager<PrototypeCreator>()};
+    wm2.setPrototype(e1);
+    auto e2{wm2.create()};
     return 0;
 }
