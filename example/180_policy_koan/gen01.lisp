@@ -41,8 +41,8 @@
 			(:name PrototypeCreator
 			 :create (return (? prototype (prototype->clone) nullptr))
 			 :extra (do0
-				 (defmethod PrototypeCreator (&key (obj nullptr))
-				   (declare (type T* obj)
+				 (defmethod PrototypeCreator (obj=nullptr)
+				   (declare (type T* obj=nullptr)
 					    (values "explicit")
 					    (construct (prototype obj))))
 				 (defmethod getPrototype () (declare (values T*)) (return prototype))
@@ -59,15 +59,31 @@
 			 (defmethod create ()
 			   (declare (values "T*")
 				    (static))
+			   ,(lprint :msg (format nil  "~a<T>::create " name)
+				    :vars `((sizeof T)
+					    (sizeof *this)
+					    (sizeof (decltype *this))
+					    (sizeof ,(format nil "~a<T>" name))))
 			   ,create)
 			 ,(if extra extra "")))))
 
      (defclass+ Widget ()
 	      "int a;"
-       "float f;")
+       "float f;"
+       "array<char,20> c;")
      (space ;template (angle "class CreationPolicy")
-     "template<template<class Created> class CreationPolicy>"
+     "template<template<class Created> class CreationPolicy = OpNewCreator>"
       (defclass+ WidgetManager "public CreationPolicy<Widget>"
+	"public:"
+	(defmethod WidgetManager ()
+	  (declare (values :constructor))
+	  )
+	(defmethod switchPrototype (newPrototype)
+	  (declare (type Widget* newPrototype))
+	  "CreationPolicy<Widget>& myPolicy = *this;"
+	  (delete myPolicy)
+	  (myPolicy.setPrototype newPrototype)
+	  )
 	))
      "using MyWidgetMgr = WidgetManager<OpNewCreator>;"
      
@@ -76,7 +92,15 @@
 		(type int argc)
 		(type char** argv))
 
-       (let ((wm (MyWidgetMgr))))
+       (let ((wm0 (MyWidgetMgr))
+	     (e0 (wm0.create)))
+	 )
+       (let ((wm1 (WidgetManager<MallocCreator>))
+	     (e1 (wm0.create))))
+
+       #+nil (let ((wm2 (WidgetManager<PrototypeCreator>))
+	     (e2 (wm2.create))))
+       
        (return 0)))
    :omit-parens t
    :format nil
