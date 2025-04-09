@@ -9,6 +9,9 @@ public:
                   << " sizeof(OpNewCreator<T>)='" << sizeof(OpNewCreator<T>) << "' " << std::endl;
         return new T;
     }
+
+protected:
+    ~OpNewCreator() {};
 };
 template <class T>
 class MallocCreator {
@@ -21,6 +24,9 @@ public:
         if (!buf) { return nullptr; }
         return new (buf) T;
     }
+
+protected:
+    ~MallocCreator() {};
 };
 template <class T>
 class PrototypeCreator {
@@ -37,6 +43,9 @@ public:
 
 private:
     T* prototype;
+
+protected:
+    ~PrototypeCreator() {};
 };
 class Widget {
     int             a;
@@ -66,5 +75,7 @@ int main(int argc, char** argv) {
     auto wm2{WidgetManager<PrototypeCreator>()};
     wm2.setPrototype(e1);
     auto e2{wm2.create()};
+    std::cout << "" << " sizeof(wm0)='" << sizeof(wm0) << "' " << " sizeof(wm1)='" << sizeof(wm1) << "' "
+              << " sizeof(wm2)='" << sizeof(wm2) << "' " << std::endl;
     return 0;
 }

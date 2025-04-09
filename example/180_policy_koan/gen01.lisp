@@ -32,12 +32,14 @@
       iostream
       )
      "using namespace std;"
-     ,@(loop for e in `((:name OpNewCreator :create (return (new T)))
+     ,@(loop for e in `((:name OpNewCreator :create (return (new T))
+			       )
 			(:name MallocCreator :create (let ((buf (malloc (sizeof T))))
 						       (unless buf
 							 (return nullptr))
 						       (return (space new (paren buf)
-								      "T"))))
+								      "T")))
+			       )
 			(:name PrototypeCreator
 			 :create (return (? prototype (prototype->clone) nullptr))
 			 :extra (do0
@@ -65,7 +67,10 @@
 					    (sizeof (decltype *this))
 					    (sizeof ,(format nil "~a<T>" name))))
 			   ,create)
-			 ,(if extra extra "")))))
+			 ,(if extra extra "")
+			 (do0
+			  "protected:"
+			  ,(format nil "~~~a(){}" name))))))
 
      (defclass+ Widget ()
 	      "int a;"
@@ -85,8 +90,6 @@
 	(defmethod WidgetManager ()
 	  (declare (values :constructor))
 	  )
-
-	
 	
 	(defmethod switchPrototype (newPrototype)
 	  (declare (type Widget* newPrototype))
@@ -112,6 +115,10 @@
 	     )
 	 (wm2.setPrototype e1)
 	 (let ((e2 (wm2.create)))))
+
+       ,(lprint :vars `((sizeof wm0)
+			(sizeof wm1)
+			(sizeof wm2)))
        
        (return 0)))
    :omit-parens t
