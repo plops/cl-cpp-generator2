@@ -577,7 +577,8 @@ Common Lisp DEFMETHOD form.
 		    "static")
 		  ;; 3 explicit
 		  (when (and explicit-p
-			     header-only)
+			     (or (eq in-class-p 'defclass+)
+				 header-only))
 		    "explicit")
 		  ;; 4 inline
 		  (when (and inline-p
