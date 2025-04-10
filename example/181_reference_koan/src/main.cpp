@@ -19,8 +19,9 @@ public:
     }
     ~Ref() {}
     Ref(const Ref& rhs) : ref{rhs.ref}, sp{createPriv(rhs.sp.load()->idx, rhs.sp.load()->arena)} {
-        std::cout << "Ref::copy-ctor" << std::endl;
+        std::cout << "Ref::copy-ctor" << " sp.load()->idx='" << sp.load()->idx << "' " << std::endl;
     }
+    long int use_count() { return sp.load().use_count(); }
 
 private:
     class Priv {
@@ -30,7 +31,8 @@ private:
     };
     shared_ptr<Priv> createPriv(int idx, Arena<T, N>& arena) {
         return shared_ptr<Priv>(new Priv(idx, arena), [&](Priv* p) {
-            std::cout << "~shared_ptr" << " p='" << p << "' " << " p->idx='" << p->idx << "' " << std::endl;
+            std::cout << "~shared_ptr" << " p='" << p << "' " << " p->idx='" << p->idx << "' "
+                      << " p->arena.use_count(p->idx)='" << p->arena.use_count(p->idx) << "' " << std::endl;
             p->arena.setUnused(p->idx);
             delete (p);
         });
@@ -48,10 +50,12 @@ public:
             *it = true;
             auto idx{it - used.begin()};
             auto el{r.at(idx)};
+            std::cout << "found unsued element" << " idx='" << idx << "' " << std::endl;
             return el;
         }
     }
-    void setUnused(int idx) { used[idx] = false; }
+    void     setUnused(int idx) { used[idx] = false; }
+    long int use_count(int idx) { return r[idx].use_count(); }
     Arena() {
         int idx = 0;
         for (auto&& e : a) {
@@ -79,6 +83,6 @@ int main(int argc, char** argv) {
     };
     auto a{Arena<Widget, N>()};
     auto v{deque<Ref<Widget>>()};
-    for (decltype(0 + N + 10 + 1) i = 0; i < N + 10; i += 1) { v.push_back(a.aquire()); }
+    for (decltype(0 + N + 1 + 1) i = 0; i < N + 1; i += 1) { v.push_back(a.aquire()); }
     return 0;
 }

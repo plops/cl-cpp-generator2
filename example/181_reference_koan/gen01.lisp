@@ -47,12 +47,6 @@
      (space "template<typename T>"
 	    (defclass+ Ref ()
 	      "public:"
-
-	      #+nil
-	      (defmethod get ()
-		(declare (values T&))
-		(return ref))
-
 	      ;; ctor
 	      (defmethod Ref (r idx arena)
 		(declare (type T& r)
@@ -77,8 +71,12 @@
 						    (-> (dot rhs sp (load))
 							arena))))
 			 (values :constructor))
-		,(lprint :msg "Ref::copy-ctor"))
-	      
+		,(lprint :msg "Ref::copy-ctor"
+			 :vars `("sp.load()->idx")))
+	      (defmethod use_count ()
+		(declare (values "long int"))
+		(return (dot sp (load)
+			     (use_count))))
 	      "private:"
 	      (defclass+ Priv ()
 		"public:"
@@ -91,7 +89,7 @@
 		(return (shared_ptr<Priv> (new (Priv idx arena))
 					  (lambda (p)
 					    (declare (type Priv* p))
-					    ,(lprint :msg "~shared_ptr" :vars `(p p->idx))
+					    ,(lprint :msg "~shared_ptr" :vars `(p p->idx (p->arena.use_count p->idx)))
 					    (p->arena.setUnused p->idx)
 					    (delete p)))))
 	      
@@ -103,7 +101,6 @@
 	`(space "template<typename T, int N>"
 	       (defclass+ ,name ()
 		 "public:"
-
 		 (defmethod aquire ()
 		   (declare (values Ref<T>))
 		   (let ((it (find (used.begin)
@@ -118,11 +115,17 @@
 			  (setf *it true)
 			  (let ((idx (- it (used.begin)))
 				(el (dot r (at idx)))))
+			  ,(lprint :msg "found unsued element"
+				   :vars `(idx))
 			  (return el)))))
 
 		 (defmethod setUnused (idx)
 		   (declare (type int idx))
 		   (setf (aref used idx) false))
+		 (defmethod use_count (idx)
+		   (declare (values "long int")
+			    (type int idx))
+		   (return (dot (aref r idx) (use_count))))
 		 
 		 (defmethod ,name ()
 		   (declare (values :constructor))
@@ -151,16 +154,13 @@
 	 "private:"
 	 "int i{3};"
 	 "float f{4.5F};")
-      
-       
+             
        (do0
-	(let ((a (space Arena (angle Widget N) (paren))))
-	  )
-	#+nil(let ((e0 (a.aquire)))))
+	(let ((a (space Arena (angle Widget N) (paren)))))
 
-       (let ((v (deque<Ref<Widget>> ))))
-       (dotimes (i (+ N 10))
-	 (v.push_back (a.aquire)))
+	(let ((v (deque<Ref<Widget>> ))))
+	(dotimes (i (+ N 1))
+	  (v.push_back (a.aquire))))
        #+nil
        (do0 (let ((as (space array (angle Widget N)
 			     (paren)))))
