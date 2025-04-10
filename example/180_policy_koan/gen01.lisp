@@ -32,8 +32,7 @@
       iostream
       )
      "using namespace std;"
-     ,@(loop for e in `((:name OpNewCreator :create (return (new T))
-			       )
+     ,@(loop for e in `((:name OpNewCreator :create (return (new T)))
 			(:name MallocCreator :create (let ((buf (malloc (sizeof T))))
 						       (unless buf
 							 (return nullptr))
@@ -112,7 +111,7 @@
 	     (e1 (wm1.create))))
 
        (let ((wm2 (WidgetManager<PrototypeCreator>))
-	     )
+	      )
 	 (wm2.setPrototype e1)
 	 (let ((e2 (wm2.create)))))
        (wm2.switchPrototype e2)
