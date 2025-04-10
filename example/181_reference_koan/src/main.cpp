@@ -31,8 +31,8 @@ private:
         condition_variable c;
     };
     T&                       ref;
-    atomic<shared_ptr<Priv>> sp;
-    Q*                       q;
+    atomic<shared_ptr<Priv>> sp{nullptr};
+    Q*                       q{nullptr};
 };
 template <typename T, int N>
 class Arena {

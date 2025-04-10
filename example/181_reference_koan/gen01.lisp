@@ -60,6 +60,7 @@
 	(defmethod ~Ref ()
 	  (declare (values :constructor))
 	  (when q
+	    ;,(lprint :msg "~Ref delete q")
 	    (delete q)
 	    (setf q nullptr))
 	  ,(lprint :msg "~Ref"
@@ -94,8 +95,8 @@
 	  "mutex m;"
 	  "condition_variable c;")
 	"T& ref;"
-	"atomic<shared_ptr<Priv>> sp;"
-	"Q* q;"))
+	"atomic<shared_ptr<Priv>> sp{nullptr};"
+	"Q* q{nullptr};"))
 
      ,(let ((name "Arena"))
 	`(space "template<typename T, int N>"
