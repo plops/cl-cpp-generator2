@@ -35,6 +35,7 @@
       atomic
       condition_variable
       mutex
+      thread
       )
      "using namespace std;"
 
@@ -42,7 +43,7 @@
       (defclass+ Ref ()
 	"public:"
 	
-	(defmethod get ()
+	#+nil (defmethod get ()
 	  (declare (values T&))
 	  (return ref))
 
@@ -111,9 +112,10 @@
 		     (if (== (used.end)
 			     it)
 			 (do0
-			  ,(lprint :msg "no free arena element"))
+			  (throw (runtime_error (string "no free arena element"))))
 
 			 (do0
+			  (setf *it true)
 			  (let ((idx (- it (used.begin)))
 				(el (dot r (at idx)))))
 			  (return el))))
@@ -147,12 +149,16 @@
 	 "int i{3};"
 	 "float f{4.5F};")
        "constexpr int N{3};"
-       #+nil
+       
        (do0
 	(let ((a (space Arena (angle Widget N) (paren))))
 	  )
-	(let ((e0 (a.aquire)))))
+	#+nil(let ((e0 (a.aquire)))))
 
+       (let ((v (deque<Ref<Widget>> ))))
+       (dotimes (i (+ N 1))
+	 (v.push_back (a.aquire)))
+       #+nil
        (do0 (let ((as (space array (angle Widget N)
 			     (paren)))))
 	    (let ((ar (space deque (angle (space Ref (angle Widget)))

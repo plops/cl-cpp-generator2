@@ -5,11 +5,11 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <thread>
 using namespace std;
 template <typename T>
 class Ref {
 public:
-    T& get() { return ref; }
     explicit Ref(T& r) : ref{r}, sp{make_shared<Priv>()}, q{new Q} {
         std::cout << "Ref::ctor" << " &ref='" << &ref << "' " << " use_count()='" << use_count() << "' " << std::endl;
     }
@@ -39,8 +39,9 @@ class Arena {
 public:
     Ref<T> aquire() {
         auto it{find(used.begin(), used.end(), false)};
-        if (used.end() == it) { std::cout << "no free arena element" << std::endl; }
+        if (used.end() == it) { throw runtime_error("no free arena element"); }
         else {
+            *it = true;
             auto idx{it - used.begin()};
             auto el{r.at(idx)};
             return el;
@@ -68,13 +69,8 @@ int main(int argc, char** argv) {
         float f{4.5F};
     };
     constexpr int N{3};
-    auto          as{array<Widget, N>()};
-    auto          ar{deque<Ref<Widget>>()};
-    for (auto&& e : as) { ar.emplace_back(e); }
-    std::cout << "" << " sizeof(as)='" << sizeof(as) << "' " << std::endl;
-    std::cout << "" << " sizeof(ar)='" << sizeof(ar) << "' " << std::endl;
-    auto e{ar[0].get()};
-    auto qq{ar[0]};
-    std::cout << "" << " ar[0].use_count()='" << ar[0].use_count() << "' " << std::endl;
+    auto          a{Arena<Widget, N>()};
+    auto          v{deque<Ref<Widget>>()};
+    for (decltype(0 + N + 1 + 1) i = 0; i < N + 1; i += 1) { v.push_back(a.aquire()); }
     return 0;
 }
