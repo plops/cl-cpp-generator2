@@ -36,74 +36,84 @@
       condition_variable
       mutex
       thread
+      
       )
      "using namespace std;"
 
+      "constexpr int N{3};"
+
+     "template<typename T, int N> class Arena;"
+     
      (space "template<typename T>"
-      (defclass+ Ref ()
-	"public:"
+	    (defclass+ Ref ()
+	      "public:"
 
-	#+nil
-	(defmethod get ()
-	  (declare (values T&))
-	  (return ref))
+	      #+nil
+	      (defmethod get ()
+		(declare (values T&))
+		(return ref))
 
-	;; ctor
-	(defmethod Ref (r idx)
-	  (declare (type T& r)
-		   (type int idx)
-		   (construct (ref r)
-			      (sp (createPriv idx))
-			      (q (new Q)))
-		   (explicit)
-		   (values :constructor))
-	  ,(lprint :msg "Ref::ctor"
-		   :vars `((dot sp (load) (get)) &ref (use_count))))
-	;; dtor
-	(defmethod ~Ref ()
-	  (declare (values :constructor))
-	  (when q
-	    (delete q)
-	    (setf q nullptr))
-	  ,(lprint :msg "~Ref"
-		   :vars `(&ref
-			   (use_count))))
+	      ;; ctor
+	      (defmethod Ref (r idx arena)
+		(declare (type T& r)
+			 (type "Arena<T,N>&" arena)
+			 (type int idx)
+			 (construct (ref r)
+				    (sp (createPriv idx arena))
+				    (q (new Q)))
+			 (explicit)
+			 (values :constructor))
+		,(lprint :msg "Ref::ctor"
+			 :vars `((dot sp (load) (get)) &ref (use_count))))
+	      ;; dtor
+	      (defmethod ~Ref ()
+		(declare (values :constructor))
+		(when q
+		  (delete q)
+		  (setf q nullptr))
+		,(lprint :msg "~Ref"
+			 :vars `(&ref
+				 (use_count))))
 
-	;; copy ctor
-	;"Ref(const Ref& rhs) = default;"
-	(defmethod Ref (rhs)
-	  (declare (type "const Ref&" rhs)
-		   (construct (ref rhs.ref)
-			      (sp (createPriv (-> (dot rhs sp (load)
-						       )
-						  idx))))
-		   (values :constructor))
-	  ,(lprint :msg "Ref::copy-ctor")
-	  #+nil (when (== this &rhs)
-		  (return *this))
-	  )
-	(defmethod use_count ()
-	  (declare (values int))
-	  (return (dot sp (load ) (use_count))))
-	"private:"
-	(defclass+ Priv ()
-	  "public:"
-	  "int idx;")
-	(defmethod createPriv (idx)
-	  (declare (type int idx)
-		   (values shared_ptr<Priv>))
-	  (return (shared_ptr<Priv> (new (Priv idx))
-		   (lambda (p)
-		     (declare (type Priv* p))
-		     ,(lprint :msg "~shared_ptr" :vars `(p p->idx))
-		     (delete p)))))
-	(defclass+ Q ()
-	  "private:"
-	  "mutex m;"
-	  "condition_variable c;")
-	"T& ref;"
-	"atomic<shared_ptr<Priv>> sp{nullptr};"
-	"Q* q{nullptr};"))
+	      ;; copy ctor
+					;"Ref(const Ref& rhs) = default;"
+	      (defmethod Ref (rhs)
+		(declare (type "const Ref&" rhs)
+			 (construct (ref rhs.ref)
+				    (sp (createPriv (-> (dot rhs sp (load))
+							idx)
+						    (-> (dot rhs sp (load))
+							arena))))
+			 (values :constructor))
+		,(lprint :msg "Ref::copy-ctor")
+		#+nil (when (== this &rhs)
+			(return *this))
+		)
+	      (defmethod use_count ()
+		(declare (values "long int"))
+		(return (dot sp (load ) (use_count))))
+	      "private:"
+	      (defclass+ Priv ()
+		"public:"
+		"int idx;"
+		"Arena<T,N>& arena;")
+	      (defmethod createPriv (idx arena)
+		(declare (type int idx)
+			 (type "Arena<T,N>&" arena)
+			 (values shared_ptr<Priv>))
+		(return (shared_ptr<Priv> (new (Priv idx arena))
+					  (lambda (p)
+					    (declare (type Priv* p))
+					    ,(lprint :msg "~shared_ptr" :vars `(p p->idx))
+					    (p->arena.setUnused p->idx)
+					    (delete p)))))
+	      (defclass+ Q ()
+		"private:"
+		"mutex m;"
+		"condition_variable c;")
+	      "T& ref;"
+	      "atomic<shared_ptr<Priv>> sp{nullptr};"
+	      "Q* q{nullptr};"))
 
      ,(let ((name "Arena"))
 	`(space "template<typename T, int N>"
@@ -124,14 +134,17 @@
 			  (setf *it true)
 			  (let ((idx (- it (used.begin)))
 				(el (dot r (at idx)))))
-			  (return el))))
-		   )
+			  (return el)))))
+
+		 (defmethod setUnused (idx)
+		   (declare (type int idx))
+		   (setf (aref used idx) false))
 		 
 		 (defmethod ,name ()
 		   (declare (values :constructor))
 		   "int idx=0;"
 		   (for-range (e a)
-			      (r.emplace_back e idx)
+			      (r.emplace_back e idx *this)
 			      (incf idx)))
 
 
@@ -156,7 +169,7 @@
 	 "private:"
 	 "int i{3};"
 	 "float f{4.5F};")
-       "constexpr int N{3};"
+      
        
        (do0
 	(let ((a (space Arena (angle Widget N) (paren))))

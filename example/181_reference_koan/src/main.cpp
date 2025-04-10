@@ -7,10 +7,13 @@
 #include <mutex>
 #include <thread>
 using namespace std;
+constexpr int N{3};
+template <typename T, int N>
+class Arena;
 template <typename T>
 class Ref {
 public:
-    explicit Ref(T& r, int idx) : ref{r}, sp{createPriv(idx)}, q{new Q} {
+    explicit Ref(T& r, int idx, Arena<T, N>& arena) : ref{r}, sp{createPriv(idx, arena)}, q{new Q} {
         std::cout << "Ref::ctor" << " sp.load().get()='" << sp.load().get() << "' " << " &ref='" << &ref << "' "
                   << " use_count()='" << use_count() << "' " << std::endl;
     }
@@ -21,19 +24,21 @@ public:
         }
         std::cout << "~Ref" << " &ref='" << &ref << "' " << " use_count()='" << use_count() << "' " << std::endl;
     }
-    Ref(const Ref& rhs) : ref{rhs.ref}, sp{createPriv(rhs.sp.load()->idx)} {
+    Ref(const Ref& rhs) : ref{rhs.ref}, sp{createPriv(rhs.sp.load()->idx, rhs.sp.load()->arena)} {
         std::cout << "Ref::copy-ctor" << std::endl;
     }
-    int use_count() { return sp.load().use_count(); }
+    long int use_count() { return sp.load().use_count(); }
 
 private:
     class Priv {
     public:
-        int idx;
+        int          idx;
+        Arena<T, N>& arena;
     };
-    shared_ptr<Priv> createPriv(int idx) {
-        return shared_ptr<Priv>(new Priv(idx), [&](Priv* p) {
+    shared_ptr<Priv> createPriv(int idx, Arena<T, N>& arena) {
+        return shared_ptr<Priv>(new Priv(idx, arena), [&](Priv* p) {
             std::cout << "~shared_ptr" << " p='" << p << "' " << " p->idx='" << p->idx << "' " << std::endl;
+            p->arena.setUnused(p->idx);
             delete (p);
         });
     }
@@ -59,10 +64,11 @@ public:
             return el;
         }
     }
+    void setUnused(int idx) { used[idx] = false; }
     Arena() {
         int idx = 0;
         for (auto&& e : a) {
-            r.emplace_back(e, idx);
+            r.emplace_back(e, idx, *this);
             idx++;
         }
     }
@@ -84,9 +90,8 @@ int main(int argc, char** argv) {
         int   i{3};
         float f{4.5F};
     };
-    constexpr int N{3};
-    auto          a{Arena<Widget, N>()};
-    auto          v{deque<Ref<Widget>>()};
+    auto a{Arena<Widget, N>()};
+    auto v{deque<Ref<Widget>>()};
     for (decltype(0 + N + 1 + 1) i = 0; i < N + 1; i += 1) { v.push_back(a.aquire()); }
     return 0;
 }
