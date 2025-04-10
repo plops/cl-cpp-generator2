@@ -82,16 +82,16 @@
 	  (declare (values int))
 	  (return (dot sp (load ) (use_count))))
 	"private:"
-	(defclass+ Priv ())
+	(defclass+ Priv ()
+	  "public:"
+	  "int idx;")
 	(defmethod createPriv ()
 	  (declare ;(static)
 		   (values shared_ptr<Priv>))
-	  (return (shared_ptr<Priv> (new Priv)
+	  (return (shared_ptr<Priv> (new (Priv 3))
 		   (lambda (p)
-		     (declare (type Priv* p)
-			      ;(capture this)
-			      )
-		     ,(lprint :msg "~shared_ptr" :vars `(p ))
+		     (declare (type Priv* p))
+		     ,(lprint :msg "~shared_ptr" :vars `(p p->idx))
 		     (delete p)))))
 	(defclass+ Q ()
 	  "private:"

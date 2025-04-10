@@ -25,10 +25,13 @@ public:
     int use_count() { return sp.load().use_count(); }
 
 private:
-    class Priv {};
+    class Priv {
+    public:
+        int idx;
+    };
     shared_ptr<Priv> createPriv() {
-        return shared_ptr<Priv>(new Priv, [&](Priv* p) {
-            std::cout << "~shared_ptr" << " p='" << p << "' " << std::endl;
+        return shared_ptr<Priv>(new Priv(3), [&](Priv* p) {
+            std::cout << "~shared_ptr" << " p='" << p << "' " << " p->idx='" << p->idx << "' " << std::endl;
             delete (p);
         });
     }
