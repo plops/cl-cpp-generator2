@@ -61,8 +61,8 @@
 	      ;; dtor
 	      (defmethod ~Ref ()
 		(declare (values :constructor))
-		
-		(when (== 2 "sp.load().use_count()")
+		,(lprint :msg "~Ref" :vars `((use_count)))
+		(when (== 3 (use_count))
 		  
 		  #-nil ,(lprint :msg "#### # tell arena" :vars `((idx) (use_count)))
 		  ("sp.load()->arena.setUnused" (idx))

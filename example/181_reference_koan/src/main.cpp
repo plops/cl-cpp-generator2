@@ -16,7 +16,8 @@ public:
                   << " &ref='" << &ref << "' " << " &arena='" << &arena << "' " << std::endl;
     }
     ~Ref() {
-        if (2 == sp.load().use_count()) {
+        std::cout << "~Ref" << " use_count()='" << use_count() << "' " << std::endl;
+        if (3 == use_count()) {
             std::cout << "#### # tell arena" << " idx()='" << idx() << "' " << " use_count()='" << use_count() << "' "
                       << std::endl;
             sp.load()->arena.setUnused(idx());
