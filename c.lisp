@@ -573,7 +573,8 @@ Common Lisp DEFMETHOD form.
 		    template)
 		  ;; 2 static
 		  (when (and static-p
-			     header-only)
+			     (or (eq in-class-p 'defclass+)
+			      header-only))
 		    "static")
 		  ;; 3 explicit
 		  (when (and explicit-p
@@ -582,7 +583,8 @@ Common Lisp DEFMETHOD form.
 		    "explicit")
 		  ;; 4 inline
 		  (when (and inline-p
-			     header-only)
+			     (or (eq in-class-p 'defclass+)
+				 header-only))
 		    "inline")
 		  ;; 5 virtual
 		  (when (and virtual-p
