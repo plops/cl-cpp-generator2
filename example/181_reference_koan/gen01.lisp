@@ -53,15 +53,23 @@
 			 (type "Arena<T,N>&" arena)
 			 (type int idx)
 			 (construct (ref r)
-				    (sp (createPriv idx arena))
-				    )
+				    (sp (createPriv idx arena)))
 			 (explicit)
 			 (values :constructor))
 		,(lprint :msg "Ref::ctor"
 			 :vars `(idx (dot sp (load) (get)) &ref &arena )))
 	      ;; dtor
 	      (defmethod ~Ref ()
-		(declare (values :constructor)))
+		(declare (values :constructor))
+		
+		(when (== 1 "sp.load().use_count()")
+		  
+		  ,(lprint :msg "#### # tell arena" :vars `("sp.load()->idx"
+							    "sp.load().use_count()")
+			   )
+		  ("sp.load()->arena.setUnused" "sp.load()->idx")
+		  )
+		)
 	      ;; copy ctor
 	      (defmethod Ref (rhs)
 		(declare (type "const Ref&" rhs)
@@ -89,8 +97,8 @@
 		(return (shared_ptr<Priv> (new (Priv idx arena))
 					  (lambda (p)
 					    (declare (type Priv* p))
-					    ,(lprint :msg "~shared_ptr" :vars `(p p->idx (p->arena.use_count p->idx)))
-					    (p->arena.setUnused p->idx)
+					    ,(lprint :msg "~shared_ptr" :vars `(p p->idx ))
+					    
 					    (delete p)))))
 	      
 	      "T& ref;"
@@ -115,7 +123,7 @@
 			  (setf *it true)
 			  (let ((idx (- it (used.begin)))
 				(el (dot r (at idx)))))
-			  ,(lprint :msg "found unsued element"
+			  ,(lprint :msg "found unused element"
 				   :vars `(idx))
 			  (return el)))))
 
@@ -159,6 +167,10 @@
 	(let ((a (space Arena (angle Widget N) (paren)))))
 
 	(let ((v (deque<Ref<Widget>> ))))
+	(dotimes (i (+ N))
+	  (v.push_back (a.aquire)))
+	,(lprint :msg "#### CLEAR ####")
+	(v.clear)
 	(dotimes (i (+ N 1))
 	  (v.push_back (a.aquire))))
        #+nil
