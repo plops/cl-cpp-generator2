@@ -33,10 +33,10 @@
       deque
       memory
       atomic
-      condition_variable
-      mutex
-      thread
-      
+      ;condition_variable
+      ;mutex
+      ;thread
+      cassert
       )
      "using namespace std;"
 
@@ -62,22 +62,20 @@
 	      (defmethod ~Ref ()
 		(declare (values :constructor))
 		
-		(when (== 1 "sp.load().use_count()")
+		(when (== 2 "sp.load().use_count()")
 		  
-		  ,(lprint :msg "#### # tell arena" :vars `("sp.load()->idx"
-							    "sp.load().use_count()")
-			   )
-		  ("sp.load()->arena.setUnused" "sp.load()->idx")
+		  #-nil ,(lprint :msg "#### # tell arena" :vars `((idx) (use_count)))
+		  ("sp.load()->arena.setUnused" (idx))
 		  )
 		)
 	      ;; copy ctor
 	      (defmethod Ref (rhs)
 		(declare (type "const Ref&" rhs)
 			 (construct (ref rhs.ref)
-				    (sp (createPriv (-> (dot rhs sp (load))
-							idx)
-						    (-> (dot rhs sp (load))
-							arena))))
+				    (sp (rhs.sp.load) #+nil  (createPriv (-> (dot rhs sp (load))
+									idx)
+								    (-> (dot rhs sp (load))
+									arena))))
 			 (values :constructor))
 		,(lprint :msg "Ref::copy-ctor"
 			 :vars `("sp.load()->idx")))
@@ -85,6 +83,11 @@
 		(declare (values "long int"))
 		(return (dot sp (load)
 			     (use_count))))
+	      (defmethod idx ()
+		(declare (values "long int"))
+		(return (-> (dot sp (load)
+				 )
+			    idx)))
 	      "private:"
 	      (defclass+ Priv ()
 		"public:"
@@ -98,7 +101,7 @@
 					  (lambda (p)
 					    (declare (type Priv* p))
 					    ,(lprint :msg "~shared_ptr" :vars `(p p->idx ))
-					    
+					    ;("p->arena.setUnused" p->idx)
 					    (delete p)))))
 	      
 	      "T& ref;"
@@ -129,11 +132,16 @@
 
 		 (defmethod setUnused (idx)
 		   (declare (type int idx))
+		   ,(lprint :msg "Arena::setUnused"
+			    :vars `(idx))
 		   (setf (aref used idx) false))
 		 (defmethod use_count (idx)
 		   (declare (values "long int")
 			    (type int idx))
-		   (return (dot (aref r idx) (use_count))))
+		   (let ((count (dot (aref r idx) (use_count)))))
+		   ,(lprint :msg "Arena::use_count"
+			    :vars `(count))
+		   (return count))
 		 
 		 (defmethod ,name ()
 		   (declare (values :constructor))
@@ -167,12 +175,20 @@
 	(let ((a (space Arena (angle Widget N) (paren)))))
 
 	(let ((v (deque<Ref<Widget>> ))))
-	(dotimes (i (+ N))
-	  (v.push_back (a.aquire)))
+	(dotimes (i N)
+	  (let ((e (a.aquire))))
+	  (assert (== i (e.idx)))
+	  (v.push_back e))
 	,(lprint :msg "#### CLEAR ####")
 	(v.clear)
-	(dotimes (i (+ N 1))
-	  (v.push_back (a.aquire))))
+	,(lprint :msg "#### REUSE N ELEMENTS ####")
+	(dotimes (i N)
+	  (let ((e (a.aquire))))
+	  (assert (== i (e.idx)))
+	  (v.push_back e)))
+       ,(lprint :msg "#### TRY TO GET ONE ELEMENT TOO MANY ####")
+       (v.push_back (a.aquire))
+       
        #+nil
        (do0 (let ((as (space array (angle Widget N)
 			     (paren)))))

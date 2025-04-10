@@ -67,7 +67,7 @@ endif ()
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
-            -Og -g -g3 -ggdb -gdwarf-4
+            -O0 -g -g3 -ggdb -gdwarf-4
     )
 else ()
     #    set(CMAKE_UNITY_BUILD true)

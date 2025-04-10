@@ -1,11 +1,9 @@
 #include <array>
 #include <atomic>
-#include <condition_variable>
+#include <cassert>
 #include <deque>
 #include <iostream>
 #include <memory>
-#include <mutex>
-#include <thread>
 using namespace std;
 constexpr int N{3};
 template <typename T, int N>
@@ -18,16 +16,17 @@ public:
                   << " &ref='" << &ref << "' " << " &arena='" << &arena << "' " << std::endl;
     }
     ~Ref() {
-        if (1 == sp.load().use_count()) {
-            std::cout << "#### # tell arena" << " sp.load()->idx='" << sp.load()->idx << "' "
-                      << " sp.load().use_count()='" << sp.load().use_count() << "' " << std::endl;
-            sp.load()->arena.setUnused(sp.load()->idx);
+        if (2 == sp.load().use_count()) {
+            std::cout << "#### # tell arena" << " idx()='" << idx() << "' " << " use_count()='" << use_count() << "' "
+                      << std::endl;
+            sp.load()->arena.setUnused(idx());
         }
     }
-    Ref(const Ref& rhs) : ref{rhs.ref}, sp{createPriv(rhs.sp.load()->idx, rhs.sp.load()->arena)} {
+    Ref(const Ref& rhs) : ref{rhs.ref}, sp{rhs.sp.load()} {
         std::cout << "Ref::copy-ctor" << " sp.load()->idx='" << sp.load()->idx << "' " << std::endl;
     }
     long int use_count() { return sp.load().use_count(); }
+    long int idx() { return sp.load()->idx; }
 
 private:
     class Priv {
@@ -58,8 +57,15 @@ public:
             return el;
         }
     }
-    void     setUnused(int idx) { used[idx] = false; }
-    long int use_count(int idx) { return r[idx].use_count(); }
+    void setUnused(int idx) {
+        std::cout << "Arena::setUnused" << " idx='" << idx << "' " << std::endl;
+        used[idx] = false;
+    }
+    long int use_count(int idx) {
+        auto count{r[idx].use_count()};
+        std::cout << "Arena::use_count" << " count='" << count << "' " << std::endl;
+        return count;
+    }
     Arena() {
         int idx = 0;
         for (auto&& e : a) {
@@ -87,9 +93,20 @@ int main(int argc, char** argv) {
     };
     auto a{Arena<Widget, N>()};
     auto v{deque<Ref<Widget>>()};
-    for (decltype(0 + N + 1) i = 0; i < N; i += 1) { v.push_back(a.aquire()); }
+    for (decltype(0 + N + 1) i = 0; i < N; i += 1) {
+        auto e{a.aquire()};
+        assert(i == e.idx());
+        v.push_back(e);
+    }
     std::cout << "#### CLEAR ####" << std::endl;
     v.clear();
-    for (decltype(0 + N + 1 + 1) i = 0; i < N + 1; i += 1) { v.push_back(a.aquire()); }
+    std::cout << "#### REUSE N ELEMENTS ####" << std::endl;
+    for (decltype(0 + N + 1) i = 0; i < N; i += 1) {
+        auto e{a.aquire()};
+        assert(i == e.idx());
+        v.push_back(e);
+    }
+    std::cout << "#### TRY TO GET ONE ELEMENT TOO MANY ####" << std::endl;
+    v.push_back(a.aquire());
     return 0;
 }
