@@ -49,10 +49,11 @@
 	  (return ref))
 
 	;; ctor
-	(defmethod Ref (r)
+	(defmethod Ref (r idx)
 	  (declare (type T& r)
+		   (type int idx)
 		   (construct (ref r)
-			      (sp (createPriv))
+			      (sp (createPriv idx))
 			      (q (new Q)))
 		   (explicit)
 		   (values :constructor))
@@ -69,14 +70,17 @@
 			   (use_count))))
 
 	;; copy ctor
+	;"Ref(const Ref& rhs) = default;"
 	(defmethod Ref (rhs)
 	  (declare (type "const Ref&" rhs)
 		   (construct (ref rhs.ref)
-			      (sp (createPriv)))
+			      (sp (createPriv (-> (dot rhs sp (load)
+						       )
+						  idx))))
 		   (values :constructor))
 	  ,(lprint :msg "Ref::copy-ctor")
 	  #+nil (when (== this &rhs)
-	    (return *this))
+		  (return *this))
 	  )
 	(defmethod use_count ()
 	  (declare (values int))
@@ -85,10 +89,10 @@
 	(defclass+ Priv ()
 	  "public:"
 	  "int idx;")
-	(defmethod createPriv ()
-	  (declare ;(static)
+	(defmethod createPriv (idx)
+	  (declare (type int idx)
 		   (values shared_ptr<Priv>))
-	  (return (shared_ptr<Priv> (new (Priv 3))
+	  (return (shared_ptr<Priv> (new (Priv idx))
 		   (lambda (p)
 		     (declare (type Priv* p))
 		     ,(lprint :msg "~shared_ptr" :vars `(p p->idx))
@@ -125,8 +129,10 @@
 		 
 		 (defmethod ,name ()
 		   (declare (values :constructor))
+		   "int idx=0;"
 		   (for-range (e a)
-			      (r.emplace_back e)))
+			      (r.emplace_back e idx)
+			      (incf idx)))
 
 
 

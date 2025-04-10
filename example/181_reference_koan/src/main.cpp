@@ -10,7 +10,7 @@ using namespace std;
 template <typename T>
 class Ref {
 public:
-    explicit Ref(T& r) : ref{r}, sp{createPriv()}, q{new Q} {
+    explicit Ref(T& r, int idx) : ref{r}, sp{createPriv(idx)}, q{new Q} {
         std::cout << "Ref::ctor" << " sp.load().get()='" << sp.load().get() << "' " << " &ref='" << &ref << "' "
                   << " use_count()='" << use_count() << "' " << std::endl;
     }
@@ -21,7 +21,9 @@ public:
         }
         std::cout << "~Ref" << " &ref='" << &ref << "' " << " use_count()='" << use_count() << "' " << std::endl;
     }
-    Ref(const Ref& rhs) : ref{rhs.ref}, sp{createPriv()} { std::cout << "Ref::copy-ctor" << std::endl; }
+    Ref(const Ref& rhs) : ref{rhs.ref}, sp{createPriv(rhs.sp.load()->idx)} {
+        std::cout << "Ref::copy-ctor" << std::endl;
+    }
     int use_count() { return sp.load().use_count(); }
 
 private:
@@ -29,8 +31,8 @@ private:
     public:
         int idx;
     };
-    shared_ptr<Priv> createPriv() {
-        return shared_ptr<Priv>(new Priv(3), [&](Priv* p) {
+    shared_ptr<Priv> createPriv(int idx) {
+        return shared_ptr<Priv>(new Priv(idx), [&](Priv* p) {
             std::cout << "~shared_ptr" << " p='" << p << "' " << " p->idx='" << p->idx << "' " << std::endl;
             delete (p);
         });
@@ -58,7 +60,11 @@ public:
         }
     }
     Arena() {
-        for (auto&& e : a) { r.emplace_back(e); }
+        int idx = 0;
+        for (auto&& e : a) {
+            r.emplace_back(e, idx);
+            idx++;
+        }
     }
     Arena(const T&)              = delete;
     Arena(T&&)                   = delete;
