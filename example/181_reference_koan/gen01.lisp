@@ -41,6 +41,11 @@
      (space "template<typename T>"
       (defclass+ Ref ()
 	"public:"
+	
+	(defmethod get ()
+	  (declare (values T&))
+	  (return ref))
+
 	;; ctor
 	(defmethod Ref (r)
 	  (declare (type T& r)
@@ -49,19 +54,34 @@
 			      (q (new Q)))
 		   (explicit)
 		   (values :constructor))
-	  ,(lprint :msg "Ref::ctor"))
+	  ,(lprint :msg "Ref::ctor"
+		   :vars `(&ref (use_count))))
 	;; dtor
 	(defmethod ~Ref ()
 	  (declare (values :constructor))
-	  (delete q)
-	  ,(lprint :msg "~Ref"))
+	  (when q
+	    (delete q)
+	    (setf q nullptr))
+	  ,(lprint :msg "~Ref"
+		   :vars `(&ref
+			   (use_count))))
 
 	;; copy ctor
 	(defmethod Ref (rhs)
-	  (declare (type "const T&" rhs)
+	  (declare (type "const Ref&" rhs)
 		   (construct (ref rhs.ref)
 			      (sp (make_shared<Priv> )))
 		   (values :constructor))
+	  ,(lprint :msg "Ref::copy-ctor")
+	  #+nil (when (== this &rhs)
+	    (return *this))
+	  )
+	#+nil 
+	(defmethod operator=(rhs)
+	  (declare (type "const T&" rhs)
+		   (construct (ref rhs.ref)
+			      (sp (make_shared<Priv> )))
+		   (values Ref<T>))
 	  ,(lprint :msg "Ref::copy-ctor"))
 
 	(defmethod use_count ()
@@ -76,7 +96,46 @@
 	"T& ref;"
 	"atomic<shared_ptr<Priv>> sp;"
 	"Q* q;"))
-          
+
+     ,(let ((name "Arena"))
+	`(space "template<typename T, int N>"
+	       (defclass+ ,name ()
+		 "public:"
+
+		 (defmethod aquire ()
+		   (declare (values Ref<T>))
+		   (let ((it (find (used.begin)
+				   (used.end)
+				   false)))
+		     (if (== (used.end)
+			     it)
+			 (do0
+			  ,(lprint :msg "no free arena element"))
+
+			 (do0
+			  (let ((idx (- it (used.begin)))
+				(el (dot r (at idx)))))
+			  (return el))))
+		   )
+		 
+		 (defmethod ,name ()
+		   (declare (values :constructor))
+		   (for-range (e a)
+			      (r.emplace_back e)))
+
+
+
+		 ,@(loop for e in `(,(format nil "~a(const T&)" name)
+				    ,(format nil "~a(T&&)" name)
+				    "const T& operator=(const T&)"
+				    "T& operator=(T&&)")
+			 collect
+			 (format nil "~a = delete;" e))
+		 "private:"
+		 "array<T,N> a;"
+		 "array<bool,N> used{};"
+		 "deque<Ref<T>> r;")))
+     
      (defun main (argc argv)
        (declare (values int)
 		(type int argc)
@@ -86,17 +145,26 @@
 	 "private:"
 	 "int i{3};"
 	 "float f{4.5F};")
-       "constexpr int N{17};"
-       (let ((as (space array (angle Widget N)
-		       (paren)))))
-       (let ((ar (space deque (angle (space Ref (angle Widget)))
-			(paren))))
-	 (for-range (e as)
-		    (ar.emplace_back e)))
-       
-       ,(lprint :vars `((sizeof as)))
-       ,(lprint :vars `((sizeof ar)))
-       ,(lprint :vars `((dot (aref ar 0) (use_count))))
+       "constexpr int N{3};"
+       #+nil
+       (do0
+	(let ((a (space Arena (angle Widget N) (paren))))
+	  )
+	(let ((e0 (a.aquire)))))
+
+       (do0 (let ((as (space array (angle Widget N)
+			     (paren)))))
+	    (let ((ar (space deque (angle (space Ref (angle Widget)))
+			     (paren))))
+	      (for-range (e as)
+			 (ar.emplace_back e)))
+	    
+	    ,(lprint :vars `((sizeof as)))
+	    ,(lprint :vars `((sizeof ar)))
+	    (let ((e (dot (aref ar 0)
+			  (get)))))
+	    (let ((qq (aref ar 0))))
+	    ,(lprint :vars `((dot (aref ar 0) (use_count)))))
             
        (return 0)))
    :omit-parens t
