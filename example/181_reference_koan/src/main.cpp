@@ -13,21 +13,14 @@ class Arena;
 template <typename T>
 class Ref {
 public:
-    explicit Ref(T& r, int idx, Arena<T, N>& arena) : ref{r}, sp{createPriv(idx, arena)}, q{new Q} {
-        std::cout << "Ref::ctor" << " sp.load().get()='" << sp.load().get() << "' " << " &ref='" << &ref << "' "
-                  << " use_count()='" << use_count() << "' " << std::endl;
+    explicit Ref(T& r, int idx, Arena<T, N>& arena) : ref{r}, sp{createPriv(idx, arena)} {
+        std::cout << "Ref::ctor" << " idx='" << idx << "' " << " sp.load().get()='" << sp.load().get() << "' "
+                  << " &ref='" << &ref << "' " << " &arena='" << &arena << "' " << std::endl;
     }
-    ~Ref() {
-        if (q) {
-            delete (q);
-            q = nullptr;
-        }
-        std::cout << "~Ref" << " &ref='" << &ref << "' " << " use_count()='" << use_count() << "' " << std::endl;
-    }
+    ~Ref() {}
     Ref(const Ref& rhs) : ref{rhs.ref}, sp{createPriv(rhs.sp.load()->idx, rhs.sp.load()->arena)} {
         std::cout << "Ref::copy-ctor" << std::endl;
     }
-    long int use_count() { return sp.load().use_count(); }
 
 private:
     class Priv {
@@ -42,14 +35,8 @@ private:
             delete (p);
         });
     }
-    class Q {
-    private:
-        mutex              m;
-        condition_variable c;
-    };
     T&                       ref;
     atomic<shared_ptr<Priv>> sp{nullptr};
-    Q*                       q{nullptr};
 };
 template <typename T, int N>
 class Arena {
@@ -92,6 +79,6 @@ int main(int argc, char** argv) {
     };
     auto a{Arena<Widget, N>()};
     auto v{deque<Ref<Widget>>()};
-    for (decltype(0 + N + 1 + 1) i = 0; i < N + 1; i += 1) { v.push_back(a.aquire()); }
+    for (decltype(0 + N + 10 + 1) i = 0; i < N + 10; i += 1) { v.push_back(a.aquire()); }
     return 0;
 }

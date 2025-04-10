@@ -60,23 +60,15 @@
 			 (type int idx)
 			 (construct (ref r)
 				    (sp (createPriv idx arena))
-				    (q (new Q)))
+				    )
 			 (explicit)
 			 (values :constructor))
 		,(lprint :msg "Ref::ctor"
-			 :vars `((dot sp (load) (get)) &ref (use_count))))
+			 :vars `(idx (dot sp (load) (get)) &ref &arena )))
 	      ;; dtor
 	      (defmethod ~Ref ()
-		(declare (values :constructor))
-		(when q
-		  (delete q)
-		  (setf q nullptr))
-		,(lprint :msg "~Ref"
-			 :vars `(&ref
-				 (use_count))))
-
+		(declare (values :constructor)))
 	      ;; copy ctor
-					;"Ref(const Ref& rhs) = default;"
 	      (defmethod Ref (rhs)
 		(declare (type "const Ref&" rhs)
 			 (construct (ref rhs.ref)
@@ -85,13 +77,8 @@
 						    (-> (dot rhs sp (load))
 							arena))))
 			 (values :constructor))
-		,(lprint :msg "Ref::copy-ctor")
-		#+nil (when (== this &rhs)
-			(return *this))
-		)
-	      (defmethod use_count ()
-		(declare (values "long int"))
-		(return (dot sp (load ) (use_count))))
+		,(lprint :msg "Ref::copy-ctor"))
+	      
 	      "private:"
 	      (defclass+ Priv ()
 		"public:"
@@ -107,13 +94,10 @@
 					    ,(lprint :msg "~shared_ptr" :vars `(p p->idx))
 					    (p->arena.setUnused p->idx)
 					    (delete p)))))
-	      (defclass+ Q ()
-		"private:"
-		"mutex m;"
-		"condition_variable c;")
+	      
 	      "T& ref;"
 	      "atomic<shared_ptr<Priv>> sp{nullptr};"
-	      "Q* q{nullptr};"))
+	      ))
 
      ,(let ((name "Arena"))
 	`(space "template<typename T, int N>"
@@ -147,8 +131,6 @@
 			      (r.emplace_back e idx *this)
 			      (incf idx)))
 
-
-
 		 ,@(loop for e in `(,(format nil "~a(const T&)" name)
 				    ,(format nil "~a(T&&)" name)
 				    "const T& operator=(const T&)"
@@ -177,7 +159,7 @@
 	#+nil(let ((e0 (a.aquire)))))
 
        (let ((v (deque<Ref<Widget>> ))))
-       (dotimes (i (+ N 1))
+       (dotimes (i (+ N 10))
 	 (v.push_back (a.aquire)))
        #+nil
        (do0 (let ((as (space array (angle Widget N)
