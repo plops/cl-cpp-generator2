@@ -11,7 +11,8 @@ template <typename T>
 class Ref {
 public:
     explicit Ref(T& r) : ref{r}, sp{createPriv()}, q{new Q} {
-        std::cout << "Ref::ctor" << " &ref='" << &ref << "' " << " use_count()='" << use_count() << "' " << std::endl;
+        std::cout << "Ref::ctor" << " sp.load().get()='" << sp.load().get() << "' " << " &ref='" << &ref << "' "
+                  << " use_count()='" << use_count() << "' " << std::endl;
     }
     ~Ref() {
         if (q) {
@@ -25,7 +26,7 @@ public:
 
 private:
     class Priv {};
-    static shared_ptr<Priv> createPriv() {
+    shared_ptr<Priv> createPriv() {
         return shared_ptr<Priv>(new Priv, [&](Priv* p) {
             std::cout << "~shared_ptr" << " p='" << p << "' " << std::endl;
             delete (p);

@@ -57,7 +57,7 @@
 		   (explicit)
 		   (values :constructor))
 	  ,(lprint :msg "Ref::ctor"
-		   :vars `(&ref (use_count))))
+		   :vars `((dot sp (load) (get)) &ref (use_count))))
 	;; dtor
 	(defmethod ~Ref ()
 	  (declare (values :constructor))
@@ -84,11 +84,14 @@
 	"private:"
 	(defclass+ Priv ())
 	(defmethod createPriv ()
-	  (declare (values "static shared_ptr<Priv>"))
+	  (declare ;(static)
+		   (values shared_ptr<Priv>))
 	  (return (shared_ptr<Priv> (new Priv)
 		   (lambda (p)
-		     (declare (type Priv* p))
-		     ,(lprint :msg "~shared_ptr" :vars `(p))
+		     (declare (type Priv* p)
+			      ;(capture this)
+			      )
+		     ,(lprint :msg "~shared_ptr" :vars `(p ))
 		     (delete p)))))
 	(defclass+ Q ()
 	  "private:"
