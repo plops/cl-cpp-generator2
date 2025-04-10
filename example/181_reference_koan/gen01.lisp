@@ -42,8 +42,9 @@
      (space "template<typename T>"
       (defclass+ Ref ()
 	"public:"
-	
-	#+nil (defmethod get ()
+
+	#+nil
+	(defmethod get ()
 	  (declare (values T&))
 	  (return ref))
 
@@ -51,7 +52,7 @@
 	(defmethod Ref (r)
 	  (declare (type T& r)
 		   (construct (ref r)
-			      (sp (make_shared<Priv>))
+			      (sp (createPriv))
 			      (q (new Q)))
 		   (explicit)
 		   (values :constructor))
@@ -61,7 +62,6 @@
 	(defmethod ~Ref ()
 	  (declare (values :constructor))
 	  (when q
-	    ;,(lprint :msg "~Ref delete q")
 	    (delete q)
 	    (setf q nullptr))
 	  ,(lprint :msg "~Ref"
@@ -72,25 +72,24 @@
 	(defmethod Ref (rhs)
 	  (declare (type "const Ref&" rhs)
 		   (construct (ref rhs.ref)
-			      (sp (make_shared<Priv> )))
+			      (sp (createPriv)))
 		   (values :constructor))
 	  ,(lprint :msg "Ref::copy-ctor")
 	  #+nil (when (== this &rhs)
 	    (return *this))
 	  )
-	#+nil 
-	(defmethod operator=(rhs)
-	  (declare (type "const T&" rhs)
-		   (construct (ref rhs.ref)
-			      (sp (make_shared<Priv> )))
-		   (values Ref<T>))
-	  ,(lprint :msg "Ref::copy-ctor"))
-
 	(defmethod use_count ()
 	  (declare (values int))
 	  (return (dot sp (load ) (use_count))))
 	"private:"
 	(defclass+ Priv ())
+	(defmethod createPriv ()
+	  (declare (values "static shared_ptr<Priv>"))
+	  (return (shared_ptr<Priv> (new Priv)
+		   (lambda (p)
+		     (declare (type Priv* p))
+		     ,(lprint :msg "~shared_ptr" :vars `(p))
+		     (delete p)))))
 	(defclass+ Q ()
 	  "private:"
 	  "mutex m;"

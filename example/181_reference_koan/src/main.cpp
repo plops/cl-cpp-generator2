@@ -10,7 +10,7 @@ using namespace std;
 template <typename T>
 class Ref {
 public:
-    explicit Ref(T& r) : ref{r}, sp{make_shared<Priv>()}, q{new Q} {
+    explicit Ref(T& r) : ref{r}, sp{createPriv()}, q{new Q} {
         std::cout << "Ref::ctor" << " &ref='" << &ref << "' " << " use_count()='" << use_count() << "' " << std::endl;
     }
     ~Ref() {
@@ -20,11 +20,17 @@ public:
         }
         std::cout << "~Ref" << " &ref='" << &ref << "' " << " use_count()='" << use_count() << "' " << std::endl;
     }
-    Ref(const Ref& rhs) : ref{rhs.ref}, sp{make_shared<Priv>()} { std::cout << "Ref::copy-ctor" << std::endl; }
+    Ref(const Ref& rhs) : ref{rhs.ref}, sp{createPriv()} { std::cout << "Ref::copy-ctor" << std::endl; }
     int use_count() { return sp.load().use_count(); }
 
 private:
     class Priv {};
+    static shared_ptr<Priv> createPriv() {
+        return shared_ptr<Priv>(new Priv, [&](Priv* p) {
+            std::cout << "~shared_ptr" << " p='" << p << "' " << std::endl;
+            delete (p);
+        });
+    }
     class Q {
     private:
         mutex              m;
