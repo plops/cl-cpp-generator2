@@ -29,7 +29,13 @@
    `(do0
      (include<>
       iostream
-      array)
+      array
+      deque
+      memory
+      atomic
+      condition_variable
+      mutex
+      )
      "using namespace std;"
 
      (space "template<typename T>"
@@ -38,20 +44,38 @@
 	;; ctor
 	(defmethod Ref (r)
 	  (declare (type T& r)
-		   (construct (ref r))
+		   (construct (ref r)
+			      (sp (make_shared<Priv>))
+			      (q (new Q)))
 		   (explicit)
-		   (values :constructor)))
+		   (values :constructor))
+	  ,(lprint :msg "Ref::ctor"))
 	;; dtor
 	(defmethod ~Ref ()
-	  (declare (values :constructor)))
+	  (declare (values :constructor))
+	  (delete q)
+	  ,(lprint :msg "~Ref"))
 
 	;; copy ctor
 	(defmethod Ref (rhs)
 	  (declare (type "const T&" rhs)
-		   (construct (ref rhs.ref))
-		   (values :constructor)))
+		   (construct (ref rhs.ref)
+			      (sp (make_shared<Priv> )))
+		   (values :constructor))
+	  ,(lprint :msg "Ref::copy-ctor"))
+
+	(defmethod use_count ()
+	  (declare (values int))
+	  (return (dot sp (load ) (use_count))))
 	"private:"
-	"T& ref;"))
+	(defclass+ Priv ())
+	(defclass+ Q ()
+	  "private:"
+	  "mutex m;"
+	  "condition_variable c;")
+	"T& ref;"
+	"atomic<shared_ptr<Priv>> sp;"
+	"Q* q;"))
           
      (defun main (argc argv)
        (declare (values int)
@@ -63,10 +87,16 @@
 	 "int i{3};"
 	 "float f{4.5F};")
        "constexpr int N{17};"
-       (let ((a (space array (angle Widget N)
+       (let ((as (space array (angle Widget N)
 		       (paren)))))
-       (let ((ar (space array (angle (space Ref (angle Widget)) N)
-			(paren)))))
+       (let ((ar (space deque (angle (space Ref (angle Widget)))
+			(paren))))
+	 (for-range (e as)
+		    (ar.emplace_back e)))
+       
+       ,(lprint :vars `((sizeof as)))
+       ,(lprint :vars `((sizeof ar)))
+       ,(lprint :vars `((dot (aref ar 0) (use_count))))
             
        (return 0)))
    :omit-parens t
