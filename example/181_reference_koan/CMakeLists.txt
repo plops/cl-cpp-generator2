@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17)
-project(cxx_policy_koan)
+project(cxx_reference_koan)
 
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED yes)
