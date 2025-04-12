@@ -15,10 +15,9 @@ public:
     }
     int getIndex() const { return idx; }
     ~Ref() {
-        if (3 == this->shared_from_this().use_count()) {
-            arena.setUnused(idx);
-            std::cout << "Ref-dtor" << std::endl;
-        }
+        std::cout << "Ref-dtor" << " this->shared_from_this().use_count()='" << this->shared_from_this().use_count()
+                  << "' " << std::endl;
+        if (3 == this->shared_from_this().use_count()) { arena.setUnused(idx); }
     }
     Ref(const Ref& rhs) : enable_shared_from_this<Ref<T>>{rhs}, arena{rhs.arena}, ref{rhs.ref}, idx{rhs.idx} {
         std::cout << "Ref-copy-ctor" << std::endl;

@@ -77,10 +77,13 @@
 		  ;; dtor
 		  (defmethod ~Ref ()
 		    (declare (values :constructor))
+		    ,(lprint :msg "Ref-dtor"
+			     :vars `((dot (this->shared_from_this)
+				     (use_count))))
 		    (when (== 3 (dot (this->shared_from_this)
 				     (use_count)))
 		      (arena.setUnused idx)
-		      ,(lprint :msg "Ref-dtor")))
+		      ))
 
 		  ;; copy ctor
 		  (defmethod Ref (rhs)
