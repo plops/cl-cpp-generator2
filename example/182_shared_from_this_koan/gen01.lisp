@@ -46,17 +46,27 @@
      ,(let ((name "Ref"))
 	`(space "template<typename T>"
 		(defclass+ Ref "public enable_shared_from_this<Ref<T>>"
-		  "public:"
+		  (comments "ctor private because this class must be instantiated as a shared_ptr (use factory function create() instead!)")
 		  ;; ctor
-		  (defmethod Ref (r idx associatedArena)
+		  (defmethod Ref (r index associatedArena)
 		    (declare (type T& r)
 			     (type "Arena<T>&" associatedArena)
-			     (type int idx)
-			     (construct (ref r)
-					(arena associatedArena)
+			     (type int index)
+			     (construct (arena associatedArena)
+					(ref r)
+					(idx index)
 					)
 			     (explicit)
 			     (values :constructor)))
+
+		  "public:"
+		  (space
+		   "template<typename... Ts>"
+		   (defmethod create (params)
+		     (declare (static)
+			      (values "shared_ptr<Ref<T>>")
+			      (type "Ts&&..." params))
+		     (return (make_shared<Ref<T>> "forward<Ts>(params)..."))))
 		  (defmethod getIndex ()
 		    (declare (values int))
 		    (return idx))
@@ -71,22 +81,48 @@
 		  ;; copy ctor
 		  (defmethod Ref (rhs)
 		    (declare (type "const Ref&" rhs)
-			     (construct (ref rhs.ref)
-					(arena rhs.arena)
-					(idx rhs.idx))
+			     (construct
+			      (enable_shared_from_this<Ref<T>> rhs)
+			      (arena rhs.arena)
+			      (ref rhs.ref)
+			      (idx rhs.idx))
 			     (values :constructor)))
+		  ;; copy assign
+		  #-nil
+		  (defmethod operator= (rhs)
+		    (declare (type "const Ref&" rhs)
+			     (values "Ref&"))
+		    (when (== this &rhs)
+		      (return *this))
+		    (enable_shared_from_this<Ref<T>>--operator= rhs)
+		    (setf arena rhs.arena
+			  ref rhs.ref
+			  idx rhs.idx)
+		    (return *this))
 		  ;; move ctor
-		  #+nil (defmethod Ref (rhs)
+		  (defmethod Ref (rhs)
 		    (declare (type "Ref&&" rhs)
 			     (noexcept)
-			     (construct (ref (move rhs.ref))
-					(arena (move rhs.arena))
-					)
+			     (construct (enable_shared_from_this<Ref<T>> rhs)
+					(arena rhs.arena)
+					(ref rhs.ref)
+					(idx rhs.idx))
 			     (values :constructor)))
-		  
+		  ;; move assign
+		  (defmethod operator= (rhs)
+		    (declare (type "Ref&&" rhs)
+			     (noexcept)
+			     (values "Ref&"))
+		    (when (== this &rhs)
+		      (return *this))
+		    (enable_shared_from_this<Ref<T>>--operator= (move rhs))
+		    (setf arena rhs.arena
+			  ref rhs.ref
+			  idx rhs.idx)
+		    (return *this))
 		  ;; copy ctor, move ctor ...
-		  #-nil
-		  ,@(loop for e in `(;,(format nil "~a(const T&)" name)
+		  #+nil 
+		  ,@(loop for e in `(,(format nil "~a(const T&)" name)
 				     ,(format nil "~a(T&&)" name)
 				     "const T& operator=(const T&)"
 				     "T& operator=(T&&)")
@@ -103,33 +139,33 @@
 	`(space "template<typename T>"
 	       (defclass+ ,name ()
 		 "public:"
+		 "using SRef = atomic<shared_ptr<Ref<T>>>;"
 		 (defmethod aquire ()
-		   (declare (values Ref<T>))
-		   (let ((it (find (used.begin)
-				   (used.end)
+		   (declare (values SRef))
+		   (let ((it (ranges--find  used
 				   false)))
-		     (if (== (used.end)
+		     (when (== (used.end)
 			     it)
-			 (do0
-			  (throw (runtime_error (string "no free arena element"))))
-			 (do0
-			  (setf *it true)
-			  (let ((idx (- it (used.begin)))
-				(el (dot r (at idx)))))
-			  ,(lprint :msg "found unused element"
-				   :vars `(idx))
-			  (return el)))))
+			 (throw (runtime_error (string "no free arena element"))))
+		     (setf *it true)
+		     (let ((idx (- it (used.begin)))
+			   #+nil (el
+			     (dot r (at idx)))))
+		     #+nil ,(lprint :msg "found unused element"
+			      :vars `(idx))
+		     (return (dot r (at idx)))
+		     #+inil (return el)))
 
 		 (defmethod setUnused (idx)
 		   (declare (type int idx))
-		   ,(lprint :msg "Arena::setUnused"
+		   #+nil ,(lprint :msg "Arena::setUnused"
 			    :vars `(idx))
 		   (setf (aref used idx) false))
 		 (defmethod use_count (idx)
 		   (declare (values "long int")
 			    (type int idx))
-		   (let ((count (dot (aref r idx) (use_count)))))
-		   ,(lprint :msg "Arena::use_count"
+		   (let ((count (dot r (at idx) (use_count)))))
+		   #+nil ,(lprint :msg "Arena::use_count"
 			    :vars `(count))
 		   (return count))
 		 
@@ -138,10 +174,10 @@
 			    (type int n=0)
 			    (construct (a (vector<T> n))
 				       (used (vector<bool> n))
-				       (r (vector<Ref<T>>))))
+				       (r (vector<SRef>))))
 		   "int idx=0;"
 		   (for-range (e a)
-			      (r.emplace_back e idx *this)
+			      (r.push_back ("Ref<T>::create" e idx *this))
 			      (incf idx)))
 
 		 ,@(loop for e in `(,(format nil "~a(const T&)" name)
@@ -153,7 +189,7 @@
 		 "private:"
 		 "vector<T> a;"
 		 "vector<bool> used{};"
-		 "vector<atomic<shared_ptr<Ref<T>>>> r;")))
+		 "vector<SRef> r;")))
      
      (defun main (argc argv)
        (declare (values int)
@@ -169,17 +205,17 @@
        (do0
 	(let ((a (space Arena (angle Widget) (paren n) ))))
 
-	(let ((v (vector<Ref<Widget>> ))))
+	(let ((v (vector<Arena<Widget>--SRef>))))
 	(dotimes (i n)
 	  (let ((e (a.aquire))))
-	  (assert (== i (e.getIndex)))
+	  (assert (== i (-> (e.load) (getIndex))))
 	  (v.push_back e))
 	,(lprint :msg "#### CLEAR ####")
 	(v.clear)
 	,(lprint :msg "#### REUSE N ELEMENTS ####")
 	(dotimes (i n)
 	  (let ((e (a.aquire))))
-	  (assert (== i (e.getIndex)))
+	  (assert (== i (-> (e.load) (getIndex))))
 	  (v.push_back e)))
        ,(lprint :msg "#### TRY TO GET ONE ELEMENT TOO MANY ####")
        (v.push_back (a.aquire))

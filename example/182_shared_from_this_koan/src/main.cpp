@@ -9,17 +9,37 @@ template <typename T>
 class Arena;
 template <typename T>
 class Ref : public enable_shared_from_this<Ref<T>> {
+    // ctor private because this class must be instantiated as a shared_ptr (use factory function create() instead!)
+    explicit Ref(T& r, int index, Arena<T>& associatedArena) : arena{associatedArena}, ref{r}, idx{index} {}
+
 public:
-    explicit Ref(T& r, int idx, Arena<T>& associatedArena) : ref{r}, arena{associatedArena} {}
+    template <typename... Ts>
+    static shared_ptr<Ref<T>> create(Ts&&... params) {
+        return make_shared<Ref<T>>(forward<Ts>(params)...);
+    };
     int getIndex() { return idx; }
     ~Ref() {
         auto sp{this->shared_from_this()};
         if (3 == sp.use_count()) { arena.setUnused(idx); }
     }
-    Ref(const Ref& rhs) : ref{rhs.ref}, arena{rhs.arena}, idx{rhs.idx} {}
-    Ref(T&&)                     = delete;
-    const T& operator=(const T&) = delete;
-    T&       operator=(T&&)      = delete;
+    Ref(const Ref& rhs) : enable_shared_from_this<Ref<T>>{rhs}, arena{rhs.arena}, ref{rhs.ref}, idx{rhs.idx} {}
+    Ref& operator=(const Ref& rhs) {
+        if (this == &rhs) { return *this; }
+        enable_shared_from_this<Ref<T>>::operator=(rhs);
+        arena = rhs.arena;
+        ref   = rhs.ref;
+        idx   = rhs.idx;
+        return *this;
+    }
+    Ref(Ref&& rhs) noexcept : enable_shared_from_this<Ref<T>>{rhs}, arena{rhs.arena}, ref{rhs.ref}, idx{rhs.idx} {}
+    Ref& operator=(Ref&& rhs) noexcept {
+        if (this == &rhs) { return *this; }
+        enable_shared_from_this<Ref<T>>::operator=(move(rhs));
+        arena = rhs.arena;
+        ref   = rhs.ref;
+        idx   = rhs.idx;
+        return *this;
+    }
 
 private:
     Arena<T>& arena;
@@ -29,30 +49,23 @@ private:
 template <typename T>
 class Arena {
 public:
-    Ref<T> aquire() {
-        auto it{find(used.begin(), used.end(), false)};
+    using SRef = atomic<shared_ptr<Ref<T>>>;
+    SRef aquire() {
+        auto it{ranges::find(used, false)};
         if (used.end() == it) { throw runtime_error("no free arena element"); }
-        else {
-            *it = true;
-            auto idx{it - used.begin()};
-            auto el{r.at(idx)};
-            std::cout << "found unused element" << " idx='" << idx << "' " << std::endl;
-            return el;
-        }
+        *it = true;
+        auto idx{it - used.begin()};
+        return r.at(idx);
     }
-    void setUnused(int idx) {
-        std::cout << "Arena::setUnused" << " idx='" << idx << "' " << std::endl;
-        used[idx] = false;
-    }
+    void     setUnused(int idx) { used[idx] = false; }
     long int use_count(int idx) {
-        auto count{r[idx].use_count()};
-        std::cout << "Arena::use_count" << " count='" << count << "' " << std::endl;
+        auto count{r.at(idx).use_count()};
         return count;
     }
-    Arena(int n = 0) : a{vector<T>(n)}, used{vector<bool>(n)}, r{vector<Ref<T>>()} {
+    Arena(int n = 0) : a{vector<T>(n)}, used{vector<bool>(n)}, r{vector<SRef>()} {
         int idx = 0;
         for (auto&& e : a) {
-            r.emplace_back(e, idx, *this);
+            r.push_back(Ref<T>::create(e, idx, *this));
             idx++;
         }
     }
@@ -62,9 +75,9 @@ public:
     T&       operator=(T&&)      = delete;
 
 private:
-    vector<T>                          a;
-    vector<bool>                       used{};
-    vector<atomic<shared_ptr<Ref<T>>>> r;
+    vector<T>    a;
+    vector<bool> used{};
+    vector<SRef> r;
 };
 
 int main(int argc, char** argv) {
@@ -76,10 +89,10 @@ int main(int argc, char** argv) {
     };
     const int n = 3;
     auto      a{Arena<Widget>(n)};
-    auto      v{vector<Ref<Widget>>()};
+    auto      v{vector<Arena<Widget>::SRef>()};
     for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
         auto e{a.aquire()};
-        assert(i == e.getIndex());
+        assert(i == e.load()->getIndex());
         v.push_back(e);
     }
     std::cout << "#### CLEAR ####" << std::endl;
@@ -87,7 +100,7 @@ int main(int argc, char** argv) {
     std::cout << "#### REUSE N ELEMENTS ####" << std::endl;
     for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
         auto e{a.aquire()};
-        assert(i == e.getIndex());
+        assert(i == e.load()->getIndex());
         v.push_back(e);
     }
     std::cout << "#### TRY TO GET ONE ELEMENT TOO MANY ####" << std::endl;
