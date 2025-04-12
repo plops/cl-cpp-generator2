@@ -10,14 +10,21 @@ class Arena;
 template <typename T>
 class Ref : public enable_shared_from_this<Ref<T>> {
 public:
-    explicit Ref(T& r, int index, Arena<T>& associatedArena) :
-        enable_shared_from_this<Ref<T>>{}, arena{associatedArena}, ref{r}, idx{index} {}
+    explicit Ref(T& r, int index, Arena<T>& associatedArena) : arena{associatedArena}, ref{r}, idx{index} {
+        std::cout << "Ref-ctor" << std::endl;
+    }
     int getIndex() const { return idx; }
     ~Ref() {
-        if (3 == this->shared_from_this().use_count()) { arena.setUnused(idx); }
+        if (3 == this->shared_from_this().use_count()) {
+            arena.setUnused(idx);
+            std::cout << "Ref-dtor" << std::endl;
+        }
     }
-    Ref(const Ref& rhs) : enable_shared_from_this<Ref<T>>{rhs}, arena{rhs.arena}, ref{rhs.ref}, idx{rhs.idx} {}
+    Ref(const Ref& rhs) : enable_shared_from_this<Ref<T>>{rhs}, arena{rhs.arena}, ref{rhs.ref}, idx{rhs.idx} {
+        std::cout << "Ref-copy-ctor" << std::endl;
+    }
     Ref& operator=(const Ref& rhs) {
+        std::cout << "Ref-copy-assign" << std::endl;
         if (this == &rhs) { return *this; }
         enable_shared_from_this<Ref<T>>::operator=(rhs);
         arena = rhs.arena;
@@ -25,8 +32,11 @@ public:
         idx   = rhs.idx;
         return *this;
     }
-    Ref(Ref&& rhs) noexcept : enable_shared_from_this<Ref<T>>{rhs}, arena{rhs.arena}, ref{rhs.ref}, idx{rhs.idx} {}
+    Ref(Ref&& rhs) noexcept : enable_shared_from_this<Ref<T>>{rhs}, arena{rhs.arena}, ref{rhs.ref}, idx{rhs.idx} {
+        std::cout << "Ref-move-ctor" << std::endl;
+    }
     Ref& operator=(Ref&& rhs) noexcept {
+        std::cout << "Ref-move-assign" << std::endl;
         if (this == &rhs) { return *this; }
         enable_shared_from_this<Ref<T>>::operator=(move(rhs));
         arena = rhs.arena;

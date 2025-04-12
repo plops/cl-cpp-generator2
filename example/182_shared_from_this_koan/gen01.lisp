@@ -55,13 +55,14 @@
 		    (declare (type T& r)
 			     (type "Arena<T>&" associatedArena)
 			     (type int index)
-			     (construct (enable_shared_from_this<Ref<T>>)
+			     (construct ;(enable_shared_from_this<Ref<T>>)
 					(arena associatedArena)
 					(ref r)
 					(idx index)
 					)
 			     (explicit)
-			     (values :constructor)))
+			     (values :constructor))
+		    ,(lprint :msg "Ref-ctor"))
 		  #+nil(space
 		   "template<typename... Ts>"
 		   (defmethod create (params)
@@ -78,7 +79,8 @@
 		    (declare (values :constructor))
 		    (when (== 3 (dot (this->shared_from_this)
 				     (use_count)))
-		      (arena.setUnused idx)))
+		      (arena.setUnused idx)
+		      ,(lprint :msg "Ref-dtor")))
 
 		  ;; copy ctor
 		  (defmethod Ref (rhs)
@@ -88,12 +90,14 @@
 			      (arena rhs.arena)
 			      (ref rhs.ref)
 			      (idx rhs.idx))
-			     (values :constructor)))
+			     (values :constructor))
+		    ,(lprint :msg "Ref-copy-ctor"))
 		  ;; copy assign
 		  #-nil
 		  (defmethod operator= (rhs)
 		    (declare (type "const Ref&" rhs)
 			     (values "Ref&"))
+		    ,(lprint :msg "Ref-copy-assign")
 		    (when (== this &rhs)
 		      (return *this))
 		    (enable_shared_from_this<Ref<T>>--operator= rhs)
@@ -109,12 +113,14 @@
 					(arena rhs.arena)
 					(ref rhs.ref)
 					(idx rhs.idx))
-			     (values :constructor)))
+			     (values :constructor))
+		    ,(lprint :msg "Ref-move-ctor"))
 		  ;; move assign
 		  (defmethod operator= (rhs)
 		    (declare (type "Ref&&" rhs)
 			     (noexcept)
 			     (values "Ref&"))
+		    ,(lprint :msg "Ref-move-assign")
 		    (when (== this &rhs)
 		      (return *this))
 		    (enable_shared_from_this<Ref<T>>--operator= (move rhs))
