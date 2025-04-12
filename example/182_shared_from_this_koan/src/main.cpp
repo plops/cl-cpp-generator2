@@ -16,30 +16,10 @@ public:
     }
     int getIndex() const { return idx; }
     ~Ref() { std::cout << "Ref-dtor" << " idx='" << idx << "' " << std::endl; }
-    Ref(const Ref& rhs) : enable_shared_from_this<Ref<T>>{rhs}, arena{rhs.arena}, ref{rhs.ref}, idx{rhs.idx} {
-        std::cout << "Ref-copy-ctor" << std::endl;
-    }
-    Ref& operator=(const Ref& rhs) {
-        std::cout << "Ref-copy-assign" << std::endl;
-        if (this == &rhs) { return *this; }
-        enable_shared_from_this<Ref<T>>::operator=(rhs);
-        arena = rhs.arena;
-        ref   = rhs.ref;
-        idx   = rhs.idx;
-        return *this;
-    }
-    Ref(Ref&& rhs) noexcept : enable_shared_from_this<Ref<T>>{rhs}, arena{rhs.arena}, ref{rhs.ref}, idx{rhs.idx} {
-        std::cout << "Ref-move-ctor" << std::endl;
-    }
-    Ref& operator=(Ref&& rhs) noexcept {
-        std::cout << "Ref-move-assign" << std::endl;
-        if (this == &rhs) { return *this; }
-        enable_shared_from_this<Ref<T>>::operator=(move(rhs));
-        arena = rhs.arena;
-        ref   = rhs.ref;
-        idx   = rhs.idx;
-        return *this;
-    }
+    Ref(const T&)                = delete;
+    Ref(T&&)                     = delete;
+    const T& operator=(const T&) = delete;
+    T&       operator=(T&&)      = delete;
 
 private:
     Arena<T>& arena;

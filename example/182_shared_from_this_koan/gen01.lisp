@@ -87,54 +87,55 @@
 			   (arena.setUnused idx)
 			   ))
 
-		  ;; copy ctor
-		  (defmethod Ref (rhs)
-		    (declare (type "const Ref&" rhs)
-			     (construct
-			      (enable_shared_from_this<Ref<T>> rhs)
-			      (arena rhs.arena)
-			      (ref rhs.ref)
-			      (idx rhs.idx))
-			     (values :constructor))
-		    ,(lprint :msg "Ref-copy-ctor"))
-		  ;; copy assign
-		  #-nil
-		  (defmethod operator= (rhs)
-		    (declare (type "const Ref&" rhs)
-			     (values "Ref&"))
-		    ,(lprint :msg "Ref-copy-assign")
-		    (when (== this &rhs)
-		      (return *this))
-		    (enable_shared_from_this<Ref<T>>--operator= rhs)
-		    (setf arena rhs.arena
-			  ref rhs.ref
-			  idx rhs.idx)
-		    (return *this))
-		  ;; move ctor
-		  (defmethod Ref (rhs)
-		    (declare (type "Ref&&" rhs)
-			     (noexcept)
-			     (construct (enable_shared_from_this<Ref<T>> rhs)
-					(arena rhs.arena)
-					(ref rhs.ref)
-					(idx rhs.idx))
-			     (values :constructor))
-		    ,(lprint :msg "Ref-move-ctor"))
-		  ;; move assign
-		  (defmethod operator= (rhs)
-		    (declare (type "Ref&&" rhs)
-			     (noexcept)
-			     (values "Ref&"))
-		    ,(lprint :msg "Ref-move-assign")
-		    (when (== this &rhs)
-		      (return *this))
-		    (enable_shared_from_this<Ref<T>>--operator= (move rhs))
-		    (setf arena rhs.arena
-			  ref rhs.ref
-			  idx rhs.idx)
-		    (return *this))
-		  ;; copy ctor, move ctor ...
-		  #+nil 
+		 #+nil (do0
+		   ;; copy ctor
+		   (defmethod Ref (rhs)
+		     (declare (type "const Ref&" rhs)
+			      (construct
+			       (enable_shared_from_this<Ref<T>> rhs)
+			       (arena rhs.arena)
+			       (ref rhs.ref)
+			       (idx rhs.idx))
+			      (values :constructor))
+		     ,(lprint :msg "Ref-copy-ctor"))
+		   ;; copy assign
+		   #-nil
+		   (defmethod operator= (rhs)
+		     (declare (type "const Ref&" rhs)
+			      (values "Ref&"))
+		     ,(lprint :msg "Ref-copy-assign")
+		     (when (== this &rhs)
+		       (return *this))
+		     (enable_shared_from_this<Ref<T>>--operator= rhs)
+		     (setf arena rhs.arena
+			   ref rhs.ref
+			   idx rhs.idx)
+		     (return *this))
+		   ;; move ctor
+		   (defmethod Ref (rhs)
+		     (declare (type "Ref&&" rhs)
+			      (noexcept)
+			      (construct (enable_shared_from_this<Ref<T>> rhs)
+					 (arena rhs.arena)
+					 (ref rhs.ref)
+					 (idx rhs.idx))
+			      (values :constructor))
+		     ,(lprint :msg "Ref-move-ctor"))
+		   ;; move assign
+		   (defmethod operator= (rhs)
+		     (declare (type "Ref&&" rhs)
+			      (noexcept)
+			      (values "Ref&"))
+		     ,(lprint :msg "Ref-move-assign")
+		     (when (== this &rhs)
+		       (return *this))
+		     (enable_shared_from_this<Ref<T>>--operator= (move rhs))
+		     (setf arena rhs.arena
+			   ref rhs.ref
+			   idx rhs.idx)
+		     (return *this))
+		   ;; copy ctor, move ctor ...
+		  ) 
 		  ,@(loop for e in `(,(format nil "~a(const T&)" name)
 				     ,(format nil "~a(T&&)" name)
 				     "const T& operator=(const T&)"
