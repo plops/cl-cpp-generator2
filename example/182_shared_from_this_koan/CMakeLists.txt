@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
-project(cxx_reference_koan)
+project(cxx_shared_from_this_koan)
 
-set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED yes)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 

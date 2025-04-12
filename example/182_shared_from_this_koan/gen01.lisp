@@ -11,7 +11,7 @@
 
 (progn
   (progn
-    (defparameter *source-dir* #P"example/181_reference_koan/src/")
+    (defparameter *source-dir* #P"example/182_shared_from_this_koan/src/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*)))
@@ -35,7 +35,8 @@
       atomic
       ;condition_variable
       ;mutex
-      ;thread
+      algorithm
+					;thread
       cassert
       )
      "using namespace std;"
@@ -188,22 +189,7 @@
 	  (v.push_back e)))
        ,(lprint :msg "#### TRY TO GET ONE ELEMENT TOO MANY ####")
        (v.push_back (a.aquire))
-       
-       #+nil
-       (do0 (let ((as (space array (angle Widget N)
-			     (paren)))))
-	    (let ((ar (space deque (angle (space Ref (angle Widget)))
-			     (paren))))
-	      (for-range (e as)
-			 (ar.emplace_back e)))
-	    
-	    ,(lprint :vars `((sizeof as)))
-	    ,(lprint :vars `((sizeof ar)))
-	    (let ((e (dot (aref ar 0)
-			  (get)))))
-	    (let ((qq (aref ar 0))))
-	    ,(lprint :vars `((dot (aref ar 0) (use_count)))))
-            
+                   
        (return 0)))
    :omit-parens t
    :format nil
