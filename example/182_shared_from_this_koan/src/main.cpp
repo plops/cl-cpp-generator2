@@ -9,18 +9,12 @@ template <typename T>
 class Arena;
 template <typename T>
 class Ref : public enable_shared_from_this<Ref<T>> {
-    // ctor private because this class must be instantiated as a shared_ptr (use factory function create() instead!)
-    explicit Ref(T& r, int index, Arena<T>& associatedArena) : arena{associatedArena}, ref{r}, idx{index} {}
-
 public:
-    template <typename... Ts>
-    static shared_ptr<Ref<T>> create(Ts&&... params) {
-        return make_shared<Ref<T>>(forward<Ts>(params)...);
-    };
-    int getIndex() { return idx; }
+    explicit Ref(T& r, int index, Arena<T>& associatedArena) :
+        enable_shared_from_this<Ref<T>>{}, arena{associatedArena}, ref{r}, idx{index} {}
+    int getIndex() const { return idx; }
     ~Ref() {
-        auto sp{this->shared_from_this()};
-        if (3 == sp.use_count()) { arena.setUnused(idx); }
+        if (3 == this->shared_from_this().use_count()) { arena.setUnused(idx); }
     }
     Ref(const Ref& rhs) : enable_shared_from_this<Ref<T>>{rhs}, arena{rhs.arena}, ref{rhs.ref}, idx{rhs.idx} {}
     Ref& operator=(const Ref& rhs) {
@@ -50,13 +44,6 @@ template <typename T>
 class Arena {
 public:
     using SRef = atomic<shared_ptr<Ref<T>>>;
-    SRef aquire() {
-        auto it{ranges::find(used, false)};
-        if (used.end() == it) { throw runtime_error("no free arena element"); }
-        *it = true;
-        auto idx{it - used.begin()};
-        return r.at(idx);
-    }
     void     setUnused(int idx) { used[idx] = false; }
     long int use_count(int idx) {
         auto count{r.at(idx).use_count()};
@@ -65,7 +52,7 @@ public:
     Arena(int n = 0) : a{vector<T>(n)}, used{vector<bool>(n)}, r{vector<SRef>()} {
         int idx = 0;
         for (auto&& e : a) {
-            r.push_back(Ref<T>::create(e, idx, *this));
+            r.push_back(make_shared<Ref<T>>(e, idx, *this));
             idx++;
         }
     }
@@ -89,21 +76,5 @@ int main(int argc, char** argv) {
     };
     const int n = 3;
     auto      a{Arena<Widget>(n)};
-    auto      v{vector<Arena<Widget>::SRef>()};
-    for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
-        auto e{a.aquire()};
-        assert(i == e.load()->getIndex());
-        v.push_back(e);
-    }
-    std::cout << "#### CLEAR ####" << std::endl;
-    v.clear();
-    std::cout << "#### REUSE N ELEMENTS ####" << std::endl;
-    for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
-        auto e{a.aquire()};
-        assert(i == e.load()->getIndex());
-        v.push_back(e);
-    }
-    std::cout << "#### TRY TO GET ONE ELEMENT TOO MANY ####" << std::endl;
-    v.push_back(a.aquire());
     return 0;
 }

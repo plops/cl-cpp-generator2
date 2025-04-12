@@ -46,21 +46,23 @@
      ,(let ((name "Ref"))
 	`(space "template<typename T>"
 		(defclass+ Ref "public enable_shared_from_this<Ref<T>>"
-		  (comments "ctor private because this class must be instantiated as a shared_ptr (use factory function create() instead!)")
+		  #+nil (comments "ctor private because this class must be instantiated as a shared_ptr (use factory function create() instead!)")
 		  ;; ctor
+		  
+
+		  "public:"
 		  (defmethod Ref (r index associatedArena)
 		    (declare (type T& r)
 			     (type "Arena<T>&" associatedArena)
 			     (type int index)
-			     (construct (arena associatedArena)
+			     (construct (enable_shared_from_this<Ref<T>>)
+					(arena associatedArena)
 					(ref r)
 					(idx index)
 					)
 			     (explicit)
 			     (values :constructor)))
-
-		  "public:"
-		  (space
+		  #+nil(space
 		   "template<typename... Ts>"
 		   (defmethod create (params)
 		     (declare (static)
@@ -68,13 +70,13 @@
 			      (type "Ts&&..." params))
 		     (return (make_shared<Ref<T>> "forward<Ts>(params)..."))))
 		  (defmethod getIndex ()
-		    (declare (values int))
+		    (declare (values int)
+			     (const))
 		    (return idx))
 		  ;; dtor
 		  (defmethod ~Ref ()
 		    (declare (values :constructor))
-		    (let ((sp (this->shared_from_this))))
-		    (when (== 3 (dot sp
+		    (when (== 3 (dot (this->shared_from_this)
 				     (use_count)))
 		      (arena.setUnused idx)))
 
@@ -140,7 +142,7 @@
 	       (defclass+ ,name ()
 		 "public:"
 		 "using SRef = atomic<shared_ptr<Ref<T>>>;"
-		 (defmethod aquire ()
+		#+nil (defmethod aquire ()
 		   (declare (values SRef))
 		   (let ((it (ranges--find  used
 				   false)))
@@ -177,7 +179,9 @@
 				       (r (vector<SRef>))))
 		   "int idx=0;"
 		   (for-range (e a)
-			      (r.push_back ("Ref<T>::create" e idx *this))
+			      ;(r.push_back ("Ref<T>::create" e idx *this))
+			      (r.push_back ("make_shared<Ref<T>>" e idx *this))
+			      
 			      (incf idx)))
 
 		 ,@(loop for e in `(,(format nil "~a(const T&)" name)
@@ -205,20 +209,21 @@
        (do0
 	(let ((a (space Arena (angle Widget) (paren n) ))))
 
-	(let ((v (vector<Arena<Widget>--SRef>))))
-	(dotimes (i n)
-	  (let ((e (a.aquire))))
-	  (assert (== i (-> (e.load) (getIndex))))
-	  (v.push_back e))
-	,(lprint :msg "#### CLEAR ####")
-	(v.clear)
-	,(lprint :msg "#### REUSE N ELEMENTS ####")
-	(dotimes (i n)
-	  (let ((e (a.aquire))))
-	  (assert (== i (-> (e.load) (getIndex))))
-	  (v.push_back e)))
-       ,(lprint :msg "#### TRY TO GET ONE ELEMENT TOO MANY ####")
-       (v.push_back (a.aquire))
+	;(let ((v (vector<Arena<Widget>--SRef>))))
+	#+nil
+	(do0 (dotimes (i n)
+	       (let ((e (a.aquire))))
+	       (assert (== i (-> (e.load) (getIndex))))
+	       (v.push_back e))
+	     ,(lprint :msg "#### CLEAR ####")
+	     (v.clear)
+	     ,(lprint :msg "#### REUSE N ELEMENTS ####")
+	     (dotimes (i n)
+	       (let ((e (a.aquire))))
+	       (assert (== i (-> (e.load) (getIndex))))
+	       (v.push_back e))
+	     ,(lprint :msg "#### TRY TO GET ONE ELEMENT TOO MANY ####")
+	     (v.push_back (a.aquire))))
                    
        (return 0)))
    :omit-parens t
