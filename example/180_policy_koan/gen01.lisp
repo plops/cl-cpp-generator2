@@ -11,7 +11,7 @@
 
 (progn
   (progn
-    (defparameter *source-dir* #P"example/180_policy_koan/src/")
+    (defparameter *source-dir* #P"example/182_shared_from_this_koan/src/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*)))
@@ -27,98 +27,169 @@
     (merge-pathnames "main.cpp"
 		     *source-dir*))
    `(do0
-     
      (include<>
       iostream
+      ;array
+      ;deque
+      vector
+      memory
+      atomic
+      ;condition_variable
+      ;mutex
+      algorithm
+					;thread
+      cassert
       )
      "using namespace std;"
-     ,@(loop for e in `((:name OpNewCreator :create (return (new T)))
-			(:name MallocCreator :create (let ((buf (malloc (sizeof T))))
-						       (unless buf
-							 (return nullptr))
-						       (return (space new (paren buf)
-								      "T")))
-			       )
-			(:name PrototypeCreator
-			 :create (return (? prototype (prototype->clone) nullptr))
-			 :extra (do0
-				 (defmethod PrototypeCreator (obj=nullptr)
-				   (declare (type T* obj=nullptr)
-					    (values "explicit")
-					    (construct (prototype obj))))
-				 (defmethod getPrototype () (declare (values T*)) (return prototype))
-				 (defmethod setPrototype (obj)
-				   (declare (type T* obj))
-				   (setf prototype obj))
-				 "private:"
-				 "T* prototype;")))
-	     collect
-	     (destructuring-bind (&key name create extra) e
-	       `(space template (angle "class T")
-		       (defclass+ ,name ()
-			 "public:"
-			 (defmethod create ()
-			   (declare (values "T*")
-				    (static))
-			   ,(lprint :msg (format nil  "~a<T>::create " name)
-				    :vars `((sizeof T)
-					    (sizeof *this)
-					    (sizeof (decltype *this))
-					    (sizeof ,(format nil "~a<T>" name))))
-			   ,create)
-			 ,(if extra extra "")
+
+     "template<typename T> class Arena;"
+     ,(let ((name "Ref"))
+	`(space "template<typename T>"
+		(defclass+ Ref ()
+		  "public:"
+		  ;; ctor
+		  (defmethod Ref (r idx associatedArena)
+		    (declare (type T& r)
+			     (type "Arena<T>&" associatedArena)
+			     (type int idx)
+			     (construct (ref r)
+					(arena associatedArena)
+					(sp (make_shared<Priv> idx)))
+			     (explicit)
+			     (values :constructor)))
+		  ;; dtor
+		  (defmethod ~Ref ()
+		    (declare (values :constructor))
+		    (when (== 3 (use_count))
+		      (arena.setUnused (idx))))
+
+		  ;; copy ctor
+		  (defmethod Ref (rhs)
+		    (declare (type "const Ref&" rhs)
+			     (construct (ref rhs.ref)
+					(arena rhs.arena)
+					(sp (rhs.sp.load)))
+			     (values :constructor)))
+		  ;; move ctor
+		  #+nil (defmethod Ref (rhs)
+		    (declare (type "Ref&&" rhs)
+			     (noexcept)
+			     (construct (ref (move rhs.ref))
+					(arena (move rhs.arena))
+					(sp (move (rhs.sp.load))))
+			     (values :constructor)))
+		  
+		  ;; copy ctor, move ctor ...
+		  #-nil
+		  ,@(loop for e in `(;,(format nil "~a(const T&)" name)
+				     ,(format nil "~a(T&&)" name)
+				     "const T& operator=(const T&)"
+				     "T& operator=(T&&)")
+			  collect
+			  (format nil "~a = delete;" e))
+		  
+		  (defmethod use_count ()
+		    (declare (values "long int"))
+		    (return (dot sp (load)
+				 (use_count))))
+		  (defmethod idx ()
+		    (declare (values "long int"))
+		    (return (-> (dot sp (load))
+				idx)))
+		  "private:"
+		  (defclass+ Priv ()
+		    "public:"
+		    "int idx;")
+		  "Arena<T>& arena;"	      
+		  "T& ref;"
+		  "atomic<shared_ptr<Priv>> sp{nullptr};"
+		  )))
+
+     ,(let ((name "Arena"))
+	`(space "template<typename T>"
+	       (defclass+ ,name ()
+		 "public:"
+		 (defmethod aquire ()
+		   (declare (values Ref<T>))
+		   (let ((it (find (used.begin)
+				   (used.end)
+				   false)))
+		     (if (== (used.end)
+			     it)
 			 (do0
-			  "protected:"
-			  ,(format nil "~~~a(){}" name))))))
+			  (throw (runtime_error (string "no free arena element"))))
+			 (do0
+			  (setf *it true)
+			  (let ((idx (- it (used.begin)))
+				(el (dot r (at idx)))))
+			  ,(lprint :msg "found unused element"
+				   :vars `(idx))
+			  (return el)))))
 
-     (defclass+ Widget ()
-	      "int a;"
-       "float f;"
-       "array<char,20> c;"
-       "public:"
-       (defmethod clone ()
-	 (declare (values Widget*)
-		  )
-	 (return (new Widget))
-	 ))
-     (space ;template (angle "class CreationPolicy")
-     "template<template<class Created> class CreationPolicy = OpNewCreator>"
-      (defclass+ WidgetManager "public CreationPolicy<Widget>"
-	"public:"
+		 (defmethod setUnused (idx)
+		   (declare (type int idx))
+		   ,(lprint :msg "Arena::setUnused"
+			    :vars `(idx))
+		   (setf (aref used idx) false))
+		 (defmethod use_count (idx)
+		   (declare (values "long int")
+			    (type int idx))
+		   (let ((count (dot (aref r idx) (use_count)))))
+		   ,(lprint :msg "Arena::use_count"
+			    :vars `(count))
+		   (return count))
+		 
+		 (defmethod ,name (n=0)
+		   (declare (values :constructor)
+			    (type int n=0)
+			    (construct (a (vector<T> n))
+				       (used (vector<bool> n))
+				       (r (vector<Ref<T>>))))
+		   "int idx=0;"
+		   (for-range (e a)
+			      (r.emplace_back e idx *this)
+			      (incf idx)))
 
-	(defmethod WidgetManager ()
-	  (declare (values :constructor))
-	  )
-	
-	(defmethod switchPrototype (newPrototype)
-	  (declare (type Widget* newPrototype))
-	  "CreationPolicy<Widget>& myPolicy = *this;"
-	  (delete (myPolicy.getPrototype))
-	  (myPolicy.setPrototype newPrototype)
-	  )
-	))
-     "using MyWidgetMgr = WidgetManager<OpNewCreator>;"
+		 ,@(loop for e in `(,(format nil "~a(const T&)" name)
+				    ,(format nil "~a(T&&)" name)
+				    "const T& operator=(const T&)"
+				    "T& operator=(T&&)")
+			 collect
+			 (format nil "~a = delete;" e))
+		 "private:"
+		 "vector<T> a;"
+		 "vector<bool> used{};"
+		 "vector<Ref<T>> r;")))
      
      (defun main (argc argv)
        (declare (values int)
 		(type int argc)
 		(type char** argv))
+       (defclass+ Widget ()
+	 "public:"
+	 "private:"
+	 "int i{3};"
+	 "float f{4.5F};")
+       "const int n=3;"
+             
+       (do0
+	(let ((a (space Arena (angle Widget) (paren n) ))))
 
-       (let ((wm0 (MyWidgetMgr))
-	     (e0 (wm0.create)))
-	 )
-       (let ((wm1 (WidgetManager<MallocCreator>))
-	     (e1 (wm1.create))))
-
-       (let ((wm2 (WidgetManager<PrototypeCreator>))
-	      )
-	 (wm2.setPrototype e1)
-	 (let ((e2 (wm2.create)))))
-       (wm2.switchPrototype e2)
-       ,(lprint :vars `((sizeof wm0)
-			(sizeof wm1)
-			(sizeof wm2)))
-       
+	(let ((v (vector<Ref<Widget>> ))))
+	(dotimes (i n)
+	  (let ((e (a.aquire))))
+	  (assert (== i (e.idx)))
+	  (v.push_back e))
+	,(lprint :msg "#### CLEAR ####")
+	(v.clear)
+	,(lprint :msg "#### REUSE N ELEMENTS ####")
+	(dotimes (i n)
+	  (let ((e (a.aquire))))
+	  (assert (== i (e.idx)))
+	  (v.push_back e)))
+       ,(lprint :msg "#### TRY TO GET ONE ELEMENT TOO MANY ####")
+       (v.push_back (a.aquire))
+                   
        (return 0)))
    :omit-parens t
    :format nil
