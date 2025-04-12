@@ -54,21 +54,26 @@
 			     (type int idx)
 			     (construct (ref r)
 					(arena associatedArena)
-					(sp (make_shared<Priv> idx)))
+					)
 			     (explicit)
 			     (values :constructor)))
+		  (defmethod getIndex ()
+		    (declare (values int))
+		    (return idx))
 		  ;; dtor
 		  (defmethod ~Ref ()
 		    (declare (values :constructor))
-		    (when (== 3 (use_count))
-		      (arena.setUnused (idx))))
+		    (let ((sp (this->shared_from_this))))
+		    (when (== 3 (dot sp
+				     (use_count)))
+		      (arena.setUnused idx)))
 
 		  ;; copy ctor
 		  (defmethod Ref (rhs)
 		    (declare (type "const Ref&" rhs)
 			     (construct (ref rhs.ref)
 					(arena rhs.arena)
-					(sp (rhs.sp.load)))
+					(idx rhs.idx))
 			     (values :constructor)))
 		  ;; move ctor
 		  #+nil (defmethod Ref (rhs)
@@ -76,7 +81,7 @@
 			     (noexcept)
 			     (construct (ref (move rhs.ref))
 					(arena (move rhs.arena))
-					(sp (move (rhs.sp.load))))
+					)
 			     (values :constructor)))
 		  
 		  ;; copy ctor, move ctor ...
@@ -88,11 +93,6 @@
 			  collect
 			  (format nil "~a = delete;" e))
 		  
-		  (defmethod use_count ()
-		    (declare (values "long int"))
-		    (return (dot sp (load)
-				 (use_count))))
-		 
 		  "private:"
 		  "Arena<T>& arena;"	      
 		  "T& ref;"
@@ -172,14 +172,14 @@
 	(let ((v (vector<Ref<Widget>> ))))
 	(dotimes (i n)
 	  (let ((e (a.aquire))))
-	  (assert (== i (e.idx)))
+	  (assert (== i (e.getIndex)))
 	  (v.push_back e))
 	,(lprint :msg "#### CLEAR ####")
 	(v.clear)
 	,(lprint :msg "#### REUSE N ELEMENTS ####")
 	(dotimes (i n)
 	  (let ((e (a.aquire))))
-	  (assert (== i (e.idx)))
+	  (assert (== i (e.getIndex)))
 	  (v.push_back e)))
        ,(lprint :msg "#### TRY TO GET ONE ELEMENT TOO MANY ####")
        (v.push_back (a.aquire))

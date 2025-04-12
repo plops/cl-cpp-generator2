@@ -10,16 +10,16 @@ class Arena;
 template <typename T>
 class Ref : public enable_shared_from_this<Ref<T>> {
 public:
-    explicit Ref(T& r, int idx, Arena<T>& associatedArena) :
-        ref{r}, arena{associatedArena}, sp{make_shared<Priv>(idx)} {}
+    explicit Ref(T& r, int idx, Arena<T>& associatedArena) : ref{r}, arena{associatedArena} {}
+    int getIndex() { return idx; }
     ~Ref() {
-        if (3 == use_count()) { arena.setUnused(idx()); }
+        auto sp{this->shared_from_this()};
+        if (3 == sp.use_count()) { arena.setUnused(idx); }
     }
-    Ref(const Ref& rhs) : ref{rhs.ref}, arena{rhs.arena}, sp{rhs.sp.load()} {}
+    Ref(const Ref& rhs) : ref{rhs.ref}, arena{rhs.arena}, idx{rhs.idx} {}
     Ref(T&&)                     = delete;
     const T& operator=(const T&) = delete;
     T&       operator=(T&&)      = delete;
-    long int use_count() { return sp.load().use_count(); }
 
 private:
     Arena<T>& arena;
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
     auto      v{vector<Ref<Widget>>()};
     for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
         auto e{a.aquire()};
-        assert(i == e.idx());
+        assert(i == e.getIndex());
         v.push_back(e);
     }
     std::cout << "#### CLEAR ####" << std::endl;
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     std::cout << "#### REUSE N ELEMENTS ####" << std::endl;
     for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
         auto e{a.aquire()};
-        assert(i == e.idx());
+        assert(i == e.getIndex());
         v.push_back(e);
     }
     std::cout << "#### TRY TO GET ONE ELEMENT TOO MANY ####" << std::endl;
