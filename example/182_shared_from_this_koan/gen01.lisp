@@ -136,7 +136,7 @@
 		  "T& ref;"
 		  "int idx;"
 		  )))
-
+     #+nil
      ,(let ((name "Arena"))
 	`(space "template<typename T>"
 	       (defclass+ ,name ()
@@ -158,7 +158,7 @@
 		     (return (dot r (at idx)))
 		     #+inil (return el)))
 
-		 (defmethod setUnused (idx)
+		(defmethod setUnused (idx)
 		   (declare (type int idx))
 		   #+nil ,(lprint :msg "Arena::setUnused"
 			    :vars `(idx))
@@ -194,6 +194,14 @@
 		 "vector<T> a;"
 		 "vector<bool> used{};"
 		 "vector<SRef> r;")))
+
+     ,(let ((name "Arena"))
+	`(space "template<typename T>"
+	       (defclass+ ,name ()
+		 "public:"
+		 (defmethod setUnused (idx)
+		   (declare (type int idx)))
+		 )))
      
      (defun main (argc argv)
        (declare (values int)
@@ -207,9 +215,12 @@
        "const int n=3;"
              
        (do0
-	(let ((a (space Arena (angle Widget) (paren n) ))))
+	(let ((a (Arena<Widget>))))
+	(let ((v (vector<Widget> 1))))
+	(let ((e (make_shared<Ref<Widget>> (aref v 0) 0 a))))
+	#+nil(let ((a (space Arena (angle Widget) (paren n) ))))
 
-	;(let ((v (vector<Arena<Widget>--SRef>))))
+					;(let ((v (vector<Arena<Widget>--SRef>))))
 	#+nil
 	(do0 (dotimes (i n)
 	       (let ((e (a.aquire))))

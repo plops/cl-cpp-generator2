@@ -43,28 +43,7 @@ private:
 template <typename T>
 class Arena {
 public:
-    using SRef = atomic<shared_ptr<Ref<T>>>;
-    void     setUnused(int idx) { used[idx] = false; }
-    long int use_count(int idx) {
-        auto count{r.at(idx).use_count()};
-        return count;
-    }
-    Arena(int n = 0) : a{vector<T>(n)}, used{vector<bool>(n)}, r{vector<SRef>()} {
-        int idx = 0;
-        for (auto&& e : a) {
-            r.push_back(make_shared<Ref<T>>(e, idx, *this));
-            idx++;
-        }
-    }
-    Arena(const T&)              = delete;
-    Arena(T&&)                   = delete;
-    const T& operator=(const T&) = delete;
-    T&       operator=(T&&)      = delete;
-
-private:
-    vector<T>    a;
-    vector<bool> used{};
-    vector<SRef> r;
+    void setUnused(int idx) {}
 };
 
 int main(int argc, char** argv) {
@@ -75,6 +54,8 @@ int main(int argc, char** argv) {
         float f{4.5F};
     };
     const int n = 3;
-    auto      a{Arena<Widget>(n)};
+    auto      a{Arena<Widget>()};
+    auto      v{vector<Widget>(1)};
+    auto      e{make_shared<Ref<Widget>>(v[0], 0, a)};
     return 0;
 }
