@@ -45,7 +45,7 @@
      "template<typename T> class Arena;"
      ,(let ((name "Ref"))
 	`(space "template<typename T>"
-		(defclass+ Ref ()
+		(defclass+ Ref "public enable_shared_from_this<Ref<T>>"
 		  "public:"
 		  ;; ctor
 		  (defmethod Ref (r idx associatedArena)
@@ -92,17 +92,11 @@
 		    (declare (values "long int"))
 		    (return (dot sp (load)
 				 (use_count))))
-		  (defmethod idx ()
-		    (declare (values "long int"))
-		    (return (-> (dot sp (load))
-				idx)))
+		 
 		  "private:"
-		  (defclass+ Priv ()
-		    "public:"
-		    "int idx;")
 		  "Arena<T>& arena;"	      
 		  "T& ref;"
-		  "atomic<shared_ptr<Priv>> sp{nullptr};"
+		  "int idx;"
 		  )))
 
      ,(let ((name "Arena"))
@@ -159,7 +153,7 @@
 		 "private:"
 		 "vector<T> a;"
 		 "vector<bool> used{};"
-		 "vector<Ref<T>> r;")))
+		 "vector<atomic<shared_ptr<Ref<T>>>> r;")))
      
      (defun main (argc argv)
        (declare (values int)

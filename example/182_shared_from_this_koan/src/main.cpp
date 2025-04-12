@@ -8,7 +8,7 @@ using namespace std;
 template <typename T>
 class Arena;
 template <typename T>
-class Ref {
+class Ref : public enable_shared_from_this<Ref<T>> {
 public:
     explicit Ref(T& r, int idx, Arena<T>& associatedArena) :
         ref{r}, arena{associatedArena}, sp{make_shared<Priv>(idx)} {}
@@ -20,16 +20,11 @@ public:
     const T& operator=(const T&) = delete;
     T&       operator=(T&&)      = delete;
     long int use_count() { return sp.load().use_count(); }
-    long int idx() { return sp.load()->idx; }
 
 private:
-    class Priv {
-    public:
-        int idx;
-    };
-    Arena<T>&                arena;
-    T&                       ref;
-    atomic<shared_ptr<Priv>> sp{nullptr};
+    Arena<T>& arena;
+    T&        ref;
+    int       idx;
 };
 template <typename T>
 class Arena {
@@ -67,9 +62,9 @@ public:
     T&       operator=(T&&)      = delete;
 
 private:
-    vector<T>      a;
-    vector<bool>   used{};
-    vector<Ref<T>> r;
+    vector<T>                          a;
+    vector<bool>                       used{};
+    vector<atomic<shared_ptr<Ref<T>>>> r;
 };
 
 int main(int argc, char** argv) {
