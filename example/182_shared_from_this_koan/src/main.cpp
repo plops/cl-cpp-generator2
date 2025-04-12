@@ -1,51 +1,37 @@
 #include <algorithm>
-#include <array>
 #include <atomic>
 #include <cassert>
-#include <deque>
 #include <iostream>
 #include <memory>
+#include <vector>
 using namespace std;
-constexpr int N{3};
-template <typename T, int N>
+template <typename T>
 class Arena;
 template <typename T>
 class Ref {
 public:
-    explicit Ref(T& r, int idx, Arena<T, N>& arena) : ref{r}, sp{createPriv(idx, arena)} {
-        std::cout << "Ref::ctor" << " idx='" << idx << "' " << " sp.load().get()='" << sp.load().get() << "' "
-                  << " &ref='" << &ref << "' " << " &arena='" << &arena << "' " << std::endl;
-    }
+    explicit Ref(T& r, int idx, Arena<T>& associatedArena) :
+        ref{r}, arena{associatedArena}, sp{make_shared<Priv>(idx)} {}
     ~Ref() {
-        std::cout << "~Ref" << " use_count()='" << use_count() << "' " << std::endl;
-        if (3 == use_count()) {
-            std::cout << "#### # tell arena" << " idx()='" << idx() << "' " << " use_count()='" << use_count() << "' "
-                      << std::endl;
-            sp.load()->arena.setUnused(idx());
-        }
+        if (3 == use_count()) { arena.setUnused(idx()); }
     }
-    Ref(const Ref& rhs) : ref{rhs.ref}, sp{rhs.sp.load()} {
-        std::cout << "Ref::copy-ctor" << " sp.load()->idx='" << sp.load()->idx << "' " << std::endl;
-    }
+    Ref(const Ref& rhs) : ref{rhs.ref}, arena{rhs.arena}, sp{rhs.sp.load()} {}
+    Ref(T&&)                     = delete;
+    const T& operator=(const T&) = delete;
+    T&       operator=(T&&)      = delete;
     long int use_count() { return sp.load().use_count(); }
     long int idx() { return sp.load()->idx; }
 
 private:
     class Priv {
     public:
-        int          idx;
-        Arena<T, N>& arena;
+        int idx;
     };
-    shared_ptr<Priv> createPriv(int idx, Arena<T, N>& arena) {
-        return shared_ptr<Priv>(new Priv(idx, arena), [&](Priv* p) {
-            std::cout << "~shared_ptr" << " p='" << p << "' " << " p->idx='" << p->idx << "' " << std::endl;
-            delete (p);
-        });
-    }
+    Arena<T>&                arena;
     T&                       ref;
     atomic<shared_ptr<Priv>> sp{nullptr};
 };
-template <typename T, int N>
+template <typename T>
 class Arena {
 public:
     Ref<T> aquire() {
@@ -68,7 +54,7 @@ public:
         std::cout << "Arena::use_count" << " count='" << count << "' " << std::endl;
         return count;
     }
-    Arena() {
+    Arena(int n = 0) : a{vector<T>(n)}, used{vector<bool>(n)}, r{vector<Ref<T>>()} {
         int idx = 0;
         for (auto&& e : a) {
             r.emplace_back(e, idx, *this);
@@ -81,9 +67,9 @@ public:
     T&       operator=(T&&)      = delete;
 
 private:
-    array<T, N>    a;
-    array<bool, N> used{};
-    deque<Ref<T>>  r;
+    vector<T>      a;
+    vector<bool>   used{};
+    vector<Ref<T>> r;
 };
 
 int main(int argc, char** argv) {
@@ -93,9 +79,10 @@ int main(int argc, char** argv) {
         int   i{3};
         float f{4.5F};
     };
-    auto a{Arena<Widget, N>()};
-    auto v{deque<Ref<Widget>>()};
-    for (decltype(0 + N + 1) i = 0; i < N; i += 1) {
+    const int n = 3;
+    auto      a{Arena<Widget>(n)};
+    auto      v{vector<Ref<Widget>>()};
+    for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
         auto e{a.aquire()};
         assert(i == e.idx());
         v.push_back(e);
@@ -103,7 +90,7 @@ int main(int argc, char** argv) {
     std::cout << "#### CLEAR ####" << std::endl;
     v.clear();
     std::cout << "#### REUSE N ELEMENTS ####" << std::endl;
-    for (decltype(0 + N + 1) i = 0; i < N; i += 1) {
+    for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
         auto e{a.aquire()};
         assert(i == e.idx());
         v.push_back(e);
