@@ -29,87 +29,84 @@
    `(do0
      (include<>
       iostream
-      array
-      deque
+      ;array
+      ;deque
+      vector
       memory
       atomic
       ;condition_variable
       ;mutex
-      ;thread
+      algorithm
+					;thread
       cassert
       )
      "using namespace std;"
 
-      "constexpr int N{3};"
+     "template<typename T> class Arena;"
+     ,(let ((name "Ref"))
+	`(space "template<typename T>"
+		(defclass+ Ref ()
+		  "public:"
+		  ;; ctor
+		  (defmethod Ref (r idx associatedArena)
+		    (declare (type T& r)
+			     (type "Arena<T>&" associatedArena)
+			     (type int idx)
+			     (construct (ref r)
+					(arena associatedArena)
+					(sp (make_shared<Priv> idx)))
+			     (explicit)
+			     (values :constructor)))
+		  ;; dtor
+		  (defmethod ~Ref ()
+		    (declare (values :constructor))
+		    (when (== 3 (use_count))
+		      (arena.setUnused (idx))))
 
-     "template<typename T, int N> class Arena;"
-     
-     (space "template<typename T>"
-	    (defclass+ Ref ()
-	      "public:"
-	      ;; ctor
-	      (defmethod Ref (r idx arena)
-		(declare (type T& r)
-			 (type "Arena<T,N>&" arena)
-			 (type int idx)
-			 (construct (ref r)
-				    (sp (createPriv idx arena)))
-			 (explicit)
-			 (values :constructor))
-		,(lprint :msg "Ref::ctor"
-			 :vars `(idx (dot sp (load) (get)) &ref &arena )))
-	      ;; dtor
-	      (defmethod ~Ref ()
-		(declare (values :constructor))
-		,(lprint :msg "~Ref" :vars `((use_count)))
-		(when (== 3 (use_count))
+		  ;; copy ctor
+		  (defmethod Ref (rhs)
+		    (declare (type "const Ref&" rhs)
+			     (construct (ref rhs.ref)
+					(arena rhs.arena)
+					(sp (rhs.sp.load)))
+			     (values :constructor)))
+		  ;; move ctor
+		  #+nil (defmethod Ref (rhs)
+		    (declare (type "Ref&&" rhs)
+			     (noexcept)
+			     (construct (ref (move rhs.ref))
+					(arena (move rhs.arena))
+					(sp (move (rhs.sp.load))))
+			     (values :constructor)))
 		  
-		  #-nil ,(lprint :msg "#### # tell arena" :vars `((idx) (use_count)))
-		  ("sp.load()->arena.setUnused" (idx))
-		  )
-		)
-	      ;; copy ctor
-	      (defmethod Ref (rhs)
-		(declare (type "const Ref&" rhs)
-			 (construct (ref rhs.ref)
-				    (sp (rhs.sp.load) #+nil  (createPriv (-> (dot rhs sp (load))
-									idx)
-								    (-> (dot rhs sp (load))
-									arena))))
-			 (values :constructor))
-		,(lprint :msg "Ref::copy-ctor"
-			 :vars `("sp.load()->idx")))
-	      (defmethod use_count ()
-		(declare (values "long int"))
-		(return (dot sp (load)
-			     (use_count))))
-	      (defmethod idx ()
-		(declare (values "long int"))
-		(return (-> (dot sp (load)
-				 )
-			    idx)))
-	      "private:"
-	      (defclass+ Priv ()
-		"public:"
-		"int idx;"
-		"Arena<T,N>& arena;")
-	      (defmethod createPriv (idx arena)
-		(declare (type int idx)
-			 (type "Arena<T,N>&" arena)
-			 (values shared_ptr<Priv>))
-		(return (shared_ptr<Priv> (new (Priv idx arena))
-					  (lambda (p)
-					    (declare (type Priv* p))
-					    ,(lprint :msg "~shared_ptr" :vars `(p p->idx ))
-					    ;("p->arena.setUnused" p->idx)
-					    (delete p)))))
-	      
-	      "T& ref;"
-	      "atomic<shared_ptr<Priv>> sp{nullptr};"
-	      ))
+		  ;; copy ctor, move ctor ...
+		  #-nil
+		  ,@(loop for e in `(;,(format nil "~a(const T&)" name)
+				     ,(format nil "~a(T&&)" name)
+				     "const T& operator=(const T&)"
+				     "T& operator=(T&&)")
+			  collect
+			  (format nil "~a = delete;" e))
+		  
+		  (defmethod use_count ()
+		    (declare (values "long int"))
+		    (return (dot sp (load)
+				 (use_count))))
+		  (defmethod idx ()
+		    (declare (values "long int"))
+		    (return (-> (dot sp (load))
+				idx)))
+		  "private:"
+		  (defclass+ Priv ()
+		    "public:"
+		    "int idx;")
+		  "Arena<T>& arena;"	      
+		  "T& ref;"
+		  "atomic<shared_ptr<Priv>> sp{nullptr};"
+		  )))
 
      ,(let ((name "Arena"))
-	`(space "template<typename T, int N>"
+	`(space "template<typename T>"
 	       (defclass+ ,name ()
 		 "public:"
 		 (defmethod aquire ()
@@ -121,7 +118,6 @@
 			     it)
 			 (do0
 			  (throw (runtime_error (string "no free arena element"))))
-
 			 (do0
 			  (setf *it true)
 			  (let ((idx (- it (used.begin)))
@@ -143,8 +139,12 @@
 			    :vars `(count))
 		   (return count))
 		 
-		 (defmethod ,name ()
-		   (declare (values :constructor))
+		 (defmethod ,name (n=0)
+		   (declare (values :constructor)
+			    (type int n=0)
+			    (construct (a (vector<T> n))
+				       (used (vector<bool> n))
+				       (r (vector<Ref<T>>))))
 		   "int idx=0;"
 		   (for-range (e a)
 			      (r.emplace_back e idx *this)
@@ -157,9 +157,9 @@
 			 collect
 			 (format nil "~a = delete;" e))
 		 "private:"
-		 "array<T,N> a;"
-		 "array<bool,N> used{};"
-		 "deque<Ref<T>> r;")))
+		 "vector<T> a;"
+		 "vector<bool> used{};"
+		 "vector<Ref<T>> r;")))
      
      (defun main (argc argv)
        (declare (values int)
@@ -170,40 +170,26 @@
 	 "private:"
 	 "int i{3};"
 	 "float f{4.5F};")
+       "const int n=3;"
              
        (do0
-	(let ((a (space Arena (angle Widget N) (paren)))))
+	(let ((a (space Arena (angle Widget) (paren n) ))))
 
-	(let ((v (deque<Ref<Widget>> ))))
-	(dotimes (i N)
+	(let ((v (vector<Ref<Widget>> ))))
+	(dotimes (i n)
 	  (let ((e (a.aquire))))
 	  (assert (== i (e.idx)))
 	  (v.push_back e))
 	,(lprint :msg "#### CLEAR ####")
 	(v.clear)
 	,(lprint :msg "#### REUSE N ELEMENTS ####")
-	(dotimes (i N)
+	(dotimes (i n)
 	  (let ((e (a.aquire))))
 	  (assert (== i (e.idx)))
 	  (v.push_back e)))
        ,(lprint :msg "#### TRY TO GET ONE ELEMENT TOO MANY ####")
        (v.push_back (a.aquire))
-       
-       #+nil
-       (do0 (let ((as (space array (angle Widget N)
-			     (paren)))))
-	    (let ((ar (space deque (angle (space Ref (angle Widget)))
-			     (paren))))
-	      (for-range (e as)
-			 (ar.emplace_back e)))
-	    
-	    ,(lprint :vars `((sizeof as)))
-	    ,(lprint :vars `((sizeof ar)))
-	    (let ((e (dot (aref ar 0)
-			  (get)))))
-	    (let ((qq (aref ar 0))))
-	    ,(lprint :vars `((dot (aref ar 0) (use_count)))))
-            
+                   
        (return 0)))
    :omit-parens t
    :format nil
