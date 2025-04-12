@@ -62,7 +62,8 @@
 					)
 			     (explicit)
 			     (values :constructor))
-		    ,(lprint :msg "Ref-ctor"))
+		    ,(lprint :msg "Ref-ctor"
+			     :vars `(&arena &ref idx)))
 		  #+nil(space
 		   "template<typename... Ts>"
 		   (defmethod create (params)
@@ -78,12 +79,13 @@
 		  (defmethod ~Ref ()
 		    (declare (values :constructor))
 		    ,(lprint :msg "Ref-dtor"
-			     :vars `((dot (this->shared_from_this)
-				     (use_count))))
-		    (when (== 3 (dot (this->shared_from_this)
-				     (use_count)))
-		      (arena.setUnused idx)
-		      ))
+			     :vars `(idx))
+		    ;; i think the problem is that the destructor is never called
+		    ;; when i need it (with positive use count)
+		    #+nil(when (== 3 (dot (this->shared_from_this)
+					  (use_count)))
+			   (arena.setUnused idx)
+			   ))
 
 		  ;; copy ctor
 		  (defmethod Ref (rhs)
@@ -225,8 +227,9 @@
              
        (do0
 	(let ((a (Arena<Widget>))))
-	(let ((v (vector<Widget> 1))))
-	(let ((e (make_shared<Ref<Widget>> (aref v 0) 0 a))))
+	(let ((v (vector<Widget> 2))))
+	(let ((e0 (make_shared<Ref<Widget>> (aref v 0) 0 a))))
+	(let ((e1 (make_shared<Ref<Widget>> (aref v 1) 1 a))))
 	#+nil(let ((a (space Arena (angle Widget) (paren n) ))))
 
 					;(let ((v (vector<Arena<Widget>--SRef>))))

@@ -11,14 +11,11 @@ template <typename T>
 class Ref : public enable_shared_from_this<Ref<T>> {
 public:
     explicit Ref(T& r, int index, Arena<T>& associatedArena) : arena{associatedArena}, ref{r}, idx{index} {
-        std::cout << "Ref-ctor" << std::endl;
+        std::cout << "Ref-ctor" << " &arena='" << &arena << "' " << " &ref='" << &ref << "' " << " idx='" << idx << "' "
+                  << std::endl;
     }
     int getIndex() const { return idx; }
-    ~Ref() {
-        std::cout << "Ref-dtor" << " this->shared_from_this().use_count()='" << this->shared_from_this().use_count()
-                  << "' " << std::endl;
-        if (3 == this->shared_from_this().use_count()) { arena.setUnused(idx); }
-    }
+    ~Ref() { std::cout << "Ref-dtor" << " idx='" << idx << "' " << std::endl; }
     Ref(const Ref& rhs) : enable_shared_from_this<Ref<T>>{rhs}, arena{rhs.arena}, ref{rhs.ref}, idx{rhs.idx} {
         std::cout << "Ref-copy-ctor" << std::endl;
     }
@@ -64,7 +61,8 @@ int main(int argc, char** argv) {
     };
     const int n = 3;
     auto      a{Arena<Widget>()};
-    auto      v{vector<Widget>(1)};
-    auto      e{make_shared<Ref<Widget>>(v[0], 0, a)};
+    auto      v{vector<Widget>(2)};
+    auto      e0{make_shared<Ref<Widget>>(v[0], 0, a)};
+    auto      e1{make_shared<Ref<Widget>>(v[1], 1, a)};
     return 0;
 }
