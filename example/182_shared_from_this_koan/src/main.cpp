@@ -61,8 +61,12 @@ int main(int argc, char** argv) {
     };
     const int n = 3;
     auto      a{Arena<Widget>()};
-    auto      v{vector<Widget>(2)};
+    auto      v{vector<Widget>(3)};
     auto      e0{make_shared<Ref<Widget>>(v[0], 0, a)};
     auto      e1{make_shared<Ref<Widget>>(v[1], 1, a)};
+    auto      e2{make_shared<Ref<Widget>>(v[2], 2, a)};
+    e1 = e0;
+    auto c0{e0};
+    auto c1{move(e1)};
     return 0;
 }

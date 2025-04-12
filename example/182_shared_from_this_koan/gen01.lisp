@@ -227,9 +227,14 @@
              
        (do0
 	(let ((a (Arena<Widget>))))
-	(let ((v (vector<Widget> 2))))
+	(let ((v (vector<Widget> 3))))
 	(let ((e0 (make_shared<Ref<Widget>> (aref v 0) 0 a))))
 	(let ((e1 (make_shared<Ref<Widget>> (aref v 1) 1 a))))
+	(let ((e2 (make_shared<Ref<Widget>> (aref v 2) 2 a))))
+	(setf e1 e0)
+	(let ((c0 e0)
+	      (c1 (move e1))))
+	
 	#+nil(let ((a (space Arena (angle Widget) (paren n) ))))
 
 					;(let ((v (vector<Arena<Widget>--SRef>))))
