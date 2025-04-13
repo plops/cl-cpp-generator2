@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <atomic>
 #include <cassert>
-#include <iostream>
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -22,14 +21,14 @@ public:
         auto idx{firstUnused()};
         if (-1 == idx) {
             // pikus p.549
-            std::cout << "waiting for element to become unused" << std::endl;
+
             elementNowUnused.wait(false, memory_order_acquire);
             // according to standard this wait should not spuriously wake up. the book still adds this check because
             // tsan thinks otherwise new elements should now be present
             auto idx{firstUnused()};
             if (-1 == idx) { throw runtime_error("no free arena element"); }
             auto el{r.at(idx)};
-            std::cout << "found unused element after wait" << " idx='" << idx << "' " << std::endl;
+
             {
                 auto l{lock_guard(m)};
                 used[idx] = true;
@@ -37,7 +36,7 @@ public:
             return el;
         }
         auto el{r.at(idx)};
-        std::cout << "found unused element" << " idx='" << idx << "' " << std::endl;
+
         {
             auto l{lock_guard(m)};
             used[idx] = true;
@@ -47,7 +46,7 @@ public:
     inline void setUnused(int idx) {
         {
             auto l{lock_guard(m)};
-            std::cout << "Arena::setUnused" << " idx='" << idx << "' " << std::endl;
+
             used[idx] = false;
         }
         elementNowUnused.test_and_set(memory_order_release);
@@ -64,7 +63,7 @@ public:
     }
     inline long int use_count(int idx) {
         auto count{r[idx].use_count()};
-        std::cout << "Arena::use_count" << " count='" << count << "' " << std::endl;
+
         return count;
     }
     explicit Arena(int n = 1) : r{vector<Ref<T>>()}, a{vector<T>(n)} {

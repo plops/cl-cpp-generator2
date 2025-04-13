@@ -7,7 +7,7 @@
 
 (progn
   (setf *features* (set-difference *features* (list :more)))
-  (setf *features* (set-exclusive-or *features* (list  :more
+  (setf *features* (set-exclusive-or *features* (list ; :more
 						 ))))
  
 (progn
