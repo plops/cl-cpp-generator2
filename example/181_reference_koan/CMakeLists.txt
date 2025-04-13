@@ -104,49 +104,49 @@ target_include_directories(
 )
 # Define the test executable
 option(ENABLE_ARENAREF_TESTS "Enable unit tests" OFF)
-#
+
 if (ENABLE_ARENAREF_TESTS)
-   enable_testing()
+    enable_testing()
 
-   #        set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake")
-   #include(coverage)
-   #add_coverage_target("*/tests/*")
+    #        set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake")
+    #include(coverage)
+    #add_coverage_target("*/tests/*")
 
-   #        # Fetch Google Test
-   #        include(FetchContent)
-   #        FetchContent_Declare(
-   #                googletest
-   #                GIT_REPOSITORY https://github.com/google/googletest.git
-   #                GIT_TAG v1.14.0  # specify the commit hash or tag here
-   #        )
-   #        FetchContent_MakeAvailable(googletest)
+    #        # Fetch Google Test
+    #        include(FetchContent)
+    #        FetchContent_Declare(
+    #                googletest
+    #                GIT_REPOSITORY https://github.com/google/googletest.git
+    #                GIT_TAG v1.14.0  # specify the commit hash or tag here
+    #        )
+    #        FetchContent_MakeAvailable(googletest)
 
-   set(test_sources
-           tests/test_DurationComputer.cpp
-   )
-   set_source_files_properties(${test_sources} PROPERTIES UNITY_GROUP "Tests")
-   add_executable(unit_tests
-           ${test_sources}
-           ${SOURCE_FILES}
-   )
+    set(test_sources
+            tests/test_Ref.cpp
+    )
+    set_source_files_properties(${test_sources} PROPERTIES UNITY_GROUP "Tests")
+    add_executable(unit_tests
+            ${test_sources}
+            #${SOURCE_FILES}
+    )
 
-   # Set specific compiler options for the unit_tests target (turn off optimizations for coverage)
-   target_compile_options(unit_tests PRIVATE
-           -O0 -fprofile-arcs -ftest-coverage --coverage)
-   target_link_options(unit_tests PRIVATE --coverage)  # Link with the coverage library
+    # Set specific compiler options for the unit_tests target (turn off optimizations for coverage)
+    target_compile_options(unit_tests PRIVATE
+            -O0 -fprofile-arcs -ftest-coverage --coverage)
+    target_link_options(unit_tests PRIVATE --coverage)  # Link with the coverage library
 
-   # Link the test executable with Google Test and the necessary libraries
-   target_link_libraries(unit_tests
-           gtest_main
-           gtest
-   )
-   target_include_directories(unit_tests PRIVATE
-           ${PROJECT_SOURCE_DIR}/src
-           ${CMAKE_CURRENT_BINARY_DIR}
-   )
+    # Link the test executable with Google Test and the necessary libraries
+    target_link_libraries(unit_tests
+            gtest_main
+            gtest
+    )
+    target_include_directories(unit_tests PRIVATE
+            ${PROJECT_SOURCE_DIR}/src
+            ${CMAKE_CURRENT_BINARY_DIR}
+    )
 
-   # Register the test with CTest
-   add_test(NAME unit_tests COMMAND unit_tests)
+    # Register the test with CTest
+    add_test(NAME unit_tests COMMAND unit_tests)
 endif ()
 #
 #

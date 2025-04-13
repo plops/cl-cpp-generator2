@@ -104,6 +104,31 @@
   (write-source
    (asdf:system-relative-pathname
     'cl-cpp-generator2
+    (merge-pathnames "../tests/test_Ref.cpp"
+		     *source-dir*))
+   `(do0
+     (include<>
+      gtest/gtest.h
+      vector
+      )
+     (include "Ref.h")
+     "using namespace std;"
+     (space "template<typename T>"
+	    (defclass+ Arena ()
+	      "public:"
+	      (defmethod setUnused (idx)
+		    (declare (type int idx)))))
+     
+     (space TEST (paren Ref CopyConstructor_Copy_CountIncreases)
+	    (progn
+	      (let ((v (vector<int> 3))))
+	      (let ((a (Arena<int>))))
+	      (let ((r0 (Ref<int>  (aref v 0) 0 3a)))))))
+   )
+
+  (write-source
+   (asdf:system-relative-pathname
+    'cl-cpp-generator2
     (merge-pathnames "Arena.h"
 		     *source-dir*))
    `(do0
