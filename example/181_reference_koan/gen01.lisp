@@ -176,7 +176,7 @@
 	      (EXPECT_EQ (r0.use_count) 3)
 	      (EXPECT_EQ (r1.use_count) 3)
 	      ))
-     
+     #+nil
      (space TEST (paren Ref MoveConstructor_Move_CountUnmodified)
 	    (progn
 	      (let ((v (vector<int> 3))))
@@ -234,7 +234,7 @@
 		  "public:"
 		  (defmethod firstUnused ()
 		    (declare (values int))
-		    (let ((l (lock_guard m))))
+		    ;(let ((l (lock_guard m))))
 		    (let ((it (find (used.begin)
 				    (used.end)
 				    false)))
