@@ -10,50 +10,6 @@
 using namespace std;
 template <typename T>
 class Arena {
-private:
-    template <typename Ti>
-    class Ref {
-    public:
-        explicit Ref(T& r, int idx, Arena<T>& associatedArena) :
-            arena{associatedArena}, ref{r}, sp{make_shared<Priv>(idx)} {}
-        ~Ref() {
-            auto val{use_count()};
-            if (3 == val) { arena.setUnused(idx()); }
-        }
-        Ref(const Ref& rhs) : arena{rhs.arena}, ref{rhs.ref}, sp{rhs.sp.load()} {}
-        Ref& operator=(const Ref& rhs) {
-            if (!(this == &rhs)) {
-                arena = rhs.arena;
-                ref   = rhs.ref;
-                sp    = rhs.sp.load();
-            }
-            return *this;
-        }
-        Ref(Ref&& rhs) noexcept : arena{rhs.arena}, ref{rhs.ref}, sp{rhs.sp.load()} {}
-        Ref& operator=(Ref&& rhs) noexcept {5
-            if (!(this == &rhs)) {
-                arena = rhs.arena;
-                ref   = rhs.ref;
-                sp    = rhs.sp.load();
-            }
-            return *this;
-        }
-        inline long int use_count() {
-            auto l{lock_guard(m)};
-            return sp.load().use_count();
-        }
-
-    private:
-        inline long int idx() { return sp.load()->idx; }
-        class Priv {
-        public:
-            int idx;
-        };
-        Arena<Ti>&                arena;
-        T&                       ref;
-        atomic<shared_ptr<Priv>> sp{nullptr};
-    };
-
 public:
     int firstUnused() {
         auto l{lock_guard(m)};
@@ -78,6 +34,7 @@ public:
                 std::cout << "found unused element after wait" << " idx='" << idx << "' " << std::endl;
                 {
                     auto l{lock_guard(m)};
+                    auto l2{lock_guard(r[idx].getMutex())};
                     used[idx] = true;
                 }
                 return el;
@@ -131,5 +88,7 @@ private:
     vector<Ref<T>> r;
     vector<T>      a;
     atomic_flag    elementNowUnused{false};
-    mutex          m; // protect access to used[]
+
+public:
+    mutex m; // protect access to used[] and r[]
 };

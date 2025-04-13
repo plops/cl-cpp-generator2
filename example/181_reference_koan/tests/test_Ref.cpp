@@ -5,7 +5,8 @@ using namespace std;
 template <typename T>
 class Arena {
 public:
-    void setUnused(long int idx) {}
+    void  setUnused(long int idx) {}
+    mutex m;
 };
 TEST(Ref, CopyConstructor_Copy_CountIncreases) {
     auto v{vector<int>(3)};
