@@ -123,6 +123,7 @@ if (ENABLE_ARENAREF_TESTS)
 
     set(test_sources
             tests/test_Ref.cpp
+            tests/test_Arena.cpp
     )
     set_source_files_properties(${test_sources} PROPERTIES UNITY_GROUP "Tests")
     add_executable(unit_tests

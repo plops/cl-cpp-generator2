@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 
 
     for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
-        auto e{a.aquire()};
+        auto e{a.acquire()};
         assert(i == e.idx());
         v.push_back(e);
     }
@@ -28,11 +28,11 @@ int main(int argc, char** argv) {
     v.clear();
 
     for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
-        auto e{a.aquire()};
+        auto e{a.acquire()};
         assert(i == e.idx());
         v.push_back(e);
     }
 
-    v.push_back(a.aquire());
+    v.push_back(a.acquire());
     return 0;
 }

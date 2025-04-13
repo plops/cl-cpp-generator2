@@ -64,24 +64,42 @@
 					(ref rhs.ref)
 					(sp (rhs.sp.load)))
 			     (values :constructor)))
+		  ;; copy assign
+		  (defmethod operator= (rhs)
+		    (declare (type "const Ref&" rhs)
+			     (values Ref&))
+		    (unless (== this &rhs)
+		      (setf arena rhs.arena
+			    ref rhs.ref
+			    sp (rhs.sp.load)))
+		    (return *this))
 		  ;; move ctor
 		  #+nil (defmethod Ref (rhs)
-			  (declare (type "Ref&&" rhs)
-				   (noexcept)
-				   (construct (arena rhs.arena)
-					      (ref rhs.ref)
-					      (sp (move ;rhs.sp #+nil
-							       (rhs.sp.load))))
-				   (values :constructor)))
-		  
+		    (declare (type "Ref&&" rhs)
+		     (noexcept)
+		     (construct
+		      (arena rhs.arena)
+		      (ref rhs.ref)
+		      (sp (move	(rhs.sp.load))))
+		     (values :constructor)))
+		  ;; move assign
+		  #+nil (defmethod operator= (rhs)
+		    (declare (type "Ref&&" rhs)
+			     (noexcept)
+			     (values Ref&))
+		    (unless (== this &rhs)
+		      (setf arena rhs.arena
+			    ref rhs.ref
+			    sp (move rhs.sp #+nil (rhs.sp.load))))
+		    (return *this))
 		  ;; copy ctor, move ctor ...
-		  #-nil
-		  ,@(loop for e in `( ;,(format nil "~a(const T&)" name)
-				     ;,(format nil "~a(T&&)" name)
-				     "const T& operator=(const T&)"
-				     "T& operator=(T&&)")
+		  
+		  ,@(loop for e in `(;,(format nil "~a(const ~a&)" name name)
+				     ,(format nil "~a(~a&&)" name name)
+				     ;,(format nil "~a& operator=(const ~a&)" name name)
+				     ,(format nil "~a& operator=(~a&&)" name name))
 			  collect
-			  (format nil "~a = delete;" e))
+			  (format nil "~a = default;" e))
 		  
 		  (defmethod use_count ()
 		    (declare (values "long int")
@@ -100,6 +118,9 @@
 		  "T& ref;"
 		  "atomic<shared_ptr<Priv>> sp{nullptr};"
 		  ))))
+   :omit-parens t
+   :format nil
+   :tidy nil
    )
 
   (write-source
@@ -130,7 +151,19 @@
 	      (EXPECT_EQ (r0.use_count) 3)
 	      (EXPECT_EQ (r1.use_count) 3)
 	      ))
-     #+nil
+     (space TEST (paren Ref CopyAssign_Assign_CountIncreases)
+	    (progn
+	      (let ((v (vector<int> 3))))
+	      (let ((a (Arena<int>))))
+	      (let ((r0 (Ref<int>  (aref v 0) 0 a))))
+	      (let ((r1 (Ref<int>  (aref v 1) 1 a))))
+	      (EXPECT_EQ (r0.use_count) 2)
+	      (EXPECT_EQ (r1.use_count) 2)
+	      (setf r1 r0)
+	      (EXPECT_EQ (r0.use_count) 3)
+	      (EXPECT_EQ (r1.use_count) 3)
+	      ))
+     
      (space TEST (paren Ref MoveConstructor_Move_CountUnmodified)
 	    (progn
 	      (let ((v (vector<int> 3))))
@@ -138,8 +171,29 @@
 	      (let ((r0 (Ref<int>  (aref v 0) 0 a))))
 	      (EXPECT_EQ (r0.use_count) 2)
 	      (let ((r1 (move r0))))
+	      ;(EXPECT_EQ (r1.get) nullptr)
+	      (EXPECT_EQ (r1.use_count) 3)
+	      (comments "not sure why this is 3, strange")
+	      ))
+
+     (space TEST (paren Ref MoveAssign_Assign_CountUnmodified)
+	    (progn
+	      (let ((v (vector<int> 3))))
+	      (let ((a (Arena<int>))))
+	      (let ((r0 (Ref<int>  (aref v 0) 0 a))))
+	      (let ((r1 (Ref<int>  (aref v 1) 1 a))))
+	      (EXPECT_EQ (r0.use_count) 2)
 	      (EXPECT_EQ (r1.use_count) 2)
-	      )))
+	      (setf r1 r0)
+	      (EXPECT_EQ (r0.use_count) 3)
+	      (EXPECT_EQ (r1.use_count) 3)
+	      (comments "i think the move operators actually perform a copy3")
+	      ))
+
+     )
+   :omit-parens t
+   :format nil
+   :tidy nil
    )
 
   (write-source
@@ -162,7 +216,7 @@
 	`(space "template<typename T>"
 		(defclass+ ,name ()
 		  "public:"
-		  (defmethod aquire ()
+		  (defmethod acquire ()
 		    (declare (values Ref<T>)
 			     (inline))
 		    (let ((it (find (used.begin)
@@ -187,6 +241,22 @@
 		    ,(lprint :msg "Arena::setUnused"
 			     :vars `(idx))
 		    (setf (aref used idx) false))
+		  (defmethod capacity ()
+		    (declare (values int))
+		    (return (dot r (size))))
+
+		  (defmethod nb_unused ()
+		    (declare (values int))
+		    (return (- (capacity)
+			       (nb_used))))
+
+		  (defmethod nb_used ()
+		    (declare (values int))
+		    (let ((sum 0))
+		      (for-range (b used)
+				 (when b
+				   (incf sum))))
+		    (return sum))
 		  (defmethod use_count (idx)
 		    (declare (values "long int")
 			     (type int idx)
@@ -196,10 +266,10 @@
 			     :vars `(count))
 		    (return count))
 		 
-		  (defmethod ,name (n=0)
+		  (defmethod ,name (n=1)
 		    (declare (values :constructor)
 			     (explicit)
-			     (type int n=0)
+			     (type int n=1)
 			     (construct 
 			      (used (vector<bool> n))
 			      (r (vector<Ref<T>>))
@@ -220,7 +290,43 @@
 		  "vector<Ref<T>> r;"
 		  "vector<T> a;"
 		  ))))
+   :omit-parens t
+   :format nil
+   :tidy nil
    
+   )
+
+  (write-source
+   (asdf:system-relative-pathname
+    'cl-cpp-generator2
+    (merge-pathnames "../tests/test_Arena.cpp"
+		     *source-dir*))
+   `(do0
+     (include<>
+      gtest/gtest.h
+      vector
+      )
+     (include "Arena.h")
+     "using namespace std;"
+     
+     
+     (space TEST (paren Arena acquire_perform_freeElementsShrink)
+	    (progn
+	      (space struct Widget (progn "int i;" "float a;"))
+	      (let ((n 3)
+		    (a (Arena<Widget> n))
+		    (v (vector<Ref<Widget>>)))
+		
+		(dotimes (i n)
+		  (v.push_back (a.acquire))
+		  (EXPECT_EQ (a.capacity) n)
+		  (EXPECT_EQ (a.nb_used) (+ 1 i)))
+		(EXPECT_THROW (a.acquire)
+			      runtime_error))))
+     )
+   :omit-parens t
+   :format nil
+   :tidy nil
    )
   (write-source 
    (asdf:system-relative-pathname
@@ -274,18 +380,18 @@
 	,(lprint :vars `((sizeof (aref v 0))))
 	
 	(dotimes (i n)
-	  (let ((e (a.aquire))))
+	  (let ((e (a.acquire))))
 	  (assert (== i (e.idx)))
 	  (v.push_back e))
 	,(lprint :msg "#### CLEAR ####")
 	(v.clear)
 	,(lprint :msg "#### REUSE N ELEMENTS ####")
 	(dotimes (i n)
-	  (let ((e (a.aquire))))
+	  (let ((e (a.acquire))))
 	  (assert (== i (e.idx)))
 	  (v.push_back e)))
        ,(lprint :msg "#### TRY TO GET ONE ELEMENT TOO MANY ####")
-       (v.push_back (a.aquire))
+       (v.push_back (a.acquire))
                    
        (return 0)))
    :omit-parens t

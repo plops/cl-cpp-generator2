@@ -7,15 +7,22 @@ class Arena;
 template <typename T>
 class Ref {
 public:
-    explicit Ref(T &r, int idx, Arena<T> &associatedArena) :
+    explicit Ref(T& r, int idx, Arena<T>& associatedArena) :
         arena{associatedArena}, ref{r}, sp{make_shared<Priv>(idx)} {}
     ~Ref() {
-        if ((3) == (use_count())) { arena.setUnused(idx()); }
+        if (3 == use_count()) { arena.setUnused(idx()); }
     }
-    Ref(const Ref &rhs) : arena{rhs.arena}, ref{rhs.ref}, sp{rhs.sp.load()} {}
-    Ref(Ref &&rhs) noexcept : arena{rhs.arena}, ref{rhs.ref}, sp{move(rhs.sp.load())} {}
-    const T        &operator=(const T &) = delete;
-    T              &operator=(T &&)      = delete;
+    Ref(const Ref& rhs) : arena{rhs.arena}, ref{rhs.ref}, sp{rhs.sp.load()} {}
+    Ref& operator=(const Ref& rhs) {
+        if (!(this == &rhs)) {
+            arena = rhs.arena;
+            ref   = rhs.ref;
+            sp    = rhs.sp.load();
+        }
+        return *this;
+    }
+    Ref(Ref&&)                       = default;
+    Ref&            operator=(Ref&&) = default;
     inline long int use_count() { return sp.load().use_count(); }
     inline long int idx() { return sp.load()->idx; }
 
@@ -24,7 +31,7 @@ private:
     public:
         int idx;
     };
-    Arena<T>                &arena;
-    T                       &ref;
+    Arena<T>&                arena;
+    T&                       ref;
     atomic<shared_ptr<Priv>> sp{nullptr};
 };
