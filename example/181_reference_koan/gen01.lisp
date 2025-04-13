@@ -9,7 +9,7 @@
   (setf *features* (set-difference *features* (list :more)))
   (setf *features* (set-exclusive-or *features* (list  :more
 						 ))))
-
+ 
 (progn
   (progn
     (defparameter *source-dir* #P"example/181_reference_koan/src/")
@@ -110,7 +110,7 @@
 		  (defmethod use_count ()
 		    (declare (values "long int")
 			     (inline))
-		    (let ((l (lock_guard arena.m))))
+		    ;(let ((l (lock_guard arena.m))))
 		    (return (dot sp (load)
 				 (use_count))))
 		  
@@ -119,7 +119,7 @@
 		  (defmethod idx ()
 		    (declare (values "long int")
 			     (inline))
-		    (let ((l (lock_guard arena.m))))
+		    ;(let ((l (lock_guard arena.m))))
  		    (return "sp.load()->idx"))
 		  (defclass+ Priv ()
 		    "public:"

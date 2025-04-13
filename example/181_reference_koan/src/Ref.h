@@ -31,16 +31,10 @@ public:
         }
         return *this;
     }
-    inline long int use_count() {
-        auto l{lock_guard(arena.m)};
-        return sp.load().use_count();
-    }
+    inline long int use_count() { return sp.load().use_count(); }
 
 private:
-    inline long int idx() {
-        auto l{lock_guard(arena.m)};
-        return sp.load()->idx;
-    }
+    inline long int idx() { return sp.load()->idx; }
     class Priv {
     public:
         int idx;
