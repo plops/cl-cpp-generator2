@@ -33,6 +33,7 @@
      (include<>
       memory
       atomic
+      mutex
       )
      "using namespace std;"
 
@@ -47,15 +48,21 @@
 		    (declare (type T& r)
 			     (type "Arena<T>&" associatedArena)
 			     (type int idx)
+			    
 			     (construct (arena associatedArena)
 					(ref r)
-					(sp (make_shared<Priv> idx)))
+					(sp (make_shared<Priv> idx))
+					)
 			     (explicit)
 			     (values :constructor)))
 		  ;; dtor
 		  (defmethod ~Ref ()
 		    (declare (values :constructor))
-		    (when (== 3 (use_count))
+		    (let ((val (use_count) #+nil(int 0))))
+		   #+nil (progn
+		      (let ((l (lock_guard m)))
+			(setf val (use_count))))
+		    (when (== 3 val)
 		      (arena.setUnused (idx))))
 
 		  ;; copy ctor
@@ -105,6 +112,7 @@
 		  (defmethod use_count ()
 		    (declare (values "long int")
 			     (inline))
+		    (let ((l (lock_guard m))))
 		    (return (dot sp (load)
 				 (use_count))))
 		  
@@ -119,6 +127,7 @@
 		  "Arena<T>& arena;"	      
 		  "T& ref;"
 		  "atomic<shared_ptr<Priv>> sp{nullptr};"
+		  "mutex m; // protect sp"
 		  ))))
    :omit-parens t
    :format nil
@@ -147,7 +156,8 @@
 	    (progn
 	      (let ((v (vector<int> 3))))
 	      (let ((a (Arena<int>))))
-	      (let ((r0 (Ref<int>  (aref v 0) 0 a))))
+	     
+	      (let ((r0 (Ref<int>  (aref v 0) 0 a ))))
 	      (EXPECT_EQ (r0.use_count) 2)
 	      (let ((r1 r0)))
 	      (EXPECT_EQ (r0.use_count) 3)
