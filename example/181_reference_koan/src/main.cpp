@@ -1,8 +1,6 @@
 #include <algorithm>
 #include <atomic>
 #include <cassert>
-#include <deque>
-#include <iostream>
 #include <memory>
 #include <vector>
 using namespace std;
@@ -41,32 +39,31 @@ public:
         else {
             *it = true;
             auto idx{it - used.begin()};
-            auto el{r.at(idx)};
-            std::cout << "found unused element" << " idx='" << idx << "' " << std::endl;
+            auto el{r[idx]};
+
             return el;
         }
     }
-    inline void setUnused(int idx) {
-        std::cout << "Arena::setUnused" << " idx='" << idx << "' " << std::endl;
-        used[idx] = false;
-    }
+    inline void     setUnused(int idx) { used[idx] = false; }
     inline long int use_count(int idx) {
         auto count{r[idx].use_count()};
-        std::cout << "Arena::use_count" << " count='" << count << "' " << std::endl;
+
         return count;
     }
-    explicit Arena(int n = 0) : used{n}, r{vector<Ref<T>>()}, a{vector<T>(n)} {
+    explicit Arena(int n = 0) : used{vector<bool>(n)}, r{vector<Ref<T>>()}, a{vector<T>(n)} {
         int idx = 0;
         for (auto&& e : a) {
             r.emplace_back(e, idx, *this);
             idx++;
         }
     }
-    Arena(const T&)                    = delete;
-    Arena(T&&)                         = delete;
-    const T&       operator=(const T&) = delete;
-    T&             operator=(T&&)      = delete;
-    deque<bool>    used{};
+    Arena(const T&)              = delete;
+    Arena(T&&)                   = delete;
+    const T& operator=(const T&) = delete;
+    T&       operator=(T&&)      = delete;
+
+private:
+    vector<bool>   used{};
     vector<Ref<T>> r;
     vector<T>      a;
 };
@@ -82,26 +79,22 @@ int main(int argc, char** argv) {
     const int n = 3;
     auto      a{Arena<Widget>(n)};
     auto      v{vector<Ref<Widget>>()};
-    std::cout << "" << " sizeof(Widget)='" << sizeof(Widget) << "' " << std::endl;
-    std::cout << "" << " sizeof(a)='" << sizeof(a) << "' " << std::endl;
-    std::cout << "" << " sizeof(a.used)='" << sizeof(a.used) << "' " << std::endl;
-    std::cout << "" << " sizeof(a.r)='" << sizeof(a.r) << "' " << std::endl;
-    std::cout << "" << " sizeof(a.a)='" << sizeof(a.a) << "' " << std::endl;
-    std::cout << "" << " sizeof(v[0])='" << sizeof(v[0]) << "' " << std::endl;
+
+
     for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
         auto e{a.aquire()};
         assert(i == e.idx());
         v.push_back(e);
     }
-    std::cout << "#### CLEAR ####" << std::endl;
+
     v.clear();
-    std::cout << "#### REUSE N ELEMENTS ####" << std::endl;
+
     for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
         auto e{a.aquire()};
         assert(i == e.idx());
         v.push_back(e);
     }
-    std::cout << "#### TRY TO GET ONE ELEMENT TOO MANY ####" << std::endl;
+
     v.push_back(a.aquire());
     return 0;
 }

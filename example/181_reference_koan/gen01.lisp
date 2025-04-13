@@ -7,7 +7,7 @@
 
 (progn
   (setf *features* (set-difference *features* (list :more)))
-  (setf *features* (set-exclusive-or *features* (list  :more
+  (setf *features* (set-exclusive-or *features* (list ; :more
 						 ))))
 
 (progn
@@ -29,14 +29,14 @@
 		     *source-dir*))
    `(do0
      (include<>
-      iostream
-      ;array
-      deque
+      ; iostream
+					;array
+					;deque
       vector
       memory
       atomic
-      ;condition_variable
-      ;mutex
+					;condition_variable
+					;mutex
       algorithm
 					;thread
       cassert
@@ -125,7 +125,8 @@
 			 (do0
 			  (setf *it true)
 			  (let ((idx (- it (used.begin)))
-				(el (dot r (at idx)))))
+				(el (aref r idx) ;(dot r (at idx))
+				    )))
 			  ,(lprint :msg "found unused element"
 				   :vars `(idx))
 			  (return el)))))
@@ -150,8 +151,7 @@
 			    (explicit)
 			    (type int n=0)
 			    (construct 
-				       (used n ;(vector<bool> n)
-					     )
+				       (used (vector<bool> n))
 				       (r (vector<Ref<T>>))
 				       (a (vector<T> n))))
 		   "int idx=0;"
@@ -165,8 +165,8 @@
 				    "T& operator=(T&&)")
 			 collect
 			 (format nil "~a = delete;" e))
-		 ;"private:"
-		 "deque<bool> used{};"
+		 "private:"
+		 "vector<bool> used{};"
 		 "vector<Ref<T>> r;"
 		 "vector<T> a;"
 		 )))
@@ -189,9 +189,11 @@
 	(let ((v (vector<Ref<Widget>> ))))
 	,(lprint :vars `((sizeof Widget)))
 	,(lprint :vars `((sizeof a)))
-	,(lprint :vars `((sizeof a.used)))
-	,(lprint :vars `((sizeof a.r)))
-	,(lprint :vars `((sizeof a.a)))
+	#+nil
+	(do0
+	 ,(lprint :vars `((sizeof a.used)))
+	 ,(lprint :vars `((sizeof a.r)))
+	 ,(lprint :vars `((sizeof a.a))))
 	,(lprint :vars `((sizeof (aref v 0))))
 	
 	(dotimes (i n)
