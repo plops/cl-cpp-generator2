@@ -22,24 +22,17 @@
       "Sunday"))
   (ensure-directories-exist *full-source-dir*)
   (load "../163_value_based_oop/util.lisp")
-  (write-source 
+
+  (write-source
    (asdf:system-relative-pathname
     'cl-cpp-generator2
-    (merge-pathnames "main.cpp"
+    (merge-pathnames "Ref.h"
 		     *source-dir*))
    `(do0
+     "#pragma once"
      (include<>
-      ; iostream
-					;array
-					;deque
-      vector
       memory
       atomic
-					;condition_variable
-					;mutex
-      algorithm
-					;thread
-      cassert
       )
      "using namespace std;"
 
@@ -73,16 +66,16 @@
 			     (values :constructor)))
 		  ;; move ctor
 		  #+nil (defmethod Ref (rhs)
-		    (declare (type "Ref&&" rhs)
-			     (noexcept)
-			     (construct (ref (move rhs.ref))
-					(arena (move rhs.arena))
-					(sp (move (rhs.sp.load))))
-			     (values :constructor)))
+			  (declare (type "Ref&&" rhs)
+				   (noexcept)
+				   (construct (ref (move rhs.ref))
+					      (arena (move rhs.arena))
+					      (sp (move (rhs.sp.load))))
+				   (values :constructor)))
 		  
 		  ;; copy ctor, move ctor ...
 		  #-nil
-		  ,@(loop for e in `(;,(format nil "~a(const T&)" name)
+		  ,@(loop for e in `( ;,(format nil "~a(const T&)" name)
 				     ,(format nil "~a(T&&)" name)
 				     "const T& operator=(const T&)"
 				     "T& operator=(T&&)")
@@ -97,8 +90,7 @@
 		  (defmethod idx ()
 		    (declare (values "long int")
 			     (inline))
- 		    (return (-> (dot sp (load))
-				idx)))
+ 		    (return "sp.load()->idx"))
 		  "private:"
 		  (defclass+ Priv ()
 		    "public:"
@@ -106,70 +98,114 @@
 		  "Arena<T>& arena;"	      
 		  "T& ref;"
 		  "atomic<shared_ptr<Priv>> sp{nullptr};"
-		  )))
+		  ))))
+   )
 
+  (write-source
+   (asdf:system-relative-pathname
+    'cl-cpp-generator2
+    (merge-pathnames "Arena.h"
+		     *source-dir*))
+   `(do0
+     "#pragma once"
+     (include<>
+      vector
+      memory
+      atomic
+      algorithm
+      cassert
+      )
+     (include Ref.h)
+     "using namespace std;"
      ,(let ((name "Arena"))
 	`(space "template<typename T>"
-	       (defclass+ ,name ()
-		 "public:"
-		 (defmethod aquire ()
-		   (declare (values Ref<T>)
-			    (inline))
-		   (let ((it (find (used.begin)
-				   (used.end)
-				   false)))
-		     (if (== (used.end)
-			     it)
-			 (do0
-			  (throw (runtime_error (string "no free arena element"))))
-			 (do0
-			  (setf *it true)
-			  (let ((idx (- it (used.begin)))
-				(el (aref r idx) ;(dot r (at idx))
-				    )))
-			  ,(lprint :msg "found unused element"
-				   :vars `(idx))
-			  (return el)))))
+		(defclass+ ,name ()
+		  "public:"
+		  (defmethod aquire ()
+		    (declare (values Ref<T>)
+			     (inline))
+		    (let ((it (find (used.begin)
+				    (used.end)
+				    false)))
+		      (if (== (used.end)
+			      it)
+			  (do0
+			   (throw (runtime_error (string "no free arena element"))))
+			  (do0
+			   (setf *it true)
+			   (let ((idx (- it (used.begin)))
+				 (el (aref r idx) ;(dot r (at idx))
+				     )))
+			   ,(lprint :msg "found unused element"
+				    :vars `(idx))
+			   (return el)))))
 
-		 (defmethod setUnused (idx)
-		   (declare (type int idx)
-			    (inline))
-		   ,(lprint :msg "Arena::setUnused"
-			    :vars `(idx))
-		   (setf (aref used idx) false))
-		 (defmethod use_count (idx)
-		   (declare (values "long int")
-			    (type int idx)
-			    (inline))
-		   (let ((count (dot (aref r idx) (use_count)))))
-		   ,(lprint :msg "Arena::use_count"
-			    :vars `(count))
-		   (return count))
+		  (defmethod setUnused (idx)
+		    (declare (type int idx)
+			     (inline))
+		    ,(lprint :msg "Arena::setUnused"
+			     :vars `(idx))
+		    (setf (aref used idx) false))
+		  (defmethod use_count (idx)
+		    (declare (values "long int")
+			     (type int idx)
+			     (inline))
+		    (let ((count (dot (aref r idx) (use_count)))))
+		    ,(lprint :msg "Arena::use_count"
+			     :vars `(count))
+		    (return count))
 		 
-		 (defmethod ,name (n=0)
-		   (declare (values :constructor)
-			    (explicit)
-			    (type int n=0)
-			    (construct 
-				       (used (vector<bool> n))
-				       (r (vector<Ref<T>>))
-				       (a (vector<T> n))))
-		   "int idx=0;"
-		   (for-range (e a)
-			      (r.emplace_back e idx *this)
-			      (incf idx)))
+		  (defmethod ,name (n=0)
+		    (declare (values :constructor)
+			     (explicit)
+			     (type int n=0)
+			     (construct 
+			      (used (vector<bool> n))
+			      (r (vector<Ref<T>>))
+			      (a (vector<T> n))))
+		    "int idx=0;"
+		    (for-range (e a)
+			       (r.emplace_back e idx *this)
+			       (incf idx)))
 
-		 ,@(loop for e in `(,(format nil "~a(const T&)" name)
-				    ,(format nil "~a(T&&)" name)
-				    "const T& operator=(const T&)"
-				    "T& operator=(T&&)")
-			 collect
-			 (format nil "~a = delete;" e))
-		 "private:"
-		 "vector<bool> used{};"
-		 "vector<Ref<T>> r;"
-		 "vector<T> a;"
-		 )))
+		  ,@(loop for e in `(,(format nil "~a(const T&)" name)
+				     ,(format nil "~a(T&&)" name)
+				     "const T& operator=(const T&)"
+				     "T& operator=(T&&)")
+			  collect
+			  (format nil "~a = delete;" e))
+		  "private:"
+		  "vector<bool> used{};"
+		  "vector<Ref<T>> r;"
+		  "vector<T> a;"
+		  ))))
+   
+   )
+  (write-source 
+   (asdf:system-relative-pathname
+    'cl-cpp-generator2
+    (merge-pathnames "main.cpp"
+		     *source-dir*))
+   `(do0
+     (include<>
+					; iostream
+					;array
+					;deque
+      vector
+      memory
+      atomic
+					;condition_variable
+					;mutex
+      algorithm
+					;thread
+      cassert
+      )
+     (include Arena.h)
+     "using namespace std;"
+
+          
+
+     
      
      (defun main (argc argv)
        (declare (values int)
