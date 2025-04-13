@@ -34,7 +34,6 @@ public:
                 std::cout << "found unused element after wait" << " idx='" << idx << "' " << std::endl;
                 {
                     auto l{lock_guard(m)};
-                    auto l2{lock_guard(r[idx].getMutex())};
                     used[idx] = true;
                 }
                 return el;

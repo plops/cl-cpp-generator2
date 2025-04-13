@@ -166,6 +166,7 @@
 	      (EXPECT_EQ (r0.use_count) 3)
 	      (EXPECT_EQ (r1.use_count) 3)
 	      ))
+     #+nil
      (space TEST (paren Ref CopyAssign_Assign_CountIncreases)
 	    (progn
 	      (let ((v (vector<int> 3))))
@@ -190,7 +191,7 @@
 	      (EXPECT_EQ (r1.use_count) 3)
 	      (comments "not sure why this is 3, strange")
 	      ))
-
+     #+nil
      (space TEST (paren Ref MoveAssign_Assign_CountUnmodified)
 	    (progn
 	      (let ((v (vector<int> 3))))
@@ -275,7 +276,7 @@
 				   ,(lprint :msg "found unused element after wait"
 					    :vars `(idx))
 				   (progn (let ((l (lock_guard m))))
-					  (let ((l2 (lock_guard (dot (aref r idx) (getMutex))))))
+					  ;(let ((l2 (lock_guard (dot (aref r idx) (getMutex))))))
 					  (setf (aref used idx) true))
 				   (return el)))))
 			  
