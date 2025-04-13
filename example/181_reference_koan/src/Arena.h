@@ -23,22 +23,18 @@ public:
                 // new elements should now be present
                 auto it{find(used.begin(), used.end(), false)};
                 if (used.end() == it) { throw runtime_error("no free arena element"); }
-                else {
-                    *it = true;
-                    auto idx{it - used.begin()};
-                    auto el{r.at(idx)};
-                    std::cout << "found unused element after wait" << " idx='" << idx << "' " << std::endl;
-                    return el;
-                }
+                *it = true;
+                auto idx{it - used.begin()};
+                auto el{r.at(idx)};
+                std::cout << "found unused element after wait" << " idx='" << idx << "' " << std::endl;
+                return el;
             }
         }
-        else {
-            *it = true;
-            auto idx{it - used.begin()};
-            auto el{r[idx]};
-            std::cout << "found unused element" << " idx='" << idx << "' " << std::endl;
-            return el;
-        }
+        *it = true;
+        auto idx{it - used.begin()};
+        auto el{r[idx]};
+        std::cout << "found unused element" << " idx='" << idx << "' " << std::endl;
+        return el;
     }
     inline void setUnused(int idx) {
         std::cout << "Arena::setUnused" << " idx='" << idx << "' " << std::endl;

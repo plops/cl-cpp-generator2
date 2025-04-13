@@ -224,7 +224,7 @@
 		    (let ((it (find (used.begin)
 				    (used.end)
 				    false)))
-		      (if (== (used.end)
+		      (when (== (used.end)
 			      it)
 			  (do0
 			   #+nil
@@ -238,26 +238,28 @@
 				  (let ((it (find (used.begin)
 						  (used.end)
 						  false)))	
-			    (if  (== (used.end)
-					     it)
-					 (do0
-					  (throw (runtime_error (string "no free arena element")))
-					  )
-					 (do0
+				    (when  (== (used.end)
+					       it)
+					 (throw (runtime_error (string "no free arena element")))
+					 
+					 )
+				    (do0
 					  (setf *it true)
 					  (let ((idx (- it (used.begin)))
 						(el (dot r (at idx)))))
 					  ,(lprint :msg "found unused element after wait"
 						   :vars `(idx))
-					  (return el))))))
-			  (do0
+					  (return el)))))
+			  
+			  )
+		      (do0
 			   (setf *it true)
 			   (let ((idx (- it (used.begin)))
 				 (el (aref r idx) ;(dot r (at idx))
 				     )))
 			   ,(lprint :msg "found unused element"
 				    :vars `(idx))
-			   (return el)))))
+			   (return el))))
 
 		  (defmethod setUnused (idx)
 		    (declare (type int idx)
@@ -366,13 +368,14 @@
 			 (lambda ( )
 			   (declare (capture "&n" "&a" "&la"))
 			   (let ((v (vector<Ref<Widget>>))))
-			   (dotimes (i (+ n 1))
+			   (dotimes (i n)
 			     (v.push_back (a.acquire))
 			     (EXPECT_EQ (a.capacity) n)
 			     (EXPECT_EQ (a.nb_used) (+ 1 i)))
 			   (la.count_down)
 			   (this_thread--sleep_for 30ms)
 			   ,(lprint :msg "exiting thread that held elements"))))))
+		
 		(la.wait) (comments "wait until the thread used all the elements")
 		(let ((start (chrono--high_resolution_clock--now))))
 		(a.acquire)

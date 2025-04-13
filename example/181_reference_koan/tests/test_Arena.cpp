@@ -30,7 +30,7 @@ TEST(Arena, acquire_performUntilWait_elementArrivesAfterWait) {
     auto la{latch(1)};
     auto th{jthread([&n, &a, &la]() {
         auto v{vector<Ref<Widget>>()};
-        for (decltype(0 + n + 1 + 1) i = 0; i < n + 1; i += 1) {
+        for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
             v.push_back(a.acquire());
             EXPECT_EQ(a.capacity(), n);
             EXPECT_EQ(a.nb_used(), 1 + i);
