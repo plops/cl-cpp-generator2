@@ -7,7 +7,7 @@
 
 (progn
   (setf *features* (set-difference *features* (list :more)))
-  (setf *features* (set-exclusive-or *features* (list ; :more
+  (setf *features* (set-exclusive-or *features* (list  :more
 						 ))))
 
 (progn
@@ -209,6 +209,7 @@
       atomic
       algorithm
       cassert
+      #+more iostream
       )
      (include Ref.h)
      "using namespace std;"
@@ -219,13 +220,35 @@
 		  (defmethod acquire ()
 		    (declare (values Ref<T>)
 			     (inline))
+		    (elementNowUnused.clear)
 		    (let ((it (find (used.begin)
 				    (used.end)
 				    false)))
 		      (if (== (used.end)
 			      it)
 			  (do0
-			   (throw (runtime_error (string "no free arena element"))))
+			   #+nil
+			   (throw (runtime_error (string "no free arena element")))
+			   (comments "pikus p.549")
+			   ,(lprint :msg "waiting for element to become unused")
+			   (elementNowUnused.wait false memory_order_acquire)
+			   (while (not (elementNowUnused.test memory_order_acquire))
+				  (comments "new elements should now be present")
+				  (let ((it (find (used.begin)
+						  (used.end)
+						  false)))
+				    (if  (== (used.end)
+					     it)
+					 (do0
+					  (throw (runtime_error (string "no free arena element")))
+					  )
+					 (do0
+					  (setf *it true)
+					  (let ((idx (- it (used.begin)))
+						(el (dot r (at idx)))))
+					  ,(lprint :msg "found unused element after wait"
+						   :vars `(idx))
+					  (return el))))))
 			  (do0
 			   (setf *it true)
 			   (let ((idx (- it (used.begin)))
@@ -240,7 +263,9 @@
 			     (inline))
 		    ,(lprint :msg "Arena::setUnused"
 			     :vars `(idx))
-		    (setf (aref used idx) false))
+		    (setf (aref used idx) false)
+		    (elementNowUnused.test_and_set memory_order_release)
+		    (elementNowUnused.notify_one))
 		  (defmethod capacity ()
 		    (declare (values int))
 		    (return (dot r (size))))
@@ -289,6 +314,7 @@
 		  "vector<bool> used{};"
 		  "vector<Ref<T>> r;"
 		  "vector<T> a;"
+		  "atomic_flag elementNowUnused{false};"
 		  ))))
    :omit-parens t
    :format nil
