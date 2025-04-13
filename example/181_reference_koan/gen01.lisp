@@ -7,7 +7,8 @@
 
 (progn
   (setf *features* (set-difference *features* (list :more)))
-  (setf *features* (set-exclusive-or *features* (list :more))))
+  (setf *features* (set-exclusive-or *features* (list ; :more
+						 ))))
 
 (progn
   (progn
@@ -89,11 +90,13 @@
 			  (format nil "~a = delete;" e))
 		  
 		  (defmethod use_count ()
-		    (declare (values "long int"))
+		    (declare (values "long int")
+			     (inline))
 		    (return (dot sp (load)
 				 (use_count))))
 		  (defmethod idx ()
-		    (declare (values "long int"))
+		    (declare (values "long int")
+			     (inline))
 		    (return (-> (dot sp (load))
 				idx)))
 		  "private:"

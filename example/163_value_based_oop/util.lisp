@@ -7,7 +7,9 @@
 			 msg
 			 (loop for e in vars collect (emit-c :code e  :omit-redundant-parentheses t)) ))
 	,@vars))
-  #-nil
+  #-more
+  ""
+  #+more
   `(<< std--cout
        (string ,(format nil "~a"
 			msg

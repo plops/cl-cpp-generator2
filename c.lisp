@@ -550,7 +550,8 @@ Common Lisp DEFMETHOD form.
 	  (parse-ordinary-lambda-list lambda-list)
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
-	(when (and (or inline-p
+	(when (and (or (and inline-p
+			    (not  (eq in-class-p 'defclass+)))
 		       pure-p
 		       )
 		   (not header-only))
@@ -573,7 +574,7 @@ Common Lisp DEFMETHOD form.
 		    template)
 		  ;; 2 static
 		  (when (and static-p
-			     (or (eq in-class-p 'defclass+)
+			     (or  (eq in-class-p 'defclass+)
 			      header-only))
 		    "static")
 		  ;; 3 explicit
