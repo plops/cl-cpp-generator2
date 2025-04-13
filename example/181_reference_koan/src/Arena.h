@@ -73,6 +73,7 @@ public:
     explicit Arena(int n = 1) : used{vector<bool>(n)}, r{vector<Ref<T>>()}, a{vector<T>(n)} {
         int idx = 0;
         for (auto&& e : a) {
+            auto l{lock_guard(m)};
             r.emplace_back(e, idx, *this);
             idx++;
         }
@@ -81,13 +82,10 @@ public:
     Arena(T&&)                   = delete;
     const T& operator=(const T&) = delete;
     T&       operator=(T&&)      = delete;
-
+    mutex    m; // protect access to used[] and idx in Ref<T>
 private:
     vector<bool>   used{};
     vector<Ref<T>> r;
     vector<T>      a;
     atomic_flag    elementNowUnused{false};
-
-public:
-    mutex m; // protect access to used[] and idx in Ref<T>
 };

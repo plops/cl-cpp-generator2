@@ -333,6 +333,7 @@
 			      (a (vector<T> n))))
 		    "int idx=0;"
 		    (for-range (e a)
+			       (let ((l (lock_guard m))))
 			       (r.emplace_back e idx *this)
 			       (incf idx)))
 
@@ -342,13 +343,15 @@
 				     "T& operator=(T&&)")
 			  collect
 			  (format nil "~a = delete;" e))
+		  "mutex m; // protect access to used[] and idx in Ref<T>"
 		  "private:"
+		  
 		  "vector<bool> used{};"
 		  "vector<Ref<T>> r;"
 		  "vector<T> a;"
 		  "atomic_flag elementNowUnused{false};"
-		  "public:"
-		  "mutex m; // protect access to used[] and idx in Ref<T>"
+		  
+		  
 
 		  ))))
    :omit-parens t
