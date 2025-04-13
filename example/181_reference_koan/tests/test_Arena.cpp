@@ -1,3 +1,4 @@
+#include <chrono>
 #include <gtest/gtest.h>
 #include <latch>
 #include <thread>
@@ -26,9 +27,9 @@ TEST(Arena, acquire_performUntilWait_elementArrivesAfterWait) {
     };
     auto n{3};
     auto a{Arena<Widget>(n)};
-    auto v{vector<Ref<Widget>>()};
     auto la{latch(1)};
-    auto th{jthread([&n, &a, &v, &la]() {
+    auto th{jthread([&n, &a, &la]() {
+        auto v{vector<Ref<Widget>>()};
         for (decltype(0 + n + 1 + 1) i = 0; i < n + 1; i += 1) {
             v.push_back(a.acquire());
             EXPECT_EQ(a.capacity(), n);
@@ -36,8 +37,12 @@ TEST(Arena, acquire_performUntilWait_elementArrivesAfterWait) {
         }
         la.count_down();
         this_thread::sleep_for(30ms);
+        std::cout << "exiting thread that held elements" << std::endl;
     })};
     la.wait();
     // wait until the thread used all the elements
+    auto start{chrono::high_resolution_clock::now()};
     a.acquire();
+    auto end{chrono::high_resolution_clock::now()};
+    std::cout << "" << " (end-start).count()='" << (end - start).count() << "' " << std::endl;
 };

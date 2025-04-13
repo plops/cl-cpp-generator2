@@ -232,12 +232,13 @@
 			   (comments "pikus p.549")
 			   ,(lprint :msg "waiting for element to become unused")
 			   (elementNowUnused.wait false memory_order_acquire)
+			   (comments "according to standard this wait should not spuriously wake up. the book still adds this check because tsan thinks otherwise")
 			   (while (not (elementNowUnused.test memory_order_acquire))
 				  (comments "new elements should now be present")
 				  (let ((it (find (used.begin)
 						  (used.end)
-						  false)))
-				    (if  (== (used.end)
+						  false)))	
+			    (if  (== (used.end)
 					     it)
 					 (do0
 					  (throw (runtime_error (string "no free arena element")))
@@ -331,10 +332,13 @@
      (include<>
       gtest/gtest.h
       vector
+      thread
+      latch
+      chrono
       )
      (include "Arena.h")
      "using namespace std;"
-     
+     "using namespace std::chrono_literals;"
      
      (space TEST (paren Arena acquire_perform_freeElementsShrink)
 	    (progn
@@ -347,8 +351,34 @@
 		  (v.push_back (a.acquire))
 		  (EXPECT_EQ (a.capacity) n)
 		  (EXPECT_EQ (a.nb_used) (+ 1 i)))
-		(EXPECT_THROW (a.acquire)
+		#+nil (EXPECT_THROW (a.acquire)
 			      runtime_error))))
+
+     (space TEST (paren Arena acquire_performUntilWait_elementArrivesAfterWait)
+	    (progn
+	      (space struct Widget (progn "int i;" "float a;"))
+	      (let ((n 3)
+		    (a (Arena<Widget> n))
+		    )
+		(let ((la (latch 1))
+		      (th
+			(jthread
+			 (lambda ( )
+			   (declare (capture "&n" "&a" "&la"))
+			   (let ((v (vector<Ref<Widget>>))))
+			   (dotimes (i (+ n 1))
+			     (v.push_back (a.acquire))
+			     (EXPECT_EQ (a.capacity) n)
+			     (EXPECT_EQ (a.nb_used) (+ 1 i)))
+			   (la.count_down)
+			   (this_thread--sleep_for 30ms)
+			   ,(lprint :msg "exiting thread that held elements"))))))
+		(la.wait) (comments "wait until the thread used all the elements")
+		(let ((start (chrono--high_resolution_clock--now))))
+		(a.acquire)
+		(let ((end (chrono--high_resolution_clock--now))))
+		,(lprint :vars `((dot (paren (- end start)) (count))))
+		)))
      )
    :omit-parens t
    :format nil
@@ -425,7 +455,9 @@
    :tidy nil)
   (sb-ext:run-program "/usr/bin/clang-format"
 		      `("-i"
-			,@(loop for e in (directory (format nil "~a/*.*" *full-source-dir*))
+			,@(loop for e in
+				      (append (directory (format nil "~a/*.*" *full-source-dir*))
+					      (directory (format nil "~a/../tests/*.*" *full-source-dir*)))
 				collect (format nil "~a" e))
 			"-style=file")))
 

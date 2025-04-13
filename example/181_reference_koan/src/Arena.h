@@ -17,6 +17,8 @@ public:
             // pikus p.549
             std::cout << "waiting for element to become unused" << std::endl;
             elementNowUnused.wait(false, memory_order_acquire);
+            // according to standard this wait should not spuriously wake up. the book still adds this check because
+            // tsan thinks otherwise
             while (!elementNowUnused.test(memory_order_acquire)) {
                 // new elements should now be present
                 auto it{find(used.begin(), used.end(), false)};
