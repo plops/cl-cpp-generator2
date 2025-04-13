@@ -117,13 +117,18 @@
 	    (defclass+ Arena ()
 	      "public:"
 	      (defmethod setUnused (idx)
-		    (declare (type int idx)))))
+		    (declare (type "long int" idx)))))
      
      (space TEST (paren Ref CopyConstructor_Copy_CountIncreases)
 	    (progn
 	      (let ((v (vector<int> 3))))
 	      (let ((a (Arena<int>))))
-	      (let ((r0 (Ref<int>  (aref v 0) 0 3a)))))))
+	      (let ((r0 (Ref<int>  (aref v 0) 0 a))))
+	      (EXPECT_EQ (r0.use_count) 2)
+	      (let ((r1 r0)))
+	      (EXPECT_EQ (r0.use_count) 3)
+	      (EXPECT_EQ (r1.use_count) 3)
+	      )))
    )
 
   (write-source
