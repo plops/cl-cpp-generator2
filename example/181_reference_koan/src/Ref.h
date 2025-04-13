@@ -13,7 +13,7 @@ public:
         if ((3) == (use_count())) { arena.setUnused(idx()); }
     }
     Ref(const Ref &rhs) : arena{rhs.arena}, ref{rhs.ref}, sp{rhs.sp.load()} {}
-    Ref(T &&)                            = delete;
+    Ref(Ref &&rhs) noexcept : arena{rhs.arena}, ref{rhs.ref}, sp{move(rhs.sp.load())} {}
     const T        &operator=(const T &) = delete;
     T              &operator=(T &&)      = delete;
     inline long int use_count() { return sp.load().use_count(); }

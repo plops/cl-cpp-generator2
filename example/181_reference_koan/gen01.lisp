@@ -68,15 +68,16 @@
 		  #+nil (defmethod Ref (rhs)
 			  (declare (type "Ref&&" rhs)
 				   (noexcept)
-				   (construct (ref (move rhs.ref))
-					      (arena (move rhs.arena))
-					      (sp (move (rhs.sp.load))))
+				   (construct (arena rhs.arena)
+					      (ref rhs.ref)
+					      (sp (move ;rhs.sp #+nil
+							       (rhs.sp.load))))
 				   (values :constructor)))
 		  
 		  ;; copy ctor, move ctor ...
 		  #-nil
 		  ,@(loop for e in `( ;,(format nil "~a(const T&)" name)
-				     ,(format nil "~a(T&&)" name)
+				     ;,(format nil "~a(T&&)" name)
 				     "const T& operator=(const T&)"
 				     "T& operator=(T&&)")
 			  collect
@@ -128,6 +129,16 @@
 	      (let ((r1 r0)))
 	      (EXPECT_EQ (r0.use_count) 3)
 	      (EXPECT_EQ (r1.use_count) 3)
+	      ))
+     #+nil
+     (space TEST (paren Ref MoveConstructor_Move_CountUnmodified)
+	    (progn
+	      (let ((v (vector<int> 3))))
+	      (let ((a (Arena<int>))))
+	      (let ((r0 (Ref<int>  (aref v 0) 0 a))))
+	      (EXPECT_EQ (r0.use_count) 2)
+	      (let ((r1 (move r0))))
+	      (EXPECT_EQ (r1.use_count) 2)
 	      )))
    )
 
