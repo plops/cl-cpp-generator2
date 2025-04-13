@@ -39,7 +39,7 @@
 
      
      "template<typename T> class Arena;"
-     ,(let ((name "Ref"))
+     #+nil,(let ((name "Ref"))
 	`(space "template<typename T>"
 		(defclass+ Ref ()
 		  "public:"
@@ -229,6 +229,99 @@
      ,(let ((name "Arena"))
 	`(space "template<typename T>"
 		(defclass+ ,name ()
+		  "private:"
+		  ,(let ((name "Ref"))
+	`(space "template<typename T>"
+		(defclass+ Ref ()
+		  "public:"
+		  ;; ctor
+		  (defmethod Ref (r idx associatedArena)
+		    (declare (type T& r)
+			     (type "Arena<T>&" associatedArena)
+			     (type int idx)
+			    
+			     (construct (arena associatedArena)
+					(ref r)
+					(sp (make_shared<Priv> idx))
+					)
+			     (explicit)
+			     (values :constructor)))
+		  ;; dtor
+		  (defmethod ~Ref ()
+		    (declare (values :constructor))
+		    (let ((val (use_count) #+nil(int 0))))
+		   #+nil (progn
+		      (let ((l (lock_guard m)))
+			(setf val (use_count))))
+		    (when (== 3 val)
+		      (arena.setUnused (idx))))
+
+		  ;; copy ctor
+		  (defmethod Ref (rhs)
+		    (declare (type "const Ref&" rhs)
+			     (construct (arena rhs.arena)
+					(ref rhs.ref)
+					(sp (rhs.sp.load)))
+			     (values :constructor)))
+		  ;; copy assign
+		  (defmethod operator= (rhs)
+		    (declare (type "const Ref&" rhs)
+			     (values Ref&))
+		    (unless (== this &rhs)
+		      (setf arena rhs.arena
+			    ref rhs.ref
+			    sp (rhs.sp.load)))
+		    (return *this))
+		  ;; move ctor
+		  #-nil (defmethod Ref (rhs)
+		    (declare (type "Ref&&" rhs)
+		     (noexcept)
+		     (construct
+		      (arena rhs.arena)
+		      (ref rhs.ref)
+		      (sp (rhs.sp.load)))
+		     (values :constructor)))
+		  ;; move assign
+		  #-nil (defmethod operator= (rhs)
+		    (declare (type "Ref&&" rhs)
+			     (noexcept)
+			     (values Ref&))
+		    (unless (== this &rhs)
+		      (setf arena rhs.arena
+			    ref rhs.ref
+			    sp (rhs.sp.load)))
+		    (return *this))
+		  ;; copy ctor, move ctor ...
+		  
+		 #+nil ,@(loop for e in `(;,(format nil "~a(const ~a&)" name name)
+				     ;,(format nil "~a(~a&&)" name name)
+				     ;,(format nil "~a& operator=(const ~a&)" name name)
+				     ,(format nil "~a& operator=(~a&&)" name name))
+			  collect
+			  (format nil "~a = delete;" e))
+		  
+		  (defmethod use_count ()
+		    (declare (values "long int")
+			     (inline))
+		    (let ((l (lock_guard m))))
+		    (return (dot sp (load)
+				 (use_count))))
+		  
+		  "private:"
+		  (defmethod idx ()
+		    (declare (values "long int")
+			     (inline))
+ 		    (return "sp.load()->idx"))
+		  (defclass+ Priv ()
+		    "public:"
+		    "int idx;")
+		  "Arena<T>& arena;"	      
+		  "T& ref;"
+		  "atomic<shared_ptr<Priv>> sp{nullptr};"
+
+		  
+		  )))
+		  
 		  "public:"
 		  (defmethod firstUnused ()
 		    (declare (values int))

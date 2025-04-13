@@ -122,7 +122,7 @@ if (ENABLE_ARENAREF_TESTS)
     #        FetchContent_MakeAvailable(googletest)
 
     set(test_sources
-            tests/test_Ref.cpp
+            #tests/test_Ref.cpp
             tests/test_Arena.cpp
     )
     set_source_files_properties(${test_sources} PROPERTIES UNITY_GROUP "Tests")
