@@ -36,6 +36,7 @@
       )
      "using namespace std;"
 
+     
      "template<typename T> class Arena;"
      ,(let ((name "Ref"))
 	`(space "template<typename T>"
@@ -106,11 +107,12 @@
 			     (inline))
 		    (return (dot sp (load)
 				 (use_count))))
+		  
+		  "private:"
 		  (defmethod idx ()
 		    (declare (values "long int")
 			     (inline))
  		    (return "sp.load()->idx"))
-		  "private:"
 		  (defclass+ Priv ()
 		    "public:"
 		    "int idx;")

@@ -31,9 +31,9 @@ public:
         return *this;
     }
     inline long int use_count() { return sp.load().use_count(); }
-    inline long int idx() { return sp.load()->idx; }
 
 private:
+    inline long int idx() { return sp.load()->idx; }
     class Priv {
     public:
         int idx;
