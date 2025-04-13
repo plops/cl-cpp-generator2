@@ -74,32 +74,32 @@
 			    sp (rhs.sp.load)))
 		    (return *this))
 		  ;; move ctor
-		  #+nil (defmethod Ref (rhs)
+		  #-nil (defmethod Ref (rhs)
 		    (declare (type "Ref&&" rhs)
 		     (noexcept)
 		     (construct
 		      (arena rhs.arena)
 		      (ref rhs.ref)
-		      (sp (move	(rhs.sp.load))))
+		      (sp (rhs.sp.load)))
 		     (values :constructor)))
 		  ;; move assign
-		  #+nil (defmethod operator= (rhs)
+		  #-nil (defmethod operator= (rhs)
 		    (declare (type "Ref&&" rhs)
 			     (noexcept)
 			     (values Ref&))
 		    (unless (== this &rhs)
 		      (setf arena rhs.arena
 			    ref rhs.ref
-			    sp (move rhs.sp #+nil (rhs.sp.load))))
+			    sp (rhs.sp.load)))
 		    (return *this))
 		  ;; copy ctor, move ctor ...
 		  
-		  ,@(loop for e in `(;,(format nil "~a(const ~a&)" name name)
-				     ,(format nil "~a(~a&&)" name name)
+		 #+nil ,@(loop for e in `(;,(format nil "~a(const ~a&)" name name)
+				     ;,(format nil "~a(~a&&)" name name)
 				     ;,(format nil "~a& operator=(const ~a&)" name name)
 				     ,(format nil "~a& operator=(~a&&)" name name))
 			  collect
-			  (format nil "~a = default;" e))
+			  (format nil "~a = delete;" e))
 		  
 		  (defmethod use_count ()
 		    (declare (values "long int")
@@ -233,7 +233,7 @@
 			   ,(lprint :msg "waiting for element to become unused")
 			   (elementNowUnused.wait false memory_order_acquire)
 			   (comments "according to standard this wait should not spuriously wake up. the book still adds this check because tsan thinks otherwise")
-			   (while (not (elementNowUnused.test memory_order_acquire))
+			   (while (elementNowUnused.test memory_order_acquire)
 				  (comments "new elements should now be present")
 				  (let ((it (find (used.begin)
 						  (used.end)
@@ -368,20 +368,24 @@
 			 (lambda ( )
 			   (declare (capture "&n" "&a" "&la"))
 			   (let ((v (vector<Ref<Widget>>))))
-			   (dotimes (i (- n 1))
+			   (dotimes (i n)
 			     (v.push_back (a.acquire))
-			     ;(EXPECT_EQ (a.capacity) n)
-			     ;(EXPECT_EQ (a.nb_used) (+ 1 i))
+			     (EXPECT_EQ (a.capacity) n)
+			     (EXPECT_EQ (a.nb_used) (+ 1 i))
 			     )
 			   (la.count_down)
-			   (this_thread--sleep_for 100ms)
+			   (this_thread--sleep_for 10ms)
 			   ,(lprint :msg "exiting thread that held elements"))))))
 		
 		(la.wait) (comments "wait until the thread used all the elements")
 		(let ((start (chrono--system_clock--now))))
 		(a.acquire)
-		(let ((end (chrono--system_clock--now))))
-		,(lprint :vars `((dot (paren (- end start)) (count))))
+		(let ((end (chrono--system_clock--now))
+		      (duration_ms (* (dot (paren (- end start)) (count)) 1e-6)))
+		  )
+		,(lprint :vars `(duration_ms))
+		(EXPECT_GE duration_ms 10)
+		(EXPECT_LE duration_ms 12)
 		)))
      )
    :omit-parens t
@@ -425,7 +429,7 @@
 	 "float f{4.5F};"
 	 "char name[20];")
        "const int n=3;"
-             
+             #+nil
        (do0
 	(let ((a (space Arena (angle Widget) (paren n) ))))
 
@@ -449,9 +453,9 @@
 	(dotimes (i n)
 	  (let ((e (a.acquire))))
 	  (assert (== i (e.idx)))
-	  (v.push_back e)))
-       ,(lprint :msg "#### TRY TO GET ONE ELEMENT TOO MANY ####")
-       (v.push_back (a.acquire))
+	  (v.push_back e))
+	,(lprint :msg "#### TRY TO GET ONE ELEMENT TOO MANY ####")
+	(v.push_back (a.acquire)))
                    
        (return 0)))
    :omit-parens t

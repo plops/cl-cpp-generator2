@@ -21,8 +21,15 @@ public:
         }
         return *this;
     }
-    Ref(Ref&&)                       = default;
-    Ref&            operator=(Ref&&) = default;
+    Ref(Ref&& rhs) noexcept : arena{rhs.arena}, ref{rhs.ref}, sp{rhs.sp.load()} {}
+    Ref& operator=(Ref&& rhs) noexcept {
+        if (!(this == &rhs)) {
+            arena = rhs.arena;
+            ref   = rhs.ref;
+            sp    = rhs.sp.load();
+        }
+        return *this;
+    }
     inline long int use_count() { return sp.load().use_count(); }
     inline long int idx() { return sp.load()->idx; }
 
