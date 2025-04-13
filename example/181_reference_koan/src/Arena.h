@@ -89,5 +89,5 @@ private:
     atomic_flag    elementNowUnused{false};
 
 public:
-    mutex m; // protect access to used[] and r[]
+    mutex m; // protect access to used[] and idx in Ref<T>
 };

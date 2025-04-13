@@ -58,11 +58,7 @@
 		  ;; dtor
 		  (defmethod ~Ref ()
 		    (declare (values :constructor))
-		    (let ((val (use_count) #+nil(int 0))))
-		   #+nil (progn
-		      (let ((l (lock_guard m)))
-			(setf val (use_count))))
-		    (when (== 3 val)
+		    (when (== 3 (use_count))
 		      (arena.setUnused (idx))))
 
 		  ;; copy ctor
@@ -119,9 +115,11 @@
 				 (use_count))))
 		  
 		  "private:"
+		  
 		  (defmethod idx ()
 		    (declare (values "long int")
 			     (inline))
+		    (let ((l (lock_guard arena.m))))
  		    (return "sp.load()->idx"))
 		  (defclass+ Priv ()
 		    "public:"
@@ -129,7 +127,6 @@
 		  "Arena<T>& arena;"	      
 		  "T& ref;"
 		  "atomic<shared_ptr<Priv>> sp{nullptr};"
-		  "mutex m; // protect sp"
 		  ))))
    :omit-parens t
    :format nil
@@ -296,8 +293,8 @@
 		    
 		    (progn
 		      (let ((l (lock_guard m))))
-		    ,(lprint :msg "Arena::setUnused"
-			     :vars `(idx))
+		      ,(lprint :msg "Arena::setUnused"
+			       :vars `(idx))
 		    (setf (aref used idx) false))
 		    (elementNowUnused.test_and_set memory_order_release)
 		    (elementNowUnused.notify_one))
@@ -351,7 +348,7 @@
 		  "vector<T> a;"
 		  "atomic_flag elementNowUnused{false};"
 		  "public:"
-		  "mutex m; // protect access to used[] and r[]"
+		  "mutex m; // protect access to used[] and idx in Ref<T>"
 
 		  ))))
    :omit-parens t

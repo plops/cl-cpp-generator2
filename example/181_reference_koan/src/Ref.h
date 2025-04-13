@@ -11,8 +11,7 @@ public:
     explicit Ref(T& r, int idx, Arena<T>& associatedArena) :
         arena{associatedArena}, ref{r}, sp{make_shared<Priv>(idx)} {}
     ~Ref() {
-        auto val{use_count()};
-        if (3 == val) { arena.setUnused(idx()); }
+        if (3 == use_count()) { arena.setUnused(idx()); }
     }
     Ref(const Ref& rhs) : arena{rhs.arena}, ref{rhs.ref}, sp{rhs.sp.load()} {}
     Ref& operator=(const Ref& rhs) {
@@ -38,7 +37,10 @@ public:
     }
 
 private:
-    inline long int idx() { return sp.load()->idx; }
+    inline long int idx() {
+        auto l{lock_guard(arena.m)};
+        return sp.load()->idx;
+    }
     class Priv {
     public:
         int idx;
@@ -46,5 +48,4 @@ private:
     Arena<T>&                arena;
     T&                       ref;
     atomic<shared_ptr<Priv>> sp{nullptr};
-    mutex                    m; // protect sp
 };
