@@ -48,7 +48,7 @@
 		    (declare (type T& r)
 			     (type "Arena<T>&" associatedArena)
 			     (type int idx)
-			    
+			     
 			     (construct (arena associatedArena)
 					(ref r)
 					(sp (make_shared<Priv> idx))
@@ -79,34 +79,34 @@
 		    (return *this))
 		  ;; move ctor
 		  #-nil (defmethod Ref (rhs)
-		    (declare (type "Ref&&" rhs)
-		     (noexcept)
-		     (construct
-		      (arena rhs.arena)
-		      (ref rhs.ref)
-		      (sp (rhs.sp.load)))
-		     (values :constructor)))
+			  (declare (type "Ref&&" rhs)
+				   (noexcept)
+				   (construct
+				    (arena rhs.arena)
+				    (ref rhs.ref)
+				    (sp (rhs.sp.load)))
+				   (values :constructor)))
 		  ;; move assign
 		  #-nil (defmethod operator= (rhs)
-		    (declare (type "Ref&&" rhs)
-			     (noexcept)
-			     (values Ref&))
-		    (unless (== this &rhs)
-		      (setf arena rhs.arena
-			    ref rhs.ref
-			    sp (rhs.sp.load)))
-		    (return *this))
+			  (declare (type "Ref&&" rhs)
+				   (noexcept)
+				   (values Ref&))
+			  (unless (== this &rhs)
+			    (setf arena rhs.arena
+				  ref rhs.ref
+				  sp (rhs.sp.load)))
+			  (return *this))
 		  ;; copy ctor, move ctor ...
 		  
-		 #+nil ,@(loop for e in `(;,(format nil "~a(const ~a&)" name name)
-				     ;,(format nil "~a(~a&&)" name name)
-				     ;,(format nil "~a& operator=(const ~a&)" name name)
-				     ,(format nil "~a& operator=(~a&&)" name name))
-			  collect
-			  (format nil "~a = delete;" e))
-		 #+nil (defmethod getMutex ()
-		    (declare (values mutex&))
-		    (return m))
+		  #+nil ,@(loop for e in `( ;,(format nil "~a(const ~a&)" name name)
+					;,(format nil "~a(~a&&)" name name)
+					;,(format nil "~a& operator=(const ~a&)" name name)
+					   ,(format nil "~a& operator=(~a&&)" name name))
+				collect
+				(format nil "~a = delete;" e))
+		  #+nil (defmethod getMutex ()
+			  (declare (values mutex&))
+			  (return m))
 		  (defmethod use_count ()
 		    (declare (values "long int")
 			     (inline))
@@ -149,14 +149,14 @@
 	    (defclass+ Arena ()
 	      "public:"
 	      (defmethod setUnused (idx)
-		    (declare (type "long int" idx)))
+		(declare (type "long int" idx)))
 	      "mutex m;"))
      
      (space TEST (paren Ref CopyConstructor_Copy_CountIncreases)
 	    (progn
 	      (let ((v (vector<int> 3))))
 	      (let ((a (Arena<int>))))
-	     
+	      
 	      (let ((r0 (Ref<int>  (aref v 0) 0 a ))))
 	      (EXPECT_EQ (r0.use_count) 2)
 	      (let ((r1 r0)))
@@ -184,7 +184,7 @@
 	      (let ((r0 (Ref<int>  (aref v 0) 0 a))))
 	      (EXPECT_EQ (r0.use_count) 2)
 	      (let ((r1 (move r0))))
-	      ;(EXPECT_EQ (r1.get) nullptr)
+					;(EXPECT_EQ (r1.get) nullptr)
 	      (EXPECT_EQ (r1.use_count) 3)
 	      (comments "not sure why this is 3, strange")
 	      ))
@@ -224,16 +224,13 @@
       cassert
       mutex
       #+more iostream
+      algorithm
       )
      (include Ref.h)
      "using namespace std;"
      ,(let ((name "Arena"))
 	`(space "template<typename T>"
 		(defclass+ ,name ()
-
-		  
-		  
-		  
 		  "public:"
 		  (defmethod firstUnused ()
 		    (declare (values int))
@@ -259,24 +256,19 @@
 			 ,(lprint :msg "waiting for element to become unused")
 			 (elementNowUnused.wait false memory_order_acquire)
 			 (comments "according to standard this wait should not spuriously wake up. the book still adds this check because tsan thinks otherwise")
-			 (while (elementNowUnused.test memory_order_acquire)
-				(comments "new elements should now be present")
-				(let ((idx (firstUnused)))	
-				  (when  (== -1 idx)
-				    (throw (runtime_error (string "no free arena element")))
-					 
-				    )
-				  (do0
-				   
-				   (let (
-					 (el (dot r (at idx)))))
-				   ,(lprint :msg "found unused element after wait"
-					    :vars `(idx))
-				   (progn (let ((l (lock_guard m))))
-					  ;(let ((l2 (lock_guard (dot (aref r idx) (getMutex))))))
-					  (setf (aref used idx) true))
-				   (return el)))))
-			  
+			 (do0 ;while (elementNowUnused.test memory_order_acquire)
+			  (comments "new elements should now be present")
+			  (let ((idx (firstUnused)))	
+			    (when  (== -1 idx)
+			      (throw (runtime_error (string "no free arena element"))))
+			    (do0
+			     (let ((el (dot r (at idx)))))
+			     ,(lprint :msg "found unused element after wait"
+				      :vars `(idx))
+			     (progn (let ((l (lock_guard m))))
+				    (setf (aref used idx) true))
+			     (return el)))))
+			
 			)
 		      (do0
 		       (let (
@@ -295,7 +287,7 @@
 		      (let ((l (lock_guard m))))
 		      ,(lprint :msg "Arena::setUnused"
 			       :vars `(idx))
-		    (setf (aref used idx) false))
+		      (setf (aref used idx) false))
 		    (elementNowUnused.test_and_set memory_order_release)
 		    (elementNowUnused.notify_one))
 		  (defmethod capacity ()
@@ -322,18 +314,24 @@
 		    ,(lprint :msg "Arena::use_count"
 			     :vars `(count))
 		    (return count))
-		 
+		  
 		  (defmethod ,name (n=1)
 		    (declare (values :constructor)
 			     (explicit)
 			     (type int n=1)
 			     (construct 
-			      (used (vector<bool> n))
+					;(used (vector<bool> n))
 			      (r (vector<Ref<T>>))
 			      (a (vector<T> n))))
+		    
+		    (progn
+		      (let ((l (lock_guard m))))
+		      (used.reserve n)
+		      (used.resize n)
+		      (ranges--fill used false))
+		    
 		    "int idx=0;"
 		    (for-range (e a)
-			       (let ((l (lock_guard m))))
 			       (r.emplace_back e idx *this)
 			       (incf idx)))
 
@@ -387,7 +385,7 @@
 		  (EXPECT_EQ (a.capacity) n)
 		  (EXPECT_EQ (a.nb_used) (+ 1 i)))
 		#+nil (EXPECT_THROW (a.acquire)
-			      runtime_error))))
+				    runtime_error))))
 
      (space TEST (paren Arena acquire_performUntilWait_elementArrivesAfterWait)
 	    (progn
@@ -458,7 +456,7 @@
 	 "float f{4.5F};"
 	 "char name[20];")
        "const int n=3;"
-             #+nil
+       #+nil
        (do0
 	(let ((a (space Arena (angle Widget) (paren n) ))))
 
@@ -485,7 +483,7 @@
 	  (v.push_back e))
 	,(lprint :msg "#### TRY TO GET ONE ELEMENT TOO MANY ####")
 	(v.push_back (a.acquire)))
-                   
+       
        (return 0)))
    :omit-parens t
    :format nil

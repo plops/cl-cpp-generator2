@@ -25,19 +25,16 @@ public:
             std::cout << "waiting for element to become unused" << std::endl;
             elementNowUnused.wait(false, memory_order_acquire);
             // according to standard this wait should not spuriously wake up. the book still adds this check because
-            // tsan thinks otherwise
-            while (elementNowUnused.test(memory_order_acquire)) {
-                // new elements should now be present
-                auto idx{firstUnused()};
-                if (-1 == idx) { throw runtime_error("no free arena element"); }
-                auto el{r.at(idx)};
-                std::cout << "found unused element after wait" << " idx='" << idx << "' " << std::endl;
-                {
-                    auto l{lock_guard(m)};
-                    used[idx] = true;
-                }
-                return el;
+            // tsan thinks otherwise new elements should now be present
+            auto idx{firstUnused()};
+            if (-1 == idx) { throw runtime_error("no free arena element"); }
+            auto el{r.at(idx)};
+            std::cout << "found unused element after wait" << " idx='" << idx << "' " << std::endl;
+            {
+                auto l{lock_guard(m)};
+                used[idx] = true;
             }
+            return el;
         }
         auto el{r.at(idx)};
         std::cout << "found unused element" << " idx='" << idx << "' " << std::endl;
@@ -70,10 +67,15 @@ public:
         std::cout << "Arena::use_count" << " count='" << count << "' " << std::endl;
         return count;
     }
-    explicit Arena(int n = 1) : used{vector<bool>(n)}, r{vector<Ref<T>>()}, a{vector<T>(n)} {
+    explicit Arena(int n = 1) : r{vector<Ref<T>>()}, a{vector<T>(n)} {
+        {
+            auto l{lock_guard(m)};
+            used.reserve(n);
+            used.resize(n);
+            ranges::fill(used, false);
+        }
         int idx = 0;
         for (auto&& e : a) {
-            auto l{lock_guard(m)};
             r.emplace_back(e, idx, *this);
             idx++;
         }
