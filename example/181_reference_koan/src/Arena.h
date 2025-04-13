@@ -12,6 +12,7 @@ template <typename T>
 class Arena {
 public:
     int firstUnused() {
+        auto l{lock_guard(m)};
         auto it{find(used.begin(), used.end(), false)};
         if (used.end() == it) { return -1; }
         return it - used.begin();

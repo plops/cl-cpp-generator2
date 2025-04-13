@@ -234,7 +234,7 @@
 		  "public:"
 		  (defmethod firstUnused ()
 		    (declare (values int))
-		    ;(let ((l (lock_guard m))))
+		    (let ((l (lock_guard m))))
 		    (let ((it (find (used.begin)
 				    (used.end)
 				    false)))
@@ -335,7 +335,7 @@
 			       (r.emplace_back e idx *this)
 			       (incf idx)))
 
-		  ,@(loop for e in `(,(format nil "~a(const T&)" name)
+		  #-nil,@(loop for e in `(,(format nil "~a(const T&)" name)
 				     ,(format nil "~a(T&&)" name)
 				     "const T& operator=(const T&)"
 				     "T& operator=(T&&)")

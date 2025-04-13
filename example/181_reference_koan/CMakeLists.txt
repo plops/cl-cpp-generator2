@@ -58,6 +58,12 @@ if (ENABLE_LSAN)
     add_link_options(-fsanitize=leak)
 endif ()
 
+option(ENABLE_MSAN "Enable MemorySanitizer" OFF)
+if (ENABLE_MSAN)
+    add_compile_options(-fsanitize=memory)
+    add_link_options(-fsanitize=memory)
+endif ()
+
 option(STATIC_LINK "Link statically" OFF)
 if (STATIC_LINK)
     add_compile_options(-static)
@@ -133,8 +139,11 @@ if (ENABLE_ARENAREF_TESTS)
 
     # Set specific compiler options for the unit_tests target (turn off optimizations for coverage)
     target_compile_options(unit_tests PRIVATE
-            -O0 -fprofile-arcs -ftest-coverage --coverage)
-    target_link_options(unit_tests PRIVATE --coverage)  # Link with the coverage library
+            -O0 #-fprofile-arcs -ftest-coverage --coverage
+    )
+    target_link_options(unit_tests PRIVATE
+            # --coverage
+    )  # Link with the coverage library
 
     # Link the test executable with Google Test and the necessary libraries
     target_link_libraries(unit_tests
