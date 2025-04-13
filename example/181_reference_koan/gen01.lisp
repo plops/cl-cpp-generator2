@@ -7,7 +7,7 @@
 
 (progn
   (setf *features* (set-difference *features* (list :more)))
-  (setf *features* (set-exclusive-or *features* (list ; :more
+  (setf *features* (set-exclusive-or *features* (list  :more
 						 ))))
 
 (progn
@@ -113,7 +113,8 @@
 	       (defclass+ ,name ()
 		 "public:"
 		 (defmethod aquire ()
-		   (declare (values Ref<T>))
+		   (declare (values Ref<T>)
+			    (inline))
 		   (let ((it (find (used.begin)
 				   (used.end)
 				   false)))
@@ -130,13 +131,15 @@
 			  (return el)))))
 
 		 (defmethod setUnused (idx)
-		   (declare (type int idx))
+		   (declare (type int idx)
+			    (inline))
 		   ,(lprint :msg "Arena::setUnused"
 			    :vars `(idx))
 		   (setf (aref used idx) false))
 		 (defmethod use_count (idx)
 		   (declare (values "long int")
-			    (type int idx))
+			    (type int idx)
+			    (inline))
 		   (let ((count (dot (aref r idx) (use_count)))))
 		   ,(lprint :msg "Arena::use_count"
 			    :vars `(count))
@@ -179,6 +182,10 @@
 	(let ((a (space Arena (angle Widget) (paren n) ))))
 
 	(let ((v (vector<Ref<Widget>> ))))
+
+	,(lprint :vars `((sizeof a)))
+	,(lprint :vars `((sizeof (aref v 0))))
+	
 	(dotimes (i n)
 	  (let ((e (a.aquire))))
 	  (assert (== i (e.idx)))
