@@ -11,11 +11,11 @@ template <typename T>
 class Ref {
 public:
     explicit Ref(T& r, int idx, Arena<T>& associatedArena) :
-        ref{r}, arena{associatedArena}, sp{make_shared<Priv>(idx)} {}
+        arena{associatedArena}, ref{r}, sp{make_shared<Priv>(idx)} {}
     ~Ref() {
         if (3 == use_count()) { arena.setUnused(idx()); }
     }
-    Ref(const Ref& rhs) : ref{rhs.ref}, arena{rhs.arena}, sp{rhs.sp.load()} {}
+    Ref(const Ref& rhs) : arena{rhs.arena}, ref{rhs.ref}, sp{rhs.sp.load()} {}
     Ref(T&&)                            = delete;
     const T&        operator=(const T&) = delete;
     T&              operator=(T&&)      = delete;
@@ -54,22 +54,20 @@ public:
         std::cout << "Arena::use_count" << " count='" << count << "' " << std::endl;
         return count;
     }
-    Arena(int n = 0) : a{vector<T>(n)}, used{vector<bool>(n)}, r{vector<Ref<T>>()} {
+    explicit Arena(int n = 0) : used{vector<bool>(n)}, r{vector<Ref<T>>()}, a{vector<T>(n)} {
         int idx = 0;
         for (auto&& e : a) {
             r.emplace_back(e, idx, *this);
             idx++;
         }
     }
-    Arena(const T&)              = delete;
-    Arena(T&&)                   = delete;
-    const T& operator=(const T&) = delete;
-    T&       operator=(T&&)      = delete;
-
-private:
-    vector<T>      a;
+    Arena(const T&)                    = delete;
+    Arena(T&&)                         = delete;
+    const T&       operator=(const T&) = delete;
+    T&             operator=(T&&)      = delete;
     vector<bool>   used{};
     vector<Ref<T>> r;
+    vector<T>      a;
 };
 
 int main(int argc, char** argv) {
@@ -78,11 +76,16 @@ int main(int argc, char** argv) {
     private:
         int   i{3};
         float f{4.5F};
+        char  name[20];
     };
     const int n = 3;
     auto      a{Arena<Widget>(n)};
     auto      v{vector<Ref<Widget>>()};
+    std::cout << "" << " sizeof(Widget)='" << sizeof(Widget) << "' " << std::endl;
     std::cout << "" << " sizeof(a)='" << sizeof(a) << "' " << std::endl;
+    std::cout << "" << " sizeof(a.used)='" << sizeof(a.used) << "' " << std::endl;
+    std::cout << "" << " sizeof(a.r)='" << sizeof(a.r) << "' " << std::endl;
+    std::cout << "" << " sizeof(a.a)='" << sizeof(a.a) << "' " << std::endl;
     std::cout << "" << " sizeof(v[0])='" << sizeof(v[0]) << "' " << std::endl;
     for (decltype(0 + n + 1) i = 0; i < n; i += 1) {
         auto e{a.aquire()};

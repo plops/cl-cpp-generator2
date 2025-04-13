@@ -53,8 +53,8 @@
 		    (declare (type T& r)
 			     (type "Arena<T>&" associatedArena)
 			     (type int idx)
-			     (construct (ref r)
-					(arena associatedArena)
+			     (construct (arena associatedArena)
+					(ref r)
 					(sp (make_shared<Priv> idx)))
 			     (explicit)
 			     (values :constructor)))
@@ -67,8 +67,8 @@
 		  ;; copy ctor
 		  (defmethod Ref (rhs)
 		    (declare (type "const Ref&" rhs)
-			     (construct (ref rhs.ref)
-					(arena rhs.arena)
+			     (construct (arena rhs.arena)
+					(ref rhs.ref)
 					(sp (rhs.sp.load)))
 			     (values :constructor)))
 		  ;; move ctor
@@ -147,10 +147,12 @@
 		 
 		 (defmethod ,name (n=0)
 		   (declare (values :constructor)
+			    (explicit)
 			    (type int n=0)
-			    (construct (a (vector<T> n))
+			    (construct 
 				       (used (vector<bool> n))
-				       (r (vector<Ref<T>>))))
+				       (r (vector<Ref<T>>))
+				       (a (vector<T> n))))
 		   "int idx=0;"
 		   (for-range (e a)
 			      (r.emplace_back e idx *this)
@@ -162,10 +164,11 @@
 				    "T& operator=(T&&)")
 			 collect
 			 (format nil "~a = delete;" e))
-		 "private:"
-		 "vector<T> a;"
+		 ;"private:"
 		 "vector<bool> used{};"
-		 "vector<Ref<T>> r;")))
+		 "vector<Ref<T>> r;"
+		 "vector<T> a;"
+		 )))
      
      (defun main (argc argv)
        (declare (values int)
@@ -175,15 +178,19 @@
 	 "public:"
 	 "private:"
 	 "int i{3};"
-	 "float f{4.5F};")
+	 "float f{4.5F};"
+	 "char name[20];")
        "const int n=3;"
              
        (do0
 	(let ((a (space Arena (angle Widget) (paren n) ))))
 
 	(let ((v (vector<Ref<Widget>> ))))
-
+	,(lprint :vars `((sizeof Widget)))
 	,(lprint :vars `((sizeof a)))
+	,(lprint :vars `((sizeof a.used)))
+	,(lprint :vars `((sizeof a.r)))
+	,(lprint :vars `((sizeof a.a)))
 	,(lprint :vars `((sizeof (aref v 0))))
 	
 	(dotimes (i n)
