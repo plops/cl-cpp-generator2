@@ -31,7 +31,7 @@
      (include<>
       iostream
       ;array
-      ;deque
+      deque
       vector
       memory
       atomic
@@ -97,7 +97,7 @@
 		  (defmethod idx ()
 		    (declare (values "long int")
 			     (inline))
-		    (return (-> (dot sp (load))
+ 		    (return (-> (dot sp (load))
 				idx)))
 		  "private:"
 		  (defclass+ Priv ()
@@ -150,7 +150,8 @@
 			    (explicit)
 			    (type int n=0)
 			    (construct 
-				       (used (vector<bool> n))
+				       (used n ;(vector<bool> n)
+					     )
 				       (r (vector<Ref<T>>))
 				       (a (vector<T> n))))
 		   "int idx=0;"
@@ -165,7 +166,7 @@
 			 collect
 			 (format nil "~a = delete;" e))
 		 ;"private:"
-		 "vector<bool> used{};"
+		 "deque<bool> used{};"
 		 "vector<Ref<T>> r;"
 		 "vector<T> a;"
 		 )))

@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cassert>
+#include <deque>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -54,7 +55,7 @@ public:
         std::cout << "Arena::use_count" << " count='" << count << "' " << std::endl;
         return count;
     }
-    explicit Arena(int n = 0) : used{vector<bool>(n)}, r{vector<Ref<T>>()}, a{vector<T>(n)} {
+    explicit Arena(int n = 0) : used{n}, r{vector<Ref<T>>()}, a{vector<T>(n)} {
         int idx = 0;
         for (auto&& e : a) {
             r.emplace_back(e, idx, *this);
@@ -65,7 +66,7 @@ public:
     Arena(T&&)                         = delete;
     const T&       operator=(const T&) = delete;
     T&             operator=(T&&)      = delete;
-    vector<bool>   used{};
+    deque<bool>    used{};
     vector<Ref<T>> r;
     vector<T>      a;
 };
