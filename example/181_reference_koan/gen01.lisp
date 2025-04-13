@@ -211,6 +211,7 @@
       atomic
       algorithm
       cassert
+      mutex
       #+more iostream
       )
      (include Ref.h)
@@ -219,56 +220,66 @@
 	`(space "template<typename T>"
 		(defclass+ ,name ()
 		  "public:"
-		  (defmethod acquire ()
-		    (declare (values Ref<T>)
-			     (inline))
-		    (elementNowUnused.clear)
+		  (defmethod firstUnused ()
+		    (declare (values int))
+		    (let ((l (lock_guard m))))
 		    (let ((it (find (used.begin)
 				    (used.end)
 				    false)))
 		      (when (== (used.end)
-			      it)
-			  (do0
-			   #+nil
-			   (throw (runtime_error (string "no free arena element")))
-			   (comments "pikus p.549")
-			   ,(lprint :msg "waiting for element to become unused")
-			   (elementNowUnused.wait false memory_order_acquire)
-			   (comments "according to standard this wait should not spuriously wake up. the book still adds this check because tsan thinks otherwise")
-			   (while (elementNowUnused.test memory_order_acquire)
-				  (comments "new elements should now be present")
-				  (let ((it (find (used.begin)
-						  (used.end)
-						  false)))	
-				    (when  (== (used.end)
-					       it)
-					 (throw (runtime_error (string "no free arena element")))
+				it)
+			(return -1))
+		      (return (- it (used.begin))))
+		    )
+		  (defmethod acquire ()
+		    (declare (values Ref<T>)
+			     (inline))
+		    (elementNowUnused.clear)
+		    (let ((idx (firstUnused)))
+		      (when (== -1 idx)
+			(do0
+			 #+nil
+			 (throw (runtime_error (string "no free arena element")))
+			 (comments "pikus p.549")
+			 ,(lprint :msg "waiting for element to become unused")
+			 (elementNowUnused.wait false memory_order_acquire)
+			 (comments "according to standard this wait should not spuriously wake up. the book still adds this check because tsan thinks otherwise")
+			 (while (elementNowUnused.test memory_order_acquire)
+				(comments "new elements should now be present")
+				(let ((idx (firstUnused)))	
+				  (when  (== -1 idx)
+				    (throw (runtime_error (string "no free arena element")))
 					 
-					 )
-				    (do0
-					  (setf *it true)
-					  (let ((idx (- it (used.begin)))
-						(el (dot r (at idx)))))
-					  ,(lprint :msg "found unused element after wait"
-						   :vars `(idx))
-					  (return el)))))
+				    )
+				  (do0
+				   
+				   (let (
+					 (el (dot r (at idx)))))
+				   ,(lprint :msg "found unused element after wait"
+					    :vars `(idx))
+				   (progn (let ((l (lock_guard m))))
+					  (setf (aref used idx) true))
+				   (return el)))))
 			  
-			  )
+			)
 		      (do0
-			   (setf *it true)
-			   (let ((idx (- it (used.begin)))
-				 (el (aref r idx) ;(dot r (at idx))
-				     )))
-			   ,(lprint :msg "found unused element"
-				    :vars `(idx))
-			   (return el))))
+		       (let (
+			     (el (dot r (at idx)))))
+		       ,(lprint :msg "found unused element"
+				:vars `(idx))
+		       (progn (let ((l (lock_guard m))))
+			      (setf (aref used idx) true))
+		       (return el))))
 
 		  (defmethod setUnused (idx)
 		    (declare (type int idx)
 			     (inline))
+		    
+		    (progn
+		      (let ((l (lock_guard m))))
 		    ,(lprint :msg "Arena::setUnused"
 			     :vars `(idx))
-		    (setf (aref used idx) false)
+		    (setf (aref used idx) false))
 		    (elementNowUnused.test_and_set memory_order_release)
 		    (elementNowUnused.notify_one))
 		  (defmethod capacity ()
@@ -320,12 +331,12 @@
 		  "vector<Ref<T>> r;"
 		  "vector<T> a;"
 		  "atomic_flag elementNowUnused{false};"
+		  "mutex m; // protect access to used[]"
+
 		  ))))
    :omit-parens t
    :format nil
-   :tidy nil
-   
-   )
+   :tidy nil)
 
   (write-source
    (asdf:system-relative-pathname
@@ -415,10 +426,6 @@
       )
      (include Arena.h)
      "using namespace std;"
-
-          
-
-     
      
      (defun main (argc argv)
        (declare (values int)

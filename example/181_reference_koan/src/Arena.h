@@ -4,16 +4,23 @@
 #include <cassert>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <vector>
 #include "Ref.h"
 using namespace std;
 template <typename T>
 class Arena {
 public:
+    int firstUnused() {
+        auto l{lock_guard(m)};
+        auto it{find(used.begin(), used.end(), false)};
+        if (used.end() == it) { return -1; }
+        return it - used.begin();
+    }
     inline Ref<T> acquire() {
         elementNowUnused.clear();
-        auto it{find(used.begin(), used.end(), false)};
-        if (used.end() == it) {
+        auto idx{firstUnused()};
+        if (-1 == idx) {
             // pikus p.549
             std::cout << "waiting for element to become unused" << std::endl;
             elementNowUnused.wait(false, memory_order_acquire);
@@ -21,24 +28,31 @@ public:
             // tsan thinks otherwise
             while (elementNowUnused.test(memory_order_acquire)) {
                 // new elements should now be present
-                auto it{find(used.begin(), used.end(), false)};
-                if (used.end() == it) { throw runtime_error("no free arena element"); }
-                *it = true;
-                auto idx{it - used.begin()};
+                auto idx{firstUnused()};
+                if (-1 == idx) { throw runtime_error("no free arena element"); }
                 auto el{r.at(idx)};
                 std::cout << "found unused element after wait" << " idx='" << idx << "' " << std::endl;
+                {
+                    auto l{lock_guard(m)};
+                    used[idx] = true;
+                }
                 return el;
             }
         }
-        *it = true;
-        auto idx{it - used.begin()};
-        auto el{r[idx]};
+        auto el{r.at(idx)};
         std::cout << "found unused element" << " idx='" << idx << "' " << std::endl;
+        {
+            auto l{lock_guard(m)};
+            used[idx] = true;
+        }
         return el;
     }
     inline void setUnused(int idx) {
-        std::cout << "Arena::setUnused" << " idx='" << idx << "' " << std::endl;
-        used[idx] = false;
+        {
+            auto l{lock_guard(m)};
+            std::cout << "Arena::setUnused" << " idx='" << idx << "' " << std::endl;
+            used[idx] = false;
+        }
         elementNowUnused.test_and_set(memory_order_release);
         elementNowUnused.notify_one();
     }
@@ -73,4 +87,5 @@ private:
     vector<Ref<T>> r;
     vector<T>      a;
     atomic_flag    elementNowUnused{false};
+    mutex          m; // protect access to used[]
 };
