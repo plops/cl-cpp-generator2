@@ -6,8 +6,12 @@
 (in-package :cl-cpp-generator2)
 
 (progn
-  (setf *features* (set-difference *features* (list :more)))
-  (setf *features* (set-exclusive-or *features* (list ; :more
+  (setf *features* (set-difference *features* (list :more ;; print log
+						    :vb ;; use mutex and vector<bool> to keep track of all elements (they may be returned in different order then they were taken
+						    )))
+  (setf *features* (set-exclusive-or *features* (list
+						 :more
+						 :vb 
 						 ))))
  
 (progn
@@ -236,14 +240,25 @@
 		  "public:"
 		  (defmethod firstUnused ()
 		    (declare (values int))
-		    (let ((l (lock_guard m))))
-		    (let ((it (find (used.begin)
-				    (used.end)
-				    false)))
-		      (when (== (used.end)
-				it)
-			(return -1))
-		      (return (- it (used.begin))))
+		    #-vb (do0 (incf firstUnusedIdx)
+			 (when (<= (capacity) firstUnusedIdx)
+			   (setf firstUnusedIdx 0))
+			 (incf firstUsedIdx)
+			 (when (<= (capacity) firstUsedIdx)
+			   (setf firstUsedIdx 0))
+			 ;; this is quite complicated, maybe iterators would be better?
+
+			 (return firstUnused))
+		    #+vb
+		    (do0
+		     (let ((l (lock_guard m))))
+		     (let ((it (find (used.begin)
+				     (used.end)
+				     false)))
+		       (when (== (used.end)
+				 it)
+			 (return -1))
+		       (return (- it (used.begin)))))
 		    )
 		  (defmethod acquire ()
 		    (declare (values Ref<T>)
@@ -310,7 +325,7 @@
 				 (when b
 				   (incf sum))))
 		    (return sum))
-		  (defmethod use_count (idx)
+		  #+nil (defmethod use_count (idx)
 		    (declare (values "long int")
 			     (type int idx)
 			     (inline))
@@ -327,10 +342,8 @@
 					;(used (vector<bool> n))
 			      (r (vector<Ref<T>>))
 			      (a (vector<T> n))))
-		    #+nil (progn
-		      (let ((used_ (make_unique<vector<bool>> n false)))
-			(used.store (move used_))))
-		    (progn
+		    
+		    #+vb (progn
 		      (let ((l (lock_guard m))))
 		      (used.reserve n)
 		      (used.resize n)
@@ -350,8 +363,11 @@
 		  
 		  "private:"
 		  ;"friend class Ref<T>; // Ref is a friend so that it can access mutex m"
-		  "mutex m; // protect access to used[] and idx in Ref<T>"
-		  "vector<bool> used;"
+		  #+vb "mutex m; // protect access to used[] and idx in Ref<T>"
+		  #+vb "vector<bool> used;"
+		  #-vb (do0
+		   "atomic<int> lastUsedIdx{0};"
+		   "atomic<int> firstUnsedIdx{0};")
 		  "vector<Ref<T>> r;"
 		  "vector<T> a;"
 		  "atomic_flag elementNowUnused{false};"))))

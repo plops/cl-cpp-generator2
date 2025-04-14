@@ -37,6 +37,7 @@ TEST(Arena, acquire_performUntilWait_elementArrivesAfterWait) {
         }
         la.count_down();
         this_thread::sleep_for(10ms);
+        std::cout << "exiting thread that held elements" << std::endl;
     })};
     la.wait();
     // wait until the thread used all the elements
@@ -44,7 +45,7 @@ TEST(Arena, acquire_performUntilWait_elementArrivesAfterWait) {
     a.acquire();
     auto end{chrono::system_clock::now()};
     auto duration_ms{(end - start).count() * 1.00e-6F};
-
+    std::cout << "" << " duration_ms='" << duration_ms << "' " << std::endl;
     EXPECT_GE(duration_ms, 10);
     EXPECT_LE(duration_ms, 12);
 };
