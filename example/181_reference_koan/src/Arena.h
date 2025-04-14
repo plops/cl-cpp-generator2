@@ -52,8 +52,8 @@ public:
         elementNowUnused.test_and_set(memory_order_release);
         elementNowUnused.notify_one();
     }
-    int capacity() { return r.size(); }
-    int nb_unused() { return capacity() - nb_used(); }
+    int capacity() const { return r.size(); }
+    int nb_unused() const { return capacity() - nb_used(); }
     int nb_used() {
         auto sum{0};
         for (auto&& b : used) {
@@ -83,9 +83,10 @@ public:
     Arena(T&&)                   = delete;
     const T& operator=(const T&) = delete;
     T&       operator=(T&&)      = delete;
-    mutex    m; // protect access to used[] and idx in Ref<T>
+
 private:
-    vector<bool>   used{};
+    mutex          m; // protect access to used[] and idx in Ref<T>
+    vector<bool>   used;
     vector<Ref<T>> r;
     vector<T>      a;
     atomic_flag    elementNowUnused{false};

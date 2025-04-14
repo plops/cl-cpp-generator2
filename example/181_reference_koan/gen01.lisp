@@ -165,6 +165,8 @@
 	      ))
      #+nil
      (space TEST (paren Ref CopyAssign_Assign_CountIncreases)
+
+
 	    (progn
 	      (let ((v (vector<int> 3))))
 	      (let ((a (Arena<int>))))
@@ -291,11 +293,13 @@
 		    (elementNowUnused.test_and_set memory_order_release)
 		    (elementNowUnused.notify_one))
 		  (defmethod capacity ()
-		    (declare (values int))
+		    (declare (values int)
+			     (const))
 		    (return (dot r (size))))
 
 		  (defmethod nb_unused ()
-		    (declare (values int))
+		    (declare (values int)
+			     (const))
 		    (return (- (capacity)
 			       (nb_used))))
 
@@ -323,7 +327,9 @@
 					;(used (vector<bool> n))
 			      (r (vector<Ref<T>>))
 			      (a (vector<T> n))))
-		    
+		    #+nil (progn
+		      (let ((used_ (make_unique<vector<bool>> n false)))
+			(used.store (move used_))))
 		    (progn
 		      (let ((l (lock_guard m))))
 		      (used.reserve n)
@@ -341,17 +347,14 @@
 				     "T& operator=(T&&)")
 			  collect
 			  (format nil "~a = delete;" e))
-		  "mutex m; // protect access to used[] and idx in Ref<T>"
-		  "private:"
 		  
-		  "vector<bool> used{};"
+		  "private:"
+		  ;"friend class Ref<T>; // Ref is a friend so that it can access mutex m"
+		  "mutex m; // protect access to used[] and idx in Ref<T>"
+		  "vector<bool> used;"
 		  "vector<Ref<T>> r;"
 		  "vector<T> a;"
-		  "atomic_flag elementNowUnused{false};"
-		  
-		  
-
-		  ))))
+		  "atomic_flag elementNowUnused{false};"))))
    :omit-parens t
    :format nil
    :tidy nil)
