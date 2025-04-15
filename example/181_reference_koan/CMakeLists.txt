@@ -24,6 +24,8 @@ if (NOT WIN32)
             -fvisibility=hidden
             -fno-strict-overflow
             -Wno-strict-overflow
+	    # https://medium.com/@simontoth/daily-bit-e-of-c-hardened-mode-of-standard-library-implementations-18be2422c372
+	    -fhardened
     )
 
 endif ()
