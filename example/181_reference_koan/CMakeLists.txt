@@ -6,6 +6,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED yes)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 if (NOT WIN32)
+  add_compile_definitions(_FORTIFY_SOURCE=3
+    _GLIBCXX_ASSERTIONS
+    _GLIBCXX_DEBUG 
+  )
     add_compile_options(
             -Wall
             -Wextra
