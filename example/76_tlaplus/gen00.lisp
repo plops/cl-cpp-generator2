@@ -310,7 +310,7 @@
 			"-style=file"))
 
     
-    
+    #+nil
     (with-open-file (s "source/CMakeLists.txt" :direction :output
 					       :if-exists :supersede
 					       :if-does-not-exist :create)
