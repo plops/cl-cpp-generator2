@@ -55,8 +55,9 @@
 		   msg
 		   (string " ")
 		   )
-	       (for-range ((elem :type "const auto&")
+	       (for-range (elem
 			   il)
+			  (declare (type "const auto&" elem))
 			  (<< "std::cout"
 
 			      elem) )
@@ -118,194 +119,210 @@
     (ensure-directories-exist (asdf:system-relative-pathname
 			       'cl-cpp-generator2
 			       *source-dir*))
-    (write-source (asdf:system-relative-pathname
-		   'cl-cpp-generator2
-		   (merge-pathnames #P"main.cpp"
-				    *source-dir*))
-		  `(do0
+    (write-source
+     (asdf:system-relative-pathname
+      'cl-cpp-generator2
+      (merge-pathnames #P"main.cpp"
+		       *source-dir*))
+     `(do0
 
-		    (include
+       (include
 					;<tuple>
 					;<mutex>
-		     <thread>
-		     <iostream>
-		     <iomanip>
-		     <chrono>
-		     <cmath>
-		     <fmt/core.h>
-		     <cassert>
+	<thread>
+	<iostream>
+	<iomanip>
+	<chrono>
+	<cmath>
+	<fmt/core.h>
+					;<cassert>
 					;  <memory>
-		     )
+	)
 
-		    (include <stdio.h>
-			     <stdlib.h>
-			     <stdint.h>
-			     <pthread.h>)
-		    "uint32_t buf_size, numProducers, numConsumers, *buffer, fillIndex, useIndex, count=0;"
-		    "pthread_cond_t modify;"
-		    "pthread_mutex_t mutex;"
-
-
-		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
-		    ,(init-lprint)
-
-		    (do0
-		     (comments "constant color strings"
-			       "for use in producer (a colored p):")
-		     ,@(loop for (name code )
-			     in `((red 31)
-				  (green 32)
-				  (yellow 33)
-				  (blue 34)
-				  (magenta 35)
-				  (cyan 36)
-				  (white 37))
-			     collect
-			     (format nil "#define ~a \"~a\""
-				     (string-upcase (format nil "P~a" name))
-				     (format nil "\\033[1;~amp\\033[0m" code)))
-		     (comments "for use in consumer (a colored c followed by an id):")
-		     ,@(loop for (name code )
-			     in `((red 31)
-				  (green 32)
-				  (yellow 33)
-				  (blue 34)
-				  (magenta 35)
-				  (cyan 36)
-				  (white 37))
-			     collect
-			     (format nil "#define ~a \"~a\" "
-				     (string-upcase (format nil "~a" name))
-				     (format nil "\\033[1;~amc%01d\\033[0m" code))))
+       (include <stdio.h>
+					; <stdlib.h>
+		<stdint.h>
+		<pthread.h>)
+       "uint32_t buf_size, numProducers, numConsumers, *buffer, fillIndex, useIndex, count=0;"
+       "pthread_cond_t modify;"
+       "pthread_mutex_t mutex;"
 
 
-		    (comments "functions append and head that will run concurrently")
-		    (defun append (value)
-		      (declare (type uint32_t value))
-		      ,(lprint :vars `(value))
-		      (setf (aref buffer fillIndex)
-			    value
-			    fillIndex (% (+ fillIndex 1)
-					 buf_size))
-		      (incf count))
-		    (defun head ()
-		      (declare (values uint32_t))
+       "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
+       ,(init-lprint)
 
-		      (let ((tmp (aref buffer useIndex)))
-			,(lprint :vars `(useIndex tmp))
-			(setf
-			 useIndex (% (+ useIndex 1)
-				     buf_size))
-			(decf count)
-			(return tmp)))
+       (do0
+	(comments "constant color strings"
+		  "for use in producer (a colored p):")
+	,@(loop for (name code )
+		  in `((red 31)
+		       (green 32)
+		       (yellow 33)
+		       (blue 34)
+		       (magenta 35)
+		       (cyan 36)
+		       (white 37))
+		collect
+		(format nil "#define ~a \"~a\""
+			(string-upcase (format nil "P~a" name))
+			(format nil "\\033[1;~amp\\033[0m" code)))
+	(comments "for use in consumer (a colored c followed by an id):")
+	,@(loop for (name code )
+		  in `((red 31)
+		       (green 32)
+		       (yellow 33)
+		       (blue 34)
+		       (magenta 35)
+		       (cyan 36)
+		       (white 37))
+		collect
+		(format nil "#define ~a \"~a\" "
+			(string-upcase (format nil "~a" name))
+			(format nil "\\033[1;~amc%01d\\033[0m" code))))
 
-		    (defun producer (arg)
-		      (declare (type void* arg)
-			       (values void*))
 
-		      (while 1
-			(pthread_mutex_lock &mutex)
-			(while (== count buf_size)
-			  #+nil (do0 (printf PRED)
-				     (fflush stdout))
-			  (pthread_cond_wait &modify &mutex))
-			(append (% (rand) 10))
-			#+nil (do0 (printf PYELLOW)
-				   (fflush stdout))
-			(pthread_cond_signal &modify)
-			(pthread_mutex_unlock &mutex)))
+       (comments "functions append and head that will run concurrently")
+       (defun append (value)
+	 (declare (type uint32_t value))
+	 ,(lprint :vars `(value))
+	 (setf (aref buffer fillIndex)
+	       value
+	       fillIndex (% (+ fillIndex 1)
+			    buf_size))
+	 (incf count))
+       (defun head ()
+	 (declare (values uint32_t))
 
-		    (defun consumer (arg)
-		      (declare (type void* arg)
-			       (values void*))
+	 (let ((tmp (aref buffer useIndex)))
+	   ,(lprint :vars `(useIndex tmp))
+	   (setf
+	    useIndex (% (+ useIndex 1)
+			buf_size))
+	   (decf count)
+	   (return tmp)))
 
-		      (let ((id (deref (static_cast<uint32_t*> arg)))
+       (defun producer (arg)
+	 (declare (type void* arg)
+		  (values void*))
+
+	 (while 1
+		(pthread_mutex_lock &mutex)
+		(while (== count buf_size)
+		       #+nil (do0 (printf PRED)
+				  (fflush stdout))
+		       (pthread_cond_wait &modify &mutex))
+		(append (% (rand) 10))
+		#+nil (do0 (printf PYELLOW)
+			   (fflush stdout))
+		(pthread_cond_signal &modify)
+		(pthread_mutex_unlock &mutex)))
+
+       (defun consumer (arg)
+	 (declare (type void* arg)
+		  (values void*))
+
+	 (let ((id (deref (static_cast<uint32_t*> arg)))
 					;(report (long 0))
-			    )
-			(while 1
-			  (pthread_mutex_lock &mutex)
-			  (while (== 0 count)
-			    #+nil (do0 (printf RED id)
-				       (fflush stdout))
-			    (pthread_cond_wait &modify &mutex)))
-			(head)
-			#+nil (do0 (printf YELLOW id)
-				   (fflush stdout))
-			(pthread_cond_signal &modify)
-			(pthread_mutex_unlock &mutex)))
+	       )
+	   (while 1
+		  (pthread_mutex_lock &mutex)
+		  (while (== 0 count)
+			 #+nil (do0 (printf RED id)
+				    (fflush stdout))
+			 (pthread_cond_wait &modify &mutex)))
+	   (head)
+	   #+nil (do0 (printf YELLOW id)
+		      (fflush stdout))
+	   (pthread_cond_signal &modify)
+	   (pthread_mutex_unlock &mutex)))
 
-		    (defun main (argc argv)
-		      (declare (type int argc)
-			       (type char** argv)
-			       (values int))
-		      (when (< argc 4)
-			(printf (string ,(format nil "Usage: ./~a <buffer_size> <#producers> <#consumers>\\n"
-						 *program-name*)))
-			(printf (string ,(format nil "./~a 1 2 1  => deadlock possible\\n"
-						 *program-name*)))
-			(exit 1))
-		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
+       (defun main (argc argv)
+	 (declare (type int argc)
+		  (type char** argv)
+		  (values int))
+	 (when (< argc 4)
+	   (printf (string ,(format nil "Usage: ./~a <buffer_size> <#producers> <#consumers>\\n"
+				    *program-name*)))
+	   (printf (string ,(format nil "./~a 1 2 1  => deadlock possible\\n"
+				    *program-name*)))
+	   (exit 1))
+	 (setf g_start_time ("std::chrono::high_resolution_clock::now"))
 
-		      ,(lprint :msg "start" :vars `(argc (aref argv 0)))
+	 ,(lprint :msg "start" :vars `(argc (aref argv 0)))
 
-		      (do0
-		       (srand 999)
-		       (do0
-			,@(loop for e in `(buf_size numProducers numConsumers)
-				and e-i from 1
-				collect
-				`(setf ,e (atoi (aref argv ,e-i))))))
-		      (do0
-		       ,(lprint :msg "initiate mutex and condition variable")
-		       (pthread_mutex_init &mutex nullptr)
-		       (pthread_cond_init &modify nullptr))
-		      (do0
-		       ,(lprint :msg "allocate buffer" :vars `(buf_size))
-		       (setf buffer (static_cast<uint32_t*> (malloc (* buf_size
-								       (sizeof uint32_t))))
-			     ))
-		      "pthread_t prods[numProducers], cons[numConsumers];"
-		      "uint32_t threadIds[numConsumers], i;"
-		      (do0
-		       (do0
-			,(lprint :msg "start consumers" :vars `(numConsumers))
-			(dotimes (i numConsumers)
-			  (setf (aref threadIds i) i)
-			  (pthread_create (+ cons i)
-					  nullptr
-					  consumer
-					  (+ threadIds i))))
+	 (do0
+	  (srand 999)
+	  (do0
+	   ,@(loop for e in `(buf_size numProducers numConsumers)
+		   and e-i from 1
+		   collect
+		   `(setf ,e (atoi (aref argv ,e-i))))))
+	 (do0
+	  ,(lprint :msg "initiate mutex and condition variable")
+	  (pthread_mutex_init &mutex nullptr)
+	  (pthread_cond_init &modify nullptr))
+	 (do0
+	  ,(lprint :msg "allocate buffer" :vars `(buf_size))
+	  (setf buffer (static_cast<uint32_t*> (malloc (* buf_size
+							  (sizeof uint32_t))))
+		))
+	 "pthread_t prods[numProducers], cons[numConsumers];"
+	 "uint32_t threadIds[numConsumers], i;"
+	 (do0
+	  (do0
+	   ,(lprint :msg "start consumers" :vars `(numConsumers))
+	   (dotimes (i numConsumers)
+	     (setf (aref threadIds i) i)
+	     (pthread_create (+ cons i)
+			     nullptr
+			     consumer
+			     (+ threadIds i))))
 
-		       (do0
-			,(lprint :msg "start producers" :vars `(numProducers))
-			(dotimes (i numProducers)
-			  (pthread_create (+ prods i)
-					  nullptr
-					  producer
-					  nullptr))))
+	  (do0
+	   ,(lprint :msg "start producers" :vars `(numProducers))
+	   (dotimes (i numProducers)
+	     (pthread_create (+ prods i)
+			     nullptr
+			     producer
+			     nullptr))))
 
 
-		      (do0
-		       ,(lprint :msg "wait for threads to finish")
-		       (dotimes (i numProducers)
-			 (pthread_join (aref prods i) nullptr))
-		       (dotimes (i numConsumers)
-			 (pthread_join (aref cons i) nullptr)))
-		      ,(lprint :msg "leave program")
-		      (return 0))))
+	 (do0
+	  ,(lprint :msg "wait for threads to finish")
+	  (dotimes (i numProducers)
+	    (pthread_join (aref prods i) nullptr))
+	  (dotimes (i numConsumers)
+	    (pthread_join (aref cons i) nullptr)))
+	 ,(lprint :msg "leave program")
+	 (return 0)))
+     :omit-parens t :format nil :tidy nil
+     )
 
+    (sb-ext:run-program "/usr/bin/clang-format"
+		      `("-i"
+			,@(loop for e in
+				      (directory
+				       (format nil "~a/*.*"
+					       (asdf:system-relative-pathname
+						'cl-cpp-generator2
+						*source-dir*)))
+				collect (format nil "~a" e))
+			"-style=file"))
+
+    
+    
     (with-open-file (s "source/CMakeLists.txt" :direction :output
-		       :if-exists :supersede
-		       :if-does-not-exist :create)
+					       :if-exists :supersede
+					       :if-does-not-exist :create)
       ;;https://clang.llvm.org/docs/AddressSanitizer.html
       ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
       ;;
       (let ((dbg "-ggdb -O0 ")
 	    (asan "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope")
-	    (show-err ""; " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
+	    (show-err "" ; " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
 					;"-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
 
-	      ))
+		      ))
 	(macrolet ((out (fmt &rest rest)
 		     `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	  (out "# sudo dnf install fmt-devel")
@@ -329,7 +346,7 @@
 
 	  (loop for e in `(fmt)
 		do
-		(out "find_package( ~a CONFIG REQUIRED )" e))
+		   (out "find_package( ~a CONFIG REQUIRED )" e))
 
 	  (out "target_link_libraries( ~a PRIVATE ~{~a~^ ~} )"
 	       *program-name*
