@@ -139,9 +139,10 @@
 					;  <memory>
 	)
 
-       (include <stdio.h>
+       (include <cstdio>
+		
 					; <stdlib.h>
-		<stdint.h>
+		<cstdint>
 		<pthread.h>)
        "uint32_t buf_size, numProducers, numConsumers, *buffer, fillIndex, useIndex, count=0;"
        "pthread_cond_t modify;"

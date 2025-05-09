@@ -1,11 +1,11 @@
 #include <chrono>
 #include <cmath>
+#include <cstdint>
+#include <cstdio>
 #include <fmt/core.h>
 #include <iomanip>
 #include <iostream>
 #include <pthread.h>
-#include <stdint.h>
-#include <stdio.h>
 #include <thread>
 uint32_t        buf_size, numProducers, numConsumers, *buffer, fillIndex, useIndex, count = 0;
 pthread_cond_t  modify;

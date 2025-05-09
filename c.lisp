@@ -718,18 +718,20 @@ Common Lisp DEFMETHOD form.
 	(with-output-to-string (s)
 	  (format s "[~{~a~^,~}] ~a~@[-> ~a ~]"
 		  (mapcar emit captures)
-		  (funcall emit `(paren
-				  ,@(loop for p in req-param collect
-							     (format nil "~a ~a"
-								     (let ((type (gethash p env)))
-								       (if type
-									   (funcall emit type)
-									   (progn
-									     ;; (break "can't find type for ~a in defun" p)
-									     "auto"
-									     )))
-								     p
-								     ))))
+		  (if (null req-param)
+		      ""
+		      (funcall emit `(paren
+				      ,@(loop for p in req-param collect
+								 (format nil "~a ~a"
+									 (let ((type (gethash p env)))
+									   (if type
+									       (funcall emit type)
+									       (progn
+										 ;; (break "can't find type for ~a in defun" p)
+										 "auto"
+										 )))
+									 p
+									 )))))
 		  (let ((r (gethash 'return-values env)))
 		    (if (< 1 (length r))
 			(funcall emit `(paren ,@r))
