@@ -37,12 +37,12 @@ This implementation uses a combination of fixed-size memory pools, thread-safe q
 ## Architecture
 
 ```
-+---------------------+      Raw Bytes      +-----------------+      Parsed Data + Pool Index     +----------------------+
-| Network Interface   |-------------------->| Network Receiver|----------------->| Producer Thread  |--------------------->| Data Pools & Queues  |
-| (Simulated/Real)    |                     | (INetworkReceiver)|                 | (Parses, Acquires,|                     | (IPoolProducer/      |
-+---------------------+                     +-----------------+                 | Gets Write Buffer,|                     |  IPoolConsumer)      |
-| Fills, Submits)   |                     +----------+-----------+
-+-----------------+                     |          |           |
++---------------------+      Raw Bytes      +-------------------+      Parsed Data + Pool Index     +----------------------+
+| Network Interface   |-------------------->| Network Receiver  |----------------->| Producer Thread  |--------------------->| Data Pools & Queues  |
+| (Simulated/Real)    |                     | (INetworkReceiver)|                  | (Parses, Acquires,|                     | (IPoolProducer/      |
++---------------------+                     +-------------------+                  | Gets Write Buffer,|                     |  IPoolConsumer)      |
+| Fills, Submits)     |                     +----------+--------+
++---------------------+                     |          |        |
 | Image    | Meta/Meas |
 | Queue    | Queues    |
 v          v           v
@@ -50,7 +50,7 @@ v          v           v
 | Specific Item Processor |<------------------| Consumer Thread   |<------------------------|                      |<--+----------------------+
 | (IItemProcessor)        |     (Delegate)    | (Gets Item Ref,   |     (PoolItemReference) |                      |
 +-------------------------+                   | Delegates Process)|                         |                      |
-+-------------------+                         +----------------------+
++-------------------------+                   +-------------------+
 (One per type: Image, Meta, Meas)
 ```
 

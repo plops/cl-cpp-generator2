@@ -20,8 +20,17 @@ constexpr std::size_t METADATA_POOL_SIZE = 12;
 constexpr std::size_t MEASUREMENT_POOL_SIZE = 20;
 
 // --- Data Types ---
+
+/**
+ * @brief Type alias for image data.
+ * @details Represents a fixed-size image stored as a vector of bytes.
+ * The actual storage is managed within a DataPool.
+ */
 using Image = std::vector<std::byte>;
 
+/**
+ * @brief Structure holding metadata received from the network.
+ */
 struct Metadata {
     int i;
     float f;
@@ -39,6 +48,10 @@ struct Measurement {
 };
 
 // --- Network Packet IDs ---
+
+/**
+ * @brief Enumerates the possible types of data packets received over the network.
+ */
 enum class PacketType : uint8_t {
     Image = 0,
     Metadata = 1,
@@ -46,6 +59,11 @@ enum class PacketType : uint8_t {
     Unknown = 255
 };
 
+/**
+ * @brief Parses the packet type ID from the raw packet data.
+ * @param packet_data The raw bytes received from the network.
+ * @return The PacketType enum value corresponding to the first byte, or PacketType::Unknown if invalid/empty.
+ */
 inline PacketType parse_packet_id(const std::vector<std::byte>& packet_data) {
     if (packet_data.empty()) {
         return PacketType::Unknown;

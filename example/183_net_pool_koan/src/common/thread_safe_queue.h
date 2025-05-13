@@ -11,6 +11,10 @@
 #include <optional>
 #include <atomic>
 
+/**
+ * @brief A basic thread-safe queue implementation using std::mutex and std::condition_variable.
+ * @tparam T The type of elements stored in the queue.
+ */
 template <typename T>
 class ThreadSafeQueue {
 public:
@@ -23,6 +27,10 @@ public:
     ThreadSafeQueue(ThreadSafeQueue&&) = delete;
     ThreadSafeQueue& operator=(ThreadSafeQueue&&) = delete;
 
+    /**
+     * @brief Pushes a value onto the queue. Thread-safe.
+     * @param value The value to push. It will be moved into the queue.
+     */
     void push(T value) {
         {
             std::lock_guard lock(mtx_);
@@ -33,6 +41,11 @@ public:
     }
 
     // Blocking pop
+
+    /**
+     * @brief Pops a value from the queue. Blocks if the queue is empty until an item is available or stop() is called.
+     * @return An std::optional containing the value if successful, or std::nullopt if the queue was stopped and is empty.
+     */
     std::optional<T> pop() {
         std::unique_lock lock(mtx_);
         cv_.wait(lock, [this] { return !queue_.empty() || stopped_; });
@@ -55,6 +68,11 @@ public:
     }
 
      // Non-blocking pop
+
+    /**
+      * @brief Attempts to pop a value from the queue without blocking.
+      * @return An std::optional containing the value if successful, or std::nullopt if the queue is empty or stopped.
+      */
     std::optional<T> try_pop() {
         std::lock_guard lock(mtx_);
         if (queue_.empty() || stopped_) { // Don't allow pops after stop signal if empty
@@ -69,7 +87,13 @@ public:
         std::lock_guard lock(mtx_);
         return queue_.empty();
     }
-
+    /**
+     * @brief Signals the queue to stop operation.
+     * @details Wakes up all threads currently blocked in pop(). Subsequent calls to pop()
+     *          on an empty queue will return std::nullopt immediately. Subsequent calls
+     *          to try_pop() on an empty queue will return std::nullopt. Pushing may still be
+     *          possible but is generally discouraged after stopping.
+     */
     void stop() {
         {
             std::lock_guard lock(mtx_);
