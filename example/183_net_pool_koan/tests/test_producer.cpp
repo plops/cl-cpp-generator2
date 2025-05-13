@@ -8,9 +8,10 @@
 #include "tests/mocks/mock_network_receiver.h"
 #include "tests/mocks/mock_pool_interfaces.h"
 
-#include <stop_source>
+#include <stop_token>
 #include <cstring>
 #include <arpa/inet.h> // htons
+#include <thread>
 
 using namespace ::testing;
 

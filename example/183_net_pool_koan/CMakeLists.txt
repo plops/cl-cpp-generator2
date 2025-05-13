@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+find_package(Threads)
+
 # --- Google Test ---
 #include(FetchContent)
 #FetchContent_Declare(

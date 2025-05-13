@@ -9,7 +9,8 @@
 #include "tests/mocks/mock_item_processor.h"
 #include "src/core/pool_item_reference.h"
 
-#include <stop_source>
+#include <stop_token>
+#include <thread>
 
 using namespace ::testing;
 
