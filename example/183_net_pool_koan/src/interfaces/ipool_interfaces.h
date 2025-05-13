@@ -14,7 +14,7 @@ template <typename T> class PoolItemReference; // Forward declaration
  * @brief Interface for the producer-side interaction with a data pool.
  * @details Defines how producers acquire empty slots, write data into them, and submit them for consumption.
  * @tparam T The type of data item stored in the pool.
- */s
+ */
 template <typename T>
 class IPoolProducer {
 public:

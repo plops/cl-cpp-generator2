@@ -14,9 +14,25 @@
 #include <stdexcept>
 #include <numeric>
 #include <iostream> // For error logging
+
+/**
+ * @brief Manages a pool of pre-allocated data items of type T.
+ * @details Implements both IPoolProducer and IPoolConsumer interfaces, allowing
+ *          producers to acquire, fill, and submit items, and consumers to consume
+ *          items using an RAII approach (PoolItemReference). Uses internal thread-safe
+ *          queues to manage free slot indices and ready-to-consume item indices.
+ * @tparam T The type of data item stored in the pool.
+ */
 template <typename T>
 class DataPool : public IPoolProducer<T>, public IPoolConsumer<T> {
 public:
+    /**
+     * @brief Constructs a DataPool with a specified size.
+     * @details Pre-allocates storage for `size` items. If T is Image (std::vector<std::byte>),
+     *          it also pre-allocates the internal buffer of each vector to IMAGE_SIZE_BYTES.
+     *          Initializes the free list queue with all indices from 0 to size-1.
+     * @param size The fixed number of items the pool can hold.
+     */
     DataPool(std::size_t size) : pool_size_(size) {
         if constexpr (std::is_same_v<T, Image>) {
             storage_.reserve(size);
@@ -33,8 +49,11 @@ public:
         }
     }
 
+    // Non-copyable/non-movable
     DataPool(const DataPool&) = delete;
     DataPool& operator=(const DataPool&) = delete;
+    DataPool(DataPool&&) = delete;
+    DataPool& operator=(DataPool&&) = delete;
 
     // --- IPoolProducer<T> Implementation ---
     std::optional<std::size_t> acquire_free_index() override {
@@ -43,6 +62,8 @@ public:
 
     T& get_item_for_write(std::size_t index) override {
         if (index >= pool_size_) throw std::out_of_range("Pool index out of range for write");
+        // Consider adding checks in debug mode to ensure index isn't currently "free" if possible
+
         return storage_[index];
     }
 
@@ -58,6 +79,7 @@ public:
             std::cerr << "Warning: Attempt to return invalid index " << index << " to pool." << std::endl;
             return;
         }
+        // Consider adding checks in debug mode to ensure index was actually "in use"
         free_indices_.push(index);
     }
 
@@ -75,16 +97,19 @@ public:
     }
 
     void stop_consuming() override { data_queue_.stop(); }
-
+    /**
+     * @brief Stops both producer and consumer interactions with the pool.
+     * @details Calls stop_producing() and stop_consuming().
+     */
     void stop_all() {
         stop_producing();
         stop_consuming();
     }
 
 private:
-    const std::size_t pool_size_;
-    std::vector<T> storage_;
-    ThreadSafeQueue<std::size_t> free_indices_;
-    ThreadSafeQueue<std::size_t> data_queue_;
+    const std::size_t pool_size_; ///< The total number of slots in this pool.
+    std::vector<T> storage_; ///< Pre-allocated storage for the pool items.
+    ThreadSafeQueue<std::size_t> free_indices_; ///< Queue holding indices of available slots for producers.
+    ThreadSafeQueue<std::size_t> data_queue_; ///< Queue holding indices of filled slots ready for consumers.
 };
 #endif //DATA_POOL_H
