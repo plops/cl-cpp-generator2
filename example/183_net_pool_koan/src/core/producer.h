@@ -13,7 +13,19 @@
 #include <iostream>
 #include <cstring>
 #include <arpa/inet.h> // ntohs
-
+/**
+ * @brief Task function executed by the producer thread.
+ * @details Continuously receives packets using INetworkReceiver, parses them, acquires a slot
+ *          from the appropriate pool via IPoolProducer, deserializes the packet payload into the slot,
+ *          and submits the slot index for consumption. Stops when the stop_token is requested or
+ *          a non-recoverable error (like failure to acquire a pool slot after stop requested) occurs.
+ *
+ * @param stoken The stop_token used to signal cancellation.
+ * @param network_receiver Reference to the network receiver implementation.
+ * @param image_pool_producer Reference to the producer interface for the image pool.
+ * @param metadata_pool_producer Reference to the producer interface for the metadata pool.
+ * @param measurement_pool_producer Reference to the producer interface for the measurement pool.
+ */
 inline void producer_task(
     std::stop_token stoken,
     INetworkReceiver& network_receiver,

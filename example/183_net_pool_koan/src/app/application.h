@@ -19,6 +19,12 @@
 #include <csignal>
 #include <iostream>
 
+/**
+ * @brief Main application class acting as a facade and composition root.
+ * @details Responsible for creating, configuring, managing the lifecycle (start, stop)
+ *          of all core components: pools, network receiver, processors, and threads.
+ *          Handles graceful shutdown upon receiving SIGINT or SIGTERM signals.
+ */
 class Application {
 public:
     Application() : shutdown_requested_(false) {
@@ -33,6 +39,11 @@ public:
         std::cout << "Application components initialized." << std::endl;
     }
 
+    /**
+     * @brief Starts the application logic.
+     * @details Sets up signal handling, creates and starts producer and consumer threads,
+     *          and enters a loop that waits for a shutdown signal. Calls shutdown() upon exit.
+     */
     void run() {
         std::cout << "Application starting run..." << std::endl;
         signal(SIGINT, Application::signal_handler_static);
@@ -58,6 +69,11 @@ public:
     }
 
 private:
+    /**
+     * @brief Performs the graceful shutdown sequence.
+     * @details Requests stop on all threads, stops the network receiver and pools,
+     *          and waits for all threads to join (implicitly via jthread destructors).
+     */
     void shutdown() {
         std::cout << "Initiating shutdown sequence..." << std::endl;
         for (auto& t : threads_) {
@@ -74,8 +90,15 @@ private:
         threads_.clear();
         std::cout << "All threads joined." << std::endl;
     }
-
+    /** @brief Static pointer to the current Application instance for the signal handler. */
     static Application* s_application_instance;
+
+    /**
+     * @brief Static signal handler function.
+     * @details Catches OS signals (SIGINT, SIGTERM) and sets the shutdown flag
+     *          on the registered Application instance.
+     * @param signum The signal number received.
+     */
     static void signal_handler_static(int signum) {
         if (s_application_instance) {
             std::cout << "\nSignal " << signum << " received." << std::endl;
@@ -83,8 +106,8 @@ private:
         }
     }
 
-    std::atomic<bool> shutdown_requested_;
-    std::vector<std::jthread> threads_;
+    std::atomic<bool> shutdown_requested_; ///< Flag indicating if shutdown has been requested (e.g., via signal).
+    std::vector<std::jthread> threads_; ///< Holds the running producer/consumer threads.
     std::unique_ptr<INetworkReceiver> network_receiver_;
     std::unique_ptr<IItemProcessor<Image>> image_processor_;
     std::unique_ptr<IItemProcessor<Metadata>> metadata_processor_;

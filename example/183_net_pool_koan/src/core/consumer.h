@@ -11,7 +11,19 @@
 #include <stop_token>
 #include <iostream>
 #include <string_view>
-
+/**
+ * @brief Template task function executed by consumer threads.
+ * @details Continuously attempts to consume items from the data source (pool) using an RAII wrapper (PoolItemReference).
+ *          If an item is successfully consumed, it delegates the processing of that item to the provided IItemProcessor.
+ *          The PoolItemReference automatically returns the item's index to the pool when it goes out of scope.
+ *          Stops when the stop_token is requested or the data source indicates no more items are available (e.g., pool stopped).
+ *
+ * @tparam T The type of data item being consumed and processed.
+ * @param stoken The stop_token used to signal cancellation.
+ * @param consumer_name A descriptive name for the consumer thread (used for logging).
+ * @param data_source Reference to the pool consumer interface providing the items.
+ * @param item_processor Reference to the processor responsible for handling consumed items.
+ */
 template <typename T>
 inline void consumer_task(
     std::stop_token stoken,
