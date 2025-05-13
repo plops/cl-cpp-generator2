@@ -4,8 +4,6 @@
 
 #ifndef CONCRETE_ITEM_PROCESSORS_H
 #define CONCRETE_ITEM_PROCESSORS_H
-#ifndef CONCRETE_ITEM_PROCESSORS_H
-#define CONCRETE_ITEM_PROCESSORS_H
 
 #include "src/interfaces/iitem_processor.h"
 #include "src/common/common.h"
