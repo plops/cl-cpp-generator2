@@ -8,8 +8,6 @@ create an implementation, use modern c++ and libraries like boost (if that seems
 use c++20 and prefer modern c++ (jthread)
 prefer references to pointers (if possible)
 
-
-```markdown
 # C++ Multi-Pool Producer-Consumer Network Processor
 
 This project demonstrates a C++ architecture for handling different types of data packets received over a network, processing them concurrently using a producer-consumer pattern with pre-allocated memory pools.
