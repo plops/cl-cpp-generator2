@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Threads)
-
+find_package(GTest)
 # --- Google Test ---
 #include(FetchContent)
 #FetchContent_Declare(
@@ -42,7 +42,7 @@ add_executable(unit_tests
 )
 target_compile_features(unit_tests PRIVATE cxx_std_20)
 if(UNIX)
-    target_link_libraries(unit_tests PRIVATE Threads::Threads gtest_main)
+    target_link_libraries(unit_tests PRIVATE Threads::Threads gtest gmock gtest_main gmock_main)
 else() # e.g. Windows
     target_link_libraries(unit_tests PRIVATE gtest_main) # Threads::Threads might not be needed or named differently
 endif()
