@@ -1,0 +1,45 @@
+//
+// Created by martin on 5/16/25.
+//
+
+#include <iostream>
+#include <variant>
+#include <vector>
+
+struct PhilosophersElixir {
+    int                  potency;
+    std::string          effect;
+    friend std::ostream& operator<<(std::ostream& os, const PhilosophersElixir& ph) {
+        os << ph.potency << " " << ph.effect << " " << ph.effect;
+        return os;
+    }
+};
+
+using AlchemistsStone = std::variant<int, std::string, PhilosophersElixir>;
+
+void describe_stone(const AlchemistsStone& stone) {
+    std::visit([](auto&& arg) {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, PhilosophersElixir>) {
+            std::cout << arg.potency << " " << arg.effect << " " << arg.effect << std::endl;
+        } else if constexpr (std::is_same_v<T, int>) {
+            std::cout << arg << std::endl;
+        } else if constexpr (std::is_same_v<T, int>) {
+            std::cout << arg << std::endl;
+        }
+    }, stone);
+}
+
+int main() {
+std::vector<AlchemistsStone> observations;
+    observations.push_back(42);
+    observations.push_back("Abracadabra");
+    observations.push_back(PhilosophersElixir{100,"Clarity of Mind"});
+    observations.push_back(7);
+
+    std::cout << "Varius's Observations:" << std::endl;
+    for (const auto& stone_form : observations) {
+        describe_stone(stone_form);
+    }
+    return 0;
+}
