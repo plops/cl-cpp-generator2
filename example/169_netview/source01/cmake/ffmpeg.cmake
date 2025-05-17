@@ -1,4 +1,5 @@
-set(ffmpeg_src /home/martin/src/ffmpeg-6.1.2/)
+#set(ffmpeg_src /home/martin/src/ffmpeg-6.1.2/)
+set(ffmpeg_src /home/martin/src/ffmpeg-7.1.1/)
 set(libavutil_asm ${ffmpeg_src}/libavutil/x86)
 set(libavutil_c ${ffmpeg_src}/libavutil)
 set(libavcodec_asm ${ffmpeg_src}/libavcodec/x86)
@@ -496,13 +497,13 @@ set(avcodec_c
         ${libavcodec_c}/dirac.c
         ${libavcodec_c}/tiff.c
         ${libavcodec_c}/ccaption_dec.c
-        ${libavcodec_c}/hevcdec.c
+#        ${libavcodec_c}/hevcdec.c
         ${libavcodec_c}/adpcm.c
         ${libavcodec_c}/acelp_pitch_delay.c
         ${libavcodec_c}/ilbcdec.c
         ${libavcodec_c}/cavs_parser.c
         ${libavcodec_c}/parsers.c
-        ${libavcodec_c}/mpeg4_unpack_bframes_bsf.c
+#        ${libavcodec_c}/mpeg4_unpack_bframes_bsf.c
         ${libavcodec_c}/dvd_nav_parser.c
         ${libavcodec_c}/ulti.c
         ${libavcodec_c}/kmvc.c
