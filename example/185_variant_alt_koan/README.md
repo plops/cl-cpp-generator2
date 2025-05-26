@@ -1,4 +1,4 @@
-Okay, here is a koan for `std::variant_alternative`.
+^Okay, here is a koan for `std::variant_alternative`.
 
 **The Koan: The Scribe's Ledger**
 
