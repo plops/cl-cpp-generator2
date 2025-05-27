@@ -12,20 +12,17 @@ using namespace std;
 class Entry {
 public:
     // Constructor now takes an alias_name (e.g., "IntEntry" for TEntry<int>)
-    // and an internal_type_name (e.g., "int" from stringify(T)).
-    Entry(const string& alias_name, const string& internal_type_name) :
-        alias_name_{alias_name}, internal_type_name_{internal_type_name} {}
+    Entry(const string& alias_name) :
+        alias_name_{alias_name} {}
 
     // Returns the alias name (e.g., "IntEntry"), used for lookup.
     string getName() const { return alias_name_; }
 
     // Specific getters if needed
     string getAliasName() const { return alias_name_; }
-    string getInternalTypeName() const { return internal_type_name_; }
 
 private:
     string alias_name_;         // e.g., "IntEntry"
-    string internal_type_name_; // e.g., "int"
 };
 
 template <class T>
@@ -36,7 +33,7 @@ public:
     // Constructor takes the alias_name (e.g., "IntEntry").
     // It then constructs the base Entry, passing this alias_name
     // and stringify(T) as the internal_type_name.
-    explicit TEntry(const string& alias_name) : Entry(alias_name, stringify(T)) {}
+    explicit TEntry(const string& alias_name) : Entry(alias_name) {}
 };
 
 using IntEntry    = TEntry<int>;
@@ -94,7 +91,6 @@ int main() {
         cout << "Successfully created entry." << endl;
         cout << "  getName(): " << entry->getName() << endl;                         // Expected: "IntEntry"
         cout << "  getAliasName(): " << entry->getAliasName() << endl;               // Expected: "IntEntry"
-        cout << "  getInternalTypeName(): " << entry->getInternalTypeName() << endl; // Expected: "int" but is is T
     }
     else { cout << "Failed to create entry for 'IntEntry'." << endl; }
     cout << endl;
@@ -105,7 +101,6 @@ int main() {
         cout << "Successfully created entry." << endl;
         cout << "  getName(): " << entry->getName() << endl;                         // Expected: "StringEntry"
         cout << "  getAliasName(): " << entry->getAliasName() << endl;               // Expected: "StringEntry"
-        cout << "  getInternalTypeName(): " << entry->getInternalTypeName() << endl; // Expected: "string" but is T
     }
     else { cout << "Failed to create entry for 'StringEntry'." << endl; }
     cout << endl;
@@ -116,7 +111,6 @@ int main() {
         cout << "Successfully created entry." << endl;
         cout << "  getName(): " << entry->getName() << endl;                         // Expected: "VIntEntry"
         cout << "  getAliasName(): " << entry->getAliasName() << endl;               // Expected: "VIntEntry"
-        cout << "  getInternalTypeName(): " << entry->getInternalTypeName() << endl; // Expected: "vector<int>" but is T
     }
     else { cout << "Failed to create entry for 'VIntEntry'." << endl; }
     cout << endl;
