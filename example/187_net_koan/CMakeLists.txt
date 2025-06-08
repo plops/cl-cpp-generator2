@@ -49,7 +49,7 @@ target_link_libraries(network_server PRIVATE ParserLib)
 #FetchContent_MakeAvailable(googletest)
 
 add_executable(parser_tests tests/parser_test.cpp)
-target_link_libraries(parser_tests PRIVATE ParserLib gtest_main) # gtest_main links gtest and provides main()
+target_link_libraries(parser_tests PRIVATE ParserLib gtest_main gtest) # gtest_main links gtest and provides main()
 
 # Automatically discover and add tests to CTest
 include(GoogleTest)
