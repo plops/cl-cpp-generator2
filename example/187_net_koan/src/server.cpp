@@ -1,24 +1,25 @@
 //
 // Created by martin on 6/8/25.
-// This entity listens for connections, receives raw bytes, and feeds them to the parser. It manages a buffer and correctly handles partial messages.
+// This entity listens for connections, receives raw bytes, and feeds them to the parser. It manages a buffer and
+// correctly handles partial messages.
 
 // src/server.cpp
 #include "parser.h"
 #include "protocol.h" // For creating a dummy message to send for testing & Message::toString
 
 #include <iostream>
-#include <vector>
-#include <string>
-#include <stdexcept>
 #include <optional>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 // Linux Socket Headers
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 #include <unistd.h> // For close()
 
-const int PORT = 8080;
+const int PORT             = 8080;
 const int RECV_BUFFER_SIZE = 1024; // How much to try reading from socket at once
 
 // Koan: The Client's Journey - Handling a Single Connection
@@ -75,7 +76,7 @@ void handle_client(int client_socket) {
             // Koan: The Cycle of Interpretation - Parsing Continuously
             // We attempt to parse messages as long as we make progress.
             bool made_progress_this_cycle = true;
-            while(made_progress_this_cycle) {
+            while (made_progress_this_cycle) {
                 made_progress_this_cycle = false;
 
                 // If unprocessed_data_iter is at the end, there's nothing left to try parsing from.
@@ -94,44 +95,46 @@ void handle_client(int client_socket) {
                 Parser::ParseOutput result = Parser::parse_packet(unprocessed_data_iter, data_stream_buffer.cend());
 
                 switch (result.status) {
-                    case Parser::ParseResultStatus::SUCCESS:
-                        std::cout << "Parser deciphers a message: " << result.message.value().toString() << std::endl;
-                        // Application logic would use result.message.value() here.
+                case Parser::ParseResultStatus::SUCCESS:
+                    std::cout << "Parser deciphers a message: " << result.message.value().toString() << std::endl;
+                    // Application logic would use result.message.value() here.
 
-                        // The parser has consumed data up to result.next_data_iterator.
-                        // We update our main iterator to this new position.
-                        unprocessed_data_iter = result.next_data_iterator;
-                        made_progress_this_cycle = true; // We successfully parsed, try again.
-                        break;
+                    // The parser has consumed data up to result.next_data_iterator.
+                    // We update our main iterator to this new position.
+                    unprocessed_data_iter    = result.next_data_iterator;
+                    made_progress_this_cycle = true; // We successfully parsed, try again.
+                    break;
 
-                    case Parser::ParseResultStatus::NEED_MORE_DATA:
-                        std::cout << "Parser awaits more fragments: " << result.error_message << std::endl;
-                        // No complete message yet. unprocessed_data_iter remains where it was (pointing to the
-                        // start of the incomplete segment). We need to break and receive more data.
-                        goto end_inner_parse_loop; // Break from the inner while, go to recv
+                case Parser::ParseResultStatus::NEED_MORE_DATA:
+                    std::cout << "Parser awaits more fragments: " << result.error_message << std::endl;
+                    // No complete message yet. unprocessed_data_iter remains where it was (pointing to the
+                    // start of the incomplete segment). We need to break and receive more data.
+                    goto end_inner_parse_loop; // Break from the inner while, go to recv
 
-                    case Parser::ParseResultStatus::INVALID_DATA:
-                        std::cerr << "Parser encounters corrupted script: " << result.error_message << std::endl;
-                        if (result.message.has_value()) { // Parser might have salvaged a header for context
-                            std::cerr << "  Problematic message shell: " << result.message.value().toString() << std::endl;
-                        }
-                        // How to recover?
-                        // If result.next_data_iterator advanced, we skip the bad part.
-                        if (result.next_data_iterator > unprocessed_data_iter) {
-                            std::cerr << "  Attempting to skip " << std::distance(unprocessed_data_iter, result.next_data_iterator)
-                                      << " problematic bytes." << std::endl;
-                            unprocessed_data_iter = result.next_data_iterator;
-                            made_progress_this_cycle = true; // We skipped, so try parsing again.
-                        } else {
-                            // Parser could not advance. This is a critical error for this stream.
-                            std::cerr << "  Parser cannot recover. Closing connection due to invalid data." << std::endl;
-                            close(client_socket);
-                            return; // Exit client handler.
-                        }
-                        break;
+                case Parser::ParseResultStatus::INVALID_DATA:
+                    std::cerr << "Parser encounters corrupted script: " << result.error_message << std::endl;
+                    if (result.message.has_value()) { // Parser might have salvaged a header for context
+                        std::cerr << "  Problematic message shell: " << result.message.value().toString() << std::endl;
+                    }
+                    // How to recover?
+                    // If result.next_data_iterator advanced, we skip the bad part.
+                    if (result.next_data_iterator > unprocessed_data_iter) {
+                        std::cerr << "  Attempting to skip "
+                                  << std::distance(unprocessed_data_iter, result.next_data_iterator)
+                                  << " problematic bytes." << std::endl;
+                        unprocessed_data_iter    = result.next_data_iterator;
+                        made_progress_this_cycle = true; // We skipped, so try parsing again.
+                    }
+                    else {
+                        // Parser could not advance. This is a critical error for this stream.
+                        std::cerr << "  Parser cannot recover. Closing connection due to invalid data." << std::endl;
+                        close(client_socket);
+                        return; // Exit client handler.
+                    }
+                    break;
                 }
             }
-            end_inner_parse_loop:;
+        end_inner_parse_loop:;
 
             // Koan: Pruning the Scroll - Efficient Buffer Management
             // If all data up to 'unprocessed_data_iter' has been fully processed,
@@ -146,12 +149,13 @@ void handle_client(int client_socket) {
                 unprocessed_data_iter = data_stream_buffer.cbegin();
             }
             // If the buffer is now empty, unprocessed_data_iter should correctly be cend().
-             if (data_stream_buffer.empty()) {
+            if (data_stream_buffer.empty()) {
                 unprocessed_data_iter = data_stream_buffer.cend(); // or cbegin(), same for empty
             }
 
         } // while(true) for recv
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception &e) {
         std::cerr << "An unexpected trial in client handler: " << e.what() << std::endl;
     }
 
@@ -163,10 +167,10 @@ void handle_client(int client_socket) {
 
 int main() {
     // Koan: The Server's Hearth - Preparing to Listen
-    int server_fd;
+    int                server_fd;
     struct sockaddr_in address;
-    int opt = 1;
-    socklen_t addrlen = sizeof(address); // Use socklen_t for accept
+    int                opt     = 1;
+    socklen_t          addrlen = sizeof(address); // Use socklen_t for accept
 
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
@@ -180,9 +184,9 @@ int main() {
         close(server_fd);
         exit(EXIT_FAILURE);
     }
-    address.sin_family = AF_INET;
+    address.sin_family      = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
+    address.sin_port        = htons(PORT);
 
     // Binding the socket to the network address and port
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
@@ -204,9 +208,9 @@ int main() {
 
     // Koan: The Endless Vigil - Accepting Connections
     // This simple server handles one client at a time.
-    while(true) {
+    while (true) {
         int client_socket;
-        if ((client_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen))<0) {
+        if ((client_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen)) < 0) {
             perror("Accept failed");
             // Non-fatal accept error, continue listening.
             continue;

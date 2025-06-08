@@ -3,31 +3,30 @@
 //
 
 // tests/parser_test.cpp
+#include "parser.h" // The SUT (System Under Test)
 #include "gtest/gtest.h"
-#include "parser.h"       // The SUT (System Under Test)
-#include "protocol.h"     // For creating test messages and constants
+#include "protocol.h" // For creating test messages and constants
 
-#include <vector>
 #include <cstdint>
-#include <cstring>         // For std::memcpy
+#include <cstring> // For std::memcpy
+#include <vector>
 
 // Koan: The Alchemist's Bench - Helper to Forge Test Messages
 // This function creates a raw byte vector representing a serialized message.
-std::vector<unsigned char> forge_serialized_message(
-    uint64_t id, uint8_t version, const std::vector<unsigned char>& payload_data) {
-
+std::vector<unsigned char> forge_serialized_message(uint64_t id, uint8_t version,
+                                                    const std::vector<unsigned char>& payload_data) {
     NetworkProtocol::Message test_msg;
-    test_msg.header.id = id;
+    test_msg.header.id      = id;
     test_msg.header.version = version;
-    test_msg.header.length = payload_data.size();
-    test_msg.payload = payload_data;
+    test_msg.header.length  = payload_data.size();
+    test_msg.payload        = payload_data;
     return NetworkProtocol::serializeMessage(test_msg);
 }
 
 // Koan: The Empty Scroll - Testing Behavior with No Data
 TEST(ParserKoans, ParseEmptyBufferYieldsNeedMoreData) {
     std::vector<unsigned char> buffer;
-    auto result = Parser::parse_packet(buffer.cbegin(), buffer.cend());
+    auto                       result = Parser::parse_packet(buffer.cbegin(), buffer.cend());
 
     EXPECT_EQ(result.status, Parser::ParseResultStatus::NEED_MORE_DATA);
     EXPECT_FALSE(result.message.has_value());
@@ -38,7 +37,7 @@ TEST(ParserKoans, ParseEmptyBufferYieldsNeedMoreData) {
 // Koan: A Fragment of the Header - Testing with Insufficient Header Bytes
 TEST(ParserKoans, ParsePartialHeaderYieldsNeedMoreData) {
     std::vector<unsigned char> buffer = {0x01, 0x02, 0x03, 0x04, 0x05}; // Less than Header::SIZE
-    auto result = Parser::parse_packet(buffer.cbegin(), buffer.cend());
+    auto                       result = Parser::parse_packet(buffer.cbegin(), buffer.cend());
 
     EXPECT_EQ(result.status, Parser::ParseResultStatus::NEED_MORE_DATA);
     EXPECT_FALSE(result.message.has_value());
@@ -49,18 +48,21 @@ TEST(ParserKoans, ParsePartialHeaderYieldsNeedMoreData) {
 TEST(ParserKoans, ParseFullHeaderPartialPayloadYieldsNeedMoreData) {
     // Header indicates payload of 10 bytes, but we only provide 5.
     NetworkProtocol::Message test_msg_template;
-    test_msg_template.header.id = 1;
+    test_msg_template.header.id      = 1;
     test_msg_template.header.version = NetworkProtocol::CURRENT_VERSION;
-    test_msg_template.header.length = 10; // Expect 10 bytes
+    test_msg_template.header.length  = 10; // Expect 10 bytes
 
     std::vector<unsigned char> partial_payload = {'h', 'e', 'l', 'l', 'o'}; // Only 5 bytes
 
     // Manually construct the buffer with full header but only partial payload
     std::vector<unsigned char> buffer(NetworkProtocol::Header::SIZE + partial_payload.size());
-    unsigned char* ptr = buffer.data();
-    NetworkProtocol::serialize_uint64(test_msg_template.header.id, ptr); ptr += sizeof(uint64_t);
-    NetworkProtocol::serialize_uint8(test_msg_template.header.version, ptr); ptr += sizeof(uint8_t);
-    NetworkProtocol::serialize_uint64(test_msg_template.header.length, ptr); ptr += sizeof(uint64_t);
+    unsigned char*             ptr = buffer.data();
+    NetworkProtocol::serialize_uint64(test_msg_template.header.id, ptr);
+    ptr += sizeof(uint64_t);
+    NetworkProtocol::serialize_uint8(test_msg_template.header.version, ptr);
+    ptr += sizeof(uint8_t);
+    NetworkProtocol::serialize_uint64(test_msg_template.header.length, ptr);
+    ptr += sizeof(uint64_t);
     std::memcpy(ptr, partial_payload.data(), partial_payload.size());
 
     auto result = Parser::parse_packet(buffer.cbegin(), buffer.cend());
@@ -73,8 +75,8 @@ TEST(ParserKoans, ParseFullHeaderPartialPayloadYieldsNeedMoreData) {
 
 // Koan: The Perfectly Formed Message - Testing a Single Complete Packet
 TEST(ParserKoans, ParseSingleCompleteMessageSuccessfully) {
-    uint64_t expected_id = 12345;
-    uint8_t expected_version = NetworkProtocol::CURRENT_VERSION;
+    uint64_t                   expected_id      = 12345;
+    uint8_t                    expected_version = NetworkProtocol::CURRENT_VERSION;
     std::vector<unsigned char> expected_payload = {'t', 'e', 's', 't', ' ', 'p', 'a', 'y', 'l', 'o', 'a', 'd'};
     std::vector<unsigned char> buffer = forge_serialized_message(expected_id, expected_version, expected_payload);
 
@@ -92,9 +94,9 @@ TEST(ParserKoans, ParseSingleCompleteMessageSuccessfully) {
 
 // Koan: Message Followed by Silence (or More) - Testing Message with Trailing Data
 TEST(ParserKoans, ParseMessageWithTrailingDataAdvancesIteratorCorrectly) {
-    std::vector<unsigned char> payload = {'m', 'o', 'r', 'e'};
+    std::vector<unsigned char> payload    = {'m', 'o', 'r', 'e'};
     std::vector<unsigned char> msg_buffer = forge_serialized_message(42, NetworkProtocol::CURRENT_VERSION, payload);
-    size_t msg_size = msg_buffer.size();
+    size_t                     msg_size   = msg_buffer.size();
 
     std::vector<unsigned char> full_buffer = msg_buffer;
     full_buffer.push_back(0xDE); // Trailing byte 1
@@ -115,10 +117,10 @@ TEST(ParserKoans, ParseMessageWithTrailingDataAdvancesIteratorCorrectly) {
 
 // Koan: A Cascade of Messages - Testing Multiple Messages Sequentially
 TEST(ParserKoans, ParseMultipleMessagesCorrectly) {
-    std::vector<unsigned char> payload1 = {'f', 'i', 'r', 's', 't'};
+    std::vector<unsigned char> payload1   = {'f', 'i', 'r', 's', 't'};
     std::vector<unsigned char> msg1_bytes = forge_serialized_message(101, NetworkProtocol::CURRENT_VERSION, payload1);
 
-    std::vector<unsigned char> payload2 = {'s', 'e', 'c', 'o', 'n', 'd', '!', '!'};
+    std::vector<unsigned char> payload2   = {'s', 'e', 'c', 'o', 'n', 'd', '!', '!'};
     std::vector<unsigned char> msg2_bytes = forge_serialized_message(102, NetworkProtocol::CURRENT_VERSION, payload2);
 
     std::vector<unsigned char> full_buffer = msg1_bytes;
@@ -146,14 +148,14 @@ TEST(ParserKoans, ParseInvalidVersionYieldsInvalidDataAndSkips) {
     uint8_t wrong_version = NetworkProtocol::CURRENT_VERSION + 1;
     if (wrong_version == 0) wrong_version = 2; // handle wrap around for test
     std::vector<unsigned char> payload = {'b', 'a', 'd', 'V'};
-    std::vector<unsigned char> buffer = forge_serialized_message(777, wrong_version, payload);
+    std::vector<unsigned char> buffer  = forge_serialized_message(777, wrong_version, payload);
 
     auto result = Parser::parse_packet(buffer.cbegin(), buffer.cend());
 
     EXPECT_EQ(result.status, Parser::ParseResultStatus::INVALID_DATA);
-    ASSERT_TRUE(result.message.has_value()); // Parser still provides the shell
+    ASSERT_TRUE(result.message.has_value());                  // Parser still provides the shell
     EXPECT_EQ(result.message->header.version, wrong_version); // Verify it captured the wrong version
-    EXPECT_EQ(result.message->payload, payload); // And the payload it read
+    EXPECT_EQ(result.message->payload, payload);              // And the payload it read
     ASSERT_NE(result.error_message.find("Unsupported protocol version"), std::string::npos);
 
     // It should have "consumed" the entire message based on its stated length to allow skipping
@@ -179,14 +181,16 @@ TEST(ParserKoans, ParseMessageWithZeroLengthPayload) {
 TEST(ParserKoans, ParseExactHeaderSizeWhenPayloadExpectedYieldsNeedMoreData) {
     // Manually construct a header that expects a payload, but provide no payload bytes.
     NetworkProtocol::Header hdr_template;
-    hdr_template.id = 99;
+    hdr_template.id      = 99;
     hdr_template.version = NetworkProtocol::CURRENT_VERSION;
-    hdr_template.length = 1; // Expects 1 byte of payload
+    hdr_template.length  = 1; // Expects 1 byte of payload
 
     std::vector<unsigned char> buffer(NetworkProtocol::Header::SIZE); // Only space for header
-    unsigned char* ptr = buffer.data();
-    NetworkProtocol::serialize_uint64(hdr_template.id, ptr); ptr += sizeof(uint64_t);
-    NetworkProtocol::serialize_uint8(hdr_template.version, ptr); ptr += sizeof(uint8_t);
+    unsigned char*             ptr = buffer.data();
+    NetworkProtocol::serialize_uint64(hdr_template.id, ptr);
+    ptr += sizeof(uint64_t);
+    NetworkProtocol::serialize_uint8(hdr_template.version, ptr);
+    ptr += sizeof(uint8_t);
     NetworkProtocol::serialize_uint64(hdr_template.length, ptr);
     // No payload bytes added to buffer.
 
@@ -199,7 +203,7 @@ TEST(ParserKoans, ParseExactHeaderSizeWhenPayloadExpectedYieldsNeedMoreData) {
 }
 
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     // Koan: The Moment of Truth - Let the Tests Reveal Wisdom or Folly
     return RUN_ALL_TESTS();

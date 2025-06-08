@@ -6,10 +6,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF) # Prefer not to use GNU extensions if not needed
 
 # Optional: Compiler flags
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
+if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
     target_compile_options(variant PRIVATE -Wall -Wextra -Wpedantic) # -Werror
     target_compile_options(unit_tests PRIVATE -Wall -Wextra -Wpedantic)
-endif()
+endif ()
 
 # Koan: Locating the Scrolls - Defining Source Files
 set(PROTOCOL_H src/protocol.h)
