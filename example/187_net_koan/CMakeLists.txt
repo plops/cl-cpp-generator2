@@ -51,6 +51,10 @@ target_link_libraries(network_server PRIVATE ParserLib)
 add_executable(parser_tests tests/parser_test.cpp)
 target_link_libraries(parser_tests PRIVATE ParserLib gtest_main gtest) # gtest_main links gtest and provides main()
 
+add_executable(network_client src/client.cpp src/test_utils.cpp)
+#target_link_libraries(network_client PRIVATE BufferCore)
+
+
 # Automatically discover and add tests to CTest
 include(GoogleTest)
 gtest_discover_tests(parser_tests)
@@ -65,7 +69,7 @@ gtest_discover_tests(parser_tests)
 #)
 #FetchContent_MakeAvailable(googlebenchmark)
 
-#add_executable(parser_benchmarks benchmarks/parser_benchmark.cpp)
+add_executable(parser_benchmarks benchmarks/parser_benchmark.cpp)
 # benchmark::benchmark links both benchmark and benchmark_main
 #target_link_libraries(parser_benchmarks PRIVATE ParserLib benchmark::benchmark)
 
