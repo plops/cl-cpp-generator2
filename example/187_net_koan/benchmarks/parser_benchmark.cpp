@@ -6,8 +6,8 @@
 #include <numeric> // For std::iota if needed for varied payload
 #include <vector>
 #include "benchmark/benchmark.h"
-#include "parser.h"
-#include "protocol.h" // For forge_serialized_message and constants
+#include "../src/parser.h"
+#include "../src/protocol.h" // For forge_serialized_message and constants
 
 // Re-use or redefine the message forging helper for benchmarks
 std::vector<unsigned char> forge_bench_message(uint64_t id, uint8_t version,

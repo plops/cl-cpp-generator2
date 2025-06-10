@@ -49,7 +49,7 @@ set(SERVER_CPP src/server.cpp)
 set(PARSER_LIB_SOURCES ${PARSER_CPP} ${PARSER_H} ${PROTOCOL_H})
 
 find_package(GTest)
-#find_package(benchmark)
+find_package(benchmark)
 
 # Koan: A Library of Wisdom - The Parser Logic as a Library
 # This makes it reusable for the server, tests, and benchmarks.
@@ -100,7 +100,7 @@ gtest_discover_tests(parser_tests)
 
 add_executable(parser_benchmarks benchmarks/parser_benchmark.cpp)
 # benchmark::benchmark links both benchmark and benchmark_main
-#target_link_libraries(parser_benchmarks PRIVATE ParserLib benchmark::benchmark)
+target_link_libraries(parser_benchmarks PRIVATE ParserLib benchmark::benchmark)
 
 # Koan: The Path of Execution
 # After building with CMake and your chosen build system (e.g., make, ninja):
