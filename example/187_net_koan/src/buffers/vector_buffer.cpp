@@ -17,9 +17,10 @@ void VectorBuffer::write(const unsigned char* data, size_t length) {
 }
 
 size_t VectorBuffer::parse_and_consume_stream(
-        const std::function<Parser::ParseOutput(std::vector<unsigned char>::const_iterator,                                                std::vector<unsigned char>::const_iterator)>& actual_parser,
+        const std::function<Parser::ParseOutput(std::vector<unsigned char>::const_iterator,
+                                                std::vector<unsigned char>::const_iterator)>& actual_parser,
         std::vector<NetworkProtocol::Message>&                                                out_messages) {
-if (read_offset_ >= buffer_.size()) {
+    if (read_offset_ >= buffer_.size()) {
         // All existing data parsed or buffer empty from start.
         // If buffer is large and fully processed, good time to clear it.
         if (read_offset_ > 0 && read_offset_ == buffer_.size()) {
@@ -29,10 +30,10 @@ if (read_offset_ >= buffer_.size()) {
         return 0;
     }
 
-    auto   current_parse_iter        = buffer_.cbegin() + read_offset_;
-    auto   end_of_buffer_iter        = buffer_.cend();
-    size_t messages_parsed_this_call = 0;
- size_t initial_read_offset_for_this_call = read_offset_;
+    auto   current_parse_iter                = buffer_.cbegin() + read_offset_;
+    auto   end_of_buffer_iter                = buffer_.cend();
+    size_t messages_parsed_this_call         = 0;
+    size_t initial_read_offset_for_this_call = read_offset_;
 
     while (current_parse_iter != end_of_buffer_iter) {
         Parser::ParseOutput result = actual_parser(current_parse_iter, end_of_buffer_iter);
@@ -59,7 +60,8 @@ if (read_offset_ >= buffer_.size()) {
                 }
             }
             // For benchmark/test, we might log this error but continue if possible or stop
-            break;        }
+            break;
+        }
         else {     // NEED_MORE_DATA
             break; // Cannot parse further with current data
         }

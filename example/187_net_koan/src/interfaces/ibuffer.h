@@ -37,6 +37,6 @@ public:
     // Returns the name of the buffer implementation (for logging/identification).
     virtual std::string name() const = 0;
 
-    // Factory method for benchmark/test convenience
+    // Factory method for benchmark/test convenience, type is one of VectorBuffer, DequeBuffer and RingArrayBuffer
     static std::unique_ptr<IBuffer> create(const std::string& type, size_t fixed_capacity = 0);
 };

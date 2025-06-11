@@ -5,6 +5,7 @@
 // benchmarks/buffer_performance_benchmark.cpp
 #include "benchmark/benchmark.h"
 #include "interfaces/ibuffer.h"
+#include "buffers/ring_array_buffer.h" // DEFAULT_RING_CAPACITY
 #include "parser.h" // For Parser::parse_packet
 #include "test_utils.h"
 
