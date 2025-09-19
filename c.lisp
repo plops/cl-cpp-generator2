@@ -1,15 +1,3 @@
-(declaim (optimize
-	  (safety 3)
-	  (speed 0)
-	  (debug 3)))
-#-nil
-(progn (ql:quickload "alexandria")
-       (defpackage :cl-cpp-generator2
-	 (:use :cl
-	  :alexandria
-	       :cl-ppcre)
-	 (:export
-	  #:write-source)))
 ;;(setf *features* (union *features* '(:generic-c)))
 ;;(setf *features* (set-difference *features* '(:generic-c)))
 (in-package :cl-cpp-generator2)
