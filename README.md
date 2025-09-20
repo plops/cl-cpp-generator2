@@ -28,13 +28,46 @@ ln -s ~/stage/cl-cpp-generator2 ~/quicklisp/local-projects
 It is recommended to extract the repo in the `~/stage` directory.
 
 ## Getting Started
-To start, open `gen01.lisp` in emacs/slime and call the s-expressions
-in sequence. Modify the last large s-expression and press C-c C-c to
-regenerate all necessary C files.
+
+Create a new Common Lisp file  (e.g. `demo.lisp`) that loads the cl-cpp-generator2 package using quicklisp
+and define your own package that uses cl-cpp-generator2:
+
+```
+(load "~/quicklisp/setup.lisp")
+
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (ql:quickload "cl-cpp-generator2"))
+
+(defpackage #:my-cpp-project
+  (:use #:cl #:cl-cpp-generator2)) 
+
+(in-package #:my-cpp-project)
+
+
+(format t "~a:~%~a~%"
+        *package*
+        (cl-cpp-generator2:emit-c :code
+          `(do0
+             (include <stdio.h>) 
+             (defstruct0 struct_a (a int)))))
+```
+
+Execute the lisp file: `sbcl --load demo.lisp --quit`. The output will look like this:
+
+```
+sbcl --load demo.lisp --quit
+```
 
 ## Examples
 For examples, check the project's example directory:
 https://github.com/plops/cl-cpp-generator2/tree/master/example
+
+For a long time I used to work in the `cl-cpp-generator2` package. So most of the examples 
+contain gen<n>.lisp file(s)  are still structured in this way.
+
+To start one of the examples, open `gen01.lisp` in emacs/slime and call the s-expressions
+in sequence. Modify the last large s-expression and press C-c C-c to
+regenerate all necessary C files.
 
 ## FAQs
 - **Why doesn't this library generate LLVM?**  
@@ -67,9 +100,9 @@ complete list of supported expressions, refer to the documentation.
 | case                                                                | (case a (b (return 3)) (t (return 4)))                         | switch a ..                                              |
 | string                                                              | (string "a")                                                   | "a"                                                      |
 | char                                                                | (char "a")                                                     | 'a'                                                      |
-| aref                                                                | (aref a 2 3)                                                   | a[2][3]                                                  |
+| aref                                                                | (aref a 2 3)                                                   | `a[2][3]`                                                  |
 | dot                                                                 | (dot b (f 3))                                                  | b.f(3)                                                   |
-| lambda                                                              | (lambda (x) y)                                                 | [&]() { return 3; }                                      |
+| lambda                                                              | (lambda (x) y)                                                 | `[&]() { return 3; }`                                      |
 | defclass  name ({superclass}*) ({slot-specifier}*) [[class-option]] | (defclass Employee (Person) ... TBD                            | class Employee : Person { ...                            |
 | for start end iter                                                  | (for ((= a 0) (< a 12) (incf a)) ...)                          | for (a=0; a<12;a++){ ...                                 |
 | dotimes i n                                                         | (dotimes (i 12) ...)                                           | for (int i=0; i<12; i++) { ...                           |
