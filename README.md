@@ -265,7 +265,7 @@ Nios in FPGA, and TI C28x DSP.
 
 # Reference
 
-Below is a categorized operator reference table for cl-cpp-generator2. Each row shows the DSL operator, a short purpose statement, a compact Lisp s-expression example, and the typical emitted C/C++ output. Use this as a quick lookup; many operators accept variants or additional declare options — see c.lisp for full details.  
+Below is a categorized operator reference table for cl-cpp-generator2. Each row shows the DSL operator, a short purpose statement, a compact Lisp s-expression example, and the typical emitted C/C++ output. Use this as a quick lookup; many operators accept variants or additional declare options — see c.lisp for full details or search in examples/ for use cases.  
   
 Note: Lisp examples are s-expressions you pass to emit-c; C/C++ output is a representative snippet (not always full expanded code).  
   
