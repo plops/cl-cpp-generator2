@@ -9,7 +9,7 @@ cl-cpp-generator2 lets you express C/C++ constructs as Common Lisp s-expressions
   
 
 
-## Who is this for? (NEW)  
+## Who is this for?
 - Lisp developers who want to produce C/C++ code programmatically.  
 - Engineers generating host code for GPU kernels (CUDA/OpenCL) and embedded C targets.  
 - People exploring language-design, code-generation, or macro-based code transformation.  
@@ -54,7 +54,7 @@ Load the system in Lisp:
 (ql:quickload "cl-cpp-generator2")  
 ```  
 
-## Quick Start (NEW)  
+## Quick Start
 This minimal example shows how to load the package and emit a small C++ program from s-expressions.  
   
 1. Create a `demo.lisp` file:  
@@ -108,7 +108,7 @@ int main (int argc, char** argv)        {
 - You can embed type information and other C++ nuances in Lisp using `declare` forms inside `defun`, `lambda`, `let`, `dotimes`, `for-range`, etc. The helper `consume-declare` parses this declare info (types, values, capture, construct, and attributes).  
 - The DSL exposes both low-level operations (paren, angle, bracket, curly, cast, aref, dot, ->) and high-level constructs (defun, defmethod, defclass, defstruct0, for-range).  
   
-## Reading the command reference (NEW)  
+## Reading the command reference
 The operator reference below lists Lisp operator names (left column) and shows how typical Lisp forms are translated to C/C++. Each mapping is a shorthand — the DSL is richer and supports many combinations and options.  
   
 How to interpret the operator examples:  
@@ -155,7 +155,7 @@ If you are new: start with the `do0` wrapper to sequence statements; use `includ
 - setf .. Assignments. Example: (setf x 5) => x = 5;    
 - using .. Type alias. Example: (using alias type) => using alias = type;    
 - not / bitwise-not / deref / ref .. Unary operators: ! ~ * &    
-- + - * / ^ & | << >> (and many more arithmetic/bitwise operators)    
+- `+ - * / ^ & | << >>` (and many more arithmetic/bitwise operators)    
 - logior / logand .. logical || and &&    
 - incf / decf .. increments/in-decrements (a++ / a-- or a += n)    
 - string, string-r, string-u8, char, hex .. literal forms    
@@ -249,7 +249,7 @@ Paren* and precedence:
 - When experimenting interactively, prefer `emit-c` first to inspect strings before writing files with `write-source`.  
 - If types are missing (emit functions complaining about unknown types), add `(declare (type ...))` in the surrounding `defun`/`let` forms — the generator uses `consume-declare` to collect types.  
   
-## Contributing & Contact (NEW)  
+## Contributing & Contact
 Contributions are welcome. If you want to:  
 - Report bugs: open an issue on the repository with a minimal reproduction.  
 - Contribute examples or patches: fork, create a branch, and submit a pull request.  
@@ -263,183 +263,207 @@ The main interest lies in experimenting with Cuda, OpenCL, Vulkan, and
 some Microcontrollers that have C compilers, such as Arduino, Altera
 Nios in FPGA, and TI C28x DSP.
 
-## Documentation
-In this domain-specific language, I try to follow Common Lisp
-conventions as much as possible. However, conditional expressions do
-not return a value to keep the C code simpler and more readable. For a
-complete list of supported expressions, refer to the documentation.
+# Reference
 
-| short name                                                          | lisp                                                           | C++                                                      |
-|---------------------------------------------------------------------|----------------------------------------------------------------|----------------------------------------------------------|
-| defun name lambda-list [declaration*] form*                         | (defun foo (a) (declare (type int a) (values int)) (return 2)) | int foo(int a){ return 2;}                               |
-| let ({var \vert (var [init-form])}*) declaration* form*"            | (let (a (b 3) (c 3)) (declare (type int a b)) ...              | int a; int b=3; auto c=3;                                |
-| setf {pair}*                                                        | (setf a 3 b (+ a 3))                                           | a=3; b=a+3;                                              |
-| + {summands}*, /, *,  -                                             | (+ a b c)                                                      | a+b+c                                                    |
-| logior {arg}*                                                       | (logior a b)                                                   | a \vert b                                                |
-| logand {arg}*                                                       | (logand a b)                                                   | a & b                                                    |
-| or {arg}*                                                           | (or a b)                                                       | a \vert \vert b                                          |
-| and {arg}*                                                          | (and a b)                                                      | a && b                                                   |
-| /= a b, *=, <=, !=, ==, ^=                                          | (/= a b)                                                       | a /= b                                                   |
-| <<, >>, <                                                           | (<< a b)                                                       | a << b                                                   |
-| incf a [b=1], decf                                                  | (incf a 2)                                                     | a+=2                                                     |
-| when                                                                | (when a b)                                                     | if(a) { b; }                                             |
-| unless                                                              | (unless a b)                                                   | if(!a) { b; }                                            |
-| if                                                                  | (if a (do0 b) (do0 c))                                         | if(a) { b; } else {c;}                                   |
-| case                                                                | (case a (b (return 3)) (t (return 4)))                         | switch a ..                                              |
-| string                                                              | (string "a")                                                   | "a"                                                      |
-| char                                                                | (char "a")                                                     | 'a'                                                      |
-| aref                                                                | (aref a 2 3)                                                   | `a[2][3]`                                                  |
-| dot                                                                 | (dot b (f 3))                                                  | b.f(3)                                                   |
-| lambda                                                              | (lambda (x) y)                                                 | `[&]() { return 3; }`                                      |
-| defclass  name ({superclass}*) ({slot-specifier}*) [[class-option]] | (defclass Employee (Person) ... TBD                            | class Employee : Person { ...                            |
-| for start end iter                                                  | (for ((= a 0) (< a 12) (incf a)) ...)                          | for (a=0; a<12;a++){ ...                                 |
-| dotimes i n                                                         | (dotimes (i 12) ...)                                           | for (int i=0; i<12; i++) { ...                           |
-| while cond                                                          | (while (== a 1) ...)                                           | while (a==1) { ...                                       |
-| foreach item collection                                             | (foreach (a data) ...)                                         | for (auto& a: data) { ...                                |
-| deftype name lambda-list {form}*                                    | (deftype csf64 () "complex float")                             | typedef complex float csf64                              |
-| defstruct0 name {slot-description}*                                 | (defstruct0 Point (x int) (y int))                             | struct { int x; int y} Point; typedef sruct Point Point; |
-| throw                                                               |                                                                |                                                          |
-| return                                                              |                                                                |                                                          |
-| (uint32_t*) 42                                                      | (cast uint32_t* 42)                                            |                                                          |
-
-In cl-cpp-generator2, several operators can interpret a declare
-statement. These include `for-range`, `dotimes`, `let`, `defun`,
-`defmethod`, and `lambda`. Similar to Common Lisp, this feature can be
-utilized for defining variable types, function parameter types, and
-function return values.
-
-### Variable Types
-
-Variables types can be defined using `let` as demonstrated below:
-
-```lisp
-(let ((outfile))
-  (declare (type "std::ofstream" outfile))
-  ...
-)
-```
-
-### Function Parameter Types
-
-The type of a function parameter can be defined within the function's
-declare statement.
-
-```lisp
-(defun open (dev)
-  (declare (type device& dev))
-  ...
-)
-```
-
-### Function Return Values
-
-Similarly, function return values can be specified using declare:
-
-```lisp
-(defun try_release ()
-  (declare (values int))
-  ...
-)
-```
-
-### List of supported s-expression forms
-
-Here is the list of supported forms:
-
-- comma .. Comma separated list. Example: `(comma 1 2 3)` => `1, 2, 3`
-- semicolon .. Semicolon separated list. Example `(semicolon 1 2 3)` => `1; 2; 3`
-- scope .. Merge a C++ name using scopes. Example: `(scope std vector)` => `std::vector`
-- space .. Merge several objects with space in between. Example: `(space TEST (progn))` => `TEST {}`
-- space-n .. Like `space` but without semicolons. Example: `(space-n "TEST" "XYZ")` => `TEST XYZ`
-- comments .. C++ style comments. Example: `(comments "This is a comment")` => `// This is a comment`
-- lines .. Like comments but without the comment syntax. Example: `(lines "line1" "line2")` => `line1\nline2`
-- doc .. JavaDoc style comments. Example: `(doc "Brief description" "Detailed description")` => `/** Brief description\n * Detailed description\n */`
-- paren* .. Place parentheses only when needed. Example: `(paren* + 5)` => `5`
-- paren .. Parentheses with comma separated values. Example: `(paren 1 2 3)` => `(1, 2, 3)`
-- angle .. Angle brackets with comma separated values. Example: `(angle "typename T" "int N")` => `<typename T, int N>`
-- bracket .. Square brackets with comma separated values. Example: `(bracket 1 2 3)` => `[1, 2, 3]`
-- curly .. Curly braces with comma separated values. Example: `(curly "public:" "void func()")` => `{public: void func()}`
-- designated-initializer .. C designated initializer syntax. Example: `(designated-initializer key1 val1 key2 val2)` => `{.key1 = val1, .key2 = val2}`
-- new .. C++ new operator. Example: `(new int)` => `new int`
-- indent .. Increase indentation. Example: `(indent "code")` => `    code`
-- split-header-and-code .. Split header and code block.
-- do0 .. Execute forms, each in a new line.
-- pragma .. C pragma directive. Example: `(pragma once)` => `#pragma once`
-- include .. C include directive. Example: `(include "myheader.h")` => `#include "myheader.h"`
-- include<> .. C include directive with angle brackets. Example: `(include<> "stdio.h")` => `#include <stdio.h>`
-- progn .. Group a sequence of forms. Example: `(progn (stmt1) (stmt2))` => `{stmt1; stmt2;}`
-- namespace .. C++ namespace definition. Example: `(namespace ns (code))` => `namespace ns {code}`
-- defclass+ .. C++ class definition (force emission of defintion). Example: `(defclass+ name (parent) (code))`
-- defclass .. C++ class definition with only headers (allows to split implementation and declaration). Example: `(defclass name (parent) (code))`
-- protected .. C++ protected section in class. Example: `(protected "void func()")` => `protected: void func();`
-- public .. C++ public section in class. Example: `(public "void func()")` => `public: void func();`
-- defmethod .. C++ class method definition. Example: `(defmethod type "name" (args) (code))`
-- defun .. C++ function definition. Example: `(defun type "name" (args) (code))`
-- return .. C++ return statement. Example: `(return value)` => `return value;`
-- co_return .. C++ coroutine return statement. Example: `(co_return value)` => `co_return value;`
-- co_await .. C++ coroutine await statement. Example: `(co_await expression)` => `co_await expression;`
-- co_yield .. C++ coroutine yield statement. Example: `(co_yield expression)` => `co_yield expression;`
-- throw .. C++ throw statement. Example: `(throw expression)` => `throw expression;`
-- cast .. C++ cast operation. Example: `(cast type value)` => `(type) value`
-- let .. Lisp-like let construct. Example: `(let ((x 5)) (use x))`
-- setf .. Assign values to variables. Example: `(setf x 5)` => `x = 5;`
-- using .. Alias declaration or type alias. Example: `(using alias type)` => `using alias = type;`
-- not .. C++ logical not operation. Example: `(not x)` => `!x`
-- bitwise-not .. C++ bitwise not operation. Example: `(bitwise-not x)` => `~x`
-- deref .. C++ pointer dereference. Example: `(deref ptr)` => `*ptr`
-- ref .. C++ address-of operation. Example: `(ref var)` => `&var`
-- + .. C++ addition operation. Example: `(+ x y)` => `x + y`
-- - .. C++ subtraction operation. Example: `(- x y)` => `x - y`
-- * .. C++ multiplication operation. Example: `(* x y)` => `x * y`
-- ^ .. C++ bitwise XOR operation. Example: `(^ x y)` => `x ^ y`
-- xor .. C++ bitwise XOR operation. Example: `(xor x y)` => `x ^ y`
-- & .. C++ bitwise AND operation. Example: `(& x y)` => `x & y`
-- / .. C++ division operation. Example: `(/ x y)` => `x / y`
-- or .. C++ bitwise OR operation. Example: `(or x y)` => `x | y`
-- and .. C++ bitwise AND operation. Example: `(and x y)` => `x & y`
-- logior .. C++ logical OR operation. Example: `(logior x y)` => `x || y`
-- logand .. C++ logical AND operation. Example: `(logand x y)` => `x && y`
-- = .. C++ assignment operation. Example: `(= x y)` => `x = y`
-- /= .. C++ division assignment operation. Example: `(/= x y)` => `x /= y`
-- *= .. C++ multiplication assignment operation. Example: `(*= x y)` => `x *= y`
-- ^= .. C++ XOR assignment operation. Example: `(^= x y)` => `x ^= y`
-- <=> .. C++ spaceship (three-way comparison) operator. Example: `(<=> x y)` => `x <=> y`
-- <= .. C++ less than or equal to comparison. Example: `(<= x y)` => `x <= y`
-- < .. C++ less than comparison. Example: `(< x y)` => `x < y`
-- != .. C++ not equal to comparison. Example: `(!= x y)` => `x != y`
-- == .. C++ equality comparison. Example: `(== x y)` => `x == y`
-- % .. C++ modulo operation. Example: `(% x y)` => `x % y`
-- << .. C++ left shift operation. Example: `(<< x y)` => `x << y`
-- >> .. C++ right shift operation. Example: `(>> x y)` => `x >> y`
-- incf .. C++ increment operation. Example: `(incf x)` => `x++`
-- decf .. C++ decrement operation. Example: `(decf x)` => `x--`
-- string .. C++ string literal. Example: `(string "hello")` => `"hello"`
-- string-r .. C++ raw string literal. Example: `(string-r "hello")` => `R"(hello)"`
-- string-u8 .. C++ UTF-8 string literal. Example: `(string-u8 "hello")` => `u8"(hello)"`
-- char .. C++ char literal. Example: `(char 'a')` => `'a'`
-- hex .. C++ hexadecimal literal. Example: `(hex 255)` => `0xff`
-- ? .. C++ ternary conditional operator. Example: `( ? x y z)` => `x ? y : z`
-- if .. C++ if statement. Example: `(if condition true-branch false-branch)`
-- when .. C++ if statement without else branch. Example: `(when condition body)`
-- unless .. C++ if not statement. Example: `(unless condition body)`
-- cond .. C++ switch-case structure. Example: `(cond (cond1 body1) (cond2 body2) (t default))`
-- dot .. C++ member access operator. Example: `(dot object member)` => `object.member`
-- aref .. C++ array access operator. Example: `(aref array index)` => `array[index]`
-- -> .. C++ pointer member access operator. Example: `(-> object member)` => `object->member`
-- lambda .. C++ lambda expression. Example: `(lambda (args) (body))`
-- case .. C++ switch-case statement. Example: `(case key (case1 body1) (case2 body2))`
-- for .. C++ for loop. Example: `(for (init cond iter) body)`
-- for-range .. C++ range-based for loop. Example: `(for-range (var range) body)`
-- dotimes .. C++ for loop with fixed iterations. Example: `(dotimes (i n step) body)`
-- foreach .. C++ range-based for loop. Example: `(foreach (item collection) body)`
-- while .. C++ while loop. Example: `(while condition body)`
-- deftype .. C++ typedef statement. Example: `(deftype name (type))`
-- struct .. C++ struct keyword. Example: `(struct name)`
-- defstruct0 .. C++ struct definition without initialization. Example: `(defstruct0 name slots)`
-- handler-case .. C++ try-catch block. Example: `(handler-case body (exception-type handler) ...)`
-
-Some entries like `defun*`, `defun+`, and certain variants of
-expressions were omitted. The are variations to separate implementation from declaration.
+Below is a tidy, categorized Markdown operator reference table for cl-cpp-generator2. Each row shows the DSL operator, a short purpose statement, a compact Lisp s-expression example, and the typical emitted C/C++ output. Use this as a quick lookup; many operators accept variants or additional declare options — see c.lisp for full details.  
+  
+Note: Lisp examples are s-expressions you pass to emit-c; C/C++ output is a representative snippet (not always full expanded code).  
+  
+---  
+  
+## How to read the table  
+- Operator: cl-cpp-generator2 DSL operator name.  
+- Purpose: short explanation.  
+- Lisp example: canonical s-expression usage.  
+- C/C++ output: the typical or representative emitted code.  
+  
+---  
+  
+### Basic separators & joining  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---|---|  
+| `comma` | Join values with commas | `(comma 1 2 3)` | `1, 2, 3` |  
+| `semicolon` | Join values with semicolons | `(semicolon a b c)` | `a; b; c` |  
+| `scope` | Join with C++ scope `::` | `(scope std vector)` | `std::vector` |  
+| `space` | Join tokens with spaces (and keep semicolons when used in statements) | `(space TEST (progn))` | `TEST {}` |  
+| `space-n` | Join tokens with spaces (no semicolon handling) | `(space-n "T" "U")` | `T U` |  
+  
+---  
+  
+### Brackets / grouping  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---:|---|  
+| `paren` | Parentheses with comma-separated items | `(paren 1 2 3)` | `(1, 2, 3)` |  
+| `paren*` | Precedence-aware parentheses (add only if needed) | `(paren* + ( * 1 2 ))` | `1 * 2` (or parenthesized if needed) |  
+| `angle` | Angle brackets, comma-separated | `(angle "typename T" "int N")` | `<typename T, int N>` |  
+| `bracket` | Square brackets | `(bracket i j)` | `[i, j]` |  
+| `curly` | Curly braces | `(curly "public:" "void f()")` | `{ public: void f(); }` |  
+| `designated-initializer` | C designated initializer | `(designated-initializer Width w Height h)` | `{ .Width = w, .Height = h }` |  
+  
+---  
+  
+### Strings, chars, numbers  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---|---|  
+| `string` | Quoted C++ string literal | `(string "hello")` | `"hello"` |  
+| `string-r` | Raw string literal | `(string-r "x\n)")` | `R"(x\n))"` |  
+| `string-u8` | UTF-8 string literal | `(string-u8 "hi")` | `u8"hi"` |  
+| `char` | Character literal | `(char "a")` | `'a'` |  
+| `hex` | Hex literal | `(hex 255)` | `0xff` |  
+  
+---  
+  
+### Comments, docs, preprocessor, includes  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---|---|  
+| `comments` | C++ `//` comments | `(comments "note")` | `// note` |  
+| `lines` | Plain lines (no `//`) | `(lines "line1" "line2")` | `line1` <br> `line2` |  
+| `doc` | JavaDoc/Doxygen block comment | `(doc "Brief" "Detail")` | `/** Brief\n * Detail\n */` |  
+| `pragma` | Preprocessor pragma | `(pragma once)` | `#pragma once` |  
+| `include` | `#include "file"` | `(include "my.h")` | `#include "my.h"` |  
+| `include<>` | `#include <file>` | `(include<> "stdio.h")` | `#include <stdio.h>` |  
+  
+---  
+  
+### Statements, blocks & indentation  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---|---|  
+| `do0` | Sequence of statements (each on its own line, semicolons handled) | `(do0 (setf x 1) (setf y 2))` | `x = 1;` <br> `y = 2;` |  
+| `progn` | Block grouped with braces | `(progn (stmt1) (stmt2))` | `{ stmt1; stmt2; }` |  
+| `do` | Like `do0` but used for inner grouped forms | `(do (stmt1) (stmt2))` | `stmt1` on separate lines (no extra braces) |  
+| `indent` | Increase indentation for nested pieces | `(indent (do0 (stmt)))` | `    stmt` |  
+  
+---  
+  
+### Includes, namespace & header split  
+| Operator | Purpose | Lisp example | C/C++ output / note |  
+|---|---|---|---|  
+| `namespace` | Emit C++ namespace block | `(namespace myns (do0 ...))` | `namespace myns { ... }` |  
+| `split-header-and-code` | Emit header form and implementation separately (hookable) | `(split-header-and-code header code)` | (Caller-supplied hook may write header and code into different files) |  
+  
+---  
+  
+### Types, typedefs, structs, classes  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---|---|  
+| `deftype` | Typedef | `(deftype csf64 () "complex float")` | `typedef complex float csf64;` |  
+| `struct` | Bare struct name | `(struct Point)` | `struct Point` |  
+| `defstruct0` | Define a struct with slots | `(defstruct0 Point (x int) (y int))` | `struct Point { int x; int y; };` |  
+| `defclass` | Class declaration (header-only option available) | `(defclass (My<T>) (Base) (public: (defmethod foo (a) ...)))` | `template<...> class My : Base { public: int foo(int a); };` |  
+| `defclass+` | Class with full method implementations inline | `(defclass+ My (Base) (public: (defmethod foo (a) (return a))))` | `class My : Base { public: int foo(int a) { return a; } };` |  
+| `public` / `protected` | Class visibility sections | `(public "void f()")` | `public: void f();` |  
+  
+---  
+  
+### Functions & methods  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---|---|  
+| `defun` | Define a free function | `(defun foo (a) (declare (type int a) (values int)) (return (+ a 2)))` | `int foo(int a) { return a + 2; }` |  
+| `defun*` | Alternate variant (e.g. declaration-only shorthand) | `(defun* foo (a) (declare (type int a) (values int)))` | e.g., header-only declaration `int foo(int a);` |  
+| `defun+` | Alternate variant (force emit implementation) | `(defun+ foo (a) ...)` | force implementation inlined in header/class |  
+| `defmethod` | Class method (emit as member or out-of-class definition) | inside class: `(defmethod foo (a) (declare (type int a) (values int)) (return a))` | `int Class::foo(int a) { return a; }` |  
+| `return` | Return statement | `(return 0)` | `return 0;` |  
+| `co_return` / `co_await` / `co_yield` | Coroutine statements | `(co_return val)` | `co_return val;` |  
+| `throw` | Throw exception | `(throw "e")` | `throw "e";` |  
+| `cast` | C-style cast | `(cast int x)` | `(int) x` |  
+  
+Notes: use `(declare (values ...))` in function bodies to specify return types; `(declare (type ...))` for parameter types.  
+  
+---  
+  
+### `let`, `setf`, `using` — variable & alias declarations  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---|---|  
+| `let` | Declare variables, with optional initializers (uses `declare` types or `auto`) | `(let ((a 5) (b (std--vector<int> (curly 1 2)))) (use a b))` | `auto a = 5; auto b{std::vector<int>{1, 2}}; use(a, b);` |  
+| `letc` / `letd` | `letc` => write `const` prefix; `letd` => use `decltype` for declarations | `(letc ((x 5)))` | `const auto x{5};` |  
+| `setf` | Assignment(s) | `(setf a 3 b (+ a 3))` | `a = 3; b = a + 3;` |  
+| `using` | Type alias / `using` declaration | `(using Vec std::vector<int>)` | `using Vec = std::vector<int>;` |  
+  
+---  
+  
+### Control flow: conditional & multi-branch  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---|---|  
+| `if` | `if` with optional `else` | `(if cond (do0 then) (do0 else))` | `if (cond) { then } else { else }` |  
+| `if-constexpr` | `if constexpr` (C++20) | `(if-constexpr cond (do0 a) (do0 b))` | `if constexpr (cond) { a } else { b }` |  
+| `when` | `if (cond) { body; }` | `(when cond (do0 body))` | `if (cond) { body; }` |  
+| `unless` | `if (!cond) { body; }` | `(unless cond (do0 body))` | `if (!cond) { body; }` |  
+| `cond` | Multi-branch conditional (emits `if/else if` chains) | `(cond (c1 e1) (c2 e2) (t default))` | `if (c1) { e1 } else if (c2) { e2 } else { default }` |  
+| `case` | Switch-case | `(case x (1 (do0 ...)) (t (do0 ...)))` | `switch (x) { case 1: ...; default: ... }` |  
+| `handler-case` | `try`/`catch` mapping | `(handler-case (progn body) (int (e) (do0 ...)) (t () (do0 ...)))` | `try { body } catch (int e) { ... } catch (...) { ... }` |  
+  
+---  
+  
+### Loops & iteration  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---|---|  
+| `for` | Classic C for loop | `(for ((= i 0) (< i n) (incf i)) (do0 ...))` | `for (i = 0; i < n; i += 1) { ... }` |  
+| `for-range` | Range-based for | `(for-range ((x vec) (do0 ...)))` | `for (auto&& x : vec) { ... }` |  
+| `dotimes` | Fixed iteration count | `(dotimes (i n) (do0 ...))` | `for (int i = 0; i < n; ++i) { ... }` |  
+| `foreach` | C++ range-for alias | `(foreach (a vec) (do0 ...))` | `for (auto& a : vec) { ... }` |  
+| `while` | While loop | `(while cond (do0 ...))` | `while (cond) { ... }` |  
+  
+---  
+  
+### Member access & arrays  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---|---|  
+| `dot` | Member/accessor call or chained member access | `(dot obj member)` or `(dot obj (f 3))` | `obj.member` or `obj.f(3)` |  
+| `->` | Pointer member access | `(-> obj member)` | `obj->member` |  
+| `aref` | Array indexing (multi-dimensional possible) | `(aref arr 2 3)` | `arr[2][3]` |  
+  
+---  
+  
+### Lambdas & captures  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---|---|  
+| `lambda` | C++ lambda with capture list (declare capture) | `(lambda (x) (declare (capture y) (type int x) (values int)) (return (+ x y)))` | `[&y](int x) -> int { return x + y; }` (capture & signature derived from declares) |  
+  
+---  
+  
+### Binary/unary operators (arithmetic / bitwise / logical / assignment)  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---|---|  
+| `+` | Addition (multiple arguments) | `(+ a b c)` | `a + b + c` |  
+| `-` | Subtraction or unary negation | `(- a b)` / `(- a)` | `a - b` / `-a` |  
+| `*` | Multiplication | `(* a b)` | `a * b` |  
+| `/` | Division | `(/ a b)` | `a / b` |  
+| `%` | Modulo | `(% a b)` | `a % b` |  
+| `<<` / `>>` | Shift left/right | `(<< a b)` | `a << b` |  
+| `&` | Bitwise AND | `(& a b)` | `a & b` |  
+| `|` / `or` | Bitwise OR (`or` is the DSL operator) | `(or a b)` | `a | b` |  
+| `^` / `xor` | Bitwise XOR | `(^ a b)` or `(xor a b)` | `a ^ b` |  
+| `logior` | Logical OR (||) | `(logior a b)` | `a || b` |  
+| `logand` | Logical AND (&&) | `(logand a b)` | `a && b` |  
+| `==` | Equality | `(== a b)` | `a == b` |  
+| `!=` | Inequality | `(!= a b)` | `a != b` |  
+| `<` / `<=` | Comparison (also supports three-arg chaining) | `(< a b)` / `(<= a b c)` | `a < b` / `a <= b && b <= c` |  
+| `<=>` | Three-way comparison (C++20) | `(<=> a b)` | `a <=> b` |  
+| `=` | Assignment expression (used inside expressions e.g., `(= x y)`) | `(= a 3)` or in do0 `((= a 3) ...)` | `a = 3` |  
+| `/=` `*=` `^=` `<<=` `>>=` `&=` `|=` | Compound assignments | `(/= a b)` | `a /= b` |  
+| `incf` / `decf` | Increment / decrement or add/subtract n | `(incf a)` / `(incf a 2)` | `a++` / `a += 2` |  
+| `setf` | Multiple assignments (see above) | `(setf x 1 y 2)` | `x = 1; y = 2;` |  
+  
+---  
+  
+### Unary / pointer operators  
+| Operator | Purpose | Lisp example | C/C++ output |  
+|---|---|---|---|  
+| `not` | Logical not | `(not x)` | `!x` |  
+| `bitwise-not` | Bitwise not | `(bitwise-not x)` | `~x` |  
+| `deref` | Pointer dereference | `(deref p)` | `*p` |  
+| `ref` | Address-of | `(ref x)` | `&x` |  
+| `new` | C++ new operator | `(new int)` | `new int` |  
+  
+---  
+  
+### Misc / advanced / helpers  
+| Operator | Purpose | Lisp example | C/C++ output / note |  
+|---|---|---|---|  
+| `split-header-and-code` | Emit header and code separately via hook | `(split-header-and-code header code)` | Hooked emission of header and implementation files |  
+| `using` | C++ using alias (see above) | `(using V std::vector<int>)` | `using V = std::vector<int>;` |  
+| `handler-case` | Exception handling mapping | `(handler-case expr (Type (e) body) (t () default))` | `try { expr } catch(Type e) { ... } catch(...) { ... }` |  
+  
 
 
 ### C/C++ Specifics
