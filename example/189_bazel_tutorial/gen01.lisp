@@ -131,14 +131,12 @@
    "bazel_tutorial/cc/main.cpp"
    `(do0
      (include<> iostream)
-     (include cc/my_lib/my_lib.hpp)
+     (include cc/my_lib/MyClass.h)
      (defun main ()
+       (declare (values int))
        (let ((obj (MyClass)))
 	 (obj.setValue 5)
-	 ,@(loop for i from 1 upto 3
-		 collect
-		 `(let ((,(format nil "a~a" i)
-			  (space std--array (angle float ,i))))))
+	 
 	 (<< std--cout
 	     (string "Value: ")
 	     (obj.getValue)
