@@ -142,5 +142,6 @@
 	     (obj.getValue)
 	     std--endl))
        (return 0)))
+   :omit-parens t
    :dir *full-source-dir*)
   #+nil (write-class ))
