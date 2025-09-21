@@ -97,8 +97,8 @@
 	          (loop for e in members
 			appending
 			(destructuring-bind (&key name type param doc initform param-name member-name) e
-			  (let ((get (cl-change-case:pascal-case (format nil "get-~a" name)))
-				(set (cl-change-case:pascal-case (format nil "set-~a" name)))
+			  (let ((get (cl-change-case:camel-case (format nil "get-~a" name)))
+				(set (cl-change-case:camel-case (format nil "set-~a" name)))
 				(const-p (let* ((s  (format nil "~a" type))
 						(last-char (aref s (- (length s)
 								      1))))

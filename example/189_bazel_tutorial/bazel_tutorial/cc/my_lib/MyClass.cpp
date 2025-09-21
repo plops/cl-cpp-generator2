@@ -3,5 +3,5 @@
 #include "MyClass.h"
 MyClass::MyClass() {}
 MyClass::~MyClass() {}
-const int &MyClass::GetValue() { return value; }
-void MyClass::SetValue(int value) { this->value = value; }
+const int &MyClass::getValue() { return value; }
+void MyClass::setValue(int value) { this->value = value; }

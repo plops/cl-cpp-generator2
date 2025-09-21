@@ -7,8 +7,8 @@ class MyClass  {
          MyClass ()       ;   
          ~MyClass ()       ;   
         
-        const int& GetValue ()       ;   
-        void SetValue (int value)       ;   
+        const int& getValue ()       ;   
+        void setValue (int value)       ;   
         private:
         int value {0};
 };
