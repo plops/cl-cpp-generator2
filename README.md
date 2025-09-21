@@ -25,12 +25,6 @@ cl-cpp-generator2 lets you express C/C++ constructs as Common Lisp s-expressions
 - quicklisp installed (recommended location: ~/quicklisp)
 - SBCL (Steel Bank Common Lisp) — the project is developed and tested primarily with SBCL.
 - Optional: clang-format and clang-tidy for automatic formatting/fixes when using write-source (write-source calls them via sb-ext:run-program — SBCL only).
-- cl-unicode required (installable via quicklisp).
-
-Install cl-unicode:
-```bash  
-sbcl --eval "(ql:quickload :cl-unicode)" --quit  
-```  
 
 Notes:
 - Some helper code uses SBCL-specific facilities (sb-ext:run-program). You can disable formatting/tidy in write-source if you use another Lisp.
@@ -487,7 +481,7 @@ This section clarifies some of the design choices and trade-offs made in `cl-cpp
 
 ### C++ Naming in Lisp
 
-*   **Inverted Readtable:** To allow writing C++ identifiers (like `myVariable` or `MyClass`) directly as Common Lisp symbols, the readtable case is set to `:invert`. This is highly convenient but can have unforeseen side effects in complex Lisp environments.
+*   **Inverted Readtable:** To allow writing C++ identifiers (like `myVariable` or `MyClass`) directly as Common Lisp symbols, the readtable case is set to `:invert`. This is highly convenient but can have unforeseen side effects in complex Lisp environments. E.g. if you `(ql:quickload "cl-change-case")` when performed before `(ql:quickload "cl-cpp-generator2)` but fails due to an error during loading of the cl-unicode package.
 *   **Handling Scoped Names (`::`):** The Common Lisp reader is confused by the colons in C++ scoped names like `std::cout`. To work around this, `cl-cpp-generator2` replaces all double-minus sequences (`--`) in symbols with `::` during code emission. This allows you to write `std--cout` in Lisp to generate `std::cout` in C++.
 *   **Templates as Strings:** While you *can* write complex template types as s-expressions, e.g., `(space std--array (angle float 4))`, it is often more convenient and readable to provide them as a simple string: `"std::array<float,4>"`. The s-expression form is primarily useful when you need to programmatically generate types using Lisp macros, as shown in this example that creates several arrays of different sizes:
 
