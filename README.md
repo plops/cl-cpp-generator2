@@ -515,7 +515,7 @@ The examples often show a `utils.lisp` file with a `write-class` helper that can
 
 ### Focus on Modern C++
 
-The codebase used to contain a `*feature*` flag called `:generic-c` to handle differences between C and C++ standards (e.g., `___auto_type` in C vs. `auto` in C++). This feature has been deprecated to reduce complexity and focus the project on modern C++ (specifically C++17 and C++20). Similarly, special handling for corner cases in other C-like languages, such as the OpenGL Shading Language (GLSL), which has limitations on brace initialization and `auto`, is no longer a primary focus.
+The codebase used to contain a `*feature*` flag called `:generic-c` to handle differences between C and C++ standards (e.g., `__auto_type` in C vs. `auto` in C++). This feature has been deprecated to reduce complexity and focus the project on modern C++ (specifically C++17 and C++20). Similarly, special handling for corner cases in other C-like languages, such as the OpenGL Shading Language (GLSL), which has limitations on brace initialization and `auto`, is no longer a primary focus.
 
 
 
