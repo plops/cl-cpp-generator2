@@ -1,99 +1,79 @@
+(defpackage :cl-cpp-generator2  
+  (:use :cl :alexandria)  
+  (:export  
+    ;; Core API  
+    :write-source :emit-c :write-notebook  
+  
+    ;; --- punctuation / layout ---  
+    :comma :semicolon :space :space-n :indent :comments :lines :doc  
+  
+    ;; --- grouping / bracketing / calls ---  
+    :paren :paren* :angle :bracket :curly :designated-initializer :scope :split-header-and-code  
+  
+    ;; --- call / member access / call variants ---  
+    :dot :->  
+  
+    ;; --- structural / composite forms ---  
+    :do :do0 :progn :namespace  
+  
+    ;; --- preprocessor / include / file helpers ---  
+    :pragma :include :include<>  
+  
+    ;; --- declarations / type & cast helpers ---  
+    :cast :new :deftype :typedef  ; (typedef kept for convenience if you use it)  
+    :let :letc :letd :setf :using  
+  
+    ;; --- definitions: functions / methods / lambdas ---  
+    :lambda  
+    :defun :defun* :defun+  
+    :defmethod  
+    :return :co_return :co_await :co_yield :throw  
+  
+    ;; --- classes / structs / access specifiers ---  
+    :defclass :defclass+ :protected :public :struct :defstruct0  
+  
+    ;; --- control flow / selection ---  
+    :if :if-constexpr :when :unless :cond :case  
+  
+    ;; --- looping / iteration ---  
+    :for :for-range :foreach :dotimes :while  
+  
+    ;; --- array / container access / slicing ---  
+    :aref :slice  
+  
+    ;; --- unary / reference helpers ---  
+    :not :bitwise-not :deref :ref  
+  
+    ;; --- arithmetic / numeric ---  
+    :+ :- :* :/ :% :<< :>> :^ :xor  
+  
+    ;; --- bitwise / boolean operators ---  
+    :& :logand :logior ; :logxor if you add it later  
+  
+    ;; --- boolean combinators (logical / short-circuit) ---  
+    :and :or  
+  
+    ;; --- comparison / relational ---  
+    :< :<= :> :>= :== :!=  
+  
+    ;; --- assignment / compound assignment / update ---  
+    ;:= ; note: use setf for assignment (except maybe in for loops)
+    
+    :incf :decf  
+    :*= :/= :^= :/= ; (compound ops present in emit-c: *=, /=, ^=)  
+    
+  
+    ;; --- shifts / modulus ---  
+    :<< :>>  
+  
+    ;; --- strings / chars / literals ---  
+    :string :string-r :string-u8 :char :hex :?  
+  
+    ;; --- misc / error handling ---  
+    :handler-case :throw  
+  
+    ;; --- debugging / internal helpers (optional) ---  
+    :scope :lines :doc  
+  ))  
 
-(defpackage :cl-cpp-generator2
-  (:use :cl
-	:alexandria)
-  (:export
-   ;; Core functions
-   #:write-source
-   #:emit-c
 
-   ;; DSL Keywords from *operators*
-   #:&
-   #:!=
-   #:%
-   #:+
-   #:-
-   #:*
-   #:/
-   #:/=
-   #:<
-   #:<<
-   #:<=
-   #:=
-   #:==
-   #:>
-   #:>>
-   #:?
-   #:^
-   #:^=
-   #:angle
-   #:and
-   #:aref
-   #:bitwise-not
-   #:bracket
-   #:case
-   #:cast
-   #:char
-   #:co_await
-   #:co_return
-   #:co_yield
-   #:comma
-   #:comments
-   #:curly
-   #:decf
-   #:defclass
-   #:defclass+
-   #:defmethod
-   #:defstruct0
-   #:deftype
-   #:defun
-   #:defun+
-   #:defun*
-   #:deref
-   #:designated-initializer
-   #:do
-   #:do0
-   #:dot
-   #:dotimes
-   #:for
-   #:for-range
-   #:foreach
-   #:handler-case
-   #:hex
-   #:if
-   #:if-constexpr
-   #:include
-   #:include<>
-   #:incf
-   #:indent
-   #:lambda
-   #:let
-   #:logand
-   #:logior
-   #:namespace
-   #:new
-   #:not
-   #:or
-   #:paren
-   #:paren*
-   #:pragma
-   #:progn
-   #:protected
-   #:public
-   #:ref
-   #:return
-   #:semicolon
-   #:setf
-   #:space
-   #:space-n
-   #:split-header-and-code
-   #:string
-   #:string-r
-   #:string-u8
-   #:struct
-   #:throw
-   #:unless
-   #:when
-   #:while
-   #:xor
-   #:->))

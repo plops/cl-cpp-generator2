@@ -1,0 +1,20 @@
+for i in README.md package.lisp cl-cpp-generator2.asd c.lisp example/162_glfwpp_grating/gen02.lisp example/162_glfwpp_grating/source02/src/main.cpp ; do echo "// start of "$i;cat $i;done|xclip
+
+
+Act as an experienced technical writer and documentation specialist. I need you to review the README file for my project, which is provided below.
+
+The current README contains detailed command references but is missing the introductory and explanatory 'glue' text that ties everything together and makes it easy for a new user to understand the project.
+
+Your task is to:
+
+1.  **Analyze the provided README content** to understand the project's purpose and functionality based on the available commands.
+2.  **Identify the missing sections.** This could include, but is not limited to:
+    *   A compelling project title and a concise, one-sentence tagline.
+    *   A brief, high-level overview of what the project is, what problem it solves, and who it's for.
+    *   A "Getting Started" or "Quick Start" guide that walks a user through the initial setup and a simple, common use case.
+    *   Introductory text for the command reference section that explains how to interpret the commands.
+    *   Any other transitional text needed to make the document flow logically.
+3.  **Propose new text for these missing sections.** The tone of the proposed text should be clear, concise, and welcoming to new users.
+4.  **Present the output as a complete, revised README file.** Use Markdown for formatting. Please clearly indicate the new sections you have added.
+
+Please review the provided information and generate a more complete and user-friendly README.
