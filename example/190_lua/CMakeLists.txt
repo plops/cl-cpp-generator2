@@ -11,6 +11,14 @@ project(NiosLuaEmbedded C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 99)
 
+# Add options for ublasan (undefined, leak and asan enabled)
+option(ENABLE_UBLASAN "Enable undefined leak and address sanitizers" ON)
+if(ENABLE_UBLASAN)
+    # enable 3 sanitizers
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=undefined -fsanitize=leak -fsanitize=address")
+    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=undefined -fsanitize=leak -fsanitize=address")
+endif()
+
 # Pfad zu den Lua-Quellen basierend auf deiner Struktur
 set(LUA_SRC_DIR "src/lua-5.4.8/src")
 

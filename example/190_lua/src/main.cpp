@@ -1,4 +1,5 @@
 #include <array>
+#include <cstdint>
 #include <cstdio>
 #include <vector>
 // check luaconf.h, LUA_32BITS LUA_NUMBER=float LUA_INT_TYPE=long LUA_IDSIZE

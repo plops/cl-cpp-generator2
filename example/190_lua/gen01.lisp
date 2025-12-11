@@ -21,7 +21,7 @@
    (write-source
    "src/main.cpp"
    `(do0
-     (include<> cstdio vector array)
+     (include<> cstdio vector array cstdint)
      (comments "check luaconf.h, LUA_32BITS LUA_NUMBER=float LUA_INT_TYPE=long LUA_IDSIZE reduce debug info to save memory")
      (space extern "\"C\"" (progn
 			     (include lua.h lualib.h lauxlib.h)))
