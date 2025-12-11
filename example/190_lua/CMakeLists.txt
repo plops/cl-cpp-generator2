@@ -10,12 +10,38 @@ project(NiosLuaEmbedded C CXX)
 # Standards setzen. C++17 ist okay, solange der Nios-GCC nicht von 2010 ist.
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 99)
+function(target_set_warnings target_name)
+    set(CLANG_WARNINGS
+        -Wall -Wextra -Wpedantic
+        -Wshadow -Wnon-virtual-dtor -Wcast-align
+        -Wunused -Woverloaded-virtual -Wconversion
+        -Wsign-conversion -Wdouble-promotion
+        -Wformat=2 -Wimplicit-fallthrough
+    )
 
+    set(GCC_WARNINGS
+        ${CLANG_WARNINGS}
+        -Wmisleading-indentation -Wduplicated-cond
+        -Wduplicated-branches -Wlogical-op
+        -Wuseless-cast
+    )
+
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_compile_options(${target_name} PRIVATE ${CLANG_WARNINGS})
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        target_compile_options(${target_name} PRIVATE ${GCC_WARNINGS})
+    endif()
+
+    if(WARNINGS_AS_ERRORS)
+        target_compile_options(${target_name} PRIVATE -Werror)
+    endif()
+endfunction()
 # Add options for ublasan (undefined, leak and asan enabled)
 option(ENABLE_UBLASAN "Enable undefined leak and address sanitizers" ON)
 # Option to enable march=native
 option(ENABLE_MARCH_NATIVE "Enable march=native for optimization" ON)
-
+option(DISABLE_RTTI "Disable RTTI for smaller binary" ON)
+option(DISABLE_EXCEPTIONS "Disable C++ Exceptions" ON)
 
 # Enable link time optimization (interprocedural optimization)
 set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
@@ -32,7 +58,14 @@ if(ENABLE_MARCH_NATIVE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
 endif()
+# Flags für Resource-Constrained Env (Global oder Target-Specific)
+if(DISABLE_RTTI)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+endif()
 
+if(DISABLE_EXCEPTIONS)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions> $<$<COMPILE_LANGUAGE:CXX>:-fno-unwind-tables>)
+endif()
 # Pfad zu den Lua-Quellen basierend auf deiner Struktur
 set(LUA_SRC_DIR "src/lua-5.4.8/src")
 
@@ -76,6 +109,7 @@ include_directories("${LUA_SRC_DIR}")
 # ---------------------------------------------------------------------------
 
 add_executable(main_firmware src/main.cpp ${LUA_SOURCES})
+target_set_warnings(main_firmware)
 
 # Linken
 #target_link_libraries(main_firmware PRIVATE lua_lib)
