@@ -122,7 +122,7 @@
 /*
 @@ LUA_32BITS enables Lua with 32-bit integers and 32-bit floats.
 */
-#define LUA_32BITS	0
+#define LUA_32BITS	1
 
 
 /*
@@ -765,7 +765,7 @@
 ** of a function in debug information.
 ** CHANGE it if you want a different size.
 */
-#define LUA_IDSIZE	60
+#define LUA_IDSIZE	13 //60
 
 
 /*
