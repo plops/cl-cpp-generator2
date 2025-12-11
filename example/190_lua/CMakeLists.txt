@@ -15,10 +15,7 @@ set(CMAKE_C_STANDARD 99)
 option(ENABLE_UBLASAN "Enable undefined leak and address sanitizers" ON)
 # Option to enable march=native
 option(ENABLE_MARCH_NATIVE "Enable march=native for optimization" ON)
-if(ENABLE_MARCH_NATIVE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
-endif()
+
 
 # Enable link time optimization (interprocedural optimization)
 set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
@@ -29,6 +26,11 @@ if(ENABLE_UBLASAN)
     # enable 3 sanitizers
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=undefined -fsanitize=leak -fsanitize=address")
     set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=undefined -fsanitize=leak -fsanitize=address")
+endif()
+
+if(ENABLE_MARCH_NATIVE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
 endif()
 
 # Pfad zu den Lua-Quellen basierend auf deiner Struktur
