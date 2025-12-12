@@ -1,3 +1,4 @@
+#define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
 #include <algorithm>
@@ -71,8 +72,8 @@ struct Image {
         float factor = 1.0f;
         switch (mode) {
             case BlendMode::Normal:   factor = 1.0f; break;
-            case BlendMode::Add:      factor = 1.2f; break;   // just brighten a bit
-            case BlendMode::Multiply: factor = 0.8f; break;   // just darken a bit
+            case BlendMode::Add:      factor = 1.2f; break;
+            case BlendMode::Multiply: factor = 0.8f; break;
         }
 
         for (const auto& p : pixels) {
@@ -86,12 +87,11 @@ struct Image {
     }
 };
 
-// Simple C++20 UTF-8 caption holder.
+// Simple UTF-8 app caption holder
 struct App {
     std::u8string caption_ = u8"Lua Image Demo — こんにちは";
 
     [[nodiscard]] std::string caption() const {
-        // Narrow copy; assumes caption_ is valid UTF-8 (Lua strings are UTF-8)
         return std::string{caption_.begin(), caption_.end()};
     }
 
@@ -103,7 +103,7 @@ struct App {
     }
 };
 
-// Convenience type to show exposing std::vector
+// Demonstrate exposing std::vector<int>
 using IntVector = std::vector<int>;
 
 int main() {
@@ -113,14 +113,14 @@ int main() {
                        sol::lib::string,
                        sol::lib::table);
 
-    // Expose enum
+    // --- Enum (sol3 style) ------------------------------------
     lua.new_enum("BlendMode",
         "Normal",   BlendMode::Normal,
         "Add",      BlendMode::Add,
         "Multiply", BlendMode::Multiply
     );
 
-    // Expose Colour
+    // --- Colour usertype --------------------------------------
     lua.new_usertype<Colour>("Colour",
         sol::constructors<Colour(), Colour(float, float, float)>(),
         "r", &Colour::r,
@@ -128,50 +128,55 @@ int main() {
         "b", &Colour::b
     );
 
-    // Expose Image
+    // --- Image usertype ---------------------------------------
     lua.new_usertype<Image>("Image",
         sol::constructors<Image(int, int)>(),
-        "width",       &Image::width,
-        "height",      &Image::height,
-        "clear",       &Image::clear,
-        "set_pixel",   &Image::set_pixel,
-        "get_pixel",   &Image::get_pixel,
-        "save",        &Image::save_ppm
+        "width",     &Image::width,
+        "height",    &Image::height,
+        "clear",     &Image::clear,
+        "set_pixel", &Image::set_pixel,
+        "get_pixel", &Image::get_pixel,
+        // wrap save_ppm so Lua can pass a string; sol3 docs style
+        "save", [](const Image& self, const std::string& filename, BlendMode mode) {
+            self.save_ppm(std::filesystem::path(filename), mode);
+        }
     );
 
-    // Expose std::vector<int> as a "class" in Lua
+    // --- std::vector<int> exposure ----------------------------
     lua.new_usertype<IntVector>("IntVector",
-        sol::constructors<>() /* default is fine, but we construct from C++ */,
+        sol::constructors<>(),
         "size", [](const IntVector& self) { return self.size(); },
         "get",  [](const IntVector& self, std::size_t i) { return self.at(i); },
         "set",  [](IntVector& self, std::size_t i, int v) { self.at(i) = v; }
     );
 
     lua.set_function("make_vector", []() {
-        // Just a Fibonacci-ish example
+        // Fibonacci-like example
         return IntVector{1, 1, 2, 3, 5, 8, 13};
     });
 
-    // Expose App for UTF-8 strings
+    // --- UTF-8 App binding ------------------------------------
     App app;
 
+    // pointer / reference semantics as in the docs' Doge example
     lua["app"] = &app;
 
     lua.set_function("get_caption", [&app]() {
-        return app.caption();          // std::string (UTF-8)
+        return app.caption();
     });
 
     lua.set_function("set_caption", [&app](std::string_view s) {
-        app.set_caption(s);            // stored as std::u8string
+        app.set_caption(s);
     });
 
     try {
-        // Run Lua script
         lua.script_file("scripts/demo.lua");
-    } catch (const sol::error& e) {
+    }
+    catch (const sol::error& e) {
         std::cerr << "Lua error: " << e.what() << '\n';
         return 1;
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e) {
         std::cerr << "C++ error: " << e.what() << '\n';
         return 1;
     }
@@ -179,5 +184,3 @@ int main() {
     std::cout << "Final caption from C++: " << app.caption() << '\n';
     return 0;
 }
-
-
