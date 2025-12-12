@@ -70,9 +70,15 @@ add_executable(cpp_lua_image_demo
 )
 target_set_warnings(cpp_lua_image_demo)
 
-target_include_directories(cpp_lua_image_demo PRIVATE
-    external/sol2/include
-    ${LUA_INCLUDE_DIR}
+#Using SYSTEM is the standard way to say “this third-party header is trusted; don’t spam warnings”.
+target_include_directories(cpp_lua_image_demo
+        SYSTEM PRIVATE
+        external/sol2/include
+)
+
+target_include_directories(cpp_lua_image_demo
+        PRIVATE
+        ${LUA_INCLUDE_DIR}
 )
 
 target_link_libraries(cpp_lua_image_demo PRIVATE
