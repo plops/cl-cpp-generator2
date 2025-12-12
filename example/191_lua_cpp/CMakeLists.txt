@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(CppLuaImageDemo LANGUAGES CXX)
+project(CppLuaImageDemo LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -66,7 +66,8 @@ endif()
 find_package(Lua REQUIRED)
 
 add_executable(cpp_lua_image_demo
-    src/main.cpp
+        external/linenoise/linenoise.c
+        src/main.cpp
 )
 target_set_warnings(cpp_lua_image_demo)
 
@@ -74,6 +75,7 @@ target_set_warnings(cpp_lua_image_demo)
 target_include_directories(cpp_lua_image_demo
         SYSTEM PRIVATE
         external/sol2/include
+        external/linenoise
 )
 
 target_include_directories(cpp_lua_image_demo

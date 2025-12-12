@@ -12,6 +12,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include "linenoise.h"
 
 enum class BlendMode { Normal, Add, Multiply };
 
@@ -98,7 +99,90 @@ struct App {
 
 // Demonstrate exposing std::vector<int>
 using IntVector = std::vector<int>;
+namespace {
+    sol::state* g_lua_for_completion = nullptr;
 
+    void lua_completion_callback(const char* buf, linenoiseCompletions* lc) {
+        if (!g_lua_for_completion || !buf) {
+            return;
+        }
+
+        std::string_view line(buf);
+        const auto pos = line.find_last_of(" \t");
+        std::string_view word = (pos == std::string_view::npos) ? line : line.substr(pos + 1);
+
+        auto add_if_matches = [&](std::string_view candidate) {
+            if (word.empty() || candidate.rfind(word, 0) == 0) { // starts_with
+                std::string s(candidate);
+                linenoiseAddCompletion(lc, s.c_str());
+            }
+        };
+
+        // Lua keywords
+        static constexpr std::string_view keywords[] = {
+            "and", "break", "do", "else", "elseif", "end", "false", "for",
+            "function", "goto", "if", "in", "local", "nil", "not", "or",
+            "repeat", "return", "then", "true", "until", "while"
+        };
+
+        for (auto kw : keywords) {
+            add_if_matches(kw);
+        }
+
+        // Globals from current Lua state
+        sol::table globals = g_lua_for_completion->globals();
+        for (auto& kv : globals) {
+            sol::object key = kv.first;
+            if (key.is<std::string>()) {
+                std::string name = key.as<std::string>();
+                add_if_matches(name);
+            }
+        }
+    }
+
+    void run_repl(sol::state& lua) {
+        g_lua_for_completion = &lua;
+        linenoiseSetCompletionCallback(lua_completion_callback);
+        linenoiseHistoryLoad("lua_history.txt");
+
+        while (true) {
+            char* line = linenoise("lua> ");
+            if (line == nullptr) { // Ctrl-D / EOF
+                break;
+            }
+
+            std::string input(line);
+            linenoiseFree(line);
+
+            if (input.empty()) {
+                continue;
+            }
+
+            if (input == "quit" || input == "exit") {
+                break;
+            }
+
+            sol::load_result chunk = lua.load(input, "repl");
+            if (!chunk.valid()) {
+                sol::error err = chunk;
+                std::cerr << "Compile error: " << err.what() << '\n';
+                continue;
+            }
+
+            sol::protected_function func = chunk;
+            sol::protected_function_result result = func();
+            if (!result.valid()) {
+                sol::error err = result;
+                std::cerr << "Runtime error: " << err.what() << '\n';
+            }
+
+            linenoiseHistoryAdd(input.c_str());
+            linenoiseHistorySave("lua_history.txt");
+        }
+
+        g_lua_for_completion = nullptr;
+    }
+}
 int main() {
     sol::state lua;
     lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::string, sol::lib::table);
@@ -152,6 +236,14 @@ int main() {
         return 1;
     }
 
+    // Interactive Lua REPL (after running demo.lua)
+    run_repl(lua);
+
     std::cout << "Final caption from C++: " << app.caption() << '\n';
     return 0;
 }
+
+
+// lua> img = Image.new(64, 64)
+// lua> set_caption("fiens")
+// lua> print(get_caption())
