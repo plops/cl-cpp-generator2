@@ -114,7 +114,7 @@ int main() {
                        sol::lib::table);
 
     // Expose enum
-    lua.new_enum<BlendMode>("BlendMode",
+    lua.new_enum("BlendMode",
         "Normal",   BlendMode::Normal,
         "Add",      BlendMode::Add,
         "Multiply", BlendMode::Multiply
