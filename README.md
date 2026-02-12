@@ -1,3 +1,5 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/plops/cl-cpp-generator2)
+
 # cl-cpp-generator2
 A Common Lisp DSL and code generator for producing readable C/C++ (and CUDA/OpenCL) from s-expressions.
 
