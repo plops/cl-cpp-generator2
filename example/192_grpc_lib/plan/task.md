@@ -20,7 +20,7 @@
     - [ ] Factory Export: `create_instance` export
 - [x] **Phase 6: The Client Application (Alpha)**
     - [x] Main Logic: Execution loop (direct link to implementation)
-- [/] **Phase 7: Verification & Optimization**
-    - [/] Sanitizer Runs: Fix any detected issues
-    - [ ] Release Build: Link-time and Graphite optimizations
-    - [ ] Final Polish: Shell script to run the demo
+- [x] **Phase 7: Verification & Optimization**
+    - [x] Sanitizer Runs: Fix any detected issues
+    - [x] Release Build: Link-time and Graphite optimizations
+    - [x] Final Polish: Shell script to run the demo
