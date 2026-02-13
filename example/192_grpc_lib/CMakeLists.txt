@@ -31,15 +31,15 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 # Dependencies
+find_package(gRPC CONFIG REQUIRED)
 find_package(Protobuf REQUIRED)
-find_package(gRPC REQUIRED)
 
 # Includes
 include_directories(include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}) # for generated proto headers
 
-# Targets will be added here
-# add_subdirectory(src/proto)
+# Targets
+add_subdirectory(src/proto)
 # add_subdirectory(src/alpha)
 # add_subdirectory(src/beta)
 # add_subdirectory(src/libone)

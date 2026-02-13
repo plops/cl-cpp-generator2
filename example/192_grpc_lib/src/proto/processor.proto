@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package processor;
+
+message Timestamp {
+    uint64 seconds = 1;
+    uint32 nanos = 2;
+}
+
+message ClientMeasurement {
+    double value = 1;
+    uint64 timestamp_id = 2;
+}
+
+message ServerTimestamp {
+    Timestamp time = 1;
+    uint64 id = 2;
+}
+
+message ComputationResult {
+    double fused_value = 1;
+    uint64 timestamp_id = 2;
+    bool session_ended = 3;
+    string summary = 4;
+}
+
+message LogEntry {
+    string message = 1;
+    string level = 2;
+}
+
+message Empty {}
+
+service RemoteProcessing {
+    // Bi-directional stream for the main computation loop
+    rpc StreamSession (stream ClientMeasurement) returns (stream ServerMessage);
+
+    // Side-channel for log messages
+    rpc SubmitLogs (stream LogEntry) returns (Empty);
+}
+
+message ServerMessage {
+    oneof message {
+        ServerTimestamp timestamp = 1;
+        ComputationResult result = 2;
+    }
+}
