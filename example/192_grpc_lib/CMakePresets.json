@@ -28,7 +28,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "USE_LTO": "ON",
-        "USE_GRAPHITE": "ON"
+        "USE_GRAPHITE": "ON",
+        "USE_NATIVE_ARCH": "ON"
       }
     }
   ]

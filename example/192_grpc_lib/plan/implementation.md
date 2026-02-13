@@ -55,6 +55,5 @@ A header-only library containing:
 ### F. Application Alpha (The Driver)
 *   **Role:** The User.
 *   **Implementation:**
-    *   Loads the library path from a command line argument (e.g., `./alpha ./build/libone.so`).
-    *   Uses `dlopen` / `dlsym` to find the factory function `create_processor`.
+    *   Links against the implementation library.
     *   Runs the simulation loop.

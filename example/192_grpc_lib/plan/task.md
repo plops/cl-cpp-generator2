@@ -4,11 +4,11 @@
     - [x] Project Setup: Folders and Git initialization
     - [x] CMake Infrastructure: `CMakeLists.txt` and `CMakePresets.json`
     - [x] Interface Definition: `IProcessor.hpp` and common types
-- [ ] **Phase 2: The Network Layer (gRPC)**
-    - [/] Protobuf Definition: `processor.proto`
-    - [ ] CMake Proto Integration: Proto/gRPC library
-- [ ] **Phase 3: The Server (Beta)**
-    - [ ] Server Implementation: Sensor fusion logic
+- [x] **Phase 2: The Network Layer (gRPC)**
+    - [x] Protobuf Definition: `processor.proto`
+    - [x] CMake Proto Integration: Proto/gRPC library
+- [/] **Phase 3: The Server (Beta)**
+    - [/] Server Implementation: Sensor fusion logic
     - [ ] Server Main: Entry point
     - [ ] Server Test: Logic verification
 - [ ] **Phase 4: The Remote Library (Libtwo)**
@@ -18,10 +18,9 @@
 - [ ] **Phase 5: The Local Library (Libone)**
     - [ ] Local Logic: Parity with server behavior
     - [ ] Factory Export: `create_instance` export
-- [ ] **Phase 6: The Client Application (Alpha)**
-    - [ ] Plugin Loader: `dlopen` wrapper
-    - [ ] Main Logic: Execution loop
-- [ ] **Phase 7: Verification & Optimization**
-    - [ ] Sanitizer Runs: Fix any detected issues
+- [x] **Phase 6: The Client Application (Alpha)**
+    - [x] Main Logic: Execution loop (direct link to implementation)
+- [/] **Phase 7: Verification & Optimization**
+    - [/] Sanitizer Runs: Fix any detected issues
     - [ ] Release Build: Link-time and Graphite optimizations
     - [ ] Final Polish: Shell script to run the demo

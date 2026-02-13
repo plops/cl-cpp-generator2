@@ -23,6 +23,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         message(STATUS "Enabling Graphite Optimizations")
         add_compile_options(-fgraphite-identity -floop-nest-optimize)
     endif()
+
+    if(USE_NATIVE_ARCH)
+        message(STATUS "Enabling Native Architecture Optimizations")
+        add_compile_options(-march=native)
+    endif()
     
     if(CMAKE_BUILD_TYPE STREQUAL "Release")
         message(STATUS "Release build: keeping debug symbols")
@@ -40,7 +45,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}) # for generated proto headers
 
 # Targets
 add_subdirectory(src/proto)
-# add_subdirectory(src/alpha)
-# add_subdirectory(src/beta)
-# add_subdirectory(src/libone)
-# add_subdirectory(src/libtwo)
+add_subdirectory(src/beta)
+add_subdirectory(src/libtwo)
+add_subdirectory(src/libone)
+add_subdirectory(src/alpha)
