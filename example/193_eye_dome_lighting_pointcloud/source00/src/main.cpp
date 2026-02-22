@@ -255,7 +255,7 @@ int main() {
     glEnableVertexAttribArray(0);
 
     // Setup Fullscreen Quad for Post-Processing Pass
-    float quadVertices = {
+    float quadVertices[] = {
         // positions   // texCoords
         -1.0f,  1.0f,  0.0f, 1.0f,
         -1.0f, -1.0f,  0.0f, 0.0f,
@@ -341,9 +341,7 @@ int main() {
         auto width = 0;
         auto height = 0;
         glfwGetFramebufferSize(window, &width, &height);
-        if(width == 0 |
-
-| height == 0) continue;
+        if(width == 0 || height == 0) continue;
         
         glViewport(0, 0, width, height);
         
