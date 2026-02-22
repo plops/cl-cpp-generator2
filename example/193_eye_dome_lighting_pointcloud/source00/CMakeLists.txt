@@ -12,7 +12,7 @@ set(SRC_DIR "$ENV{HOME}/src")
 add_library(glm INTERFACE)
 target_include_directories(glm INTERFACE ${SRC_DIR}/glm)
 
-# 2. GLAD (OpenGL loader generated via web interface)
+# 2. GLAD (OpenGL loader generated via web interface, OpenGL 3.3 Core with texture object and depth texture)
 add_library(glad STATIC glad/src/glad.c)
 target_include_directories(glad PUBLIC glad/include)
 
