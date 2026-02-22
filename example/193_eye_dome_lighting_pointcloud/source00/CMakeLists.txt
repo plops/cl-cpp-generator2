@@ -24,7 +24,7 @@ if(NOT WIN32)
     set(CMAKE_PREFIX_PATH /home/martin/grpc/)
     # https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags
 
-    add_compile_options(
+    set(STRICT_WARNING_FLAGS
         -Wall -Wextra -Wconversion -Wdouble-promotion
         -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
         -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
@@ -100,6 +100,7 @@ find_package(OpenGL REQUIRED)
 
 # Define Main Executable
 add_executable(PointcloudEDL src/main.cpp)
+target_compile_options(PointcloudEDL PRIVATE ${STRICT_WARNING_FLAGS})
 
 # Link all dependencies to the main executable
 # CMAKE_DL_LIBS is strictly required on Linux for GLAD to dynamically load OpenGL pointers

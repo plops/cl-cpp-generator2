@@ -222,7 +222,7 @@ int main() {
 
     // 3. Load Data & Normalize Coordinates
     auto center = glm::vec3(0.0f);
-    auto points = loadPointCloud("cloud.txt", center);
+    auto points = loadPointCloud("../data/bunny.xyz", center);
     
     if(points.empty()) {
         std::cerr << "Generating dummy geometry for demonstration purposes." << std::endl;
