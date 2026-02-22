@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(PointcloudEDL CXX)
+project(PointcloudEDL CXX C)
 
 # Enforce Modern C++ Standards
 set(CMAKE_CXX_STANDARD 26)
@@ -13,8 +13,8 @@ add_library(glm INTERFACE)
 target_include_directories(glm INTERFACE ${SRC_DIR}/glm)
 
 # 2. GLAD (OpenGL loader generated via web interface)
-add_library(glad STATIC ${SRC_DIR}/glad/src/gl.c)
-target_include_directories(glad PUBLIC ${SRC_DIR}/glad/include)
+add_library(glad STATIC glad/src/glad.c)
+target_include_directories(glad PUBLIC glad/include)
 
 # 3. GLFW (Window and context management)
 # We disable GLFW's tests and documentation to vastly accelerate build times
@@ -44,7 +44,7 @@ target_link_libraries(imgui glfw)
 find_package(OpenGL REQUIRED)
 
 # Define Main Executable
-add_executable(PointcloudEDL main.cpp)
+add_executable(PointcloudEDL src/main.cpp)
 
 # Link all dependencies to the main executable
 # CMAKE_DL_LIBS is strictly required on Linux for GLAD to dynamically load OpenGL pointers
