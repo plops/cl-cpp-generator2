@@ -1,136 +1,58 @@
-cmake_minimum_required(VERSION 3.17)
-project(imgui_grpc)
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
-# before starting clion: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/martin/grpc/lib:/home/martin/grpc/lib64
-if(NOT WIN32)
-    set(CMAKE_PREFIX_PATH /home/martin/grpc/)
-    # https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags
+cmake_minimum_required(VERSION 3.10)
+project(PointcloudEDL CXX)
 
-    add_compile_options(
-        -Wall -Wextra -Wconversion -Wdouble-promotion
-        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
-        -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
-        -Wshadow -Wformat=2 -fno-common -fstack-usage
-        -fvisibility=hidden
-        -fno-strict-overflow -Wno-strict-overflow
-	)
+# Enforce Modern C++ Standards
+set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-endif()
-set(
-        SOURCE_FILES
-        src/main.cpp
-        #src/glgui.grpc.pb.cc
-        #src/glgui.pb.cc
+# Expand the home directory path to locate dependencies
+set(SRC_DIR "$ENV{HOME}/src")
+
+# 1. GLM (Header-only mathematics library)
+add_library(glm INTERFACE)
+target_include_directories(glm INTERFACE ${SRC_DIR}/glm)
+
+# 2. GLAD (OpenGL loader generated via web interface)
+add_library(glad STATIC ${SRC_DIR}/glad/src/gl.c)
+target_include_directories(glad PUBLIC ${SRC_DIR}/glad/include)
+
+# 3. GLFW (Window and context management)
+# We disable GLFW's tests and documentation to vastly accelerate build times
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+add_subdirectory(${SRC_DIR}/glfw glfw_build)
+
+# 4. Dear ImGui (Immediate mode graphical user interface)
+set(IMGUI_DIR ${SRC_DIR}/imgui)
+add_library(imgui STATIC
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
 )
-find_package(protobuf CONFIG )
-find_package(gRPC CONFIG )
-
-if (gRPC_FOUND) #AND protobuf_FOUND)
-
-    message(STATUS "Using gRPC ${gRPC_VERSION}")
-    #message(STATUS "Using protobuf ${protobuf_VERSION}")
-else ()
-    # Fallback to pkg-config
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(GRPC REQUIRED grpc++)
-    pkg_check_modules(PROTOBUF REQUIRED protobuf)
-
-    message(STATUS "Using gRPC via pkg-config")
-endif ()
-
-include(FetchContent)
-FetchContent_Declare(
-        imgui-glfw-glad-glm
-        GIT_REPOSITORY https://github.com/cmmw/imgui-glfw-glad-glm.git
-        GIT_TAG v4.0.1
+target_include_directories(imgui PUBLIC 
+    ${IMGUI_DIR} 
+    ${IMGUI_DIR}/backends
 )
+# ImGui backends require linking against GLFW
+target_link_libraries(imgui glfw)
 
-FetchContent_MakeAvailable(imgui-glfw-glad-glm)
+# Find System OpenGL dynamically based on the Linux distribution
+find_package(OpenGL REQUIRED)
 
-# AddressSanitizer
-option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
-if (ENABLE_ASAN)
-    add_compile_options(-fsanitize=address)
-    add_link_options(-fsanitize=address)
-endif ()
+# Define Main Executable
+add_executable(PointcloudEDL main.cpp)
 
-# UndefinedBehaviorSanitizer
-option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
-if (ENABLE_UBSAN)
-    add_compile_options(-fsanitize=undefined)
-    add_link_options(-fsanitize=undefined)
-endif ()
-
-# ThreadSanitizer
-option(ENABLE_TSAN "Enable ThreadSanitizer" OFF)
-if (ENABLE_TSAN)
-    add_compile_options(-fsanitize=thread)
-    add_link_options(-fsanitize=thread)
-endif ()
-
-# LeakSanitizer
-option(ENABLE_LSAN "Enable LeakSanitizer" OFF)
-if (ENABLE_LSAN)
-    add_compile_options(-fsanitize=leak)
-    add_link_options(-fsanitize=leak)
-endif ()
-
-
-
-# set compiler flags
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_options(
-            -g -g3 -ggdb -gdwarf-4
-    )
-else ()
-    add_compile_options(
-            -Ofast
-            -ffunction-sections -fdata-sections
-            -Wpadded
-    )
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-    add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
-endif ()
-
-include_directories(${CMAKE_SOURCE_DIR}/src)
-set(PROTO_FILES
-        src/glgui.proto
+# Link all dependencies to the main executable
+# CMAKE_DL_LIBS is strictly required on Linux for GLAD to dynamically load OpenGL pointers
+target_link_libraries(PointcloudEDL PRIVATE 
+    glad 
+    glfw 
+    glm 
+    imgui 
+    OpenGL::GL 
+    ${CMAKE_DL_LIBS} 
 )
-add_executable(
-        ${PROJECT_NAME}
-        ${SOURCE_FILES}
-        ${PROTO_FILES}
-)
-
-# It is sufficient to only link glm and ImGui since the latter one already contains Glad and GLFW
-target_link_libraries(
-        ${PROJECT_NAME}
-        imgui
-        glm
-
-)
-if (gRPC_FOUND)
-    target_link_libraries(${PROJECT_NAME} gRPC::grpc++)
-else ()
-    # Include directories
-    target_include_directories(${PROJECT_NAME} PUBLIC ${GRPC_INCLUDE_DIRS} ${PROTOBUF_INCLUDE_DIRS})
-
-    # Compiler options
-    target_compile_options(${PROJECT_NAME} PUBLIC ${GRPC_CFLAGS_OTHER})
-
-    # Link libraries
-    target_link_libraries(${PROJECT_NAME}
-            ${GRPC_LIBRARIES}
-            ${PROTOBUF_LIBRARIES}
-	    )
-
-endif ()
-
-# https://github.com/faaxm/exmpl-cmake-grpc/blob/master/proto/CMakeLists.txt
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}/src)
-
-get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
-protobuf_generate(TARGET ${PROJECT_NAME} LANGUAGE cpp)
-protobuf_generate(TARGET ${PROJECT_NAME} LANGUAGE grpc GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}")
