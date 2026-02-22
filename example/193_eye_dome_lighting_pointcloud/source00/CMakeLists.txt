@@ -5,6 +5,9 @@ project(PointcloudEDL CXX C)
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(GLFW_BUILD_WAYLAND OFF)
+set(GLFW_INSTALL OFF)
+set(OpenGL_GL_PREFERENCE GLVND)
 
 # AddressSanitizer
 option(ENABLE_UBLASAN "Enable AddressSanitizer" OFF)
@@ -99,8 +102,18 @@ target_link_libraries(imgui glfw)
 find_package(OpenGL REQUIRED)
 
 # Define Main Executable
-add_executable(PointcloudEDL src/main.cpp)
+add_executable(PointcloudEDL 
+    src/main.cpp 
+    src/App.cpp 
+    src/GLProgram.cpp 
+    src/ArcballCamera.cpp 
+    src/PostProcessingFBO.cpp 
+    src/Shaders.cpp
+)
 target_compile_options(PointcloudEDL PRIVATE ${STRICT_WARNING_FLAGS})
+
+# Include directories
+target_include_directories(PointcloudEDL PRIVATE include)
 
 # Link all dependencies to the main executable
 # CMAKE_DL_LIBS is strictly required on Linux for GLAD to dynamically load OpenGL pointers
