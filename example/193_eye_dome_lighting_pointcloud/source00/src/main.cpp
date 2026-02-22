@@ -99,7 +99,7 @@ void main() {
     vec2 texelSize = 1.0 / resolution;
     
     // Orthogonal cross-filter sampling to optimize texture fetches
-    vec2 offsets = vec2(
+    vec2 offsets[4] = vec2[](
         vec2(edlRadius, 0.0),
         vec2(-edlRadius, 0.0),
         vec2(0.0, edlRadius),
