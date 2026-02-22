@@ -220,6 +220,11 @@ The depth buffer allocation is the most critical technical nuance in this phase.
 
 During this pass, the `glDrawArrays(GL_POINTS,...)` command is invoked. Each spatial coordinate is rasterized as a primitive point (whose scale can be adjusted via `glPointSize`). The fragment shader outputs a uniform color, but crucially, OpenGL's internal pipeline automatically calculates the fragment's distance from the camera and writes this value directly into the 32-bit floating-point `GL_DEPTH_ATTACHMENT` texture.   
 
+### 5.2. Screen-Space Depth "Healing" (The Faster Path)
+This is likely the most performant method for streaming data because it doesn't care how the points were stored; it only cares about the pixels they occupy.
+Bilateral Depth Smoothing: Before the EDL pass, you apply a specialized blur to the depth buffer. Unlike a Gaussian blur, a Bilateral Filter only blurs pixels with similar depth values. This "stretches" the points to fill small gaps while preserving the sharp edges that EDL needs to look good.
+
+
 ### 5.2. Pass 2: EDL Post-Processing and Depth Linearization
 
 Once the FBO is fully populated with the spatial map of the point cloud, the pipeline unbinds the FBO, redirecting all subsequent rendering back to the default monitor buffer. The engine then renders a single, screen-spanning quadrilateral (two triangles that cover the entire viewport). The previously generated depth texture and color texture are bound to the GPU as inputs (`sampler2D`) for the EDL fragment shader.   

@@ -21,8 +21,6 @@
 // SHADER SOURCE CODE DEFINITIONS
 // ============================================================================
 
-// 1. Geometry Pass Vertex Shader
-// Projects the raw 3D points into screen space.
 const auto geometryVS = R"(
 #version 330 core
 layout (location = 0) in vec3 aPos;
@@ -33,9 +31,6 @@ void main() {
 }
 )";
 
-// 2. Geometry Pass Fragment Shader
-// Outputs a flat base color. The vital depth data is written automatically 
-// by the OpenGL pipeline into the attached depth texture.
 const auto geometryFS = R"(
 #version 330 core
 layout (location = 0) out vec4 FragColor;
@@ -46,9 +41,7 @@ void main() {
 }
 )";
 
-// 3. Post-Processing Vertex Shader (Fullscreen Quad)
-// Renders a flat quad covering the entire screen to host the post-processing.
-const auto edlVS = R"(
+const auto quadVS = R"(
 #version 330 core
 layout (location = 0) in vec2 aPos;
 layout (location = 1) in vec2 aTexCoords;
@@ -61,8 +54,80 @@ void main() {
 }
 )";
 
-// 4. Post-Processing Fragment Shader (Eye-Dome Lighting)
-// Implements the depth-disparity non-photorealistic shading logic.
+// [NEW] Bilateral Depth-Filling Filter
+const auto filterFS = R"(
+#version 330 core
+in vec2 TexCoords;
+
+uniform sampler2D depthTexture;
+uniform int u_filterRadius;
+uniform float u_depthThreshold;
+uniform float u_sigmaSpatial;
+uniform float zNear;
+uniform float zFar;
+
+float linearizeDepth(float depth) {
+    float z = depth * 2.0 - 1.0;
+    return (2.0 * zNear * zFar) / (zFar + zNear - z * (zFar - zNear));
+}
+
+void main() {
+    float centerRawDepth = texture(depthTexture, TexCoords).r;
+
+    if (u_filterRadius == 0) {
+        gl_FragDepth = centerRawDepth;
+        return;
+    }
+
+    vec2 texSize = vec2(textureSize(depthTexture, 0));
+    vec2 texelSize = 1.0 / texSize;
+
+    bool isHole = (centerRawDepth >= 1.0);
+    float centerLinearDepth = isHole ? 0.0 : linearizeDepth(centerRawDepth);
+
+    float bestHoleRawDepth = 1.0;
+    float minHoleDist = 9999.0;
+
+    float sumWeight = 0.0;
+    float sumRawDepth = 0.0;
+
+    for (int y = -u_filterRadius; y <= u_filterRadius; ++y) {
+        for (int x = -u_filterRadius; x <= u_filterRadius; ++x) {
+            vec2 offset = vec2(float(x), float(y));
+            vec2 sampleCoords = TexCoords + offset * texelSize;
+            float sampleRawDepth = texture(depthTexture, sampleCoords).r;
+
+            if (sampleRawDepth >= 1.0) continue;
+
+            if (isHole) {
+                float distSq = dot(offset, offset);
+                if (distSq < minHoleDist) {
+                    minHoleDist = distSq;
+                    bestHoleRawDepth = sampleRawDepth;
+                }
+            } else {
+                float spatialDistSq = dot(offset, offset);
+                float spatialWeight = exp(-spatialDistSq / (2.0 * u_sigmaSpatial * u_sigmaSpatial));
+
+                float sampleLinearDepth = linearizeDepth(sampleRawDepth);
+                float depthDiff = abs(sampleLinearDepth - centerLinearDepth);
+                float depthWeight = (depthDiff < u_depthThreshold) ? 1.0 : 0.0;
+
+                float weight = spatialWeight * depthWeight;
+                sumWeight += weight;
+                sumRawDepth += sampleRawDepth * weight;
+            }
+        }
+    }
+
+    if (isHole) {
+        gl_FragDepth = bestHoleRawDepth;
+    } else {
+        gl_FragDepth = (sumWeight > 0.0) ? (sumRawDepth / sumWeight) : centerRawDepth;
+    }
+}
+)";
+
 const auto edlFS = R"(
 #version 330 core
 out vec4 FragColor;
@@ -78,54 +143,47 @@ uniform vec2 resolution;
 uniform float zNear;
 uniform float zFar;
 
-// Converts hyperbolic hardware depth back into linear eye-space depth
 float linearizeDepth(float depth) {
-    float z = depth * 2.0 - 1.0; 
+    float z = depth * 2.0 - 1.0;
     return (2.0 * zNear * zFar) / (zFar + zNear - z * (zFar - zNear));
 }
 
 void main() {
     float rawDepth = texture(depthTexture, TexCoords).r;
-    
-    // If the pixel is the clear color (depth == 1.0), render the background
+
     if (rawDepth >= 1.0) {
-        FragColor = vec4(0.15, 0.15, 0.15, 1.0); // Dark gray background
+        FragColor = vec4(0.15, 0.15, 0.15, 1.0);
         return;
     }
-    
+
     vec4 baseColor = texture(colorTexture, TexCoords);
     float depth = linearizeDepth(rawDepth);
-    
     vec2 texelSize = 1.0 / resolution;
-    
-    // Orthogonal cross-filter sampling to optimize texture fetches
+
     vec2 offsets[4] = vec2[](
         vec2(edlRadius, 0.0),
         vec2(-edlRadius, 0.0),
         vec2(0.0, edlRadius),
         vec2(0.0, -edlRadius)
     );
-    
+
     float sum = 0.0;
-    
+
     for(int i = 0; i < 4; i++) {
         vec2 sampleCoords = TexCoords + offsets[i] * texelSize;
         float neighborRawDepth = texture(depthTexture, sampleCoords).r;
-        
-        // Massive penalty for borders against the skybox to create strong outlines
+
         if (neighborRawDepth >= 1.0) {
-            sum += 10.0; 
+            sum += 10.0;
         } else {
             float neighborDepth = linearizeDepth(neighborRawDepth);
-            // Calculate positive depth disparities, applying the noise-reduction offset
             sum += max(0.0, depth - neighborDepth - edlOffset);
         }
     }
-    
-    // Average the occlusion and apply exponential decay
+
     float factor = sum / 4.0;
     float shade = exp(-factor * 300.0 * edlStrength);
-    
+
     FragColor = vec4(baseColor.rgb * shade, baseColor.a);
 }
 )";
@@ -138,7 +196,7 @@ auto compileShader(GLenum type, const char* source) -> GLuint {
     auto shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, nullptr);
     glCompileShader(shader);
-    
+
     auto success = 0;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
@@ -152,24 +210,22 @@ auto compileShader(GLenum type, const char* source) -> GLuint {
 auto createProgram(const char* vsSource, const char* fsSource) -> GLuint {
     auto vs = compileShader(GL_VERTEX_SHADER, vsSource);
     auto fs = compileShader(GL_FRAGMENT_SHADER, fsSource);
-    
+
     auto program = glCreateProgram();
     glAttachShader(program, vs);
     glAttachShader(program, fs);
     glLinkProgram(program);
-    
+
     glDeleteShader(vs);
     glDeleteShader(fs);
     return program;
 }
 
-// Parses raw XYZ text data and translates the bounding volume to the origin
 auto loadPointCloud(const std::string& filepath, glm::vec3& outCenter) -> std::vector<glm::vec3> {
     auto points = std::vector<glm::vec3>{};
     auto file = std::ifstream{filepath};
-    
+
     if (!file.is_open()) {
-        std::cerr << "Warning: Failed to open point cloud file: " << filepath << std::endl;
         return points;
     }
 
@@ -196,36 +252,26 @@ auto loadPointCloud(const std::string& filepath, glm::vec3& outCenter) -> std::v
 // ============================================================================
 
 int main() {
-    // 1. Initialize GLFW Context
-    if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
-        return -1;
-    }
-    
+    if (!glfwInit()) return -1;
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    auto window = glfwCreateWindow(1280, 720, "Eye-Dome Lighting Point Cloud Viewer", nullptr, nullptr);
+    auto window = glfwCreateWindow(1280, 720, "EDL + Bilateral Filter Viewer", nullptr, nullptr);
     if (!window) {
         glfwTerminate();
         return -1;
     }
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable V-Sync
+    glfwSwapInterval(1);
 
-    // 2. Initialize GLAD Function Pointers
-    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
-        std::cerr << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
+    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) return -1;
 
-    // 3. Load Data & Normalize Coordinates
     auto center = glm::vec3(0.0f);
     auto points = loadPointCloud("../data/bunny.xyz", center);
-    
+
     if(points.empty()) {
-        std::cerr << "Generating dummy geometry for demonstration purposes." << std::endl;
         for(auto i = 0; i < 10000; i++) {
             points.push_back(glm::vec3(
                 (rand() % 100) / 10.0f - 5.0f,
@@ -234,53 +280,39 @@ int main() {
             ));
         }
     } else {
-        // Translation to origin prevents Z-fighting in georeferenced data
-        for(auto& p : points) {
-            p -= center;
-        }
-        std::cout << "Successfully loaded " << points.size() << " points." << std::endl;
+        for(auto& p : points) p -= center;
     }
 
-    // 4. Setup Geometry VAO/VBO for the Point Cloud
-    auto vao = GLuint{};
-    auto vbo = GLuint{};
+    auto vao = GLuint{}, vbo = GLuint{};
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
-    
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(glm::vec3), points.data(), GL_STATIC_DRAW);
-    
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), nullptr);
     glEnableVertexAttribArray(0);
 
-    // Setup Fullscreen Quad for Post-Processing Pass
     float quadVertices[] = {
-        // positions   // texCoords
         -1.0f,  1.0f,  0.0f, 1.0f,
         -1.0f, -1.0f,  0.0f, 0.0f,
          1.0f, -1.0f,  1.0f, 0.0f,
-
         -1.0f,  1.0f,  0.0f, 1.0f,
          1.0f, -1.0f,  1.0f, 0.0f,
          1.0f,  1.0f,  1.0f, 1.0f
     };
-    
-    auto quadVAO = GLuint{};
-    auto quadVBO = GLuint{};
+
+    auto quadVAO = GLuint{}, quadVBO = GLuint{};
     glGenVertexArrays(1, &quadVAO);
     glGenBuffers(1, &quadVBO);
-    
     glBindVertexArray(quadVAO);
     glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-    
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float)));
 
-    // 5. Allocate the Framebuffer Object (FBO)
+    // 5a. Geometry FBO
     auto fbo = GLuint{};
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -296,35 +328,49 @@ int main() {
     auto depthTex = GLuint{};
     glGenTextures(1, &depthTex);
     glBindTexture(GL_TEXTURE_2D, depthTex);
-    // Crucial: 32-bit float requirement for depth evaluation precision
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, 1280, 720, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTex, 0);
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER)!= GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Critical Error: Framebuffer architecture incomplete!" << std::endl;
-        return -1;
-    }
+    // 5b. Bilateral Filter FBO (Writes only to depth)
+    auto filterFbo = GLuint{};
+    glGenFramebuffers(1, &filterFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, filterFbo);
+
+    auto filteredDepthTex = GLuint{};
+    glGenTextures(1, &filteredDepthTex);
+    glBindTexture(GL_TEXTURE_2D, filteredDepthTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, 1280, 720, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, filteredDepthTex, 0);
+    glDrawBuffer(GL_NONE); // We are only outputting to gl_FragDepth
+    glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // 6. Compile Pipeline Shaders
     auto geomProgram = createProgram(geometryVS, geometryFS);
-    auto edlProgram = createProgram(edlVS, edlFS);
+    auto filterProgram = createProgram(quadVS, filterFS); // [NEW]
+    auto edlProgram = createProgram(quadVS, edlFS);
 
-    // 7. Initialize Dear ImGui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
 
-    // Configurable Runtime Parameters
     auto edlStrength = 0.8f;
     auto edlRadius = 1.5f;
     auto edlOffset = 0.001f;
     auto pointSize = 3.0f;
     auto baseColor = glm::vec3(0.7f, 0.8f, 0.9f);
-    
+
+    // [NEW] Filter configuration
+    int filterMode = 0;
+    const char* filterNames[] = { "Off", "3x3 Kernel", "5x5 Kernel", "7x7 Kernel" };
+    float depthThreshold = 0.2f;
+    float sigmaSpatial = 2.0f;
+    bool fKeyWasPressed = false;
+
     auto cameraDist = 20.0f;
     auto rotationY = 0.0f;
     auto rotationX = 0.5f;
@@ -332,35 +378,39 @@ int main() {
     auto zNear = 0.1f;
     auto zFar = 1000.0f;
 
-    // 8. Primary Render Loop
     glEnable(GL_DEPTH_TEST);
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
-        auto width = 0;
-        auto height = 0;
+        // Check for 'F' key press to cycle stages
+        bool fKeyIsPressed = (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS);
+        if (fKeyIsPressed && !fKeyWasPressed) {
+            filterMode = (filterMode + 1) % 4;
+        }
+        fKeyWasPressed = fKeyIsPressed;
+
+        auto width = 0, height = 0;
         glfwGetFramebufferSize(window, &width, &height);
         if(width == 0 || height == 0) continue;
-        
+
         glViewport(0, 0, width, height);
-        
-        // Dynamically reallocate FBO textures if the user resizes the window
+
         glBindTexture(GL_TEXTURE_2D, colorTex);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
         glBindTexture(GL_TEXTURE_2D, depthTex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+        glBindTexture(GL_TEXTURE_2D, filteredDepthTex);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 
         // ====================================================================
         // PASS 1: Geometry Rendering
         // ====================================================================
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        // Clear color to pure white representing infinite depth space (1.0)
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(geomProgram);
-        
         auto proj = glm::perspective(glm::radians(60.0f), static_cast<float>(width)/height, zNear, zFar);
         auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -cameraDist));
         view = glm::rotate(view, rotationX, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -375,22 +425,41 @@ int main() {
         glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(points.size()));
 
         // ====================================================================
-        // PASS 2: Post-Processing (Eye-Dome Lighting)
+        // PASS 2: Bilateral Depth Filter
+        // ====================================================================
+        glBindFramebuffer(GL_FRAMEBUFFER, filterFbo);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glUseProgram(filterProgram);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, depthTex);
+        glUniform1i(glGetUniformLocation(filterProgram, "depthTexture"), 0);
+
+        glUniform1i(glGetUniformLocation(filterProgram, "u_filterRadius"), filterMode);
+        glUniform1f(glGetUniformLocation(filterProgram, "u_depthThreshold"), depthThreshold);
+        glUniform1f(glGetUniformLocation(filterProgram, "u_sigmaSpatial"), sigmaSpatial);
+        glUniform1f(glGetUniformLocation(filterProgram, "zNear"), zNear);
+        glUniform1f(glGetUniformLocation(filterProgram, "zFar"), zFar);
+
+        glBindVertexArray(quadVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // ====================================================================
+        // PASS 3: Eye-Dome Lighting
         // ====================================================================
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(edlProgram);
-        
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, colorTex);
         glUniform1i(glGetUniformLocation(edlProgram, "colorTexture"), 0);
 
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, depthTex);
+        glBindTexture(GL_TEXTURE_2D, filteredDepthTex); // Use our new filtered depth!
         glUniform1i(glGetUniformLocation(edlProgram, "depthTexture"), 1);
 
-        // Push ImGui tuned variables to the GPU
         glUniform1f(glGetUniformLocation(edlProgram, "edlStrength"), edlStrength);
         glUniform1f(glGetUniformLocation(edlProgram, "edlRadius"), edlRadius);
         glUniform1f(glGetUniformLocation(edlProgram, "edlOffset"), edlOffset);
@@ -402,34 +471,35 @@ int main() {
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // ====================================================================
-        // PASS 3: Immediate Mode UI Overlay
+        // PASS 4: UI
         // ====================================================================
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Eye-Dome Configuration");
+        ImGui::Begin("Pipeline Configuration");
+        ImGui::Text("Bilateral Depth Filter");
+        ImGui::Separator();
+        ImGui::Combo("Filter Stage (F)", &filterMode, filterNames, IM_ARRAYSIZE(filterNames));
+        if (filterMode > 0) {
+            ImGui::SliderFloat("Depth Tolerance", &depthThreshold, 0.01f, 5.0f, "%.2f");
+            ImGui::SliderFloat("Spatial Sigma", &sigmaSpatial, 0.1f, 10.0f, "%.1f");
+        }
+
+        ImGui::Spacing();
         ImGui::Text("Non-Photorealistic Shading Settings");
         ImGui::Separator();
         ImGui::SliderFloat("EDL Strength", &edlStrength, 0.0f, 3.0f, "%.2f");
         ImGui::SliderFloat("EDL Radius", &edlRadius, 0.0f, 10.0f, "%.1f px");
         ImGui::SliderFloat("EDL Offset", &edlOffset, 0.0f, 0.01f, "%.4f");
-        
-        ImGui::Spacing();
-        ImGui::Text("Geometry Settings");
-        ImGui::Separator();
-        ImGui::SliderFloat("Point Size", &pointSize, 1.0f, 15.0f, "%.1f px");
-        ImGui::ColorEdit3("Base Color", glm::value_ptr(baseColor));
-        
+
         ImGui::Spacing();
         ImGui::Text("Camera Settings");
         ImGui::Separator();
         ImGui::SliderFloat("Zoom Distance", &cameraDist, 0.1f, 200.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
         ImGui::SliderFloat("Yaw Rotation", &rotationY, 0.0f, 6.28f);
         ImGui::SliderFloat("Pitch Rotation", &rotationX, -1.5f, 1.5f);
-        
-        ImGui::Spacing();
-        ImGui::Text("Performance: %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
         ImGui::End();
 
         ImGui::Render();
@@ -438,17 +508,17 @@ int main() {
         glfwSwapBuffers(window);
     }
 
-    // Safely deallocate resources
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-    
+
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
     glDeleteVertexArrays(1, &quadVAO);
     glDeleteBuffers(1, &quadVBO);
     glDeleteFramebuffers(1, &fbo);
-    
+    glDeleteFramebuffers(1, &filterFbo);
+
     glfwTerminate();
     return 0;
 }
