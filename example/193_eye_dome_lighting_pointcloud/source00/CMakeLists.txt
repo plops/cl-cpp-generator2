@@ -5,6 +5,61 @@ project(PointcloudEDL CXX C)
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
+# AddressSanitizer
+option(ENABLE_UBLASAN "Enable AddressSanitizer" OFF)
+if (ENABLE_UBLASAN)
+    add_compile_options(-fsanitize=address -fsanitize=undefined -fsanitize=undefined)
+    add_link_options(-fsanitize=address -fsanitize=undefined -fsanitize=undefined)
+endif ()
+
+# ThreadSanitizer
+option(ENABLE_TSAN "Enable ThreadSanitizer" OFF)
+if (ENABLE_TSAN)
+    add_compile_options(-fsanitize=thread)
+    add_link_options(-fsanitize=thread)
+endif ()
+
+if(NOT WIN32)
+    set(CMAKE_PREFIX_PATH /home/martin/grpc/)
+    # https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags
+
+    add_compile_options(
+        -Wall -Wextra -Wconversion -Wdouble-promotion
+        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
+        -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
+        -Wshadow -Wformat=2 -fno-common -fstack-usage
+        -fvisibility=hidden
+        -fno-strict-overflow -Wno-strict-overflow
+	)
+
+endif()
+
+
+# set compiler flags
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(
+            -g -g3 -ggdb -gdwarf-4
+    )
+else ()
+    add_compile_options(
+	    -march=native
+	    -floop-nest-optimize -fgraphite-identity # polyhedral loop optimization
+	    -floop-parallelize-all
+	    -floop-interchange # switches inner and outer loop to improve caching
+	    -floop-strip-mine # split loop into smaller loops to fit into cache
+	    -floop-block # perform tiling to improve data locality
+            -Ofast
+            -ffunction-sections -fdata-sections
+            -Wpadded
+    )
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
+endif ()
+
+
+
+
 # Expand the home directory path to locate dependencies
 set(SRC_DIR "$ENV{HOME}/src")
 
