@@ -1,5 +1,8 @@
 An experimental simple point cloud viewer for XYZ text files
 
+![Screenshot of Stanford Bunny](screenshot_bunny.png)
+
+data/bunny.xyz is from https://gist.github.com/bigsnarfdude/ac6b9911f34630d5b24508e628cfd0b1
 I generated the code and documentation in gemini deep research using the following prompt:
 
 ```

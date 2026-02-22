@@ -424,7 +424,7 @@ int main() {
         ImGui::Spacing();
         ImGui::Text("Camera Settings");
         ImGui::Separator();
-        ImGui::SliderFloat("Zoom Distance", &cameraDist, 1.0f, 200.0f);
+        ImGui::SliderFloat("Zoom Distance", &cameraDist, 0.1f, 200.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
         ImGui::SliderFloat("Yaw Rotation", &rotationY, 0.0f, 6.28f);
         ImGui::SliderFloat("Pitch Rotation", &rotationX, -1.5f, 1.5f);
         
