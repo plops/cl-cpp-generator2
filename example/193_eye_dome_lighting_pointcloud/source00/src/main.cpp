@@ -190,7 +190,7 @@ private:
 // Interactive Camera handling Arcball rotation
 class ArcballCamera {
 public:
-    float distance = 20.0f;
+    float distance = 0.32f;
     float rotationY = 0.0f;
     float rotationX = 0.5f;
 
@@ -355,7 +355,7 @@ private:
     float edlStrength = 0.8f;
     float edlRadius = 1.5f;
     float edlOffset = 0.001f;
-    float pointSize = 3.0f;
+    float pointSize = 35.0f;
     glm::vec3 baseColor = glm::vec3(0.7f, 0.8f, 0.9f);
 
     void initGLFW() {
@@ -535,7 +535,7 @@ private:
         ImGui::Spacing();
         ImGui::Text("Geometry Settings");
         ImGui::Separator();
-        ImGui::SliderFloat("Point Size", &pointSize, 1.0f, 15.0f, "%.1f px");
+        ImGui::SliderFloat("Point Size", &pointSize, 1.0f, 35.0f, "%.1f px");
         ImGui::ColorEdit3("Base Color", glm::value_ptr(baseColor));
 
         ImGui::Spacing();
