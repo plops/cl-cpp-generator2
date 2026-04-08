@@ -24,7 +24,19 @@
 
      (defun main (argc argv)
        (declare (type int argc) (type char** argv) (values int))
-       
+       (let ((ctx (gccjit--context--acquire))
+	     (int_type (ctx.get_type GCC_JIT_TYPE_INT))
+	     (param_i (ctx.new_param int_type
+				     (string "i")))
+	     (params (curly param_i)))
+	 (declare (type "std::vector<gccjit::param>"
+			params))
+	 (let ((func (ctx.new_function
+		      GCC_JIT_FUNCTION_EXPORTED
+		      int_type
+		      (string "square")
+		      params
+		      0)))))
        (return 0)))
   :omit-parens t
   :format t
