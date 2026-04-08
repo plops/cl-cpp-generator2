@@ -18,12 +18,14 @@
   (write-source
    (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames "main.cpp" *source-dir*))
    `(do0
-     (include<> glad/glad.h)
+     (include<> iostream
+		libgccjit++.h)
   
 
      (defun main (argc argv)
        (declare (type int argc) (type char** argv) (values int))
-       (return 0))))))))))
+       
+       (return 0)))
   :omit-parens t
   :format t
   :tidy nil))
