@@ -122,7 +122,14 @@
 
      (defun interpreter_loop ()
        (let ((vm "ForthVM{}")
-	     (input "std::string{}"))))
+	     (input "std::string{}"))
+	 (while (std--getline std--cin input)
+		(let ((ss (std--stringstream input))
+		      (token "std::string{}")))
+		(handler-case
+		    (while (>> ss token)
+			   (vm.consume_fuel)
+			   (let ((cmd (to_upper token)))))))))
      
      
      (defun main (argc argv)
