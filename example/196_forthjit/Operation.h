@@ -1,11 +1,10 @@
-#ifndef OPERATION_H
-#define OPERATION_H
-
+#pragma once
 // header 
 class Operation  {
         public:
          Operation ()       ;   
          ~Operation ()       ;   
+        Operation literal (int value)       ;   
         private:
         OperationKind kind {OperationKind::Literal};
         int value {0};
@@ -13,5 +12,3 @@ class Operation  {
         std::vector<Operation> true_branch;
         std::vector<Operation> false_branch;
 };
-
-#endif /* !OPERATION_H */

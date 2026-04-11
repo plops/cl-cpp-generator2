@@ -2,7 +2,7 @@
 #include <array>
 #include <cctype>
 #include <charconv>
-#include <cstdblib>
+#include <cstdlib>
 #include <functional>
 #include <iostream>
 #include <libgccjit++.h>
@@ -32,55 +32,22 @@ enum class Primitive {
   Fetch,
   Store
 };
-class ForthVM {
-  static constexpr auto MAX_STACK = 256;
-  static constexpr auto MAX_DICT = 64;
-  static constexpr auto FUEL_LIMIT = 10'000;
-  std::vector<int> stack;
-  std::unordered_map<std::string, int> variables;
-  std::unordered_map<std::string, void (*)()> dictionary;
-  int fuel = 0;
+enum class OperationKind { Literal, Primitive, CallWord, If };
+enum class ParseMode { Immediate, Definition };
+enum class SequenceStop { End, Else, Then };
+class ForthVM;
+using CompiledWord = int (*)(ForthVM *);
 
-public:
-  void push(int val) {
-    if (MAX_STACK <= stack.size()) {
-      throw Error::Stack_Error;
-    }
-    stack.push_back(val);
-  }
-  int pop() {
-    if (stack.empty()) {
-      throw Error::Stack_Error;
-    }
-    auto val{stack.back()};
-    stack.pop_back();
-    return val;
-  }
-  void consume_fuel() {
-    if (FUEL_LIMIT < ++fuel) {
-      throw Error::Stack_Error;
-    }
-  }
-  void dot() { std::cout << pop() << " "; }
-  void dup() {
-    auto v{pop()};
-    push(v);
-    push(v);
-  }
-  void drop() { pop(); }
-  void swap() {
-    auto a{pop()};
-    auto b{pop()};
-    push(a);
-    push(b);
-  }
-};
-}; // namespace
-
-std::string to_upper(std::string s) {
-  std::transform(s.begin(), s.end(), s.begin(), ::toupper);
-  return s;
+std::string to_upper(std::string_view text) {
+  auto upper{std::string(text)};
+  std::transform(upper.begin(), upper.end(), upper.begin(),
+                 [&](unsigned char value) {
+                   return static_cast<char>(std::toupper(value));
+                 });
+  return upper;
 }
+
+}; // namespace
 
 void interpreter_loop() {
   auto vm{ForthVM{}};

@@ -2,7 +2,7 @@ add_rules("mode.debug", "mode.release")
 
 target("196_forthjit")
     set_kind("static")
-    add_files("JITCompiler.cpp")
+--    add_files("JITCompiler.cpp")
     add_files("Operation.cpp")
 
 target("main2")

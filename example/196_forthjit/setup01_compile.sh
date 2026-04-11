@@ -5,7 +5,7 @@ set -euo pipefail
 BUILD_PROFILE="${BUILD_PROFILE:-debug}"
 
 CXX="${CXX:-g++}"
-SRC="main.cpp"
+SRC="main2.cpp"
 OUT="forthjit"
 COMMON_FLAGS=(
   -std=c++20
