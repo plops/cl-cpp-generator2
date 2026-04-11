@@ -30,18 +30,18 @@
 					 (formatter `(sb-ext:run-program "/usr/bin/clang-format"
 						     (list "-i"  (namestring ,fn)
 						      "-o"))))
-  (let (#+nil (hash-db ;'file-hash
+  (let ((hash-db ;'file-hash
 	  (gensym "file-hash")
 		 ))
     `(progn
        (defvar
 					;  parameter
-	   file-hash ;,hash-db
+	   ,hash-db
 	 (make-hash-table)
 	 )
        (let ((fn-hash (sxhash ,fn))
 	     (code-hash (sxhash ,str)))
-	 (multiple-value-bind (old-code-hash exists) (gethash fn-hash file-hash ;,hash-db
+	 (multiple-value-bind (old-code-hash exists) (gethash fn-hash ,hash-db
 							      )
 	   (when (or (not exists)
 		     (/= code-hash old-code-hash)
@@ -59,7 +59,7 @@
 					 "-o"))
 	       ,formatter
 	       )
-	     (setf (gethash fn-hash file-hash ;,hash-db
+	     (setf (gethash fn-hash ,hash-db
 			    ) code-hash)
 	     ))))))
 
@@ -102,7 +102,7 @@
 			 :header-only t
 			 ))
 	       (format sh "~%#endif /* !~a */" once-guard))))
-      (format t "OUTPUT ~a~%" fn-h)
+      
       (if format
 	  (only-write-when-hash-changed
 	   fn-h
