@@ -1,57 +1,122 @@
-(in-package :cl-cpp-generator2)
+(defun lprint (&key (msg "")
+		 (vars nil)
+		 )
+  #+nil `(<< std--cout
+       (std--format
+	(string ,(format nil "~a~{ ~a='{}'~}\\n"
+			 msg
+			 (loop for e in vars collect (emit-c :code e  :omit-redundant-parentheses t)) ))
+	,@vars))
+  #-more
+  ""
+  #+more
+  `(<< std--cout
+       (string ,(format nil "~a"
+			msg
+			
+			))
+       ,@(loop for e in vars
+	       appending
+	       `((string ,(format nil " ~a='" (emit-c :code e :omit-redundant-parentheses t)))
+		 ,e
+		 (string "' ")))   
+       std--endl))
 
-(defmacro only-write-when-hash-changed (filename code)
-  `(let* ((f ,filename)
-          (new-code ,code)
-          (new-hash (sxhash new-code))
-          (old-hash (gethash f *file-hashes*)))
-     (unless (and old-hash (equal new-hash old-hash))
-       (setf (gethash f *file-hashes*) new-hash)
-       (format t "WRITING TO FILE: ~a~%" f)
-       (with-open-file (s f :direction :output :if-exists :supersede :if-does-not-exist :create)
-         (write-string new-code s))
-       (sb-ext:run-program "clang-format" (list "-i" f) :search t))))
 
-(defun set-class-name (name)
-  (setf (gethash "current-class" *file-hashes*) name))
+(defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"
+										    (list "-i"  (namestring ,fn)
+											  "-o"))))
+  (let ((hash-db 'file-hash
+					;(gensym "file-hash")
+		 ))
+    `(progn
+       (defvar
+					;  parameter
+	   ,hash-db (make-hash-table))
+       (let ((fn-hash (sxhash ,fn))
+	     (code-hash (sxhash ,str)))
+	 (multiple-value-bind (old-code-hash exists) (gethash fn-hash ,hash-db)
+	   (when (or (not exists)
+		     (/= code-hash old-code-hash)
+		     (not (probe-file ,fn)))
+					;,@body
+	     (progn
+	       (format t "hash has changed in ~a exists=~a old=~a new=~a~%" ,fn exists old-code-hash code-hash)
+	       (with-open-file (sh ,fn
+				   :direction :output
+				   :if-exists :supersede
+				   :if-does-not-exist :create)
+       		 (format sh "~a" ,str))
+	       (sb-ext:run-program "/usr/bin/clang-format"
+				   (list "-i"  (namestring ,fn)
+					 "-o"))
+	      ; ,formatter
+	       )
+	     (setf (gethash fn-hash ,hash-db) code-hash)
+	     ))))))
+(defun share (name)
+    (format nil "std::shared_ptr<~a>" name))
+(defun uniq (name)
+  (format nil "std::unique_ptr<~a>" name))
 
-(defun find-class-body (node)
-  (if (listp node)
-      (if (eq (car node) 'defclass)
-          (nthcdr 3 node)
-          (loop for e in node
-                for res = (find-class-body e)
-                when res return res))
-      nil))
+(defun write-class (&key name dir code headers header-preamble implementation-preamble preamble format)
+  "split class definition in .h file and implementation in .cpp file. use defclass in code. headers will only be included into the .cpp file. the .h file will get forward class declarations. additional headers can be added to the .h file with header-preamble and to the .cpp file with implementation preamble."
+  (let* ((fn-h (format nil "~a/~a.h" dir name))
+	 (once-guard (string-upcase (format nil "~a_H" name)))
+	 (fn-h-nodir (format nil "~a.h" name))
+	 (fn-cpp (format nil "~a/~a.cpp" dir name))
+	 )
+    (let* ((fn-h-str
+	     (with-output-to-string (sh)
+	       (loop for e in `(,(format nil "#ifndef ~a" once-guard)
+				,(format nil "#define ~a~%" once-guard)
 
-(defun prefix-method (node class-name)
-  "Prefix defmethod name with Class::"
-  (if (and (listp node) (eq (car node) 'defmethod))
-      (let ((name (second node))
-            (params (third node))
-            (rest (nthcdr 3 node)))
-        (if (and (symbolp name) (not (search "::" (format nil "~a" name))))
-            `(defmethod ,(intern (format nil "~a::~a" class-name name))
-                 ,params
-               ,@rest)
-            node))
-      node))
-
-(defun write-class-runtime (dir name headers header-preamble implementation-preamble code)
-  (let* ((header-file (format nil "~a/~a.h" dir name))
-         (cpp-file (format nil "~a/~a.cpp" dir name))
-         (class-bodies (find-class-body code)))
-    (set-class-name name)
-    (format t "Processing class ~a~%" name)
-    ;; Header
-    (only-write-when-hash-changed header-file
-      (emit-c :code `(do0 (do0 ,@header-preamble) ,@headers ,code)))
-    ;; Implementation
-    (only-write-when-hash-changed cpp-file
-      (emit-c :code `(do0 (do0 ,@implementation-preamble)
-                          (include ,(file-namestring header-file))
-                          ,@(loop for item in class-bodies
-                                  collect (prefix-method item name)))))))
-
-(defmacro write-class (&key dir name headers header-preamble implementation-preamble code (format t))
-  `(write-class-runtime ,dir ,name ',headers ',header-preamble ',implementation-preamble ,code))
+				,@(loop for h in headers
+					collect
+					;; write forward declaration for classes
+					(format nil "class ~a;" h))
+				,preamble
+				,header-preamble
+				)
+		     do
+			(when e
+			  (format sh "~a~%"
+				  (emit-c :code e))))
+	       (when code
+		 (emit-c :code
+			 `(do0
+			   ,code)
+			 :hook-defun #'(lambda (str)
+					 (format sh "~a~%" str))
+			 :hook-defclass #'(lambda (str)
+					    (format sh "~a;~%" str))
+			 :header-only t
+			 ))
+	       (format sh "~%#endif /* !~a */" once-guard))))
+      (if format
+	  (only-write-when-hash-changed
+	   fn-h
+	   fn-h-str
+	   )
+	  (only-write-when-hash-changed
+	   fn-h
+	   fn-h-str
+	   :formatter nil)))
+    (write-source fn-cpp
+		  `(do0
+		    ,(if preamble
+			 preamble
+			 `(comments "no preamble"))
+		    ,(if implementation-preamble
+			 implementation-preamble
+			 `(comments "no implementation preamble"))
+		    ,@(loop for h in headers
+			    collect
+			    `(include ,(format nil "<~a>" h)))
+	       	    (include ,(format nil "~a" fn-h-nodir))
+		    ,(if code
+			 code
+			 `(comments "no code")))
+		  :format t
+		  :tidy nil
+		  :omit-parens t)))
