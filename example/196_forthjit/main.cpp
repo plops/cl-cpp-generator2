@@ -1,12 +1,37 @@
 #include <algorithm>
+#include <array>
+#include <cctype>
+#include <charconv>
+#include <cstdblib>
+#include <functional>
 #include <iostream>
 #include <libgccjit++.h>
+#include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 using namespace gccjit;
-enum class Error { Unknown_Word, Stack_Error, Compile_Error };
+namespace {
+constexpr auto kOk = 0;
+enum class Error - int{Unknown_Word = 1, Stack_Error = 2, Compile_Error = 3};
+enum class Primitive {
+  Add,
+  Sub,
+  Mul,
+  Dup,
+  Drop,
+  Swap,
+  Dot,
+  LessThan,
+  GreaterThan,
+  Equal,
+  Fetch,
+  Store
+};
 class ForthVM {
   static constexpr auto MAX_STACK = 256;
   static constexpr auto MAX_DICT = 64;
@@ -50,6 +75,7 @@ public:
     push(b);
   }
 };
+}; // namespace
 
 std::string to_upper(std::string s) {
   std::transform(s.begin(), s.end(), s.begin(), ::toupper);
