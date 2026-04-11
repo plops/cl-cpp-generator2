@@ -65,71 +65,97 @@ REsult JITCompiler::compile_word(const std::string &symbol_name,
     current_block.end_with_conditional(
         ctx.new_eq(error_value, ctx.zero(int_type)), ok_block, error_block);
   }};
-  auto emit_operations{
-      [&](block current_block, const std::vector<Operation> &ops) -> block {
-        for (const auto &operation : ops) {
-          switch (operation.kind) {
-          case OperationKind::Literal: {
-            current_block = emit_checked_call(
-                current_block, helper_push_literal,
-                {param_vm, ctx.new_rvalue(int_type, operation.value)});
-            break;
-          };
-          case OperationKind::Primitive: {
-            auto helper{helper_add};
-            switch (operation.primitive) {
-            case Primitive::Add: {
-              helper = helper_add;
-              break;
-            };
-            case Primitive::Sub: {
-              helper = helper_sub;
-              break;
-            };
-            case Primitive::Mul: {
-              helper = helper_mul;
-              break;
-            };
-            case Primitive::Dup: {
-              helper = helper_dup;
-              break;
-            };
-            case Primitive::Drop: {
-              helper = helper_drop;
-              break;
-            };
-            case Primitive::Swap: {
-              helper = helper_swap;
-              break;
-            };
-            case Primitive::Dot: {
-              helper = helper_dot;
-              break;
-            };
-            case Primitive::LessThan: {
-              helper = helper_lt;
-              break;
-            };
-            case Primitive::GreaterThan: {
-              helper = helper_gt;
-              break;
-            };
-            case Primitive::Equal: {
-              helper = helper_eq;
-              break;
-            };
-            case Primitive::Fetch: {
-              helper = helper_fetch;
-              break;
-            };
-            case Primitive::Store: {
-              helper = helper_store;
-              break;
-            };
-            }
-            break;
-          };
-          }
+  auto emit_operations{[&](block current_block,
+                           const std::vector<Operation> &ops) -> block {
+    for (const auto &operation : ops) {
+      switch (operation.kind) {
+      case OperationKind::Literal: {
+        current_block = emit_checked_call(
+            current_block, helper_push_literal,
+            {param_vm, ctx.new_rvalue(int_type, operation.value)});
+        break;
+      };
+      case OperationKind::Primitive: {
+        auto helper{helper_add};
+        switch (operation.primitive) {
+        case Primitive::Add: {
+          helper = helper_add;
+          break;
+        };
+        case Primitive::Sub: {
+          helper = helper_sub;
+          break;
+        };
+        case Primitive::Mul: {
+          helper = helper_mul;
+          break;
+        };
+        case Primitive::Dup: {
+          helper = helper_dup;
+          break;
+        };
+        case Primitive::Drop: {
+          helper = helper_drop;
+          break;
+        };
+        case Primitive::Swap: {
+          helper = helper_swap;
+          break;
+        };
+        case Primitive::Dot: {
+          helper = helper_dot;
+          break;
+        };
+        case Primitive::LessThan: {
+          helper = helper_lt;
+          break;
+        };
+        case Primitive::GreaterThan: {
+          helper = helper_gt;
+          break;
+        };
+        case Primitive::Equal: {
+          helper = helper_eq;
+          break;
+        };
+        case Primitive::Fetch: {
+          helper = helper_fetch;
+          break;
+        };
+        case Primitive::Store: {
+          helper = helper_store;
+          break;
+        };
         }
-      }};
+        current_block = emit_checked_call(current_block, helper, {param_vm});
+        break;
+      };
+      case OperationKind::CallWord: {
+        current_block = emit_checked_call(
+            current_block, helper_call_word,
+            {param_vm, ctx.new_rvalue(int_type, operation.value)});
+        break;
+      };
+      case OperationKind::If: {
+        auto condition_value{
+            function.new_local(int_type, fresh_block_name("condition"))};
+        current_block =
+            emit_checked_call(current_block, helper_pop_condition,
+                              {param_vm, condition_value.get_address()});
+        auto true_block{function.new_block(fresh_block_name("if_true"))};
+        auto false_block{function.new_block(fresh_block_name("if_false"))};
+        auto after_block{function.new_block(fresh_block_name("after_if"))};
+        current_block.end_with_conditional(ctx.new_ne(
+            condition_value, ctx.zero(int_type), true_block, false_block));
+        auto completed_true{emit_operations(true_block, operation.true_branch)};
+        completed_true.end_with_jump(after_block);
+        auto completed_false{
+            emit_operations(false_block, operations.false_branch)};
+        compleded_false.end_with_jump(after_block);
+        current_block = after_block;
+        break;
+      };
+      }
+    }
+  }};
 }

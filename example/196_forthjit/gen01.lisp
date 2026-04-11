@@ -323,7 +323,35 @@
 								       collect
 								       (destructuring-bind (&key name symbol short) e
 									   `(,(format nil "Primitive::~a" name)
-									    (setf helper ,(format nil "helper_~a" short)))))))))
+									    (setf helper ,(format nil "helper_~a" short)))))))
+							   (setf current_block (emit_checked_call current_block helper (curly param_vm))))
+							  (OperationKind--CallWord
+							   (setf current_block (emit_checked_call current_block helper_call_word
+												  (curly param_vm
+													 (ctx.new_rvalue int_type
+															 operation.value)))))
+							  (OperationKind--If
+							   (let ((condition_value
+								   (function.new_local int_type
+										       (fresh_block_name (string "condition"))))
+								 )
+							     (setf current_block (emit_checked_call current_block
+												    helper_pop_condition
+												    (curly param_vm
+													   (condition_value.get_address))))
+							     (let ((true_block (function.new_block (fresh_block_name (string "if_true"))))
+								   (false_block (function.new_block (fresh_block_name (string "if_false"))))
+								   (after_block (function.new_block (fresh_block_name (string "after_if")))))
+							       (current_block.end_with_conditional (ctx.new_ne condition_value
+													       (ctx.zero int_type)
+													       true_block
+													       false_block))
+							       (let ((completed_true (emit_operations true_block
+												      operation.true_branch)))
+								 (completed_true.end_with_jump after_block)
+								 (let ((completed_false (emit_operations false_block operations.false_branch)))
+								   (compleded_false.end_with_jump after_block)
+								   (setf current_block after_block)))))))
 							)))
 			  
 			  
