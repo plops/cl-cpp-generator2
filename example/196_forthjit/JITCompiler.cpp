@@ -157,5 +157,20 @@ REsult JITCompiler::compile_word(const std::string &symbol_name,
       };
       }
     }
+    return current_block;
   }};
+  auto completed_entry{emit_operations(entry_block, operations)};
+  completed_entry.end_with_return(ctx.zero(int_type));
+  error_block.end_with_return(error_value);
+  auto *jit_result{ctx.compile()};
+  if (!jit_result) {
+    throw Error::Compile_Error;
+  }
+  auto *symbol{gcc_jit_result_get_code(jit_result, symbol_name.c_str())};
+  if (!symbol) {
+    gcc_jit_result_release(jit_result);
+    throw Error::Compile_Error;
+  }
+  return {.jit_result = jit_result,
+          .function = reinterpret_cast<CompiledWord>(symbol)};
 }
