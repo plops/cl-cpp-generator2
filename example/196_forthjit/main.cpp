@@ -47,6 +47,34 @@ std::string to_upper(std::string_view text) {
   return upper;
 }
 
+std::string normalize_dictionary_name(std::string_view text) {
+  constexpr std::size_t kMaxNameLength{31};
+  auto normalized{to_upper(text)};
+  if (kMaxNameLength < normalized.size()) {
+    normalized.resize(kMaxNameLength);
+  }
+  return normalized;
+}
+
+std::vector<std::string> split_on_spaces(const std::string &line) {
+  auto tokens{std::vector<std::string>{}};
+  auto current{std::string{}};
+  for (auto ch : line) {
+    if (ch == ' ') {
+      if (!current.empty()) {
+        tokens.push_back(current);
+        current.clear();
+      }
+      continue;
+    }
+    current.push_back(ch);
+  }
+  if (!current.empty()) {
+    tokens.push_back(current);
+  }
+  return tokens;
+}
+
 }; // namespace
 
 void interpreter_loop() {

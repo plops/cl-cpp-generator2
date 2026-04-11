@@ -1,12 +1,13 @@
+
 (defun lprint (&key (msg "")
 		 (vars nil)
 		 )
   #+nil `(<< std--cout
-       (std--format
-	(string ,(format nil "~a~{ ~a='{}'~}\\n"
-			 msg
-			 (loop for e in vars collect (emit-c :code e  :omit-redundant-parentheses t)) ))
-	,@vars))
+	     (std--format
+	      (string ,(format nil "~a~{ ~a='{}'~}\\n"
+			       msg
+			       (loop for e in vars collect (emit-c :code e  :omit-redundant-parentheses t)) ))
+	      ,@vars))
   #-more
   ""
   #+more

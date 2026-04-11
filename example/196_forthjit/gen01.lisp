@@ -347,6 +347,33 @@
 					     (std--toupper value)))))
 		  (return upper))
 
+		(defun normalize_dictionary_name (text)
+		  (declare (type "std::string_view" text)
+			   (values "std::string"))
+		  "constexpr std::size_t kMaxNameLength{31};"
+		  (let ((normalized (to_upper text)))
+		    (when (< kMaxNameLength (normalized.size))
+		      (normalized.resize kMaxNameLength))
+		    (return normalized)))
+
+		(defun split_on_spaces (line)
+		  (declare (type "const std::string&" line)
+			   (values "std::vector<std::string>"))
+		  (let ((tokens "std::vector<std::string>{}")
+			(current "std::string{}"))
+		    (for-range (ch line)
+			       (declare (type auto ch))
+			       (when (== ch (char " "))
+				 (unless (current.empty)
+				   (tokens.push_back current)
+				   (current.clear))
+				 continue)
+			      (current.push_back ch))
+		    (unless (current.empty)
+		      (tokens.push_back current))
+		    (return tokens)))
+
+		
 
 		))
      
