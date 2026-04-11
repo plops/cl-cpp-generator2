@@ -430,6 +430,16 @@
 			   )
 		    (return std--nullopt)))
 
+		(defun is_reserved_token (token)
+		  (declare (type "std::string_view" token)
+			   (values bool)
+			   )
+		  (let ((upper (to_upper token)))
+		    (return (logior ,@(loop for e in `(IF ELSE THEN VARIABLE ":" ";")
+					    collect
+					    `(== (string ,(format nil "~a" e))
+						upper))))))
+
 		))
      
      

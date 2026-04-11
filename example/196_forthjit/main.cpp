@@ -162,6 +162,12 @@ std::optional<Primitive> lookup_primitive(std::string_view token) {
   return std::nullopt;
 }
 
+bool is_reserved_token(std::string_view token) {
+  auto upper{to_upper(token)};
+  return "IF" == upper || "ELSE" == upper || "THEN" == upper ||
+         "VARIABLE" == upper || ":" == upper || ";" == upper;
+}
+
 }; // namespace
 
 void interpreter_loop() {
