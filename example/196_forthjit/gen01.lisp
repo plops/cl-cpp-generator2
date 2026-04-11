@@ -46,86 +46,54 @@
 				      "CompiledWord function{nullptr};"))
 
 		
-		#+nil
-		(defmethod ,class-name (&key ,@(remove-if
-						#'null
-						(loop for e in members
-						      collect
-						      (destructuring-bind (&key name type param doc initform param-name member-name) e
-							(when param
-							  `(,param-name ,(if initform initform 0)))))))
-		  (declare
-		   ,@(remove-if #'null
-				(loop for e in members
-				      collect
-				      (destructuring-bind (&key name type param doc initform param-name member-name) e
-					(let ((const-p (let* ((s  (format nil "~a" type))
-							      (last-char (aref s (- (length s)
-										    1))))
-							 (not (eq #\* last-char)))))
-					  (when param
-					    (if (eq name 'callback)
-						`(type "std::function<void(const uint8_t*, const size_t)>"
-						       #+nil PacketReceivedCallback ,param-name)
-						`(type ,(if const-p
-							    (format nil "const ~a&" type)
-							    type)
-						       ,param-name))
-					    )))))
-		   (construct
-		    ,@(remove-if #'null
-				 (loop for e in members
-				       collect
-				       (destructuring-bind (&key name type param doc initform param-name member-name) e
-					 (cond
-					   (param
-					    (if (eq name 'callback)
-						`(,member-name (std--move ,param-name))
-						`(,member-name ,param-name))) 
-					   (initform
-					    `(,member-name ,initform)))))))
-					;(explicit)	    
-		   (values :constructor)))
-
-		(defmethod ,(format nil "~~~a" class-name) ()
-		  (declare
-		   (values :constructor)))
-		
-		
-		#+nil
-		,@(remove-if
-		   #'null
-	           (loop for e in members
-			 appending
-			 (destructuring-bind (&key name type param doc initform param-name member-name) e
-			   (let ((get (cl-change-case:camel-case (format nil "get-~a" name)))
-				 (set (cl-change-case:camel-case (format nil "set-~a" name)))
-				 (const-p (let* ((s  (format nil "~a" type))
-						 (last-char (aref s (- (length s)
-								       1))))
-					    (not (eq #\* last-char)))))
-			     `(,(if doc
-				    `(doc ,doc)
-				    "")
-			       (defmethod ,get ()
-				 (declare ,@(if const-p
-						`((const)
-						  (values ,(format nil "const ~a&" type)))
-						`((values ,type))))
-				 (return ,member-name))
-			       (defmethod ,set (,member-name)
-				 (declare (type ,type ,member-name))
-				 (setf (-> this ,member-name)
-				       ,member-name)))))))
-		"private:"
-		
-		,@(remove-if #'null
-			     (loop for e in members
-				   collect
-				   (destructuring-bind (&key name type param doc initform param-name member-name) e
-				     (if initform
-					 `(space ,type ,member-name (curly ,initform))
-					 `(space ,type ,member-name)))))))
+		(defmethod compile_word (symbol_name operations)
+		  (declare (type "const std::string&" symbol_name)
+			   (type "const std::vector<Operation>&" operations)
+			   (values REsult))
+		  (let ((ctx (gccjit--context--acquire))
+			(int_type (ctx.get_type GCC_JIT_TYPE_INT))
+			(vm_struct (ctx.new_opaque_struct_type (string "ForthVM")))
+			(vm_ptr_type (vmstruct.get_pointer))
+			(int_ptr_type (int_type.get_pointer))
+			(param_vm (ctx.new_param vm_ptr_type (string "vm")))
+			(word_params param_vm)
+			(function (ctx.new_function GCC_JIT_FUNCTION_EXPORTED
+						    int_type
+						    symbol_name
+						    word_params
+						    0))
+			(declare_helper (lambda (name params)
+					  (declare (type "const std::string&" name)
+						   (type "std::vector<param>" params))
+					  (return (ctx.new_function GCC_JIT_FUNCTION_IMPORTED
+								    int_type
+								    name
+								    params
+								    0))))
+			(make_vm_only_helper (lambda (name)
+					       (declare (type "const std::string&" name))
+					       (let ((helper_vm (ctx.new_param vm_ptr_type (string "vm")))
+						     (params (curly helper_vm )))
+						 (declare (type "std::vector<params>" params))
+						 (return (declare_helper name params)))))
+			(make_vm_int_helper (lambda (name)
+					       (declare (type "const std::string&" name))
+					       (let ((helper_vm (ctx.new_param vm_ptr_type (string "vm")))
+						     (helper_value (ctx.new_param int_type (string "value")))
+						     (params (curly helper_vm helper_value)))
+						 (declare (type "std::vector<params>" params))
+						 (return (declare_helper name params)))))
+			,@(loop for e in `(( add sub mul dup drop swap dot lt gt eq fetch store))
+					  collect
+				`(,(format nil "helper_~a" e)
+				  (make_vm_only_helper (string ,(format nil "forth_~a" e)))))
+			,@(loop for e in `((push_literal call_word))
+					  collect
+				`(,(format nil "helper_~a" e)
+				  (make_vm_int_helper (string ,(format nil "forth_~a" e))))))
+		    (declare (type "std::vector<param>" word_params))
+		    ))
+		))
       :format t))
 
 
