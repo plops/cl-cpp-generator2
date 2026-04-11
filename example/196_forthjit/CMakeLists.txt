@@ -18,8 +18,8 @@ add_executable(forthjit
     main.cpp
     Operation.cpp
     JITCompiler.cpp
-    ForthVM.cpp
-    ForthVM_wrappers.cpp
+#    ForthVM.cpp
+#    ForthVM_wrappers.cpp
 )
 
 target_link_libraries(forthjit gccjit)
