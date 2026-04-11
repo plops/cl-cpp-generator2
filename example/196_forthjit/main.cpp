@@ -121,6 +121,47 @@ bool checked_mul(int lhs, int rhs, int *result) {
   return !__builtin_mul_overflow(lhs, rhs, result);
 }
 
+std::optional<Primitive> lookup_primitive(std::string_view token) {
+  auto upper{to_upper(token)};
+  if ("+" == upper) {
+    return Primitive::Add;
+  }
+  if ("-" == upper) {
+    return Primitive::Sub;
+  }
+  if ("*" == upper) {
+    return Primitive::Mul;
+  }
+  if ("DUP" == upper) {
+    return Primitive::Dup;
+  }
+  if ("DROP" == upper) {
+    return Primitive::Drop;
+  }
+  if ("SWAP" == upper) {
+    return Primitive::Swap;
+  }
+  if ("." == upper) {
+    return Primitive::Dot;
+  }
+  if ("<" == upper) {
+    return Primitive::LessThan;
+  }
+  if (">" == upper) {
+    return Primitive::GreaterThan;
+  }
+  if ("=" == upper) {
+    return Primitive::Equal;
+  }
+  if ("@" == upper) {
+    return Primitive::Fetch;
+  }
+  if ("!" == upper) {
+    return Primitive::Store;
+  }
+  return std::nullopt;
+}
+
 }; // namespace
 
 void interpreter_loop() {

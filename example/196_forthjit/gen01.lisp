@@ -287,7 +287,9 @@
 	(push a)
 	(push b))))
   
-  (let ((l-prim `(Add Sub Mul Dup Drop Swap Dot LessThan GreaterThan Equal Fetch Store))) 
+  (let ((l-prim `((:name Add :symbol +) (:name Sub :symbol -) (:name Mul :symbol *) (:name Dup)
+		  (:name Drop) (:name Swap) (:name Dot :symbol ".") (:name LessThan :symbol <) (:name GreaterThan :symbol >)
+		  (:name Equal :symbol =) (:name Fetch :symbol @) (:name Store :symbol !)))) 
     (write-source
      (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames "main.cpp" *source-dir*))
      `(do0
@@ -318,7 +320,7 @@
 							  (= Compile_Error 3))))
 		(space enum class Primitive
 		       (curly
-			,@l-prim))
+			,@(mapcar #'second l-prim)))
 
 		,@(loop for e in `((:name OperationKind :values (Literal
 								 Primitive
@@ -413,6 +415,20 @@
 				    (values bool))
 			   (return (,(format nil "!__builtin_~a_overflow" e)
 				     lhs rhs result))))
+
+		(defun lookup_primitive (token)
+		  (declare (type std--string_view token)
+			   (values "std::optional<Primitive>"))
+		  (let ((upper (to_upper token)))
+		    ,@(loop for e in l-prim
+			    collect
+			    (destructuring-bind (&key name (symbol (string-upcase (format nil "~a" name))))
+				e
+			      `(when (== (string ,symbol)
+					 upper)
+				 (return ,(format nil "Primitive::~a" name))))
+			   )
+		    (return std--nullopt)))
 
 		))
      
