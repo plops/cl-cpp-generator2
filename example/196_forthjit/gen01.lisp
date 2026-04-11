@@ -373,6 +373,22 @@
 		      (tokens.push_back current))
 		    (return tokens)))
 
+		(defun parse_integer (token)
+		  (declare (type "std::string_view" token)
+			   (values "std::optional<int>"))
+		  (when (token.empty)
+		    (return std--nullopt))
+		  (let ((value 0)
+			(*begin (token.data))
+			(*end (+ (token.data)
+				 (token.size)))
+			((bracket ptr ec)
+			  (std--from_chars begin end value)))
+		    (when (logior (!= ec "std::errc{}")
+			      (!= ptr end))
+		      (return std--nullopt))
+		    (return value)))
+
 		
 
 		))

@@ -75,6 +75,20 @@ std::vector<std::string> split_on_spaces(const std::string &line) {
   return tokens;
 }
 
+std::optional<int> parse_integer(std::string_view token) {
+  if (token.empty()) {
+    return std::nullopt;
+  }
+  auto value{0};
+  auto *begin{token.data()};
+  auto *end{token.data() + token.size()};
+  auto [ptr, ec]{std::from_chars(begin, end, value)};
+  if (ec != std::errc{} || ptr != end) {
+    return std::nullopt;
+  }
+  return value;
+}
+
 }; // namespace
 
 void interpreter_loop() {
