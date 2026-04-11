@@ -1,3 +1,4 @@
+enum class Error : int { Unknown_Word = 1, Stack_Error = 2, Compile_Error = 3 };
 enum class Primitive {
   Add,
   Sub,

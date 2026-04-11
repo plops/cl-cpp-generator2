@@ -382,6 +382,9 @@
     (write-source
      (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames "helpers.h" *source-dir*))
      `(do0
+       (space enum class "Error : int" (curly (comma (= Unknown_Word 1)
+						     (= Stack_Error 2)
+						     (= Compile_Error 3))))
        (space enum class Primitive
 	      (curly
 	       ,@(mapcar #'second l-prim)))
@@ -394,7 +397,8 @@
 	       collect
 	       (destructuring-bind (&key name values) e
 		 `(space enum class ,name
-			 (curly ,@values))))))
+			 (curly ,@values)))))
+     :omit-parens t)
     
     (write-source
      (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames "main.cpp" *source-dir*))
@@ -422,9 +426,7 @@
 
 		"constexpr auto kOk = 0;"
 		
-		(space enum class Error-int (curly (comma (= Unknown_Word 1)
-							  (= Stack_Error 2)
-							  (= Compile_Error 3))))
+		
 		
 
 		
@@ -491,7 +493,7 @@
 		  (declare (type "Error" error)
 			   (values "const char*"))
 		  (case error
-		    ,@(loop for e in `(Unknown_Word Stack_error Compile_Error)
+		    ,@(loop for e in `(Unknown_Word Stack_Error Compile_Error)
 			    collect
 			    `(,(format nil "Error::~a" e)
 			      (return (string ,e )))))

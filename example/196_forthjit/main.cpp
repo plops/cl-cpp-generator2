@@ -18,7 +18,6 @@
 using namespace gccjit;
 namespace {
 constexpr auto kOk = 0;
-enum class Error - int{Unknown_Word = 1, Stack_Error = 2, Compile_Error = 3};
 class ForthVM;
 using CompiledWord = int (*)(ForthVM *);
 
@@ -79,8 +78,8 @@ const char *error_name(Error error) {
     return "Unknown_Word";
     break;
   };
-  case Error::Stack_error: {
-    return "Stack_error";
+  case Error::Stack_Error: {
+    return "Stack_Error";
     break;
   };
   case Error::Compile_Error: {
