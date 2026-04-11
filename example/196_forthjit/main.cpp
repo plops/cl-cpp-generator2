@@ -107,6 +107,20 @@ const char *error_name(Error error) {
   return "Compile_error";
 }
 
+int to_status(Error error) { return static_cast<int>(error); }
+
+bool checked_add(int lhs, int rhs, int *result) {
+  return !__builtin_add_overflow(lhs, rhs, result);
+}
+
+bool checked_sub(int lhs, int rhs, int *result) {
+  return !__builtin_sub_overflow(lhs, rhs, result);
+}
+
+bool checked_mul(int lhs, int rhs, int *result) {
+  return !__builtin_mul_overflow(lhs, rhs, result);
+}
+
 }; // namespace
 
 void interpreter_loop() {

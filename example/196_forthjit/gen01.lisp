@@ -399,6 +399,21 @@
 				       (return (string ,e )))))
 		  (return (string "Compile_error")))
 
+		(defun to_status (error)
+		  (declare (type Error error)
+			   (values int))
+		  (return ("static_cast<int>" error)))
+
+		,@(loop for e in `(add sub mul)
+			collect
+			`(defun ,(format nil "checked_~a" e)
+			   (lhs rhs result)
+			   (declare (type int lhs rhs)
+				    (type int* result)
+				    (values bool))
+			   (return (,(format nil "!__builtin_~a_overflow" e)
+				     lhs rhs result))))
+
 		))
      
      
