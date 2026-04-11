@@ -389,7 +389,15 @@
 		      (return std--nullopt))
 		    (return value)))
 
-		
+		(defun error_name (error)
+		  (declare (type "Error" error)
+			   (values "const char*"))
+		  (case error
+		    ,@(loop for e in `(Unknown_Word Stack_error Compile_Error)
+			    collect
+				  `(,(format nil "Error::~a" e)
+				       (return (string ,e )))))
+		  (return (string "Compile_error")))
 
 		))
      

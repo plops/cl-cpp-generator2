@@ -89,6 +89,24 @@ std::optional<int> parse_integer(std::string_view token) {
   return value;
 }
 
+const char *error_name(Error error) {
+  switch (error) {
+  case Error::Unknown_Word: {
+    return "Unknown_Word";
+    break;
+  };
+  case Error::Stack_error: {
+    return "Stack_error";
+    break;
+  };
+  case Error::Compile_Error: {
+    return "Compile_Error";
+    break;
+  };
+  }
+  return "Compile_error";
+}
+
 }; // namespace
 
 void interpreter_loop() {
