@@ -15,3 +15,37 @@ example/**/{b,build,cmake-build}*/
 **/b/
 *.pyc
 example/154*/project/*
+
+# --- Added by Antigravity ---
+
+# Build Systems & IDEs
+**/.clwb/
+**/bazel-*
+**/.xmake/
+**/.cache/
+**/compile_commands.json
+**/CMakeCache.txt
+
+# Binaries
+*.a
+*.so
+*.lib
+*.dll
+*.exe
+*.bin
+forthjit
+reflection_demo
+jit_example
+pro
+p2
+
+# Third Party
+**/lua-*/
+**/external/
+*.tar.gz
+
+# Temporary & Output
+*_history.txt
+*.ppm
+review.txt
+.DS_Store

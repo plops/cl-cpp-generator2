@@ -1,6 +1,7 @@
+;; run this script like this: sbcl --load gen01.lisp --quit
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2")
-  (ql:quickload "cl-ppcre")c
+  (ql:quickload "cl-ppcre")
   (ql:quickload "cl-change-case"))
 
 (in-package :cl-cpp-generator2)
@@ -586,4 +587,4 @@
 	 (return 0)))
      :omit-parens t
      :format t
-     :tidy nil)))
+     :tidy t)))
