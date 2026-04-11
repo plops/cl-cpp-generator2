@@ -41,6 +41,11 @@
       :code `(do0
 	      (defclass ,class-name ()
 		"public:"
+		(space struct Result (prgon
+				      "gcc_jit_result *jit_result{nullptr};"
+				      "CompiledWord function{nullptr};"))
+
+		
 		#+nil
 		(defmethod ,class-name (&key ,@(remove-if
 						#'null
