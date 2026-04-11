@@ -1,6 +1,6 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2")
-  (ql:quickload "cl-ppcre")
+  (ql:quickload "cl-ppcre")c
   (ql:quickload "cl-change-case"))
 
 (in-package :cl-cpp-generator2)
@@ -16,85 +16,7 @@
   
   (load "util.lisp")
   
-  (let* ((class-name `JITCompiler)
-	  (members0 `((:name ctx :type  context  :initform 0 ;(context--acquire)
-			     )
-		      (:name vm :type  ForthVM&  :initform 0)))
-	  (members (loop for e in members0
-			 collect
-			 (destructuring-bind (&key name type param doc initform) e
-			   `(:name ,name
-			     :type ,type
-			     :param ,param
-			     :doc ,doc
-			     :initform ,initform
-			     :member-name ,(intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))
-			     :param-name ,(when param
-					    (intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))))))))
-     
-     (write-class
-      :dir *full-source-dir*
-      :name class-name
-      :headers `()
-      :header-preamble `(do0 (comments "header"))
-      :implementation-preamble `(do0 (comments "implementation"))
-      :code `(do0
-	      (defclass ,class-name ()
-		"public:"
-		(space struct Result (prgon
-				      "gcc_jit_result *jit_result{nullptr};"
-				      "CompiledWord function{nullptr};"))
-
-		
-		(defmethod compile_word (symbol_name operations)
-		  (declare (type "const std::string&" symbol_name)
-			   (type "const std::vector<Operation>&" operations)
-			   (values REsult))
-		  (let ((ctx (gccjit--context--acquire))
-			(int_type (ctx.get_type GCC_JIT_TYPE_INT))
-			(vm_struct (ctx.new_opaque_struct_type (string "ForthVM")))
-			(vm_ptr_type (vmstruct.get_pointer))
-			(int_ptr_type (int_type.get_pointer))
-			(param_vm (ctx.new_param vm_ptr_type (string "vm")))
-			(word_params param_vm)
-			(function (ctx.new_function GCC_JIT_FUNCTION_EXPORTED
-						    int_type
-						    symbol_name
-						    word_params
-						    0))
-			(declare_helper (lambda (name params)
-					  (declare (type "const std::string&" name)
-						   (type "std::vector<param>" params))
-					  (return (ctx.new_function GCC_JIT_FUNCTION_IMPORTED
-								    int_type
-								    name
-								    params
-								    0))))
-			(make_vm_only_helper (lambda (name)
-					       (declare (type "const std::string&" name))
-					       (let ((helper_vm (ctx.new_param vm_ptr_type (string "vm")))
-						     (params (curly helper_vm )))
-						 (declare (type "std::vector<params>" params))
-						 (return (declare_helper name params)))))
-			(make_vm_int_helper (lambda (name)
-					       (declare (type "const std::string&" name))
-					       (let ((helper_vm (ctx.new_param vm_ptr_type (string "vm")))
-						     (helper_value (ctx.new_param int_type (string "value")))
-						     (params (curly helper_vm helper_value)))
-						 (declare (type "std::vector<params>" params))
-						 (return (declare_helper name params)))))
-			,@(loop for e in `(( add sub mul dup drop swap dot lt gt eq fetch store))
-					  collect
-				`(,(format nil "helper_~a" e)
-				  (make_vm_only_helper (string ,(format nil "forth_~a" e)))))
-			,@(loop for e in `((push_literal call_word))
-					  collect
-				`(,(format nil "helper_~a" e)
-				  (make_vm_int_helper (string ,(format nil "forth_~a" e))))))
-		    (declare (type "std::vector<param>" word_params))
-		    ))
-		))
-      :format t))
+  
 
 
   (let* ((class-name `Operation)
@@ -260,9 +182,158 @@
 	(push a)
 	(push b))))
   
-  (let ((l-prim `((:name Add :symbol +) (:name Sub :symbol -) (:name Mul :symbol *) (:name Dup)
-		  (:name Drop) (:name Swap) (:name Dot :symbol ".") (:name LessThan :symbol <) (:name GreaterThan :symbol >)
-		  (:name Equal :symbol =) (:name Fetch :symbol @) (:name Store :symbol !)))) 
+  (let* ((l-prim0 `((:name Add :symbol +) (:name Sub :symbol -) (:name Mul :symbol *) (:name Dup)
+		    (:name Drop) (:name Swap) (:name Dot :symbol ".") (:name LessThan :symbol < :short lt) (:name GreaterThan :symbol > :short gt)
+		    (:name Equal :symbol = :short eq) (:name Fetch :symbol @) (:name Store :symbol !)))
+	 (l-prim (loop for e in l-prim0
+		       collect
+		       (destructuring-bind (&key
+					      name
+					      (symbol (string-upcase (format nil "~a" name)))
+					      (short (string-downcase (format nil "~a" name)))) e
+			 `(:name ,name
+			   :symbol ,symbol
+			   :short ,short))
+	       )))
+
+    (let* ((class-name `JITCompiler)
+	 (members0 `((:name ctx :type  context  :initform 0 ;(context--acquire)
+			     )
+		      (:name vm :type  ForthVM&  :initform 0)))
+	  (members (loop for e in members0
+			 collect
+			 (destructuring-bind (&key name type param doc initform) e
+			   `(:name ,name
+			     :type ,type
+			     :param ,param
+			     :doc ,doc
+			     :initform ,initform
+			     :member-name ,(intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))
+			     :param-name ,(when param
+					    (intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))))))))
+     
+     (write-class
+      :dir *full-source-dir*
+      :name class-name
+      :headers `()
+      :header-preamble `(do0 (comments "header"))
+      :implementation-preamble `(do0 (comments "implementation"))
+      :code `(do0
+	      (defclass ,class-name ()
+		"public:"
+		(space struct Result (prgon
+				      "gcc_jit_result *jit_result{nullptr};"
+				      "CompiledWord function{nullptr};"))
+
+		
+		(defmethod compile_word (symbol_name operations)
+		  (declare (type "const std::string&" symbol_name)
+			   (type "const std::vector<Operation>&" operations)
+			   (values REsult))
+		  (let ((ctx (gccjit--context--acquire))
+			(int_type (ctx.get_type GCC_JIT_TYPE_INT))
+			(vm_struct (ctx.new_opaque_struct_type (string "ForthVM")))
+			(vm_ptr_type (vmstruct.get_pointer))
+			(int_ptr_type (int_type.get_pointer))
+			(param_vm (ctx.new_param vm_ptr_type (string "vm")))
+			(word_params param_vm)
+			(function (ctx.new_function GCC_JIT_FUNCTION_EXPORTED
+						    int_type
+						    symbol_name
+						    word_params
+						    0))
+			(declare_helper (lambda (name params)
+					  (declare (type "const std::string&" name)
+						   (type "std::vector<param>" params))
+					  (return (ctx.new_function GCC_JIT_FUNCTION_IMPORTED
+								    int_type
+								    name
+								    params
+								    0))))
+			(make_vm_only_helper (lambda (name)
+					       (declare (type "const std::string&" name))
+					       (let ((helper_vm (ctx.new_param vm_ptr_type (string "vm")))
+						     (params (curly helper_vm )))
+						 (declare (type "std::vector<params>" params))
+						 (return (declare_helper name params)))))
+			(make_vm_int_helper (lambda (name)
+					       (declare (type "const std::string&" name))
+					       (let ((helper_vm (ctx.new_param vm_ptr_type (string "vm")))
+						     (helper_value (ctx.new_param int_type (string "value")))
+						     (params (curly helper_vm helper_value)))
+						 (declare (type "std::vector<params>" params))
+						 (return (declare_helper name params)))))
+			,@(loop for e in `(add sub mul dup drop swap dot lt gt eq fetch store)
+					  collect
+				`(,(format nil "helper_~a" e)
+				  (make_vm_only_helper (string ,(format nil "forth_~a" e)))))
+			,@(loop for e in `(push_literal call_word)
+					  collect
+				`(,(format nil "helper_~a" e)
+				  (make_vm_int_helper (string ,(format nil "forth_~a" e)))))
+			(pop_vm (ctx.new_param vm_ptr_type (string "vm")))
+			(pop_out (ctx.new_param int_ptr_type (string "out_condition")))
+			(pop_params (curly pop_vm pop_out))
+			(helper_pop_condition (declare_helper (string "forth_pop_condition")
+							      pop_params))
+			(entry_block (function.new_block (string "entry")))
+			(error_block (function.new_block (string "error")))
+			(error_value (function.new_local int_type (string "error_value"))))
+		    (declare (type "std::vector<param>" word_params pop_params))
+		    (entry_block.add_assignment error_value (ctx.zero int_type))
+		    (let ((block_counter 0)
+			  (fresh_block_name (lambda (prefix)
+					      (declare (type "std::string_view" prefix)
+						       ;(values "std::string")
+						       )
+					      (let ((res (space std--string (curly prefix))))
+						(incf res (string "_"))
+						(incf res (std--to_string block_counter++)))
+					      (return res)))
+			 (emit_checked_call (lambda (current_block helper args)
+					       (declare (type block current_block)
+							(type "gccjit::function" helper)
+							(type "const std::vector<rvalue>&" args)
+							(values block))
+					       (let ((ok_block (function.new_block (fresh_block_name (string "ok"))))
+						     (mutable_args args))
+						 (current_block.add_assignment error_value
+						    (ctx.new_call helper mutable_args))
+						 (current_block.end_with_conditional (ctx.new_eq error_value
+								      (ctx.zero int_type))
+							  ok_block
+							  error_block))))
+			  (emit_operations (lambda (current_block
+						    ops)
+					     (declare (type block current_block)
+						      (type "const std::vector<Operation>&" ops)
+						      (values block))
+					     (for-range (operation ops)
+							(declare (type "const auto &" operation))
+							(case operation.kind
+							  (OperationKind--Literal
+							   (setf current_block (emit_checked_call current_block helper_push_literal
+												  (curly param_vm
+													 (ctx.new_rvalue int_type
+															 operation.value)))))
+							  (OperationKind--Primitive
+							   (let ((helper helper_add))
+							     (case operation.primitive
+							       ,@(loop for e in l-prim
+								       collect
+								       (destructuring-bind (&key name symbol short) e
+									   `(,(format nil "Primitive::~a" name)
+									    (setf helper ,(format nil "helper_~a" short)))))))))
+							)))
+			  
+			  
+			  )
+		      
+		      )
+		    ))
+		))
+      :format t))
+    
     (write-source
      (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames "main.cpp" *source-dir*))
      `(do0
@@ -343,7 +414,7 @@
 				   (tokens.push_back current)
 				   (current.clear))
 				 continue)
-			      (current.push_back ch))
+			       (current.push_back ch))
 		    (unless (current.empty)
 		      (tokens.push_back current))
 		    (return tokens)))
@@ -360,7 +431,7 @@
 			((bracket ptr ec)
 			  (std--from_chars begin end value)))
 		    (when (logior (!= ec "std::errc{}")
-			      (!= ptr end))
+				  (!= ptr end))
 		      (return std--nullopt))
 		    (return value)))
 
@@ -370,8 +441,8 @@
 		  (case error
 		    ,@(loop for e in `(Unknown_Word Stack_error Compile_Error)
 			    collect
-				  `(,(format nil "Error::~a" e)
-				       (return (string ,e )))))
+			    `(,(format nil "Error::~a" e)
+			      (return (string ,e )))))
 		  (return (string "Compile_error")))
 
 		(defun to_status (error)
@@ -382,12 +453,12 @@
 		,@(loop for e in `(add sub mul)
 			collect
 			`(defun ,(format nil "checked_~a" e)
-			   (lhs rhs result)
+			     (lhs rhs result)
 			   (declare (type int lhs rhs)
 				    (type int* result)
 				    (values bool))
 			   (return (,(format nil "!__builtin_~a_overflow" e)
-				     lhs rhs result))))
+				    lhs rhs result))))
 
 		(defun lookup_primitive (token)
 		  (declare (type std--string_view token)
@@ -395,12 +466,12 @@
 		  (let ((upper (to_upper token)))
 		    ,@(loop for e in l-prim
 			    collect
-			    (destructuring-bind (&key name (symbol (string-upcase (format nil "~a" name))))
+			    (destructuring-bind (&key name symbol short)
 				e
 			      `(when (== (string ,symbol)
 					 upper)
 				 (return ,(format nil "Primitive::~a" name))))
-			   )
+			    )
 		    (return std--nullopt)))
 
 		(defun is_reserved_token (token)
@@ -411,7 +482,7 @@
 		    (return (logior ,@(loop for e in `(IF ELSE THEN VARIABLE ":" ";")
 					    collect
 					    `(== (string ,(format nil "~a" e))
-						upper))))))
+						 upper))))))
 
 		))
      

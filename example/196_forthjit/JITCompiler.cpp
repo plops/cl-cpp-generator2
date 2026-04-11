@@ -27,11 +27,109 @@ REsult JITCompiler::compile_word(const std::string &symbol_name,
     std::vector<params> params{{helper_vm, helper_value}};
     return declare_helper(name, params);
   }};
-  auto helper_(add sub mul dup drop swap dot lt gt eq fetch store) {
-    make_vm_only_helper(
-        "forth_(add sub mul dup drop swap dot lt gt eq fetch store)")
-  };
-  auto helper_(push_literal call_word) {
-    make_vm_int_helper("forth_(push_literal call_word)")
-  };
+  auto helper_add{make_vm_only_helper("forth_add")};
+  auto helper_sub{make_vm_only_helper("forth_sub")};
+  auto helper_mul{make_vm_only_helper("forth_mul")};
+  auto helper_dup{make_vm_only_helper("forth_dup")};
+  auto helper_drop{make_vm_only_helper("forth_drop")};
+  auto helper_swap{make_vm_only_helper("forth_swap")};
+  auto helper_dot{make_vm_only_helper("forth_dot")};
+  auto helper_lt{make_vm_only_helper("forth_lt")};
+  auto helper_gt{make_vm_only_helper("forth_gt")};
+  auto helper_eq{make_vm_only_helper("forth_eq")};
+  auto helper_fetch{make_vm_only_helper("forth_fetch")};
+  auto helper_store{make_vm_only_helper("forth_store")};
+  auto helper_push_literal{make_vm_int_helper("forth_push_literal")};
+  auto helper_call_word{make_vm_int_helper("forth_call_word")};
+  auto pop_vm{ctx.new_param(vm_ptr_type, "vm")};
+  auto pop_out{ctx.new_param(int_ptr_type, "out_condition")};
+  std::vector<param> pop_params{{pop_vm, pop_out}};
+  auto helper_pop_condition{declare_helper("forth_pop_condition", pop_params)};
+  auto entry_block{function.new_block("entry")};
+  auto error_block{function.new_block("error")};
+  auto error_value{function.new_local(int_type, "error_value")};
+  entry_block.add_assignment(error_value, ctx.zero(int_type));
+  auto block_counter{0};
+  auto fresh_block_name{[&](std::string_view prefix) {
+    auto res{std::string{prefix}};
+    res += "_";
+    res += std::to_string(block_counter++);
+    return res;
+  }};
+  auto emit_checked_call{[&](block current_block, gccjit::function helper,
+                             const std::vector<rvalue> &args) -> block {
+    auto ok_block{function.new_block(fresh_block_name("ok"))};
+    auto mutable_args{args};
+    current_block.add_assignment(error_value,
+                                 ctx.new_call(helper, mutable_args));
+    current_block.end_with_conditional(
+        ctx.new_eq(error_value, ctx.zero(int_type)), ok_block, error_block);
+  }};
+  auto emit_operations{
+      [&](block current_block, const std::vector<Operation> &ops) -> block {
+        for (const auto &operation : ops) {
+          switch (operation.kind) {
+          case OperationKind::Literal: {
+            current_block = emit_checked_call(
+                current_block, helper_push_literal,
+                {param_vm, ctx.new_rvalue(int_type, operation.value)});
+            break;
+          };
+          case OperationKind::Primitive: {
+            auto helper{helper_add};
+            switch (operation.primitive) {
+            case Primitive::Add: {
+              helper = helper_add;
+              break;
+            };
+            case Primitive::Sub: {
+              helper = helper_sub;
+              break;
+            };
+            case Primitive::Mul: {
+              helper = helper_mul;
+              break;
+            };
+            case Primitive::Dup: {
+              helper = helper_dup;
+              break;
+            };
+            case Primitive::Drop: {
+              helper = helper_drop;
+              break;
+            };
+            case Primitive::Swap: {
+              helper = helper_swap;
+              break;
+            };
+            case Primitive::Dot: {
+              helper = helper_dot;
+              break;
+            };
+            case Primitive::LessThan: {
+              helper = helper_lt;
+              break;
+            };
+            case Primitive::GreaterThan: {
+              helper = helper_gt;
+              break;
+            };
+            case Primitive::Equal: {
+              helper = helper_eq;
+              break;
+            };
+            case Primitive::Fetch: {
+              helper = helper_fetch;
+              break;
+            };
+            case Primitive::Store: {
+              helper = helper_store;
+              break;
+            };
+            }
+            break;
+          };
+          }
+        }
+      }};
 }
