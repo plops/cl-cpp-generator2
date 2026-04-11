@@ -68,9 +68,7 @@
 	 )
     (let* ((fn-h-str
 	     (with-output-to-string (sh)
-	       (loop for e in `(,(format nil "#ifndef ~a" once-guard)
-				,(format nil "#define ~a~%" once-guard)
-
+	       (loop for e in `("#pragma once"
 				,@(loop for h in headers
 					collect
 					;; write forward declaration for classes
@@ -91,8 +89,7 @@
 			 :hook-defclass #'(lambda (str)
 					    (format sh "~a;~%" str))
 			 :header-only t
-			 ))
-	       (format sh "~%#endif /* !~a */" once-guard))))
+			 )))))
       (if format
 	  (only-write-when-hash-changed
 	   fn-h

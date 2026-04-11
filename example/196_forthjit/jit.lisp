@@ -123,7 +123,7 @@
 						       (OperationKind--Primitive
 							(let ((helper helper_add))
 							  (case operation.primitive
-							    ,@(loop for e in l-prim
+							    ,@(loop for e in *l-prim*
 								    collect
 								    (destructuring-bind (&key name symbol short) e
 								      `(,(format nil "Primitive::~a" name)
@@ -180,4 +180,5 @@
 
 	       )
 	     ))
-   :format t))
+   :format t
+   ))

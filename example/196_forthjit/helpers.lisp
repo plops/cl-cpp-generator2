@@ -8,7 +8,7 @@
 						 (= Compile_Error 3))))
    (space enum class Primitive
 	  (curly
-	   ,@(mapcar #'second l-prim)))
+	   ,@(mapcar #'second *l-prim*)))
    ,@(loop for e in `((:name OperationKind :values (Literal
 						    Primitive
 						    CallWord
@@ -19,4 +19,5 @@
 	   (destructuring-bind (&key name values) e
 	     `(space enum class ,name
 		     (curly ,@values)))))
+ :format t
  :omit-parens t)

@@ -312,4 +312,5 @@
 	       (declare (values bool))
 	       (let ((MAX_DICT 1000))
 		 (return (<= MAX_DICT (+ (variables_.size) (words_.size))))))))
-   :format t))
+   :format t
+   :omit-parens t))

@@ -29,8 +29,10 @@
 			 `(:name ,name
 			   :symbol ,symbol
 			   :short ,short)))))
+    (defparameter *l-prim* l-prim)
     (load "operation.lisp")
     (load "jit.lisp")
     (load "helpers.lisp")
-    (load "vm.lisp")
-    (load "main.lisp")))
+    ;(load "vm.lisp")
+    ;(load "main.lisp")
+    ))
