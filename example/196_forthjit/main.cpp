@@ -1,3 +1,4 @@
+#include "helpers.h"
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -18,23 +19,6 @@ using namespace gccjit;
 namespace {
 constexpr auto kOk = 0;
 enum class Error - int{Unknown_Word = 1, Stack_Error = 2, Compile_Error = 3};
-enum class Primitive {
-  Add,
-  Sub,
-  Mul,
-  Dup,
-  Drop,
-  Swap,
-  Dot,
-  LessThan,
-  GreaterThan,
-  Equal,
-  Fetch,
-  Store
-};
-enum class OperationKind { Literal, Primitive, CallWord, If };
-enum class ParseMode { Immediate, Definition };
-enum class SequenceStop { End, Else, Then };
 class ForthVM;
 using CompiledWord = int (*)(ForthVM *);
 

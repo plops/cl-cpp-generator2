@@ -41,7 +41,7 @@
       :dir *full-source-dir*
       :name class-name
       :headers `()
-      :header-preamble `(do0 (comments "header"))
+      :header-preamble `(do0 (comments "header") (include "helpers.h") (include<> vector))
       :implementation-preamble `(do0 (comments "implementation"))
       :code `(do0
 	      (defclass ,class-name ()
@@ -95,14 +95,15 @@
 		(defmethod literal (value)
 		  (declare (type int value)
 			   (values Operation))
-		  (let ((op (space Operation (curly (= .kind OperationKind--Literal)
-						    (= .value value)))))
+		  (let ((op (space Operation (curly ))))
+		    (do0 (setf op.kind OperationKind--Literal)
+			 (setf op.value value))
 		    (return op)))
 		
 		#+nil
 		,@(remove-if
 		   #'null
-	           (loop for e in members
+		   (loop for e in members
 			 appending
 			 (destructuring-bind (&key name type param doc initform param-name member-name) e
 			   (let ((get (cl-change-case:camel-case (format nil "get-~a" name)))
@@ -377,6 +378,23 @@
 		  )
 		))
       :format t))
+
+    (write-source
+     (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames "helpers.h" *source-dir*))
+     `(do0
+       (space enum class Primitive
+	      (curly
+	       ,@(mapcar #'second l-prim)))
+       ,@(loop for e in `((:name OperationKind :values (Literal
+							Primitive
+							CallWord
+							If))
+			  (:name ParseMode :values (Immediate Definition))
+			  (:name SequenceStop :values (End Else Then)))
+	       collect
+	       (destructuring-bind (&key name values) e
+		 `(space enum class ,name
+			 (curly ,@values))))))
     
     (write-source
      (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames "main.cpp" *source-dir*))
@@ -397,29 +415,19 @@
 		  unordered_map
 		  utility
 		  vector)
+       (include "helpers.h")
        "using namespace gccjit;"
        (space namespace
 	      (progn
 
 		"constexpr auto kOk = 0;"
-
+		
 		(space enum class Error-int (curly (comma (= Unknown_Word 1)
 							  (= Stack_Error 2)
 							  (= Compile_Error 3))))
-		(space enum class Primitive
-		       (curly
-			,@(mapcar #'second l-prim)))
+		
 
-		,@(loop for e in `((:name OperationKind :values (Literal
-								 Primitive
-								 CallWord
-								 If))
-				   (:name ParseMode :values (Immediate Definition))
-				   (:name SequenceStop :values (End Else Then)))
-			collect
-			(destructuring-bind (&key name values) e
-			  `(space enum class ,name
-				  (curly ,@values))))
+		
 
 		"class ForthVM;"
 		"using CompiledWord = int (*)(ForthVM*);"

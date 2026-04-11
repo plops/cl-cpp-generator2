@@ -1,5 +1,7 @@
 #pragma once
 // header 
+#include "helpers.h" 
+#include <vector> 
 class Operation  {
         public:
          Operation ()       ;   
