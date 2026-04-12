@@ -23,14 +23,14 @@
 		 (string "' ")))   
        std--endl))
 
-#+nil (defparameter *file-hash* (make-hash-table))
+(defvar *file-hash* (make-hash-table))
 (defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"
 										    (list "-i"  (namestring ,fn)
 											  "-o"))))
-  (let ((hash-db ;*file-hash*
-	  'file-hash
+  (let ((hash-db '*file-hash*
+					;'file-hash
 					;(gensym "file-hash")
-	  ))
+		 ))
     `(progn
        (defvar
 					;  parameter
