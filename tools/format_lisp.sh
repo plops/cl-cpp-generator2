@@ -38,7 +38,7 @@ if [ ${#FILES[@]} -eq 0 ]; then
     exit 0
 fi
 
-# 2. Iterate through the files and format them
+# 2. Iterate through the files and format them (an optimization would be to do this in parallel with as many cores as the computer has)
 EXIT_CODE=0
 for file in "${FILES[@]}"; do
     if ! format_lisp_file "$file"; then

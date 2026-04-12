@@ -1,3 +1,4 @@
+(in-package :cl-cpp-generator2)
 (defun lprint (&key (msg "")
 		 (vars nil)
 		 )

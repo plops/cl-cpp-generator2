@@ -33,6 +33,7 @@
 					     (loop for e in members
 						   collect
 						   (destructuring-bind (&key name type param doc initform param-name member-name) e
+						     (declare (ignorable name param doc type member-name))
 						     (when param
 						       `(,param-name ,(if initform initform 0)))))))
 	       (declare
@@ -40,6 +41,7 @@
 			     (loop for e in members
 				   collect
 				   (destructuring-bind (&key name type param doc initform param-name member-name) e
+				     (declare (ignorable doc initform member-name))
 				     (let ((const-p (let* ((s  (format nil "~a" type))
 							   (last-char (aref s (- (length s)
 										 1))))
@@ -58,6 +60,7 @@
 			      (loop for e in members
 				    collect
 				    (destructuring-bind (&key name type param doc initform param-name member-name) e
+				      (declare (ignorable type doc))
 				      (cond
 					(param
 					 (if (eq name 'callback)
@@ -112,6 +115,7 @@
 			  (loop for e in members
 				collect
 				(destructuring-bind (&key name type param doc initform param-name member-name) e
+				  (declare (ignorable name param doc param-name))
 				  (if initform
 				      `(space ,type ,member-name (curly ,initform))
 				      `(space ,type ,member-name)))))))

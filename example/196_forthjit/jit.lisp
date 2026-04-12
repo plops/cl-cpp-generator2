@@ -126,6 +126,7 @@
 							    ,@(loop for e in *l-prim*
 								    collect
 								    (destructuring-bind (&key name symbol short) e
+								      (declare (ignorable symbol))
 								      `(,(format nil "Primitive::~a" name)
 									(setf helper ,(format nil "helper_~a" short)))))))
 							(setf current_block (emit_checked_call current_block helper (curly param_vm))))
