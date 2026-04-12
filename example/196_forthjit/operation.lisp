@@ -109,7 +109,7 @@
 			      (declare (type ,type ,member-name))
 			      (setf (-> this ,member-name)
 				    ,member-name)))))))
-	     "private:"
+					;"public:"
 	     
 	     ,@(remove-if #'null
 			  (loop for e in members

@@ -3,6 +3,7 @@
 (write-source
  (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames "helpers.h" *source-dir*))
  `(do0
+   "#pragma once"
    (space enum class "Error : int" (curly (comma (= Unknown_Word 1)
 						 (= Stack_Error 2)
 						 (= Compile_Error 3))))

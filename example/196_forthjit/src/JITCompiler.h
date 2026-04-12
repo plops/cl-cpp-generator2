@@ -3,8 +3,8 @@
 #include <libgccjit++.h>
 #include <string>
 #include <vector>
-#include <function>
-#include <variant> 
+#include <functional> 
+#include "Operation.h" 
 class ForthVM; 
 using CompiledWord = int (*)(ForthVM *); 
 class JITCompiler  {
@@ -13,5 +13,5 @@ class JITCompiler  {
                 gcc_jit_result *jit_result{nullptr}; 
                 CompiledWord function{nullptr}; 
 };
-        Result compile_word (const std::string& symbol_name, const std::vector<Operation>& operations)       ;   
+        JITCompiler::Result compile_word (const std::string& symbol_name, const std::vector<Operation>& operations)       ;   
 };

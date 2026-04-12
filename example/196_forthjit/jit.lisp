@@ -22,13 +22,21 @@
    :headers `()
    :header-preamble `(do0 (comments "header")
 			  (include<> libgccjit++.h
-				     string vector function variant)
+				     string vector functional ;variant
+				     )
+
+			  (include "Operation.h"
+					;"helpers.h"
+				   )
 			  "class ForthVM;"
 			  "using CompiledWord = int (*)(ForthVM *);")
    :implementation-preamble `(do0 (comments "implementation")
-				  (include "Operation.h"
-					   "helpers.h"))
+				  (include ;"Operation.h"
+				   "helpers.h"
+				   )
+				  )
    :code `(do0
+	   "using namespace gccjit;"
 	   (defclass ,class-name ()
 	     "public:"
 	     (space struct Result (progn
@@ -39,11 +47,11 @@
 	     (defmethod compile_word (symbol_name operations)
 	       (declare (type "const std::string&" symbol_name)
 			(type "const std::vector<Operation>&" operations)
-			(values Result))
+			(values "JITCompiler::Result"))
 	       (let ((ctx (gccjit--context--acquire))
 		     (int_type (ctx.get_type GCC_JIT_TYPE_INT))
 		     (vm_struct (ctx.new_opaque_struct_type (string "ForthVM")))
-		     (vm_ptr_type (vmstruct.get_pointer))
+		     (vm_ptr_type (vm_struct.get_pointer))
 		     (int_ptr_type (int_type.get_pointer))
 		     (param_vm (ctx.new_param vm_ptr_type (string "vm")))
 		     (word_params param_vm)
@@ -64,14 +72,14 @@
 					    (declare (type "const std::string&" name))
 					    (let ((helper_vm (ctx.new_param vm_ptr_type (string "vm")))
 						  (params (curly helper_vm )))
-					      (declare (type "std::vector<params>" params))
+					      (declare (type "std::vector<param>" params))
 					      (return (declare_helper name params)))))
 		     (make_vm_int_helper (lambda (name)
 					   (declare (type "const std::string&" name))
 					   (let ((helper_vm (ctx.new_param vm_ptr_type (string "vm")))
 						 (helper_value (ctx.new_param int_type (string "value")))
 						 (params (curly helper_vm helper_value)))
-					     (declare (type "std::vector<params>" params))
+					     (declare (type "std::vector<param>" params))
 					     (return (declare_helper name params)))))
 		     ,@(loop for e in `(add sub mul dup drop swap dot lt gt eq fetch store)
 			     collect
@@ -112,7 +120,8 @@
 					      (current_block.end_with_conditional (ctx.new_eq error_value
 											      (ctx.zero int_type))
 										  ok_block
-										  error_block))))
+										  error_block)
+					      (return ok_block))))
 		       (emit_operations (lambda (current_block
 						 ops)
 					  (declare (type block current_block)
@@ -155,13 +164,14 @@
 								(after_block (function.new_block (fresh_block_name (string "after_if")))))
 							    (current_block.end_with_conditional (ctx.new_ne condition_value
 													    (ctx.zero int_type)
-													    true_block
-													    false_block))
+													    )
+												true_block
+												false_block)
 							    (let ((completed_true (emit_operations true_block
 												   operation.true_branch)))
 							      (completed_true.end_with_jump after_block)
 							      (let ((completed_false (emit_operations false_block operations.false_branch)))
-								(compleded_false.end_with_jump after_block)
+								(completed_false.end_with_jump after_block)
 								(setf current_block after_block)))))))
 						     )
 					  (return current_block)))
@@ -171,6 +181,7 @@
 		       
 		       
 		       )
+		   (declare (type "std::function<block(block, const std::vector<Operation> &)>" emit_operations))
 		   
 		   )
 		 (completed_entry.end_with_return (ctx.zero int_type))

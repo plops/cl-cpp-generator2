@@ -7,7 +7,6 @@ class Operation  {
          Operation ()       ;   
          ~Operation ()       ;   
         Operation literal (int value)       ;   
-        private:
         OperationKind kind {OperationKind::Literal};
         int value {0};
         Primitive primitive {Primitive::Add};
