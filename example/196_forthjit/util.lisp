@@ -22,11 +22,12 @@
 		 (string "' ")))   
        std--endl))
 
-
+#+nil (defparameter *file-hash* (make-hash-table))
 (defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"
 										    (list "-i"  (namestring ,fn)
 											  "-o"))))
-  (let ((hash-db 'file-hash
+  (let ((hash-db ;*file-hash*
+					'file-hash
 					;(gensym "file-hash")
 		 ))
     `(progn
@@ -47,10 +48,10 @@
 				   :if-exists :supersede
 				   :if-does-not-exist :create)
        		 (format sh "~a" ,str))
-	       (sb-ext:run-program "/usr/bin/clang-format"
+	    #+nil   (sb-ext:run-program "/usr/bin/clang-format"
 				   (list "-i"  (namestring ,fn)
 					 "-o"))
-	      ; ,formatter
+	       ,formatter
 	       )
 	     (setf (gethash fn-hash ,hash-db) code-hash)
 	     ))))))
@@ -62,10 +63,11 @@
 (defun write-class (&key name dir code headers header-preamble implementation-preamble preamble format)
   "split class definition in .h file and implementation in .cpp file. use defclass in code. headers will only be included into the .cpp file. the .h file will get forward class declarations. additional headers can be added to the .h file with header-preamble and to the .cpp file with implementation preamble."
   (let* ((fn-h (format nil "~a/~a.h" dir name))
-	 (once-guard (string-upcase (format nil "~a_H" name)))
+	 
 	 (fn-h-nodir (format nil "~a.h" name))
 	 (fn-cpp (format nil "~a/~a.cpp" dir name))
 	 )
+    (declare (ignorable fn-h))
     (let* ((fn-h-str
 	     (with-output-to-string (sh)
 	       (loop for e in `("#pragma once"
@@ -90,6 +92,7 @@
 					    (format sh "~a;~%" str))
 			 :header-only t
 			 )))))
+      (declare (ignorable fn-h-str))
       (if format
 	  (only-write-when-hash-changed
 	   fn-h

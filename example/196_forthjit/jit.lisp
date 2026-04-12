@@ -1,10 +1,10 @@
 (in-package :cl-cpp-generator2)
 
 (let* ((class-name `JITCompiler)
-       (members0 `((:name ctx :type  context  :initform 0 ;(context--acquire)
+       #+nil (members0 `((:name ctx :type  context  :initform 0 ;(context--acquire)
 			  )
 		   (:name vm :type  ForthVM&  :initform 0)))
-       (members (loop for e in members0
+       #+nil (members (loop for e in members0
 		      collect
 		      (destructuring-bind (&key name type param doc initform) e
 			`(:name ,name
