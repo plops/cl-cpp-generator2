@@ -24,17 +24,8 @@
    (space namespace
 	  (progn
 
-	    "constexpr auto kOk = 0;"
-	    
-	    
-	    
-
-	    
-
 	    "class ForthVM;"
 	    "using CompiledWord = int (*)(ForthVM*);"
-
-	    
 
 	    (defun normalize_dictionary_name (text)
 	      (declare (type "std::string_view" text)
@@ -73,10 +64,7 @@
 			  (return (string ,e )))))
 	      (return (string "Compile_error")))
 
-	    (defun to_status (error)
-	      (declare (type Error error)
-		       (values int))
-	      (return ("static_cast<int>" error)))
+	    
 
 	    ,@(loop for e in `(add sub mul)
 		    collect

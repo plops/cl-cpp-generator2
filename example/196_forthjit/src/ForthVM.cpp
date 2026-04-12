@@ -1,7 +1,11 @@
 // no preamble
+#include "ForthVM.h"
+#include "helpers.h"
 #include <algorithm>
 #include <iostream>
 #include <vector>
+
+int to_status(Error error) { return static_cast<int>(error); }
 
 std::string to_upper(std::string_view text) {
   auto upper{std::string(text)};
@@ -31,7 +35,6 @@ std::vector<std::string> split_on_spaces(const std::string &line) {
   return tokens;
 }
 
-#include "ForthVM.h"
 ForthVM::ForthVM() {}
 ForthVM::~ForthVM() {
   for (auto &&word : words_) {
@@ -101,7 +104,7 @@ int ForthVM::add() {
     return status;
   }
   if (data_stack_.size() < 2) {
-    return Error::Stack_Underflow;
+    return to_status(Error::Stack_Error);
   }
   auto b{data_stack_.back()};
   data_stack_.pop_back();
@@ -116,7 +119,7 @@ int ForthVM::sub() {
     return status;
   }
   if (data_stack_.size() < 2) {
-    return Error::Stack_Underflow;
+    return to_status(Error::Stack_Error);
   }
   auto b{data_stack_.back()};
   data_stack_.pop_back();
@@ -131,7 +134,7 @@ int ForthVM::mul() {
     return status;
   }
   if (data_stack_.size() < 2) {
-    return Error::Stack_Underflow;
+    return to_status(Error::Stack_Error);
   }
   auto b{data_stack_.back()};
   data_stack_.pop_back();
@@ -147,7 +150,7 @@ int ForthVM::dup() {
   }
   {
     if (data_stack_.size() < 1) {
-      return Error::Stack_Underflow;
+      return to_status(Error::Stack_Error);
     }
     data_stack_.push_back(data_stack_.back());
   }
@@ -160,7 +163,7 @@ int ForthVM::drop() {
   }
   {
     if (data_stack_.size() < 1) {
-      return Error::Stack_Underflow;
+      return to_status(Error::Stack_Error);
     }
     data_stack_.pop_back();
   }
@@ -173,7 +176,7 @@ int ForthVM::swap() {
   }
   {
     if (data_stack_.size() < 2) {
-      return Error::Stack_Underflow;
+      return to_status(Error::Stack_Error);
     }
     auto b{data_stack_.back()};
     data_stack_.pop_back();
@@ -191,7 +194,7 @@ int ForthVM::dot() {
   }
   {
     if (data_stack_.size() < 1) {
-      return Error::Stack_Underflow;
+      return to_status(Error::Stack_Error);
     }
     std::cout << data_stack_.back() << " ";
     data_stack_.pop_back();
@@ -205,7 +208,7 @@ int ForthVM::lessthan() {
   }
   {
     if (data_stack_.size() < 2) {
-      return Error::Stack_Underflow;
+      return to_status(Error::Stack_Error);
     }
     auto b{data_stack_.back()};
     auto a{{data_stack_.pop_back();
@@ -224,7 +227,7 @@ int ForthVM::greaterthan() {
   }
   {
     if (data_stack_.size() < 2) {
-      return Error::Stack_Underflow;
+      return to_status(Error::Stack_Error);
     }
     auto b{data_stack_.back()};
     auto a{{data_stack_.pop_back();
@@ -243,7 +246,7 @@ int ForthVM::equal() {
   }
   {
     if (data_stack_.size() < 2) {
-      return Error::Stack_Underflow;
+      return to_status(Error::Stack_Error);
     }
     auto b{data_stack_.back()};
     auto a{{data_stack_.pop_back();
@@ -262,7 +265,7 @@ int ForthVM::fetch() {
   }
   {
     if (data_stack_.size() < 1) {
-      return Error::Stack_Underflow;
+      return to_status(Error::Stack_Error);
     }
     auto idx{data_stack_.back()};
     data_stack_.pop_back();
@@ -279,7 +282,7 @@ int ForthVM::store() {
   }
   {
     if (data_stack_.size() < 2) {
-      return Error::Stack_Underflow;
+      return to_status(Error::Stack_Error);
     }
     auto idx{data_stack_.back()};
     auto val{{data_stack_.pop_back();
@@ -309,7 +312,7 @@ int ForthVM::pop_condition(int *out) {
     return status;
   }
   if (data_stack_.size() < 1) {
-    return Error::Stack_Underflow;
+    return to_status(Error::Stack_Error);
   }
   *out = data_stack_.back();
   data_stack_.pop_back();
