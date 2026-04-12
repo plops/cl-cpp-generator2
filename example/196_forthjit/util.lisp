@@ -27,21 +27,15 @@
 (defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"
 										    (list "-i"  (namestring ,fn)
 											  "-o"))))
-  (let ((hash-db '*file-hash*
-					;'file-hash
-					;(gensym "file-hash")
-		 ))
+  (let ((hash-db '*file-hash*))
     `(progn
-       (defvar
-					;  parameter
-	   ,hash-db (make-hash-table))
+       (defvar ,hash-db (make-hash-table))
        (let ((fn-hash (sxhash ,fn))
 	     (code-hash (sxhash ,str)))
 	 (multiple-value-bind (old-code-hash exists) (gethash fn-hash ,hash-db)
 	   (when (or (not exists)
 		     (/= code-hash old-code-hash)
 		     (not (probe-file ,fn)))
-					;,@body
 	     (progn
 	       (format t "hash has changed in ~a exists=~a old=~a new=~a~%" ,fn exists old-code-hash code-hash)
 	       (with-open-file (sh ,fn
@@ -49,15 +43,13 @@
 				   :if-exists :supersede
 				   :if-does-not-exist :create)
        		 (format sh "~a" ,str))
-	       #+nil   (sb-ext:run-program "/usr/bin/clang-format"
-					   (list "-i"  (namestring ,fn)
-						 "-o"))
-	       ,formatter
-	       )
+	       ,formatter)
 	     (setf (gethash fn-hash ,hash-db) code-hash)
 	     ))))))
+
 (defun share (name)
   (format nil "std::shared_ptr<~a>" name))
+
 (defun uniq (name)
   (format nil "std::unique_ptr<~a>" name))
 
@@ -77,8 +69,7 @@
 					;; write forward declaration for classes
 					(format nil "class ~a;" h))
 				,preamble
-				,header-preamble
-				)
+				,header-preamble)
 		     do
 			(when e
 			  (format sh "~a~%"
@@ -97,8 +88,7 @@
       (if format
 	  (only-write-when-hash-changed
 	   fn-h
-	   fn-h-str
-	   )
+	   fn-h-str)
 	  (only-write-when-hash-changed
 	   fn-h
 	   fn-h-str
