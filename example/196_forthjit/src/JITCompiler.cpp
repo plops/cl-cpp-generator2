@@ -157,7 +157,7 @@ JITCompiler::compile_word(const std::string &symbol_name,
                 emit_operations(true_block, operation.true_branch)};
             completed_true.end_with_jump(after_block);
             auto completed_false{
-                emit_operations(false_block, operations.false_branch)};
+                emit_operations(false_block, operation.false_branch)};
             completed_false.end_with_jump(after_block);
             current_block = after_block;
             break;

@@ -170,7 +170,7 @@
 							    (let ((completed_true (emit_operations true_block
 												   operation.true_branch)))
 							      (completed_true.end_with_jump after_block)
-							      (let ((completed_false (emit_operations false_block operations.false_branch)))
+							      (let ((completed_false (emit_operations false_block operation.false_branch)))
 								(completed_false.end_with_jump after_block)
 								(setf current_block after_block)))))))
 						     )
