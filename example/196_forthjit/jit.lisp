@@ -2,20 +2,20 @@
 
 (let* ((class-name `JITCompiler)
        #+nil (members0 `((:name ctx :type  context  :initform 0 ;(context--acquire)
-			  )
-		   (:name vm :type  ForthVM&  :initform 0)))
+				)
+			 (:name vm :type  ForthVM&  :initform 0)))
        #+nil (members (loop for e in members0
-		      collect
-		      (destructuring-bind (&key name type param doc initform) e
-			`(:name ,name
-			  :type ,type
-			  :param ,param
-			  :doc ,doc
-			  :initform ,initform
-			  :member-name ,(intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))
-			  :param-name ,(when param
-					 (intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))))))))
-     
+			    collect
+			    (destructuring-bind (&key name type param doc initform) e
+			      `(:name ,name
+				:type ,type
+				:param ,param
+				:doc ,doc
+				:initform ,initform
+				:member-name ,(intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))
+				:param-name ,(when param
+					       (intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))))))))
+  
   (write-class
    :dir *full-source-dir*
    :name class-name
@@ -29,7 +29,7 @@
 				   "gcc_jit_result *jit_result{nullptr};"
 				   "CompiledWord function{nullptr};"))
 
-		
+	     
 	     (defmethod compile_word (symbol_name operations)
 	       (declare (type "const std::string&" symbol_name)
 			(type "const std::vector<Operation>&" operations)
@@ -160,11 +160,11 @@
 					  (return current_block)))
 		       (completed_entry (emit_operations entry_block operations)
 					)
-			  
-			  
-			  
+		       
+		       
+		       
 		       )
-		      
+		   
 		   )
 		 (completed_entry.end_with_return (ctx.zero int_type))
 		 (error_block.end_with_return error_value)

@@ -6,16 +6,16 @@
    :name class-name
    :headers '()
    :header-preamble `(do0 (include<> libgccjit++.h string vector functional variant)
-			   "class ForthVM;"
-			   "using CompiledWord = int (*)(ForthVM *);")
+			  "class ForthVM;"
+			  "using CompiledWord = int (*)(ForthVM *);")
    :implementation-preamble `(do0 (include "Operation.h")
-				   (include "helpers.h"))
+				  (include "helpers.h"))
    :code `(do0
 	   (defclass ,class-name ()
 	     "public:"
 	     (space struct Result (progn
-				   "gcc_jit_result *jit_result{nullptr};"
-				   "CompiledWord function{nullptr};"))
+				    "gcc_jit_result *jit_result{nullptr};"
+				    "CompiledWord function{nullptr};"))
 
 	     (defmethod compile_word (symbol-name operations)
 	       (declare (type "const std::string&" symbol-name)

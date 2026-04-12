@@ -25,11 +25,11 @@
 	  (progn
 
 	    "constexpr auto kOk = 0;"
-		
-		
-		
+	    
+	    
+	    
 
-		
+	    
 
 	    "class ForthVM;"
 	    "using CompiledWord = int (*)(ForthVM*);"
@@ -139,9 +139,9 @@
 					     upper))))))
 
 	    ))
-     
-     
-       
+   
+   
+   
 
    (defun interpreter_loop ()
      (let ((vm "ForthVM{}")
@@ -153,8 +153,8 @@
 		  (while (>> ss token)
 			 (vm.consume_fuel)
 			 (let ((cmd (to_upper token)))))))))
-     
-     
+   
+   
    (defun main (argc argv)
      (declare (type int argc) (type char** argv) (values int))
      (let ((ctx (gccjit--context--acquire))

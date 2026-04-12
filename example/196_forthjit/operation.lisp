@@ -17,7 +17,7 @@
 			  :member-name ,(intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))
 			  :param-name ,(when param
 					 (intern (string-upcase (cl-change-case:snake-case (format nil "~a" name))))))))))
-     
+  
   (write-class
    :dir *full-source-dir*
    :name class-name
@@ -27,7 +27,7 @@
    :code `(do0
 	   (defclass ,class-name ()
 	     "public:"
-		
+	     
 	     (defmethod ,class-name (&key ,@(remove-if
 					     #'null
 					     (loop for e in members
@@ -80,7 +80,7 @@
 		 (do0 (setf op.kind OperationKind--Literal)
 		      (setf op.value value))
 		 (return op)))
-		
+	     
 	     #+nil
 	     ,@(remove-if
 		#'null
@@ -107,7 +107,7 @@
 			      (setf (-> this ,member-name)
 				    ,member-name)))))))
 	     "private:"
-		
+	     
 	     ,@(remove-if #'null
 			  (loop for e in members
 				collect

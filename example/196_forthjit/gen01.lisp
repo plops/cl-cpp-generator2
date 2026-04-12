@@ -33,6 +33,6 @@
     (load "operation.lisp")
     (load "jit.lisp")
     (load "helpers.lisp")
-    ;(load "vm.lisp")
-    ;(load "main.lisp")
+					;(load "vm.lisp")
+					;(load "main.lisp")
     ))

@@ -63,30 +63,30 @@
    :name class-name
    :headers `()
    :header-preamble `(do0 (include<> vector string unordered_map)
-			   (include "Operation.h")
-			   (include "JITCompiler.h"))
+			  (include "Operation.h")
+			  (include "JITCompiler.h"))
    :implementation-preamble `(do0 (include<> iostream))
    :code `(do0
 	   (defclass ,class-name ()
 	     "static constexpr auto MAX_STACK =  256;"
 	     "static constexpr auto MAX_DICT =  64;"
 	     "static constexpr auto FUEL_LIMIT =  10'000;"
-  
+	     
 	     "public:"
 	     (space enum Error (progn
-				kOk
-				Error--Stack_Underflow
-				Error--Stack_Overflow
-				Error--Dictionary_Full
-				Error--Compile_Error
-				Error--Invalid_Fuel))
+				 kOk
+				 Error--Stack_Underflow
+				 Error--Stack_Overflow
+				 Error--Dictionary_Full
+				 Error--Compile_Error
+				 Error--Invalid_Fuel))
 	     
 	     (defstruct0 (VariableEntry)
-	       (name "std::string")
+		 (name "std::string")
 	       ("value{0}" int))
 
 	     (defstruct0 (WordEntry)
-	       (name "std::string")
+		 (name "std::string")
 	       (jit_result "gcc_jit_result*")
 	       (function CompiledWord))
 
@@ -306,7 +306,7 @@
 				(let ((val (std--stoi token)))
 				  (push_literal val))
 				(catch (t ()
-				  (std--cerr (string "Unknown word: ") token (std--endl))))))))))
+					  (std--cerr (string "Unknown word: ") token (std--endl))))))))))
 
 	     (defmethod is_dictionary_full ()
 	       (declare (values bool))

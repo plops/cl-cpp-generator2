@@ -32,7 +32,7 @@
             (rest (nthcdr 3 node)))
         (if (and (symbolp name) (not (search "::" (format nil "~a" name))))
             `(defmethod ,(intern (format nil "~a::~a" class-name name))
-                 ,params
+               ,params
                ,@rest)
             node))
       node))
@@ -45,13 +45,13 @@
     (format t "Processing class ~a~%" name)
     ;; Header
     (only-write-when-hash-changed header-file
-      (emit-c :code `(do0 (do0 ,@header-preamble) ,@headers ,code)))
+				  (emit-c :code `(do0 (do0 ,@header-preamble) ,@headers ,code)))
     ;; Implementation
     (only-write-when-hash-changed cpp-file
-      (emit-c :code `(do0 (do0 ,@implementation-preamble)
-                          (include ,(file-namestring header-file))
-                          ,@(loop for item in class-bodies
-                                  collect (prefix-method item name)))))))
+				  (emit-c :code `(do0 (do0 ,@implementation-preamble)
+						      (include ,(file-namestring header-file))
+						      ,@(loop for item in class-bodies
+							      collect (prefix-method item name)))))))
 
 (defmacro write-class (&key dir name headers header-preamble implementation-preamble code (format t))
   `(write-class-runtime ,dir ,name ',headers ',header-preamble ',implementation-preamble ,code))

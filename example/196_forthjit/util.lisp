@@ -2,11 +2,11 @@
 		 (vars nil)
 		 )
   #+nil `(<< std--cout
-       (std--format
-	(string ,(format nil "~a~{ ~a='{}'~}\\n"
-			 msg
-			 (loop for e in vars collect (emit-c :code e  :omit-redundant-parentheses t)) ))
-	,@vars))
+	     (std--format
+	      (string ,(format nil "~a~{ ~a='{}'~}\\n"
+			       msg
+			       (loop for e in vars collect (emit-c :code e  :omit-redundant-parentheses t)) ))
+	      ,@vars))
   #-more
   ""
   #+more
@@ -27,9 +27,9 @@
 										    (list "-i"  (namestring ,fn)
 											  "-o"))))
   (let ((hash-db ;*file-hash*
-					'file-hash
+	  'file-hash
 					;(gensym "file-hash")
-		 ))
+	  ))
     `(progn
        (defvar
 					;  parameter
@@ -48,15 +48,15 @@
 				   :if-exists :supersede
 				   :if-does-not-exist :create)
        		 (format sh "~a" ,str))
-	    #+nil   (sb-ext:run-program "/usr/bin/clang-format"
-				   (list "-i"  (namestring ,fn)
-					 "-o"))
+	       #+nil   (sb-ext:run-program "/usr/bin/clang-format"
+					   (list "-i"  (namestring ,fn)
+						 "-o"))
 	       ,formatter
 	       )
 	     (setf (gethash fn-hash ,hash-db) code-hash)
 	     ))))))
 (defun share (name)
-    (format nil "std::shared_ptr<~a>" name))
+  (format nil "std::shared_ptr<~a>" name))
 (defun uniq (name)
   (format nil "std::unique_ptr<~a>" name))
 
