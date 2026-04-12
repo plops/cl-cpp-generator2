@@ -65,7 +65,38 @@
    :header-preamble `(do0 (include<> vector string unordered_map)
 			  (include "Operation.h")
 			  (include "JITCompiler.h"))
-   :implementation-preamble `(do0 (include<> iostream))
+   :implementation-preamble `(do0 (include<> iostream
+					     algorithm vector)
+
+				  (defun to_upper (text)
+	      (declare (type "std::string_view" text)
+		       (values "std::string"))
+	      (let ((upper (std--string text))))
+	      (std--transform (upper.begin)
+			      (upper.end)
+			      (upper.begin)
+			      (lambda (value)
+				(declare (type "unsigned char" value))
+				(return ("static_cast<char>"
+					 (std--toupper value)))))
+	      (return upper))
+				  
+				  (defun split_on_spaces (line)
+				    (declare (type "const std::string&" line)
+					     (values "std::vector<std::string>"))
+				    (let ((tokens "std::vector<std::string>{}")
+					  (current "std::string{}"))
+				      (for-range (ch line)
+						 (declare (type auto ch))
+						 (when (== ch (char " "))
+						   (unless (current.empty)
+						     (tokens.push_back current)
+						     (current.clear))
+						   continue)
+						 (current.push_back ch))
+				      (unless (current.empty)
+					(tokens.push_back current))
+				      (return tokens))))
    :code `(do0
 	   (defclass ,class-name ()
 	     "static constexpr auto MAX_STACK =  256;"
@@ -73,19 +104,20 @@
 	     "static constexpr auto FUEL_LIMIT =  10'000;"
 	     
 	     "public:"
-	     (space enum Error (progn
-				 kOk
-				 Error--Stack_Underflow
-				 Error--Stack_Overflow
-				 Error--Dictionary_Full
-				 Error--Compile_Error
-				 Error--Invalid_Fuel))
+	     #+nil
+	     (space enum Error (curly
+				kOk
+				Error--Stack_Underflow
+				Error--Stack_Overflow
+				Error--Dictionary_Full
+				Error--Compile_Error
+				Error--Invalid_Fuel))
 	     
-	     (defstruct0 (VariableEntry)
+	     (defstruct0 VariableEntry
 		 (name "std::string")
 	       ("value{0}" int))
 
-	     (defstruct0 (WordEntry)
+	     (defstruct0 WordEntry
 		 (name "std::string")
 	       (jit_result "gcc_jit_result*")
 	       (function CompiledWord))
@@ -98,14 +130,14 @@
 			   `(space ,type ,name))))
 
 	     (defmethod ForthVM ()
-	       (declare (construct))
-	       (progn))
+	       (declare (values :constructor))
+	       )
 
 	     (defmethod ~ForthVM ()
-	       (progn
-		 (for-range (word words_)
-			    (when (dot word jit_result)
-			      (gcc_jit_result_release (dot word jit_result))))))
+	       (declare (values :constructor))
+	       (for-range (word words_)
+			  (when (dot word jit_result)
+			    (gcc_jit_result_release (dot word jit_result)))))
 
 	     (defmethod execute_line (line)
 	       (declare (type "const std::string&" line) (values void))
@@ -137,9 +169,9 @@
 				 (let ((current (to_upper (aref tokens idx))))
 				   (when (logior (== current (string ":"))
 						 (== current (string "VARIABLE")))
-				     (break)))
+				     break))
 				 (incf idx))
-			  (let ((segment (curly (+ (tokens.begin) start) (+ (tokens.begin) idx))))
+			  (let ((segment (std--vector (+ (tokens.begin) start) (+ (tokens.begin) idx))))
 			    (unless (segment.empty)
 			      (execute_segment segment)))))))
 
@@ -169,55 +201,56 @@
 			      (data_stack_.push_back (,(case e (add `+) (sub `-) (mul `*)) a b))))
 			  (return kOk))))
 
-	     ,@(loop for e in *l-prim*
-		     collect
-		     (destructuring-bind (&key name short &allow-other-keys) e
-		       (declare (ignore short))
-		       (case name
-			 ((Add Sub Mul) nil)
-			 (t
-			  `(defmethod ,(string-downcase (format nil "~a" name)) ()
-			     (declare (values int))
-			     (let ((status (consume_fuel)))
-			       (when (!= status kOk) (return status))
-			       ,(case name
-				  (Dup `(progn (when (< (data_stack_.size) 1) (return Error--Stack_Underflow))
-					       (data_stack_.push_back (data_stack_.back))))
-				  (Drop `(progn (when (< (data_stack_.size) 1) (return Error--Stack_Underflow))
-						(data_stack_.pop_back)))
-				  (Swap `(progn (when (< (data_stack_.size) 2) (return Error--Stack_Underflow))
-						(let ((b (data_stack_.back)))
-						  (data_stack_.pop_back)
-						  (let ((a (data_stack_.back)))
-						    (data_stack_.pop_back)
-						    (data_stack_.push_back b)
-						    (data_stack_.push_back a)))))
-				  (Dot `(progn (when (< (data_stack_.size) 1) (return Error--Stack_Underflow))
-					       (<< std--cout (data_stack_.back) (string " "))
-					       (data_stack_.pop_back)))
-				  (LessThan `(progn (when (< (data_stack_.size) 2) (return Error--Stack_Underflow))
-						    (let ((b (data_stack_.back)) (a (progn (data_stack_.pop_back) (data_stack_.back))))
-						      (data_stack_.pop_back)
-						      (data_stack_.push_back (if (< a b) (cast int 1) (cast int 0))))))
-				  (GreaterThan `(progn (when (< (data_stack_.size) 2) (return Error--Stack_Underflow))
-						       (let ((b (data_stack_.back)) (a (progn (data_stack_.pop_back) (data_stack_.back))))
-							 (data_stack_.pop_back)
-							 (data_stack_.push_back (if (> a b) (cast int 1) (cast int 0))))))
-				  (Equal `(progn (when (< (data_stack_.size) 2) (return Error--Stack_Underflow))
-						 (let ((b (data_stack_.back)) (a (progn (data_stack_.pop_back) (data_stack_.back))))
-						   (data_stack_.pop_back)
-						   (data_stack_.push_back (if (== a b) (cast int 1) (cast int 0))))))
-				  (Fetch `(progn (when (< (data_stack_.size) 1) (return Error--Stack_Underflow))
-						 (let ((idx (data_stack_.back)))
-						   (data_stack_.pop_back)
-						   (when (logand (<= 0 idx) (< idx (cast int (variables_.size))))
-						     (data_stack_.push_back (dot (aref variables_ idx) value))))))
-				  (Store `(progn (when (< (data_stack_.size) 2) (return Error--Stack_Underflow))
-						 (let ((idx (data_stack_.back)) (val (progn (data_stack_.pop_back) (data_stack_.back))))
-						   (data_stack_.pop_back)
-						   (when (logand (<= 0 idx) (< idx (cast int (variables_.size))))
-						     (setf (dot (aref variables_ idx) value) val))))))
-			       (return kOk)))))))
+	     ,@(remove-if #'null
+			  (loop for e in *l-prim*
+				collect
+				(destructuring-bind (&key name short &allow-other-keys) e
+				  (declare (ignore short))
+				  (case name
+				    ((Add Sub Mul) nil)
+				    (t
+				     `(defmethod ,(string-downcase (format nil "~a" name)) ()
+					(declare (values int))
+					(let ((status (consume_fuel)))
+					  (when (!= status kOk) (return status))
+					  ,(case name
+					     (Dup `(progn (when (< (data_stack_.size) 1) (return Error--Stack_Underflow))
+							  (data_stack_.push_back (data_stack_.back))))
+					     (Drop `(progn (when (< (data_stack_.size) 1) (return Error--Stack_Underflow))
+							   (data_stack_.pop_back)))
+					     (Swap `(progn (when (< (data_stack_.size) 2) (return Error--Stack_Underflow))
+							   (let ((b (data_stack_.back)))
+							     (data_stack_.pop_back)
+							     (let ((a (data_stack_.back)))
+							       (data_stack_.pop_back)
+							       (data_stack_.push_back b)
+							       (data_stack_.push_back a)))))
+					     (Dot `(progn (when (< (data_stack_.size) 1) (return Error--Stack_Underflow))
+							  (<< std--cout (data_stack_.back) (string " "))
+							  (data_stack_.pop_back)))
+					     (LessThan `(progn (when (< (data_stack_.size) 2) (return Error--Stack_Underflow))
+							       (let ((b (data_stack_.back)) (a (progn (data_stack_.pop_back) (data_stack_.back))))
+								 (data_stack_.pop_back)
+								 (data_stack_.push_back (if (< a b) (cast int 1) (cast int 0))))))
+					     (GreaterThan `(progn (when (< (data_stack_.size) 2) (return Error--Stack_Underflow))
+								  (let ((b (data_stack_.back)) (a (progn (data_stack_.pop_back) (data_stack_.back))))
+								    (data_stack_.pop_back)
+								    (data_stack_.push_back (if (> a b) (cast int 1) (cast int 0))))))
+					     (Equal `(progn (when (< (data_stack_.size) 2) (return Error--Stack_Underflow))
+							    (let ((b (data_stack_.back)) (a (progn (data_stack_.pop_back) (data_stack_.back))))
+							      (data_stack_.pop_back)
+							      (data_stack_.push_back (if (== a b) (cast int 1) (cast int 0))))))
+					     (Fetch `(progn (when (< (data_stack_.size) 1) (return Error--Stack_Underflow))
+							    (let ((idx (data_stack_.back)))
+							      (data_stack_.pop_back)
+							      (when (logand (<= 0 idx) (< idx (cast int (variables_.size))))
+								(data_stack_.push_back (dot (aref variables_ idx) value))))))
+					     (Store `(progn (when (< (data_stack_.size) 2) (return Error--Stack_Underflow))
+							    (let ((idx (data_stack_.back)) (val (progn (data_stack_.pop_back) (data_stack_.back))))
+							      (data_stack_.pop_back)
+							      (when (logand (<= 0 idx) (< idx (cast int (variables_.size))))
+								(setf (dot (aref variables_ idx) value) val))))))
+					  (return kOk))))))))
 
 	     (defmethod call_word (index)
 	       (declare (type int index) (values int))
@@ -236,7 +269,7 @@
 		 (data_stack_.pop_back)
 		 (return kOk)))
 
-	     (protected)
+	     "protected:"
 	     (defmethod consume_fuel ()
 	       (declare (values int))
 	       (if (<= fuel_ 0)
@@ -253,7 +286,8 @@
 	       (declare (type "const std::string&" name) (values void))
 	       (setf compile_mode_ true
 		     pending_name_ name
-		     pending_tokens_.clear))
+		     )
+	       (pending_tokens_.clear) )
 
 	     (defmethod define_variable (name)
 	       (declare (type "const std::string&" name) (values void))
@@ -264,7 +298,7 @@
 	     (defmethod consume_definition_tokens (tokens start_index)
 	       (declare (type "const std::vector<std::string>&" tokens)
 			(type std--size_t start_index)
-			(values std--size_t))
+			(values "std::size_t"))
 	       (let ((i start_index))
 		 (while (< i (tokens.size))
 			(let ((token (aref tokens i)))
@@ -312,5 +346,4 @@
 	       (declare (values bool))
 	       (let ((MAX_DICT 1000))
 		 (return (<= MAX_DICT (+ (variables_.size) (words_.size))))))))
-   :format t
-   :omit-parens t))
+   :format t))

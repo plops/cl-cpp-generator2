@@ -18,7 +18,7 @@ add_executable(forthjit
     src/main.cpp
     src/Operation.cpp
     src/JITCompiler.cpp
-#    ForthVM.cpp
+    src/ForthVM.cpp
 #    ForthVM_wrappers.cpp
 )
 

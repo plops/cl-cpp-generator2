@@ -1,16 +1,42 @@
 // no preamble
-#include "ForthVM.h"
+#include <algorithm>
 #include <iostream>
-void ForthVM::ForthVM() {
-  {
-  }
+#include <vector>
+
+std::string to_upper(std::string_view text) {
+  auto upper{std::string(text)};
+  std::transform(upper.begin(), upper.end(), upper.begin(),
+                 [&](unsigned char value) {
+                   return static_cast<char>(std::toupper(value));
+                 });
+  return upper;
 }
-void ForthVM::~ForthVM() {
-  {
-    for (auto &&word : words_) {
-      if (word.jit_result) {
-        gcc_jit_result_release(word.jit_result);
+
+std::vector<std::string> split_on_spaces(const std::string &line) {
+  auto tokens{std::vector<std::string>{}};
+  auto current{std::string{}};
+  for (auto ch : line) {
+    if (ch == ' ') {
+      if (!current.empty()) {
+        tokens.push_back(current);
+        current.clear();
       }
+      continue;
+    }
+    current.push_back(ch);
+  }
+  if (!current.empty()) {
+    tokens.push_back(current);
+  }
+  return tokens;
+}
+
+#include "ForthVM.h"
+ForthVM::ForthVM() {}
+ForthVM::~ForthVM() {
+  for (auto &&word : words_) {
+    if (word.jit_result) {
+      gcc_jit_result_release(word.jit_result);
     }
   }
 }
@@ -47,11 +73,11 @@ void ForthVM::execute_line(const std::string &line) {
     while (idx < tokens.size()) {
       auto current{to_upper(tokens[idx])};
       if (current == ":" || current == "VARIABLE") {
-        break();
+        break;
       }
       idx++;
     }
-    auto segment{{tokens.begin() + start, tokens.begin() + idx}};
+    auto segment{std::vector(tokens.begin() + start, tokens.begin() + idx)};
     if (!segment.empty()) {
       execute_segment(segment);
     }
@@ -310,7 +336,7 @@ void ForthVM::define_variable(const std::string &name) {
   variables_.push_back({name, 0});
   variable_lookup_[name] = idx;
 }
-std-- size_t
+std::size_t
 ForthVM::consume_definition_tokens(const std::vector<std::string> &tokens,
                                    std::size_t start_index) {
   auto i{start_index};

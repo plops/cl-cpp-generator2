@@ -34,18 +34,7 @@
 	    "class ForthVM;"
 	    "using CompiledWord = int (*)(ForthVM*);"
 
-	    (defun to_upper (text)
-	      (declare (type "std::string_view" text)
-		       (values "std::string"))
-	      (let ((upper (std--string text))))
-	      (std--transform (upper.begin)
-			      (upper.end)
-			      (upper.begin)
-			      (lambda (value)
-				(declare (type "unsigned char" value))
-				(return ("static_cast<char>"
-					 (std--toupper value)))))
-	      (return upper))
+	    
 
 	    (defun normalize_dictionary_name (text)
 	      (declare (type "std::string_view" text)
@@ -56,22 +45,7 @@
 		  (normalized.resize kMaxNameLength))
 		(return normalized)))
 
-	    (defun split_on_spaces (line)
-	      (declare (type "const std::string&" line)
-		       (values "std::vector<std::string>"))
-	      (let ((tokens "std::vector<std::string>{}")
-		    (current "std::string{}"))
-		(for-range (ch line)
-			   (declare (type auto ch))
-			   (when (== ch (char " "))
-			     (unless (current.empty)
-			       (tokens.push_back current)
-			       (current.clear))
-			     continue)
-			   (current.push_back ch))
-		(unless (current.empty)
-		  (tokens.push_back current))
-		(return tokens)))
+	    
 
 	    (defun parse_integer (token)
 	      (declare (type "std::string_view" token)
