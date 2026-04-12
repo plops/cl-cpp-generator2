@@ -15,9 +15,9 @@ include_directories(${GCCJIT_INCLUDE_DIR})
 link_directories(${GCCJIT_LIB_DIR})
 
 add_executable(forthjit
-    main.cpp
-    Operation.cpp
-    JITCompiler.cpp
+    src/main.cpp
+    src/Operation.cpp
+    src/JITCompiler.cpp
 #    ForthVM.cpp
 #    ForthVM_wrappers.cpp
 )

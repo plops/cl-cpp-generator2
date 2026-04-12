@@ -20,20 +20,26 @@
    :dir *full-source-dir*
    :name class-name
    :headers `()
-   :header-preamble `(do0 (comments "header"))
-   :implementation-preamble `(do0 (comments "implementation"))
+   :header-preamble `(do0 (comments "header")
+			  (include<> libgccjit++.h
+				     string vector function variant)
+			  "class ForthVM;"
+			  "using CompiledWord = int (*)(ForthVM *);")
+   :implementation-preamble `(do0 (comments "implementation")
+				  (include "Operation.h"
+					   "helpers.h"))
    :code `(do0
 	   (defclass ,class-name ()
 	     "public:"
-	     (space struct Result (prgon
-				   "gcc_jit_result *jit_result{nullptr};"
-				   "CompiledWord function{nullptr};"))
+	     (space struct Result (progn
+				    "gcc_jit_result *jit_result{nullptr};"
+				    "CompiledWord function{nullptr};"))
 
 	     
 	     (defmethod compile_word (symbol_name operations)
 	       (declare (type "const std::string&" symbol_name)
 			(type "const std::vector<Operation>&" operations)
-			(values REsult))
+			(values Result))
 	       (let ((ctx (gccjit--context--acquire))
 		     (int_type (ctx.get_type GCC_JIT_TYPE_INT))
 		     (vm_struct (ctx.new_opaque_struct_type (string "ForthVM")))

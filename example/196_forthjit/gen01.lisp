@@ -11,7 +11,7 @@
   (setf *features* (set-exclusive-or *features* (list :more))))
 
 (progn
-  (defparameter *source-dir* #P"example/196_forthjit/")
+  (defparameter *source-dir* #P"example/196_forthjit/src/")
   (defparameter *full-source-dir* (asdf:system-relative-pathname 'cl-cpp-generator2 *source-dir*))
   (ensure-directories-exist *full-source-dir*)
   

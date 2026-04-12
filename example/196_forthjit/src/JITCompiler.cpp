@@ -1,7 +1,9 @@
 // no preamble
 // implementation
 #include "JITCompiler.h"
-REsult JITCompiler::compile_word(const std::string &symbol_name,
+#include "Operation.h"
+#include "helpers.h"
+Result JITCompiler::compile_word(const std::string &symbol_name,
                                  const std::vector<Operation> &operations) {
   auto ctx{gccjit::context::acquire()};
   auto int_type{ctx.get_type(GCC_JIT_TYPE_INT)};
