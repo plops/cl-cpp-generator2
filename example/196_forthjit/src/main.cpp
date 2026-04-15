@@ -30,9 +30,9 @@ int main() {
       if ((error) == (Error::Compile_Error)) {
         vm.abort_pending_definition();
       }
-      less((error_name_str(error_name(error)))(),
-           (std::cout) << ("") << (" error_name_str='") << (error_name_str)
-                       << ("' ") << (std::endl));
+      auto error_name_str{error_name(error)};
+      (std::cout) << ("") << (" error_name_str='") << (error_name_str) << ("' ")
+                  << (std::endl);
       break;
     };
     }

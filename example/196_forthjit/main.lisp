@@ -39,8 +39,8 @@
 			 (Error (error)
 			  (when (== error Error--Compile_Error)
 			    (vm.abort_pending_definition))
-			  (less ((error_name_str (error_name error)))
-				,(lprint :vars `(error_name_str)))))
+			  (let ((error_name_str (error_name error)))
+			    ,(lprint :vars `(error_name_str)))))
 		       )
 		(return 0)))
 	    :omit-parens t
