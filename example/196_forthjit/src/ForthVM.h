@@ -35,7 +35,7 @@ class ForthVM  {
         std::unordered_map<std::string, int> word_lookup_;
          ForthVM ()       ;   
          ~ForthVM ()       ;   
-        void execute_line (const std::string& line)       ;   
+        void process_line (const std::string& line)       ;   
         void abort_pending_definition ()       ;   
         int push_literal (int value)       ;   
         int add ()       ;   
@@ -58,9 +58,45 @@ class ForthVM  {
         void begin_definition (const std::string& name)       ;   
         void define_variable (const std::string& name)       ;   
         std::size_t consume_definition_tokens (const std::vector<std::string>& tokens, std::size_t start_index)       ;   
-        
-static std::vector<Operation> parse_operations (const std::vector<std::string>& tokens, int mode)      ;   
+        std::vector<Operation> parse_operations (const std::vector<std::string>& tokens, ParseMode mode) const      ;   
+        ParseResult parse_sequence (const std::vector<std::string>& tokens, std::size_t index, ParseMode mode) const      ;   
+        Operation resolve_token (const std::string& token, ParseMode mode) const      ;   
+        int execute_operations (const std::vector<Operation>& operations)       ;   
+        int execute_operation (const Operation& operation)       ;   
+        int execute_primitive (Primitive primitive)       ;   
+        void validate_definition_line (const std::vector<std::string>& tokens) const      ;   
+        bool is_reserved_name (const std::string& name) const      ;   
         void finish_definition ()       ;   
         void execute_segment (const std::vector<std::string>& tokens)       ;   
         bool is_dictionary_full ()       ;   
 };
+
+int forth_push_literal (ForthVM* vm, int value)      ;  
+
+int forth_add (ForthVM* vm)      ;  
+
+int forth_sub (ForthVM* vm)      ;  
+
+int forth_mul (ForthVM* vm)      ;  
+
+int forth_dup (ForthVM* vm)      ;  
+
+int forth_drop (ForthVM* vm)      ;  
+
+int forth_swap (ForthVM* vm)      ;  
+
+int forth_dot (ForthVM* vm)      ;  
+
+int forth_lt (ForthVM* vm)      ;  
+
+int forth_gt (ForthVM* vm)      ;  
+
+int forth_eq (ForthVM* vm)      ;  
+
+int forth_fetch (ForthVM* vm)      ;  
+
+int forth_store (ForthVM* vm)      ;  
+
+int forth_pop_condition (ForthVM* vm, int* out_condition)      ;  
+
+int forth_call_word (ForthVM* vm, int word_index)      ;  

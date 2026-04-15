@@ -4,11 +4,22 @@
  (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames "helpers.h" *source-dir*))
  `(do0
    "#pragma once"
-   "constexpr auto kOk = 0;"
-   (space enum class "Error : int" (curly (comma (= Unknown_Word 1)
+   (space enum class "Error : int" (curly (comma (= kOk 0) (= Unknown_Word 1)
 						 (= Stack_Error 2)
 						 (= Compile_Error 3)
+                                                 (= Dictionary_Full 4)
+                                                 (= Invalid_Fuel 5)
 						 )))
+   
+   (defun error_name (error)
+     (declare (type "Error" error)
+              (values "inline const char*"))
+     (case error
+       ,@(loop for e in `(Unknown_Word Stack_Error Compile_Error Dictionary_Full Invalid_Fuel kOk)
+               collect
+               `(,(format nil "Error::~a" e)
+                 (return (string ,e )))))
+     (return (string "Error")))
    (space enum class Primitive
 	  (curly
 	   ,@(mapcar #'second *l-prim*)))

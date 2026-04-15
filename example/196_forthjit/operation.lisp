@@ -77,13 +77,37 @@
 
 
 	     (defmethod literal (value)
-	       (declare (type int value)
+	       (declare (static) (type int value)
 			(values Operation))
 	       (let ((op (space Operation (curly ))))
 		 (do0 (setf op.kind OperationKind--Literal)
 		      (setf op.value value))
 		 (return op)))
 	     
+	     (defmethod primitive_op (primitive)
+	       (declare (static) (type Primitive primitive)
+			(values Operation))
+	       (let ((op (space Operation (curly ))))
+		 (do0 (setf op.kind OperationKind--Primitive)
+		      (setf op.primitive primitive))
+		 (return op)))
+
+	     (defmethod call_word (word_index)
+	       (declare (static) (type int word_index)
+			(values Operation))
+	       (let ((op (space Operation (curly ))))
+		 (do0 (setf op.kind OperationKind--CallWord)
+		      (setf op.value word_index))
+		 (return op)))
+
+	     (defmethod if_op (true_branch false_branch)
+	       (declare (static) (type "std::vector<Operation>" true_branch false_branch)
+			(values Operation))
+	       (let ((op (space Operation (curly ))))
+		 (do0 (setf op.kind OperationKind--If)
+		      (setf op.true_branch (std--move true_branch))
+		      (setf op.false_branch (std--move false_branch)))
+		 (return op)))
 	     #+nil
 	     ,@(remove-if
 		#'null
@@ -119,4 +143,17 @@
 				  (if initform
 				      `(space ,type ,member-name (curly ,initform))
 				      `(space ,type ,member-name)))))))
-   :format t))
+   :format t)
+  
+  (write-source
+   (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames "ParseResult.h" *source-dir*))
+   `(do0
+     "#pragma once"
+     (include "Operation.h" "helpers.h")
+     (include<> vector)
+     (defstruct0 ParseResult
+	 (operations "std::vector<Operation>")
+       ("next_index{0}" "std::size_t")
+       ("stop{SequenceStop::End}" SequenceStop)))
+   :format t
+   :omit-parens t))

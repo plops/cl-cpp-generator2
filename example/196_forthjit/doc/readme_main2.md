@@ -1,6 +1,10 @@
 # Explanation of the main2.cpp code
 
-by gemma-4-E4B-it-IQ4_XS.gguf
+by gemma-4-E4B-it-IQ4_XS.gguf on AMD Ryzen 7 7735HS
+
+prompt eval time =  306293.67 ms /  9165 tokens (   33.42 ms per token,    29.92 tokens per second)
+       eval time =  420885.11 ms /  2303 tokens (  182.76 ms per token,     5.47 tokens per second)
+      total time =  727178.78 ms / 11468 tokens
 
 As a Compiler Engineer specializing in Virtual Machine design, I can provide a detailed analysis of this code.
 
