@@ -1,29 +1,72 @@
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
-{
-    vec4 data1=texelFetch(iChannel1,ivec2(0,0),0);
-    vec4 data2=texelFetch(iChannel1,ivec2(int(iResolution.x-1.),0),0);
-    vec4 data3=texelFetch(iChannel1,ivec2(0,int(iResolution.y-1.)),0);
-    vec4 data4=texelFetch(iChannel1,ivec2(int(iResolution.x-1.),int(iResolution.y-1.)),0);
-    
-    vec2 res=iResolution.xy/iResolution.y;
-    vec2 uv=fragCoord/iResolution.y-0.5*res;
-    
-    vec3 col=vec3(0.);
-    if((data1==data2)&&(data1==data3)&&(data1==data4))col=vec3(1.);
-    else col=vec3(1.,0.,0.);
-    
-    // expected data1.y==iFrame -1 and data1.z==iFrame
-    if((int(data1.y)!=iFrame-1)||(int(data1.z)!=iFrame))col=vec3(1.,0.,1.);
-    if((int(data4.z)!=iFrame))col=vec3(col.r,1.,col.b*0.5);
-    
-    vec3 c1=print_n(uv+vec2(0.,-0.2),data1.x);
-    c1+=print_n(uv+vec2(0.,0.0),data1.y);
-    c1+=print_n(uv+vec2(0.,0.2),data1.z);
-    
-    fragColor=vec4(c1*col,1.);
-    
-    if(iMouse.z>0.0){
-        vec2 im = iMouse.xy/iResolution.y-0.5*res;
-        fragColor.r+=0.8*(1.-smoothstep(0.1,0.1+1.5/iResolution.y,length(uv-im)));
-    }
+// --- transpiled interactive state buffer ---
+
+bool is_key_down (int key)        {
+        return (texelFetch(iKeyboard, ivec2(key, 0), 0).x)>(0.50F);
 }
+ 
+
+bool is_key_pressed (int key)        {
+        return (texelFetch(iKeyboard, ivec2(key, 1), 0).x)>(0.50F);
+}
+ 
+
+void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
+            ivec2 ipx {ivec2(fragCoord)}; 
+    vec4 state {vec4(0.20F, 16.F, 0.F, 10.F)}; 
+    if ( (ipx)==(ivec2(0, 0)) ) {
+                        if ( (iFrame)>(0) ) {
+                                                (state)=(texelFetch(iChannel0, ivec2(0, 0), 0));  
+} 
+        if ( is_key_pressed(9) ) {
+                                    if ( is_key_down(16) ) {
+                                                (state.z)=(mod((state.z)-(1.0F), 3.0F)); 
+} else {
+                                                (state.z)=(mod((state.z)+(1.0F), 3.0F)); 
+}  
+} 
+                bool left {is_key_down(37)}; 
+        bool right {is_key_down(39)}; 
+        if ( left ) {
+                                    if ( (state.z)==(0.F) ) {
+                                                (state.x)=(max((state.x)-(5.00e-3F), 0.F)); 
+}else if ( (state.z)==(1.0F) ) {
+                                                (state.y)=(max((state.y)-(0.20F), 1.0F)); 
+}else if ( (state.z)==(2.0F) ) {
+                                                (state.w)=(max((state.w)-(0.10F), 2.0F)); 
+}  
+} 
+        if ( right ) {
+                                    if ( (state.z)==(0.F) ) {
+                                                (state.x)=(min((state.x)+(5.00e-3F), 2.0F)); 
+}else if ( (state.z)==(1.0F) ) {
+                                                (state.y)=(min((state.y)+(0.20F), 1.00e+2F)); 
+}else if ( (state.z)==(2.0F) ) {
+                                                (state.w)=(min((state.w)+(0.10F), 50.F)); 
+}  
+}  
+        if ( (iMouse.z)>(0.F) ) {
+                                                vec2 m {iMouse.xy}; 
+            vec2 res {iResolution.xy}; 
+                        float mx {(m.x)/(res.x)}; 
+            float my {(m.y)/(res.y)}; 
+            if ( ((mx)>=(5.00e-2F))&&((mx)<=(0.40F)) ) {
+                                                                float val {((mx)-(5.00e-2F))/(0.350F)}; 
+                if ( ((my)>=(0.10F))&&((my)<=(0.150F)) ) {
+                                                            (state.z)=(0.F);
+                    (state.x)=((val)*(2.0F)); 
+}else if ( ((my)>=(0.180F))&&((my)<=(0.230F)) ) {
+                                                            (state.z)=(1.0F);
+                    (state.y)=((1.0F)+((val)*(99.F))); 
+}else if ( ((my)>=(0.260F))&&((my)<=(0.310F)) ) {
+                                                            (state.z)=(2.0F);
+                    (state.w)=((2.0F)+((val)*(48.F))); 
+}   
+}    
+} 
+                (fragColor)=(state);  
+} 
+    if ( !((ipx)==(ivec2(0, 0))) ) {
+                                (fragColor)=(vec4(0.F));  
+}  
+}
+ 
