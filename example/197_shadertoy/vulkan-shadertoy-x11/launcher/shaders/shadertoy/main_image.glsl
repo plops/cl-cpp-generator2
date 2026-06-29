@@ -79,6 +79,7 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
         float light_dist = length((light_pos)-(P)); 
         float t_max = min(light_dist, 5.0F); 
         int steps = 24; 
+        float thickness = 0.350F; 
                 (shadow_factor)=(1.0F); 
         for ( int step_idx = 1;(step_idx)<=(steps);(step_idx)++ ) {
                                     float tVal; 
@@ -96,7 +97,7 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
                                                 break; 
 } 
                         (map_depth)=(texelFetch(iChannel0, pixel_curr, 0).w); 
-            if ( ((map_depth)<(1.00e+3F))&&((P_curr.z)>((map_depth)+(8.00e-2F))) ) {
+            if ( ((map_depth)<(1.00e+3F))&&((P_curr.z)>((map_depth)+(8.00e-2F)))&&((P_curr.z)<((map_depth)+(thickness))) ) {
                                                                 (shadow_factor)=((1.0F)-(shadow_strength)); 
                 break; 
 }  

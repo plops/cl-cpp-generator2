@@ -315,8 +315,9 @@
                             (let ((ray_dir (normalize (- light_pos P)))
                                   (light_dist (length (- light_pos P)))
                                   (t_max (min light_dist 5.0f0))
-                                  (steps 24))
-                              (declare (type float light_dist t_max)
+                                  (steps 24)
+                                  (thickness 0.35f0))
+                              (declare (type float light_dist t_max thickness)
                                        (type vec3 ray_dir)
                                        (type int steps))
                               (setf shadow_factor 1.0f0)
@@ -337,8 +338,10 @@
                                     break)
                                   
                                   (setf map_depth (dot (texelFetch iChannel0 pixel_curr 0) w))
-                                  ;; Ray is behind the depth surface (occlusion) and neighbor is valid
-                                  (when (logand (< map_depth 1000.0f0) (> (dot P_curr z) (+ map_depth 0.08f0)))
+                                  ;; Ray is behind the depth surface (occlusion) and within thickness limit
+                                  (when (logand (< map_depth 1000.0f0)
+                                                (> (dot P_curr z) (+ map_depth 0.08f0))
+                                                (< (dot P_curr z) (+ map_depth thickness)))
                                     (setf shadow_factor (- 1.0f0 shadow_strength))
                                     break))))
                             
