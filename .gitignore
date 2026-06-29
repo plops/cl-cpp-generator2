@@ -15,6 +15,7 @@ example/**/{b,build,cmake-build}*/
 **/b/
 *.pyc
 example/154*/project/*
+<<<<<<< Updated upstream
 
 # --- Added by Antigravity ---
 
@@ -49,3 +50,6 @@ p2
 *.ppm
 review.txt
 .DS_Store
+=======
+.aider*
+>>>>>>> Stashed changes
