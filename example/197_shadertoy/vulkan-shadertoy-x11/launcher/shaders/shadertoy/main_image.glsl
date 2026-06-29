@@ -1,14 +1,129 @@
 // --- transpiled raymarching shader with smin and shadows ---
+struct Dual { float v; vec3 d; }; 
+struct Dual3 { vec3 v; mat3 d; }; 
 
-float smin (float a, float b, float k)        {
-            float h; 
-        (h)=(clamp((0.50F)+((0.50F)*(((b)-(a))/(k))), 0.F, 1.0F)); 
-    return (mix(b, a, h))-((k)*(h)*((1.0F)-(h))); 
+Dual addDual (Dual a, Dual b)        {
+            Dual r; 
+        (r.v)=((a.v)+(b.v));
+    (r.d)=((a.d)+(b.d)); 
+    return r; 
+}
+ 
+
+Dual subDual (Dual a, Dual b)        {
+            Dual r; 
+        (r.v)=((a.v)-(b.v));
+    (r.d)=((a.d)-(b.d)); 
+    return r; 
+}
+ 
+
+Dual3 subDual3 (Dual3 a, vec3 b)        {
+            Dual3 r; 
+        (r.v)=((a.v)-(b));
+    (r.d)=(a.d); 
+    return r; 
+}
+ 
+
+Dual3 mulMat3Dual3 (mat3 m, Dual3 p)        {
+            Dual3 r; 
+        (r.v)=((m)*(p.v));
+    (r.d)=((m)*(p.d)); 
+    return r; 
+}
+ 
+
+Dual getX (Dual3 q)        {
+        return Dual(q.v.x, (q.d)[(0)]);
+}
+ 
+
+Dual getY (Dual3 q)        {
+        return Dual(q.v.y, (q.d)[(1)]);
+}
+ 
+
+Dual getZ (Dual3 q)        {
+        return Dual(q.v.z, (q.d)[(2)]);
+}
+ 
+
+Dual maxDualDual (Dual a, Dual b)        {
+        if ( (a.v)>(b.v) ) {
+                return a;
+} else {
+                return b;
+} 
+}
+ 
+
+Dual maxDualFloat (Dual a, float b)        {
+        if ( (a.v)>(b) ) {
+                return a;
+} else {
+                return Dual(b, vec3(0.F));
+} 
+}
+ 
+
+Dual minDualDual (Dual a, Dual b)        {
+        if ( (a.v)<(b.v) ) {
+                return a;
+} else {
+                return b;
+} 
+}
+ 
+
+Dual minDualFloat (Dual a, float b)        {
+        if ( (a.v)<(b) ) {
+                return a;
+} else {
+                return Dual(b, vec3(0.F));
+} 
+}
+ 
+
+Dual3 absDual3 (Dual3 p)        {
+            Dual3 r; 
+        (r.v)=(abs(p.v));
+    (r.d)=(mat3(((p.d)[(0)])*(((p.v.x)>=(0.F)) ? (1.0F) : (-1.0F)), ((p.d)[(1)])*(((p.v.y)>=(0.F)) ? (1.0F) : (-1.0F)), ((p.d)[(2)])*(((p.v.z)>=(0.F)) ? (1.0F) : (-1.0F)))); 
+    return r; 
+}
+ 
+
+Dual3 maxDual3Float (Dual3 a, float b)        {
+            Dual3 r; 
+        (r.v)=(max(a.v, vec3(b)));
+    (r.d)=(mat3(((a.v.x)>(b)) ? ((a.d)[(0)]) : (vec3(0.F)), ((a.v.y)>(b)) ? ((a.d)[(1)]) : (vec3(0.F)), ((a.v.z)>(b)) ? ((a.d)[(2)]) : (vec3(0.F)))); 
+    return r; 
+}
+ 
+
+Dual lengthDual3 (Dual3 a)        {
+            Dual r; 
+    float lenVal; 
+        (lenVal)=(length(a.v));
+    (r.v)=(lenVal); 
+    if ( (lenVal)>(0.F) ) {
+                        (r.d)=((normalize(a.v))*(a.d)); 
+} else {
+                        (r.d)=(vec3(0.F)); 
+} 
+    return r; 
 }
  
 
 float sdSphere (vec3 p, float s)        {
         return (length(p))-(s);
+}
+ 
+
+Dual sdSphereDual (Dual3 p, float s)        {
+            Dual len; 
+        (len)=(lengthDual3(p)); 
+    return Dual((len.v)-(s), len.d); 
 }
  
 
@@ -19,35 +134,67 @@ float sdBox (vec3 p, vec3 b)        {
 }
  
 
-float map (vec3 p, float smax_blend)        {
-            float plane; 
+Dual sdBoxDual (Dual3 p, vec3 b)        {
+            Dual3 q; 
+    Dual len; 
+    Dual mx; 
+    Dual mn; 
+        (q)=(subDual3(absDual3(p), b));
+    (len)=(lengthDual3(maxDual3Float(q, 0.F)));
+    (mx)=(maxDualDual(getX(q), maxDualDual(getY(q), getZ(q))));
+    (mn)=(minDualFloat(mx, 0.F)); 
+    return Dual((len.v)+(mn.v), (len.d)+(mn.d)); 
+}
+ 
+
+float smin (float a, float b, float k)        {
+            float h; 
+        (h)=(clamp((0.50F)+((0.50F)*(((b)-(a))/(k))), 0.F, 1.0F)); 
+    return (mix(b, a, h))-((k)*(h)*((1.0F)-(h))); 
+}
+ 
+
+Dual sminDual (Dual a, Dual b, float k)        {
+            float h; 
+    Dual r; 
+        (h)=(clamp((0.50F)+((0.50F)*(((b.v)-(a.v))/(k))), 0.F, 1.0F));
+    (r.v)=((mix(b.v, a.v, h))-((k)*(h)*((1.0F)-(h))));
+    (r.d)=(mix(b.d, a.d, h)); 
+    return r; 
+}
+ 
+
+Dual mapDual (vec3 p_val, float smax_blend)        {
+            Dual3 p; 
+    Dual plane; 
     float c; 
     float s; 
     mat3 rot; 
-    vec3 pRot; 
-    float box; 
-    float sphere; 
-    float blendedObject; 
-        (plane)=((p.y)+(1.0F));
+    Dual3 pRot; 
+    Dual box; 
+    Dual sphere; 
+    Dual blendedObject; 
+        (p.v)=(p_val);
+    (p.d)=(mat3(1.0F));
+    (plane)=(Dual((p.v.y)+(1.0F), (p.d)[(1)]));
     (c)=(cos(iTime));
     (s)=(sin(iTime));
     (rot)=(mat3(c, 0.F, s, 0.F, 1.0F, 0.F,  -(s), 0.F, c));
-    (pRot)=((rot)*(p));
-    (box)=(sdBox(pRot, vec3(0.60F)));
-    (sphere)=(sdSphere((pRot)-(vec3(0.F, 0.20F, 0.F)), 0.750F));
-    (blendedObject)=(smin(box, sphere, smax_blend)); 
-    return min(plane, blendedObject); 
+    (pRot)=(mulMat3Dual3(rot, p));
+    (box)=(sdBoxDual(pRot, vec3(0.60F)));
+    (sphere)=(sdSphereDual(subDual3(pRot, vec3(0.F, 0.20F, 0.F)), 0.750F));
+    (blendedObject)=(sminDual(box, sphere, smax_blend)); 
+    return minDualDual(plane, blendedObject); 
+}
+ 
+
+float map (vec3 p, float smax_blend)        {
+        return mapDual(p, smax_blend).v;
 }
  
 
 vec3 getNormal (vec3 p, float smax_blend)        {
-            vec2 e; 
-    float d; 
-    vec3 n; 
-        (e)=(vec2(1.00e-3F, 0.F));
-    (d)=(map(p, smax_blend));
-    (n)=((d)-(vec3(map((p)-(e.xyy), smax_blend), map((p)-(e.yxy), smax_blend), map((p)-(e.yyx), smax_blend)))); 
-    return normalize(n); 
+        return normalize(mapDual(p, smax_blend).d);
 }
  
 

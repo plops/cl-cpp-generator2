@@ -171,26 +171,216 @@
           `(do0
             "// --- transpiled raymarching shader with smin and shadows ---"
             
-            ;; ---------------------------------------------------------------
-            ;; FUNCTION: smin (Smooth Minimum)
-            ;; ---------------------------------------------------------------
-            ;; TASK:
-            ;; Blends two distance fields (SDF values) together smoothly.
+            ;; =========================================================================
+            ;; FORWARD-MODE ALGORITHMIC DIFFERENTIATION (AD) LIBRARY
+            ;; =========================================================================
+            ;; Algorithmic differentiation computes exact analytical derivatives of
+            ;; functions by tracing the operations performed on the inputs.
             ;;
-            ;; PARAMETERS:
-            ;; - a (float): Distance value to the first object.
-            ;; - b (float): Distance value to the second object.
-            ;; - k (float): Smoothing factor.
+            ;; In this library, the independent variable is the 3D coordinate p.
+            ;; Any scalar variable tracks its value and its 3D gradient vector.
+            ;; Any 3D vector tracks its 3D value and its 3x3 Jacobian matrix (the
+            ;; derivative of each vector component with respect to the input p).
             ;;
-            ;; RETURNS:
-            ;; - float: The smoothly blended distance value.
-            (defun smin (a b k)
-              (declare (type float a b k)
-                       (values float))
-              (let (h)
-                (declare (type float h))
-                (setf h (clamp (+ 0.5f0 (* 0.5f0 (/ (- b a) k))) 0.0f0 1.0f0))
-                (return (- (mix b a h) (* k h (- 1.0f0 h))))))
+            ;; This allows us to compute the exact normal vector of the SDF scene map
+            ;; at any point in a single pass without using finite differences, which
+            ;; reduces rendering calculations (1 map call vs 4) and avoids numerical
+            ;; precision problems near corners and edges.
+
+            ;; ---------------------------------------------------------------
+            ;; DUAL NUMBER TYPES FOR ALGORITHMIC DIFFERENTIATION
+            ;; ---------------------------------------------------------------
+            ;; Dual represents a scalar with its gradient:
+            ;;   v: The real scalar value.
+            ;;   d: The gradient w.r.t input p (dp/dx, dp/dy, dp/dz).
+            "struct Dual { float v; vec3 d; };"
+
+            ;; Dual3 represents a 3D vector with its 3x3 Jacobian:
+            ;;   v: The 3D vector value.
+            ;;   d: The Jacobian w.r.t input p. In GLSL's column-major format,
+            ;;      d[0] is the gradient of v.x,
+            ;;      d[1] is the gradient of v.y,
+            ;;      d[2] is the gradient of v.z.
+            "struct Dual3 { vec3 v; mat3 d; };"
+
+            ;; ---------------------------------------------------------------
+            ;; DUAL NUMBER ARITHMETIC UTILITIES
+            ;; ---------------------------------------------------------------
+
+            ;; addDual: Adds two Dual scalars.
+            ;;   Value: a.v + b.v
+            ;;   Derivative: By linearity of derivatives, d(a + b) = da + db.
+            (defun addDual (a b)
+              (declare (type Dual a b)
+                       (values Dual))
+              (let (r)
+                (declare (type Dual r))
+                (setf (dot r v) (+ (dot a v) (dot b v))
+                      (dot r d) (+ (dot a d) (dot b d)))
+                (return r)))
+
+            ;; subDual: Subtracts two Dual scalars.
+            ;;   Value: a.v - b.v
+            ;;   Derivative: By linearity of derivatives, d(a - b) = da - db.
+            (defun subDual (a b)
+              (declare (type Dual a b)
+                       (values Dual))
+              (let (r)
+                (declare (type Dual r))
+                (setf (dot r v) (- (dot a v) (dot b v))
+                      (dot r d) (- (dot a d) (dot b d)))
+                (return r)))
+
+            ;; subDual3: Subtracts a constant 3D vector from a Dual3 vector.
+            ;;   Value: a.v - b
+            ;;   Derivative: Since b is a constant, its derivative is 0.
+            ;;               Therefore, the Jacobian is unchanged: J(a - b) = J(a).
+            (defun subDual3 (a b)
+              (declare (type Dual3 a)
+                       (type vec3 b)
+                       (values Dual3))
+              (let (r)
+                (declare (type Dual3 r))
+                (setf (dot r v) (- (dot a v) b)
+                      (dot r d) (dot a d))
+                (return r)))
+
+            ;; mulMat3Dual3: Multiplies a constant 3x3 matrix by a Dual3 vector.
+            ;;   Value: m * p.v
+            ;;   Derivative: For a linear operator M, the derivative of M*p w.r.t input
+            ;;               coordinates is the matrix product M * J_p.
+            (defun mulMat3Dual3 (m p)
+              (declare (type mat3 m)
+                       (type Dual3 p)
+                       (values Dual3))
+              (let (r)
+                (declare (type Dual3 r))
+                (setf (dot r v) (* m (dot p v))
+                      (dot r d) (* m (dot p d)))
+                (return r)))
+
+            ;; getX: Extracts the X-component of a Dual3 vector as a Dual scalar.
+            ;;   Value: q.v.x
+            ;;   Derivative: The gradient of the X component is the first column
+            ;;               of the Jacobian matrix: q.d[0].
+            (defun getX (q)
+              (declare (type Dual3 q)
+                       (values Dual))
+              (return (Dual (dot q v x) (aref (dot q d) 0))))
+
+            ;; getY: Extracts the Y-component of a Dual3 vector as a Dual scalar.
+            ;;   Value: q.v.y
+            ;;   Derivative: The gradient of the Y component is the second column
+            ;;               of the Jacobian matrix: q.d[1].
+            (defun getY (q)
+              (declare (type Dual3 q)
+                       (values Dual))
+              (return (Dual (dot q v y) (aref (dot q d) 1))))
+
+            ;; getZ: Extracts the Z-component of a Dual3 vector as a Dual scalar.
+            ;;   Value: q.v.z
+            ;;   Derivative: The gradient of the Z component is the third column
+            ;;               of the Jacobian matrix: q.d[2].
+            (defun getZ (q)
+              (declare (type Dual3 q)
+                       (values Dual))
+              (return (Dual (dot q v z) (aref (dot q d) 2))))
+
+            ;; maxDualDual: Computes the maximum of two Dual scalars.
+            ;;   Value: max(a.v, b.v)
+            ;;   Derivative: Propagates the derivative from whichever scalar is greater.
+            (defun maxDualDual (a b)
+              (declare (type Dual a b)
+                       (values Dual))
+              (if (> (dot a v) (dot b v))
+                  (return a)
+                  (return b)))
+
+            ;; maxDualFloat: Computes the maximum of a Dual scalar and a constant float.
+            ;;   Value: max(a.v, b)
+            ;;   Derivative: Propagates a's gradient if a.v > b, else zero vector.
+            (defun maxDualFloat (a b)
+              (declare (type Dual a)
+                       (type float b)
+                       (values Dual))
+              (if (> (dot a v) b)
+                  (return a)
+                  (return (Dual b (vec3 0.0f0)))))
+
+            ;; minDualDual: Computes the minimum of two Dual scalars.
+            ;;   Value: min(a.v, b.v)
+            ;;   Derivative: Propagates the derivative from whichever scalar is smaller.
+            (defun minDualDual (a b)
+              (declare (type Dual a b)
+                       (values Dual))
+              (if (< (dot a v) (dot b v))
+                  (return a)
+                  (return b)))
+
+            ;; minDualFloat: Computes the minimum of a Dual scalar and a constant float.
+            ;;   Value: min(a.v, b)
+            ;;   Derivative: Propagates a's gradient if a.v < b, else zero vector.
+            (defun minDualFloat (a b)
+              (declare (type Dual a)
+                       (type float b)
+                       (values Dual))
+              (if (< (dot a v) b)
+                  (return a)
+                  (return (Dual b (vec3 0.0f0)))))
+
+            ;; absDual3: Computes the element-wise absolute value of a Dual3 vector.
+            ;;   Value: abs(p.v)
+            ;;   Derivative: The derivative of |x| is sign(x) * dx. We scale each column
+            ;;               of the Jacobian by 1.0 if the corresponding component of v
+            ;;               is non-negative, and -1.0 otherwise.
+            (defun absDual3 (p)
+              (declare (type Dual3 p)
+                       (values Dual3))
+              (let (r)
+                (declare (type Dual3 r))
+                (setf (dot r v) (abs (dot p v))
+                      (dot r d) (mat3 (* (aref (dot p d) 0) (? (>= (dot p v x) 0.0f0) 1.0f0 -1.0f0))
+                                      (* (aref (dot p d) 1) (? (>= (dot p v y) 0.0f0) 1.0f0 -1.0f0))
+                                      (* (aref (dot p d) 2) (? (>= (dot p v z) 0.0f0) 1.0f0 -1.0f0))))
+                (return r)))
+
+            ;; maxDual3Float: Computes the component-wise maximum w.r.t a constant float.
+            ;;   Value: max(a.v, vec3(b))
+            ;;   Derivative: Sets the Jacobian column of a component to 0 if that component
+            ;;               is less than or equal to b.
+            (defun maxDual3Float (a b)
+              (declare (type Dual3 a)
+                       (type float b)
+                       (values Dual3))
+              (let (r)
+                (declare (type Dual3 r))
+                (setf (dot r v) (max (dot a v) (vec3 b))
+                      (dot r d) (mat3 (? (> (dot a v x) b) (aref (dot a d) 0) (vec3 0.0f0))
+                                      (? (> (dot a v y) b) (aref (dot a d) 1) (vec3 0.0f0))
+                                      (? (> (dot a v z) b) (aref (dot a d) 2) (vec3 0.0f0))))
+                (return r)))
+
+            ;; lengthDual3: Computes the length of a Dual3 vector as a Dual scalar.
+            ;;   Value: length(a.v)
+            ;;   Derivative: The derivative of length(a) is normalize(a) * J_a.
+            ;;               This vector-matrix product maps the local coordinates
+            ;;               to the global gradient vector.
+            (defun lengthDual3 (a)
+              (declare (type Dual3 a)
+                       (values Dual))
+              (let (r lenVal)
+                (declare (type Dual r)
+                         (type float lenVal))
+                (setf lenVal (length (dot a v))
+                      (dot r v) lenVal)
+                (if (> lenVal 0.0f0)
+                    (setf (dot r d) (* (normalize (dot a v)) (dot a d)))
+                    (setf (dot r d) (vec3 0.0f0)))
+                (return r)))
+
+            ;; =========================================================================
+            ;; ANALYTICAL DERIVATIVES FOR SHADER PRIMITIVES
+            ;; =========================================================================
 
             ;; ---------------------------------------------------------------
             ;; FUNCTION: sdSphere (Sphere Signed Distance Function)
@@ -209,6 +399,18 @@
                        (type float s)
                        (values float))
               (return (- (length p) s)))
+
+            ;; sdSphereDual: Sphere SDF for Algorithmic Differentiation.
+            ;;   Computes length(p) - s. Derivation: Since s is constant, the
+            ;;   derivative is exactly that of length(p).
+            (defun sdSphereDual (p s)
+              (declare (type Dual3 p)
+                       (type float s)
+                       (values Dual))
+              (let (len)
+                (declare (type Dual len))
+                (setf len (lengthDual3 p))
+                (return (Dual (- (dot len v) s) (dot len d)))))
 
             ;; ---------------------------------------------------------------
             ;; FUNCTION: sdBox (Box Signed Distance Function)
@@ -231,6 +433,96 @@
                 (setf q (- (abs p) b))
                 (return (+ (length (max q 0.0f0)) (min (max q.x (max q.y q.z)) 0.0f0)))))
 
+            ;; sdBoxDual: Box SDF for Algorithmic Differentiation.
+            ;;   Traces the box distance computation through the absolute value,
+            ;;   dimension subtraction, positive component length, and negative
+            ;;   bounds comparison.
+            (defun sdBoxDual (p b)
+              (declare (type Dual3 p)
+                       (type vec3 b)
+                       (values Dual))
+              (let (q len mx mn)
+                (declare (type Dual3 q)
+                         (type Dual len mx mn))
+                (setf q (subDual3 (absDual3 p) b)
+                      len (lengthDual3 (maxDual3Float q 0.0f0))
+                      mx (maxDualDual (getX q) (maxDualDual (getY q) (getZ q)))
+                      mn (minDualFloat mx 0.0f0))
+                (return (Dual (+ (dot len v) (dot mn v))
+                              (+ (dot len d) (dot mn d))))))
+
+            ;; ---------------------------------------------------------------
+            ;; FUNCTION: smin (Smooth Minimum)
+            ;; ---------------------------------------------------------------
+            ;; TASK:
+            ;; Blends two distance fields (SDF values) together smoothly.
+            ;;
+            ;; PARAMETERS:
+            ;; - a (float): Distance value to the first object.
+            ;; - b (float): Distance value to the second object.
+            ;; - k (float): Smoothing factor.
+            ;;
+            ;; RETURNS:
+            ;; - float: The smoothly blended distance value.
+            (defun smin (a b k)
+              (declare (type float a b k)
+                       (values float))
+              (let (h)
+                (declare (type float h))
+                (setf h (clamp (+ 0.5f0 (* 0.5f0 (/ (- b a) k))) 0.0f0 1.0f0))
+                (return (- (mix b a h) (* k h (- 1.0f0 h))))))
+
+            ;; sminDual: Smooth Minimum for Algorithmic Differentiation.
+            ;;   Calculates the smoothly blended distance value and derivative.
+            ;;   By the envelope theorem, the derivative of smin(a, b, k) w.r.t the
+            ;;   clamped interpolation factor h is exactly 0 at the optimum.
+            ;;   Therefore, the total derivative propagates directly as:
+            ;;     d(smin(a, b)) = h * d(a) + (1 - h) * d(b).
+            (defun sminDual (a b k)
+              (declare (type Dual a b)
+                       (type float k)
+                       (values Dual))
+              (let (h r)
+                (declare (type float h)
+                         (type Dual r))
+                (setf h (clamp (+ 0.5f0 (* 0.5f0 (/ (- (dot b v) (dot a v)) k))) 0.0f0 1.0f0)
+                      (dot r v) (- (mix (dot b v) (dot a v) h) (* k h (- 1.0f0 h)))
+                      (dot r d) (mix (dot b d) (dot a d) h))
+                (return r)))
+
+            ;; ---------------------------------------------------------------
+            ;; FUNCTION: mapDual (Scene Map / Distance Field & Gradient Evaluator)
+            ;; ---------------------------------------------------------------
+            ;; TASK:
+            ;; Evaluates the 3D scene map using dual numbers to simultaneously
+            ;; compute the signed distance and its exact analytical gradient w.r.t p.
+            (defun mapDual (p_val smax_blend)
+              (declare (type vec3 p_val)
+                       (type float smax_blend)
+                       (values Dual))
+              (let (p plane c s rot pRot box sphere blendedObject)
+                (declare (type Dual3 p pRot)
+                         (type Dual plane box sphere blendedObject)
+                         (type float c s)
+                         (type mat3 rot))
+                ;; 1. Initialize independent variable p with identity Jacobian
+                (setf (dot p v) p_val
+                      (dot p d) (mat3 1.0f0)
+                      ;; 2. Evaluate ground plane: value is p.y + 1.0, gradient is d_y (p.d[1])
+                      plane (Dual (+ (dot p v y) 1.0f0) (aref (dot p d) 1))
+                      ;; 3. Set up rotating coordinate system for the shapes
+                      c (cos iTime)
+                      s (sin iTime)
+                      rot (mat3 c 0.0f0 s 0.0f0 1.0f0 0.0f0 (- s) 0.0f0 c)
+                      pRot (mulMat3Dual3 rot p)
+                      ;; 4. Evaluate rotated box and sphere SDFs
+                      box (sdBoxDual pRot (vec3 0.6f0))
+                      sphere (sdSphereDual (subDual3 pRot (vec3 0.0f0 0.2f0 0.0f0)) 0.75f0)
+                      ;; 5. Blend the shapes smoothly
+                      blendedObject (sminDual box sphere smax_blend))
+                ;; 6. Combine ground plane and shapes using the minimum operator
+                (return (minDualDual plane blendedObject))))
+
             ;; ---------------------------------------------------------------
             ;; FUNCTION: map (Scene Map / Distance Field Evaluator)
             ;; ---------------------------------------------------------------
@@ -247,25 +539,15 @@
               (declare (type vec3 p)
                        (type float smax_blend)
                        (values float))
-              (let (plane c s rot pRot box sphere blendedObject)
-                (declare (type float plane c s blendedObject box sphere)
-                         (type mat3 rot)
-                         (type vec3 pRot))
-                (setf plane (+ p.y 1.0f0)
-                      c (cos iTime)
-                      s (sin iTime)
-                      rot (mat3 c 0.0f0 s 0.0f0 1.0f0 0.0f0 (- s) 0.0f0 c)
-                      pRot (* rot p)
-                      box (sdBox pRot (vec3 0.6f0))
-                      sphere (sdSphere (- pRot (vec3 0.0f0 0.2f0 0.0f0)) 0.75f0)
-                      blendedObject (smin box sphere smax_blend))
-                (return (min plane blendedObject))))
+              ;; Simply returns the scalar value part (.v) of the Dual computation
+              (return (dot (mapDual p smax_blend) v)))
 
             ;; ---------------------------------------------------------------
             ;; FUNCTION: getNormal (Calculate Surface Normal)
             ;; ---------------------------------------------------------------
             ;; TASK:
-            ;; Estimates the surface normal using central differences.
+            ;; Computes the surface normal analytically using Algorithmic Differentiation.
+            ;; This replaces the finite-difference approach which used multiple map calls.
             ;;
             ;; PARAMETERS:
             ;; - p (vec3): 3D point on or near the surface.
@@ -277,24 +559,8 @@
               (declare (type vec3 p)
                        (type float smax_blend)
                        (values vec3))
-              ;; Declare:
-              ;; - e: Small offset vector used for finite differences.
-              ;; - d: Distance at the sample point.
-              ;; - n: Gradient vector.
-              (let (e d n)
-                (declare (type vec2 e)
-                         (type float d)
-                         (type vec3 n))
-                ;; Offset size (0.001) for taking derivatives.
-                (setf e (vec2 0.001f0 0.0f0)
-                      ;; Sample the distance field.
-                      d (map p smax_blend)
-                      ;; Approximate partial derivatives along X, Y, Z.
-                      n (- d (vec3 (map (- p e.xyy) smax_blend)
-                                   (map (- p e.yxy) smax_blend)
-                                   (map (- p e.yyx) smax_blend))))
-                ;; Normalize the resulting gradient vector to make it a unit vector.
-                (return (normalize n))))
+              ;; Simply returns the normalized gradient vector part (.d) of the Dual computation
+              (return (normalize (dot (mapDual p smax_blend) d))))
 
             ;; ---------------------------------------------------------------
             ;; FUNCTION: getShadow (Raymarched Soft Shadow Calculator)
