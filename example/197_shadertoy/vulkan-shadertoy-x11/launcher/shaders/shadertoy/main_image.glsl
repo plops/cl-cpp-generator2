@@ -68,8 +68,11 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
 } 
                 (light_pos)=(vec3((2.50F)*(cos((iTime)*(0.50F))), 2.50F, ((2.50F)*(sin((iTime)*(0.50F))))+(4.50F)));
         (L)=(normalize((light_pos)-(P)));
-        (dif)=(clamp(dot(normal, L), 0.F, 1.0F));
-        (V)=(normalize( -(P)));
+        (V)=(normalize( -(P))); 
+        if ( (dot(normal, V))<(0.F) ) {
+                                                (normal)=( -(normal));  
+} 
+                (dif)=(clamp(dot(normal, L), 0.F, 1.0F));
         (R_ref)=(reflect( -(L), normal));
         (spec)=((pow(max(dot(R_ref, V), 0.F), 16.F))*(0.30F)); 
                 vec3 ray_dir = normalize((light_pos)-(P)); 

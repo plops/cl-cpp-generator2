@@ -306,9 +306,10 @@
                                                   2.5f0
                                                   (+ (* 2.5f0 (sin (* iTime 0.5f0))) 4.5f0))
                                   L (normalize (- light_pos P))
-                                  dif (clamp ("dot" normal L) 0.0f0 1.0f0)
-                                  
-                                  V (normalize (- P))
+                                  V (normalize (- P)))
+                            (when (< ("dot" normal V) 0.0f0)
+                              (setf normal (- normal)))
+                            (setf dif (clamp ("dot" normal L) 0.0f0 1.0f0)
                                   R_ref (reflect (- L) normal)
                                   spec (* (pow (max ("dot" R_ref V) 0.0f0) 16.0f0) 0.3f0))
                             
