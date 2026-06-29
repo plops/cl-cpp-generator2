@@ -73,11 +73,11 @@ float getShadow (vec3 ro, vec3 rd, float mint, float maxt, float k, float smax_b
  
 
 void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
-            vec4 state {texelFetch(iChannel0, ivec2(0, 0), 0)}; 
-        float smax_blend {state.x}; 
-    float shadow_k {state.y}; 
-    float focused_widget {state.z}; 
-    float maxDist {state.w}; 
+            vec4 state = texelFetch(iChannel0, ivec2(0, 0), 0); 
+        float smax_blend = state.x; 
+    float shadow_k = state.y; 
+    float focused_widget = state.z; 
+    float maxDist = state.w; 
         vec2 uv; 
     vec3 ro; 
     vec3 rd; 
@@ -124,39 +124,39 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
                 (col)=((objectColor)*(((dif)*(shadow))+(0.10F)));
         (col)=(pow(col, vec3(0.45450F)));  
 } 
-        vec2 scr_uv {(fragCoord)/(iResolution.xy)}; 
-    vec3 bar_color {vec3(0.40F)}; 
-    vec3 handle_color {vec3(0.80F)}; 
-    vec3 focus_color {vec3(0.20F, 0.90F, 0.20F)}; 
-        float val {(smax_blend)/(2.0F)}; 
-    float y_center {0.1250F}; 
-    bool is_focused {(focused_widget)==(0.F)}; 
-        float hx {(5.00e-2F)+((val)*(0.350F))}; 
-    if ( ((scr_uv.x)>=(5.00e-2F))&&((scr_uv.x)<=(0.40F))&&((abs((scr_uv.y)-(y_center)))<(6.00e-3F)) ) {
-                                (col)=(mix(col, (is_focused) ? (focus_color) : (bar_color), 0.80F));  
+        vec2 scr_uv = (fragCoord)/(iResolution.xy); 
+    vec3 bar_color = vec3(0.40F); 
+    vec3 handle_color = vec3(0.80F); 
+    vec3 focus_color = vec3(0.20F, 0.90F, 0.20F); 
+        float val_smax = (smax_blend)/(2.0F); 
+    float y_center_smax = 0.1250F; 
+    bool is_focused_smax = (focused_widget)==(0.F); 
+        float hx_smax = (5.00e-2F)+((val_smax)*(0.350F)); 
+    if ( ((scr_uv.x)>=(5.00e-2F))&&((scr_uv.x)<=(0.40F))&&((abs((scr_uv.y)-(y_center_smax)))<(6.00e-3F)) ) {
+                                (col)=(mix(col, (is_focused_smax) ? (focus_color) : (bar_color), 0.80F));  
 } 
-    if ( (length((scr_uv)-(vec2(hx, y_center))))<(1.20e-2F) ) {
-                                (col)=(mix(col, (is_focused) ? (focus_color) : (handle_color), 1.0F));  
+    if ( (length((scr_uv)-(vec2(hx_smax, y_center_smax))))<(1.20e-2F) ) {
+                                (col)=(mix(col, (is_focused_smax) ? (focus_color) : (handle_color), 1.0F));  
 }   
-        float val {((shadow_k)-(1.0F))/(99.F)}; 
-    float y_center {0.2050F}; 
-    bool is_focused {(focused_widget)==(1.0F)}; 
-        float hx {(5.00e-2F)+((val)*(0.350F))}; 
-    if ( ((scr_uv.x)>=(5.00e-2F))&&((scr_uv.x)<=(0.40F))&&((abs((scr_uv.y)-(y_center)))<(6.00e-3F)) ) {
-                                (col)=(mix(col, (is_focused) ? (focus_color) : (bar_color), 0.80F));  
+        float val_shadow = ((shadow_k)-(1.0F))/(99.F); 
+    float y_center_shadow = 0.2050F; 
+    bool is_focused_shadow = (focused_widget)==(1.0F); 
+        float hx_shadow = (5.00e-2F)+((val_shadow)*(0.350F)); 
+    if ( ((scr_uv.x)>=(5.00e-2F))&&((scr_uv.x)<=(0.40F))&&((abs((scr_uv.y)-(y_center_shadow)))<(6.00e-3F)) ) {
+                                (col)=(mix(col, (is_focused_shadow) ? (focus_color) : (bar_color), 0.80F));  
 } 
-    if ( (length((scr_uv)-(vec2(hx, y_center))))<(1.20e-2F) ) {
-                                (col)=(mix(col, (is_focused) ? (focus_color) : (handle_color), 1.0F));  
+    if ( (length((scr_uv)-(vec2(hx_shadow, y_center_shadow))))<(1.20e-2F) ) {
+                                (col)=(mix(col, (is_focused_shadow) ? (focus_color) : (handle_color), 1.0F));  
 }   
-        float val {((maxDist)-(2.0F))/(48.F)}; 
-    float y_center {0.2850F}; 
-    bool is_focused {(focused_widget)==(2.0F)}; 
-        float hx {(5.00e-2F)+((val)*(0.350F))}; 
-    if ( ((scr_uv.x)>=(5.00e-2F))&&((scr_uv.x)<=(0.40F))&&((abs((scr_uv.y)-(y_center)))<(6.00e-3F)) ) {
-                                (col)=(mix(col, (is_focused) ? (focus_color) : (bar_color), 0.80F));  
+        float val_dist = ((maxDist)-(2.0F))/(48.F); 
+    float y_center_dist = 0.2850F; 
+    bool is_focused_dist = (focused_widget)==(2.0F); 
+        float hx_dist = (5.00e-2F)+((val_dist)*(0.350F)); 
+    if ( ((scr_uv.x)>=(5.00e-2F))&&((scr_uv.x)<=(0.40F))&&((abs((scr_uv.y)-(y_center_dist)))<(6.00e-3F)) ) {
+                                (col)=(mix(col, (is_focused_dist) ? (focus_color) : (bar_color), 0.80F));  
 } 
-    if ( (length((scr_uv)-(vec2(hx, y_center))))<(1.20e-2F) ) {
-                                (col)=(mix(col, (is_focused) ? (focus_color) : (handle_color), 1.0F));  
+    if ( (length((scr_uv)-(vec2(hx_dist, y_center_dist))))<(1.20e-2F) ) {
+                                (col)=(mix(col, (is_focused_dist) ? (focus_color) : (handle_color), 1.0F));  
 }    
         (fragColor)=(vec4(col, 1.0F));    
 }

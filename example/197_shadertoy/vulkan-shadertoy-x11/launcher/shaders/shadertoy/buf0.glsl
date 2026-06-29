@@ -11,8 +11,8 @@ bool is_key_pressed (int key)        {
  
 
 void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
-            ivec2 ipx {ivec2(fragCoord)}; 
-    vec4 state {vec4(0.20F, 16.F, 0.F, 10.F)}; 
+            ivec2 ipx = ivec2(fragCoord); 
+    vec4 state = vec4(0.20F, 16.F, 0.F, 10.F); 
     if ( (ipx)==(ivec2(0, 0)) ) {
                         if ( (iFrame)>(0) ) {
                                                 (state)=(texelFetch(iChannel0, ivec2(0, 0), 0));  
@@ -24,8 +24,8 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
                                                 (state.z)=(mod((state.z)+(1.0F), 3.0F)); 
 }  
 } 
-                bool left {is_key_down(37)}; 
-        bool right {is_key_down(39)}; 
+                bool left = is_key_down(37); 
+        bool right = is_key_down(39); 
         if ( left ) {
                                     if ( (state.z)==(0.F) ) {
                                                 (state.x)=(max((state.x)-(5.00e-3F), 0.F)); 
@@ -45,12 +45,12 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
 }  
 }  
         if ( (iMouse.z)>(0.F) ) {
-                                                vec2 m {iMouse.xy}; 
-            vec2 res {iResolution.xy}; 
-                        float mx {(m.x)/(res.x)}; 
-            float my {(m.y)/(res.y)}; 
+                                                vec2 m = iMouse.xy; 
+            vec2 res = iResolution.xy; 
+                        float mx = (m.x)/(res.x); 
+            float my = (m.y)/(res.y); 
             if ( ((mx)>=(5.00e-2F))&&((mx)<=(0.40F)) ) {
-                                                                float val {((mx)-(5.00e-2F))/(0.350F)}; 
+                                                                float val = ((mx)-(5.00e-2F))/(0.350F); 
                 if ( ((my)>=(0.10F))&&((my)<=(0.150F)) ) {
                                                             (state.z)=(0.F);
                     (state.x)=((val)*(2.0F)); 

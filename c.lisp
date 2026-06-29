@@ -356,9 +356,8 @@ A string representing the variable declaration."
 		    collect
 		    (if (listp decl) ;; split into name and initform
 			(destructuring-bind (name &optional value) decl
-			  ;; FIXME: introducing initializer lists is better for C++ but not working with GLSL (and possibly C)
-			  (format nil ;"~a ~@[ = ~a~];"
-				  "~a~a ~@[{~a}~];"
+			  (format nil
+				  "~a~a~@[ = ~a~];"
 				  (if const "const " "")
 				  (if decltype
 				      (if value
