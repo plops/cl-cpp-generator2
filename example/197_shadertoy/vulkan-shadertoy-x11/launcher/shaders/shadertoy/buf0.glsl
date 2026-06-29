@@ -80,14 +80,13 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
                 float min_depth = 1.00e+5F; 
         vec3 hitColor = vec3(0.10F, 0.150F, 0.20F); 
                 vec2 uv = ((fragCoord)-((0.50F)*(iResolution.xy)))/(iResolution.y); 
-        vec3 ro = vec3(0.F, 1.0F, -3.0F); 
                 vec3 rd = normalize(vec3((uv)*(2.0F), 1.0F)); 
         if ( (rd.y)<(0.F) ) {
                                                 float tVal = (-2.0F)/(rd.y); 
-                        vec3 p_plane = (ro)+((rd)*(tVal)); 
-            if ( (p_plane.z)>(0.F) ) {
-                                                                (min_depth)=(p_plane.z); 
-                                float checker = mod((floor(p_plane.x))+(floor(p_plane.z)), 2.0F); 
+                        vec3 P_cam = (rd)*(tVal); 
+            if ( (P_cam.z)>(0.F) ) {
+                                                                (min_depth)=(P_cam.z); 
+                                float checker = mod((floor(P_cam.x))+(floor((P_cam.z)-(3.0F))), 2.0F); 
                                 (hitColor)=(mix(vec3(0.350F, 0.380F, 0.40F), vec3(0.450F, 0.480F, 0.50F), checker));   
 }    
 }   
