@@ -48,7 +48,30 @@
   (ensure-directories-exist *buf0-file*)
 
   ;; =========================================================================
-  ;; 1. STATE BUFFER GENERATION (buf0.glsl)
+  ;; 1. CODE GENERATOR HELPER: horizontal sliders
+  ;; =========================================================================
+  ;; To avoid code repetition, we generate the widget Lisp forms dynamically.
+  (defun make-slider-overlay (index val-expr y-center min-val max-val)
+    (let ((val-sym (intern (format nil "val_~a" index)))
+          (y-sym (intern (format nil "y_center_~a" index)))
+          (focused-sym (intern (format nil "is_focused_~a" index)))
+          (hx-sym (intern (format nil "hx_~a" index))))
+      `(let (,val-sym ,y-sym ,focused-sym)
+         (declare (type float ,val-sym ,y-sym)
+                  (type bool ,focused-sym))
+         (setf ,val-sym (/ (- ,val-expr ,min-val) ,(- max-val min-val))
+               ,y-sym ,y-center
+               ,focused-sym (== focused_widget ,(float index 0.0f0)))
+         (let (,hx-sym)
+           (declare (type float ,hx-sym))
+           (setf ,hx-sym (+ 0.05f0 (* ,val-sym 0.35f0)))
+           (when (logand (>= scr_uv.x 0.05f0) (<= scr_uv.x 0.40f0) (< (abs (- scr_uv.y ,y-sym)) 0.006f0))
+             (setf col (mix col (? ,focused-sym focus_color bar_color) 0.8f0)))
+           (when (< (length (- scr_uv (vec2 ,hx-sym ,y-sym))) 0.012f0)
+             (setf col (mix col (? ,focused-sym focus_color handle_color) 1.0f0)))))))
+
+  ;; =========================================================================
+  ;; 2. STATE BUFFER GENERATION (buf0.glsl)
   ;; =========================================================================
   (let* ((buf-code
           `(do0
@@ -70,10 +93,13 @@
               (declare (type "out vec4" fragColor)
                        (type "in vec2" fragCoord)
                        (values void))
-              (let ((ipx (ivec2 fragCoord))
-                    (state (vec4 0.2f0 16.0f0 0.0f0 10.0f0)))
+              
+              ;; Use uninitialized let bindings + setf to avoid generating C++11 initializer lists {}
+              (let (ipx state)
                 (declare (type ivec2 ipx)
                          (type vec4 state))
+                (setf ipx (ivec2 fragCoord)
+                      state (vec4 0.2f0 16.0f0 0.0f0 10.0f0))
                 
                 ;; Only evaluate and store state in the first pixel (0, 0)
                 (when (== ipx (ivec2 0 0))
@@ -88,9 +114,10 @@
                         (setf (dot state z) (mod (+ (dot state z) 1.0f0) 3.0f0))))
                   
                   ;; Keyboard Adjustments: Left / Right Arrows
-                  (let ((left (is_key_down 37))
-                        (right (is_key_down 39)))
+                  (let (left right)
                     (declare (type bool left right))
+                    (setf left (is_key_down 37)
+                          right (is_key_down 39))
                     (when left
                       (cond ((== (dot state z) 0.0f0)
                              (setf (dot state x) (max (- (dot state x) 0.005f0) 0.0f0)))
@@ -108,16 +135,19 @@
                   
                   ;; Mouse Interactions: Sliders
                   (when (> iMouse.z 0.0f0)
-                    (let ((m iMouse.xy)
-                          (res iResolution.xy))
+                    (let (m res)
                       (declare (type vec2 m res))
-                      (let ((mx (/ m.x res.x))
-                            (my (/ m.y res.y)))
+                      (setf m iMouse.xy
+                            res iResolution.xy)
+                      (let (mx my)
                         (declare (type float mx my))
+                        (setf mx (/ m.x res.x)
+                              my (/ m.y res.y))
                         ;; Check if mouse click coordinates hit the slider bounding boxes (X span: 0.05 to 0.40)
                         (when (logand (>= mx 0.05f0) (<= mx 0.40f0))
-                          (let ((val (/ (- mx 0.05f0) 0.35f0)))
+                          (let (val)
                             (declare (type float val))
+                            (setf val (/ (- mx 0.05f0) 0.35f0))
                             (cond
                               ;; Slider 0: smax blend (Y: 0.10 to 0.15)
                               ((logand (>= my 0.10f0) (<= my 0.15f0))
@@ -130,16 +160,16 @@
                               ;; Slider 2: maxDist (Y: 0.26 to 0.31)
                               ((logand (>= my 0.26f0) (<= my 0.31f0))
                                (setf (dot state z) 2.0f0
-                                     (dot state w) (+ 2.0f0 (* val 48.0f0))))))))))
+                                     (dot state w) (+ 2.0f0 (* val 48.0f0)))))))))))
                   
                   (setf fragColor state))
                 
                 (unless (== ipx (ivec2 0 0))
-                  (setf fragColor (vec4 0.0f0))))))))
+                  (setf fragColor (vec4 0.0f0)))))))
     (write-source *buf0-file* buf-code :format nil :tidy nil))
 
   ;; =========================================================================
-  ;; 2. MAIN RENDERER GENERATION (main_image.glsl)
+  ;; 3. MAIN RENDERER GENERATION (main_image.glsl)
   ;; =========================================================================
   (let* ((main-code
           `(do0
@@ -150,14 +180,6 @@
             ;; ---------------------------------------------------------------
             ;; TASK:
             ;; Blends two distance fields (SDF values) together smoothly.
-            ;;
-            ;; PARAMETERS:
-            ;; - a (float): Distance value to the first object.
-            ;; - b (float): Distance value to the second object.
-            ;; - k (float): Smoothing factor.
-            ;;
-            ;; RETURNS:
-            ;; - float: The smoothly blended distance value.
             (defun smin (a b k)
               (declare (type float a b k)
                        (values float))
@@ -169,8 +191,6 @@
             ;; ---------------------------------------------------------------
             ;; FUNCTION: sdSphere (Sphere Signed Distance Function)
             ;; ---------------------------------------------------------------
-            ;; TASK:
-            ;; Calculates the shortest distance from point 'p' to the sphere boundary.
             (defun sdSphere (p s)
               (declare (type vec3 p)
                        (type float s)
@@ -180,8 +200,6 @@
             ;; ---------------------------------------------------------------
             ;; FUNCTION: sdBox (Box Signed Distance Function)
             ;; ---------------------------------------------------------------
-            ;; TASK:
-            ;; Calculates the shortest distance from point 'p' to the box boundary.
             (defun sdBox (p b)
               (declare (type vec3 p)
                        (type vec3 b)
@@ -194,9 +212,6 @@
             ;; ---------------------------------------------------------------
             ;; FUNCTION: map (Scene Map / Distance Field Evaluator)
             ;; ---------------------------------------------------------------
-            ;; TASK:
-            ;; Defines all shapes in the 3D scene.
-            ;; Now accepts a dynamic smax_blend parameter.
             (defun map (p smax_blend)
               (declare (type vec3 p)
                        (type float smax_blend)
@@ -218,8 +233,6 @@
             ;; ---------------------------------------------------------------
             ;; FUNCTION: getNormal (Calculate Surface Normal)
             ;; ---------------------------------------------------------------
-            ;; TASK:
-            ;; Estimates the surface normal using central differences.
             (defun getNormal (p smax_blend)
               (declare (type vec3 p)
                        (type float smax_blend)
@@ -238,8 +251,6 @@
             ;; ---------------------------------------------------------------
             ;; FUNCTION: getShadow (Raymarched Soft Shadow Calculator)
             ;; ---------------------------------------------------------------
-            ;; TASK:
-            ;; Calculates soft shadows pointing to the light source.
             (defun getShadow (ro rd mint maxt k smax_blend)
               (declare (type vec3 ro rd)
                        (type float mint maxt k smax_blend)
@@ -269,14 +280,16 @@
                        (values void))
               
               ;; Fetch interactive states from buf0 (iChannel0)
-              (let ((state (texelFetch iChannel0 (ivec2 0 0) 0)))
+              (let (state)
                 (declare (type vec4 state))
+                (setf state (texelFetch iChannel0 (ivec2 0 0) 0))
                 
-                (let ((smax_blend (dot state x))
-                      (shadow_k (dot state y))
-                      (focused_widget (dot state z))
-                      (maxDist (dot state w)))
+                (let (smax_blend shadow_k focused_widget maxDist)
                   (declare (type float smax_blend shadow_k focused_widget maxDist))
+                  (setf smax_blend (dot state x)
+                        shadow_k (dot state y)
+                        focused_widget (dot state z)
+                        maxDist (dot state w))
                   
                   (let (uv ro rd tVal hit p n lightPos l dif shadow objectColor col)
                     (declare (type vec2 uv)
@@ -319,51 +332,19 @@
                             col (pow col (vec3 0.4545f0))))
                     
                     ;; Overlay 2D GUI widgets (Sliders)
-                    (let ((scr_uv (/ fragCoord iResolution.xy))
-                          (bar_color (vec3 0.4f0))
-                          (handle_color (vec3 0.8f0))
-                          (focus_color (vec3 0.2f0 0.9f0 0.2f0)))
+                    (let (scr_uv bar_color handle_color focus_color)
                       (declare (type vec2 scr_uv)
                                (type vec3 bar_color handle_color focus_color))
+                      (setf scr_uv (/ fragCoord iResolution.xy)
+                            bar_color (vec3 0.4f0)
+                            handle_color (vec3 0.8f0)
+                            focus_color (vec3 0.2f0 0.9f0 0.2f0))
                       
-                      ;; Slider 0: smax blend factor
-                      (let ((val_smax (/ smax_blend 2.0f0))
-                            (y_center_smax 0.125f0)
-                            (is_focused_smax (== focused_widget 0.0f0)))
-                        (declare (type float val_smax y_center_smax)
-                                 (type bool is_focused_smax))
-                        (let ((hx_smax (+ 0.05f0 (* val_smax 0.35f0))))
-                          (declare (type float hx_smax))
-                          (when (logand (>= scr_uv.x 0.05f0) (<= scr_uv.x 0.40f0) (< (abs (- scr_uv.y y_center_smax)) 0.006f0))
-                            (setf col (mix col (? is_focused_smax focus_color bar_color) 0.8f0)))
-                          (when (< (length (- scr_uv (vec2 hx_smax y_center_smax))) 0.012f0)
-                            (setf col (mix col (? is_focused_smax focus_color handle_color) 1.0f0)))))
-                      
-                      ;; Slider 1: shadow k factor
-                      (let ((val_shadow (/ (- shadow_k 1.0f0) 99.0f0))
-                            (y_center_shadow 0.205f0)
-                            (is_focused_shadow (== focused_widget 1.0f0)))
-                        (declare (type float val_shadow y_center_shadow)
-                                 (type bool is_focused_shadow))
-                        (let ((hx_shadow (+ 0.05f0 (* val_shadow 0.35f0))))
-                          (declare (type float hx_shadow))
-                          (when (logand (>= scr_uv.x 0.05f0) (<= scr_uv.x 0.40f0) (< (abs (- scr_uv.y y_center_shadow)) 0.006f0))
-                            (setf col (mix col (? is_focused_shadow focus_color bar_color) 0.8f0)))
-                          (when (< (length (- scr_uv (vec2 hx_shadow y_center_shadow))) 0.012f0)
-                            (setf col (mix col (? is_focused_shadow focus_color handle_color) 1.0f0)))))
-                      
-                      ;; Slider 2: maxDist factor
-                      (let ((val_dist (/ (- maxDist 2.0f0) 48.0f0))
-                            (y_center_dist 0.285f0)
-                            (is_focused_dist (== focused_widget 2.0f0)))
-                        (declare (type float val_dist y_center_dist)
-                                 (type bool is_focused_dist))
-                        (let ((hx_dist (+ 0.05f0 (* val_dist 0.35f0))))
-                          (declare (type float hx_dist))
-                          (when (logand (>= scr_uv.x 0.05f0) (<= scr_uv.x 0.40f0) (< (abs (- scr_uv.y y_center_dist)) 0.006f0))
-                            (setf col (mix col (? is_focused_dist focus_color bar_color) 0.8f0)))
-                          (when (< (length (- scr_uv (vec2 hx_dist y_center_dist))) 0.012f0)
-                            (setf col (mix col (? is_focused_dist focus_color handle_color) 1.0f0))))))
+                      ;; Dynamically generate the slider forms using make-slider-overlay to avoid code duplication
+                      ,@(loop for (idx val-expr y-center min-val max-val) in '((0 smax_blend 0.125f0 0.0f0 2.0f0)
+                                                                              (1 shadow_k 0.205f0 1.0f0 100.0f0)
+                                                                              (2 maxDist 0.285f0 2.0f0 50.0f0))
+                              collect (make-slider-overlay idx val-expr y-center min-val max-val)))
                     
                     (setf fragColor (vec4 col 1.0f0)))))))))
     (write-source *main-file* main-code :format nil :tidy nil)))
