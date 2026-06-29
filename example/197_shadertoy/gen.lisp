@@ -180,6 +180,14 @@
             ;; ---------------------------------------------------------------
             ;; TASK:
             ;; Blends two distance fields (SDF values) together smoothly.
+            ;;
+            ;; PARAMETERS:
+            ;; - a (float): Distance value to the first object.
+            ;; - b (float): Distance value to the second object.
+            ;; - k (float): Smoothing factor.
+            ;;
+            ;; RETURNS:
+            ;; - float: The smoothly blended distance value.
             (defun smin (a b k)
               (declare (type float a b k)
                        (values float))
@@ -191,6 +199,15 @@
             ;; ---------------------------------------------------------------
             ;; FUNCTION: sdSphere (Sphere Signed Distance Function)
             ;; ---------------------------------------------------------------
+            ;; TASK:
+            ;; Calculates the shortest distance from point 'p' to the sphere boundary.
+            ;;
+            ;; PARAMETERS:
+            ;; - p (vec3): 3D coordinate point.
+            ;; - s (float): Radius of the sphere.
+            ;;
+            ;; RETURNS:
+            ;; - float: Shortest distance to sphere surface.
             (defun sdSphere (p s)
               (declare (type vec3 p)
                        (type float s)
@@ -200,6 +217,15 @@
             ;; ---------------------------------------------------------------
             ;; FUNCTION: sdBox (Box Signed Distance Function)
             ;; ---------------------------------------------------------------
+            ;; TASK:
+            ;; Calculates the shortest distance from point 'p' to the box boundary.
+            ;;
+            ;; PARAMETERS:
+            ;; - p (vec3): 3D coordinate point.
+            ;; - b (vec3): Dimensions (half-widths) of the box.
+            ;;
+            ;; RETURNS:
+            ;; - float: Shortest distance to box surface.
             (defun sdBox (p b)
               (declare (type vec3 p)
                        (type vec3 b)
@@ -212,6 +238,15 @@
             ;; ---------------------------------------------------------------
             ;; FUNCTION: map (Scene Map / Distance Field Evaluator)
             ;; ---------------------------------------------------------------
+            ;; TASK:
+            ;; Defines all shapes in the 3D scene.
+            ;;
+            ;; PARAMETERS:
+            ;; - p (vec3): 3D coordinate point.
+            ;; - smax_blend (float): Dynamic smax parameter for smin blending.
+            ;;
+            ;; RETURNS:
+            ;; - float: Combined distance field value.
             (defun map (p smax_blend)
               (declare (type vec3 p)
                        (type float smax_blend)
@@ -233,47 +268,96 @@
             ;; ---------------------------------------------------------------
             ;; FUNCTION: getNormal (Calculate Surface Normal)
             ;; ---------------------------------------------------------------
+            ;; TASK:
+            ;; Estimates the surface normal using central differences.
+            ;;
+            ;; PARAMETERS:
+            ;; - p (vec3): 3D point on or near the surface.
+            ;; - smax_blend (float): Dynamic smax parameter for smin blending.
+            ;;
+            ;; RETURNS:
+            ;; - vec3: Normalized direction vector pointing outwards from the surface.
             (defun getNormal (p smax_blend)
               (declare (type vec3 p)
                        (type float smax_blend)
                        (values vec3))
+              ;; Declare:
+              ;; - e: Small offset vector used for finite differences.
+              ;; - d: Distance at the sample point.
+              ;; - n: Gradient vector.
               (let (e d n)
                 (declare (type vec2 e)
                          (type float d)
                          (type vec3 n))
+                ;; Offset size (0.001) for taking derivatives.
                 (setf e (vec2 0.001f0 0.0f0)
+                      ;; Sample the distance field.
                       d (map p smax_blend)
+                      ;; Approximate partial derivatives along X, Y, Z.
                       n (- d (vec3 (map (- p e.xyy) smax_blend)
                                    (map (- p e.yxy) smax_blend)
                                    (map (- p e.yyx) smax_blend))))
+                ;; Normalize the resulting gradient vector to make it a unit vector.
                 (return (normalize n))))
 
             ;; ---------------------------------------------------------------
             ;; FUNCTION: getShadow (Raymarched Soft Shadow Calculator)
             ;; ---------------------------------------------------------------
+            ;; TASK:
+            ;; Casts a secondary ray from the surface point 'ro' to the light.
+            ;; Calculates how much the light is blocked by checking proximity
+            ;; to other scene shapes along the path.
+            ;;
+            ;; PARAMETERS:
+            ;; - ro (vec3): Ray origin (surface coordinate).
+            ;; - rd (vec3): Ray direction (pointing towards the light source).
+            ;; - mint (float): Minimum ray step limit (avoids self-shadowing).
+            ;; - maxt (float): Maximum ray range limit (distance to the light).
+            ;; - k (float): Penumbra control factor (lower value = softer shadows).
+            ;; - smax_blend (float): Dynamic smax parameter for smin blending.
+            ;;
+            ;; RETURNS:
+            ;; - float: Shadow factor between 0.0 (fully shadowed) and 1.0 (unshadowed).
             (defun getShadow (ro rd mint maxt k smax_blend)
               (declare (type vec3 ro rd)
                        (type float mint maxt k smax_blend)
                        (values float))
+              ;; Declare:
+              ;; - res: Running shadow strength (starts fully bright / 1.0).
+              ;; - tVal: Current travel distance along the shadow ray.
               (let (res tVal)
                 (declare (type float res tVal))
                 (setf res 1.0f0
                       tVal mint)
+                ;; Step along the ray towards the light.
                 (for ("int i = 0" (< i 32) (incf i))
                   (let (h)
                     (declare (type float h))
+                    ;; Measure distance to closest shape.
                     (setf h (map (+ ro (* tVal rd)) smax_blend))
+                    ;; If we hit something directly (distance ~ 0), we are in full shadow.
                     (when (< h 0.001f0)
                       (return 0.0f0))
+                    ;; Estimate penumbra soft edge factor based on how close we got to the shape.
                     (setf res (min res (/ (* k h) tVal)))
+                    ;; Step forward along the ray, clamping the step size for safety.
                     (incf tVal (clamp h 0.01f0 0.2f0))
+                    ;; Break if we exceeded the distance to the light source.
                     (when (> tVal maxt)
                       break)))
+                ;; Clamp and return shadow visibility value.
                 (return (clamp res 0.0f0 1.0f0))))
 
             ;; ---------------------------------------------------------------
             ;; FUNCTION: mainImage (Main Viewport Render Entrypoint)
             ;; ---------------------------------------------------------------
+            ;; TASK:
+            ;; Setup camera, cast primary ray per pixel, evaluate hits, calculate
+            ;; lighting, soft shadows, and colorize the pixel.
+            ;;
+            ;; PARAMETERS:
+            ;; - fragColor (out vec4): Output pixel color (RGBA).
+            ;; - fragCoord (in vec2): Input pixel screen coordinate.
             (defun mainImage (fragColor fragCoord)
               (declare (type "out vec4" fragColor)
                        (type "in vec2" fragCoord)
@@ -291,47 +375,63 @@
                         focused_widget (dot state z)
                         maxDist (dot state w))
                   
+                  ;; Local variables for raymarching, hitting, and shading logic.
                   (let (uv ro rd tVal hit p n lightPos l dif shadow objectColor col)
                     (declare (type vec2 uv)
                              (type vec3 ro rd p n lightPos l objectColor col)
                              (type float tVal dif shadow)
                              (type bool hit))
                     
-                    ;; Aspect ratio correction
+                    ;; 1. Normalize viewport coordinates (aspect ratio corrected, centered).
                     (setf uv (/ (- fragCoord (* 0.5f0 iResolution.xy)) iResolution.y)
+                          ;; 2. Setup Camera Origin (ro) and Camera Vector / Ray Direction (rd).
                           ro (vec3 0.0f0 1.0f0 -3.0f0)
                           rd (normalize (vec3 uv 1.0f0))
+                          ;; 3. Initialize raymarching limits and hit state.
                           tVal 0.0f0
                           hit false)
                     
-                    ;; Raymarching loop using dynamic maxDist
+                    ;; 4. Raymarching Loop: step along the primary camera ray.
                     (for ("int i = 0" "i < 80" "i++")
                       (let (d)
                         (declare (type float d))
+                        ;; Measure distance to closest shape.
                         (setf d (map (+ ro (* tVal rd)) smax_blend))
+                        ;; If distance is very small, we have hit a surface!
                         (when (< d 0.001f0)
                           (setf hit true)
                           break)
+                        ;; Step forward along the ray by the safe distance.
                         (incf tVal d)
+                        ;; Stop searching if the ray travelled past the maximum distance limit.
                         (when (> tVal maxDist)
                           break)))
                     
-                    ;; Background color
+                    ;; 5. Background color defaults to dark slate blue.
                     (setf col (vec3 0.1f0 0.15f0 0.2f0))
+                    ;; 6. Shade the surface if a hit occurred.
                     (when hit
+                      ;; Calculate 3D intersection coordinate (p) and surface normal vector (n).
                       (setf p (+ ro (* tVal rd))
                             n (getNormal p smax_blend)
+                            ;; Position the point light source in 3D space.
                             lightPos (vec3 2.0f0 4.0f0 -1.0f0)
+                            ;; Direction pointing from hit point to the light.
                             l (normalize (- lightPos p))
+                            ;; Diffuse lambertian lighting calculation (dot product).
                             dif (clamp ("dot" n l) 0.0f0 1.0f0)
+                            ;; Calculate soft shadow factor pointing towards the light.
                             shadow (getShadow (+ p (* n 0.01f0)) l 0.01f0 5.0f0 shadow_k smax_blend))
+                      ;; Assign colors: Ground plane (grey) vs. Blended shape (orange).
                       (if (> p.y -0.99f0)
                           (setf objectColor (vec3 0.9f0 0.4f0 0.1f0))
                           (setf objectColor (vec3 0.5f0)))
+                      ;; Combine diffuse lighting, ambient lighting component (0.1), and shadow occlusion.
                       (setf col (* objectColor (+ (* dif shadow) 0.1f0))
+                            ;; Apply Gamma Correction (factor 2.2 -> 1/2.2 ~ 0.4545) to convert linear colors to sRGB.
                             col (pow col (vec3 0.4545f0))))
                     
-                    ;; Overlay 2D GUI widgets (Sliders)
+                    ;; 7. Overlay 2D GUI widgets (Sliders)
                     (let (scr_uv bar_color handle_color focus_color)
                       (declare (type vec2 scr_uv)
                                (type vec3 bar_color handle_color focus_color))
