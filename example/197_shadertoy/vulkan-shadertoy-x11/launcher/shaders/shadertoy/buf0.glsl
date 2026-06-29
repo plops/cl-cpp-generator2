@@ -70,12 +70,12 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
                                                             (state.z)=(2.0F);
                     (state.w)=((2.0F)+((val)*(48.F))); 
 }   
-}    
-}  
+}   
+                        (fragColor)=(state);  
 } 
-        (fragColor)=(state);  
         if ( !((ipx)==(ivec2(0, 0))) ) {
-                                (fragColor)=(vec4(0.F));  
-} 
+                                                (fragColor)=(vec4(0.F));  
+}  
+}  
 }
  

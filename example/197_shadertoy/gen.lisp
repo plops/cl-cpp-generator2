@@ -35,6 +35,12 @@
 
 (in-package :cl-cpp-generator2)
 
+;; Global metadata definition to avoid code repetition across keyboard and mouse interactions
+(defparameter *widget-meta*
+  '((0 x 0.005f0 0.0f0 2.0f0 0.10f0 0.15f0)      ; index, component, delta, min, max, y_min, y_max
+    (1 y 0.2f0   1.0f0 100.0f0 0.18f0 0.23f0)
+    (2 w 0.1f0   2.0f0 50.0f0 0.26f0 0.31f0)))
+
 (progn
   ;; Define output file paths
   (defparameter *buf0-file*
@@ -119,19 +125,15 @@
                     (setf left (is_key_down 37)
                           right (is_key_down 39))
                     (when left
-                      (cond ((== (dot state z) 0.0f0)
-                             (setf (dot state x) (max (- (dot state x) 0.005f0) 0.0f0)))
-                            ((== (dot state z) 1.0f0)
-                             (setf (dot state y) (max (- (dot state y) 0.2f0) 1.0f0)))
-                            ((== (dot state z) 2.0f0)
-                             (setf (dot state w) (max (- (dot state w) 0.1f0) 2.0f0)))))
+                      (cond
+                        ,@(loop for (idx comp delta min-val max-val) in *widget-meta*
+                                collect `((== (dot state z) ,(float idx 0.0f0))
+                                          (setf (dot state ,comp) (max (- (dot state ,comp) ,delta) ,min-val))))))
                     (when right
-                      (cond ((== (dot state z) 0.0f0)
-                             (setf (dot state x) (min (+ (dot state x) 0.005f0) 2.0f0)))
-                            ((== (dot state z) 1.0f0)
-                             (setf (dot state y) (min (+ (dot state y) 0.2f0) 100.0f0)))
-                            ((== (dot state z) 2.0f0)
-                             (setf (dot state w) (min (+ (dot state w) 0.1f0) 50.0f0))))))
+                      (cond
+                        ,@(loop for (idx comp delta min-val max-val) in *widget-meta*
+                                collect `((== (dot state z) ,(float idx 0.0f0))
+                                          (setf (dot state ,comp) (min (+ (dot state ,comp) ,delta) ,max-val)))))))
                   
                   ;; Mouse Interactions: Sliders
                   (when (> iMouse.z 0.0f0)
@@ -149,23 +151,17 @@
                             (declare (type float val))
                             (setf val (/ (- mx 0.05f0) 0.35f0))
                             (cond
-                              ;; Slider 0: smax blend (Y: 0.10 to 0.15)
-                              ((logand (>= my 0.10f0) (<= my 0.15f0))
-                               (setf (dot state z) 0.0f0
-                                     (dot state x) (* val 2.0f0)))
-                              ;; Slider 1: shadow k (Y: 0.18 to 0.23)
-                              ((logand (>= my 0.18f0) (<= my 0.23f0))
-                               (setf (dot state z) 1.0f0
-                                     (dot state y) (+ 1.0f0 (* val 99.0f0))))
-                              ;; Slider 2: maxDist (Y: 0.26 to 0.31)
-                              ((logand (>= my 0.26f0) (<= my 0.31f0))
-                               (setf (dot state z) 2.0f0
-                                     (dot state w) (+ 2.0f0 (* val 48.0f0)))))))))))
+                              ,@(loop for (idx comp delta min-val max-val y-min y-max) in *widget-meta*
+                                      collect `((logand (>= my ,y-min) (<= my ,y-max))
+                                                (setf (dot state z) ,(float idx 0.0f0)
+                                                      (dot state ,comp) ,(if (zerop min-val)
+                                                                             `(* val ,max-val)
+                                                                             `(+ ,min-val (* val ,(- max-val min-val))))))))))))
                   
                   (setf fragColor state))
                 
                 (unless (== ipx (ivec2 0 0))
-                  (setf fragColor (vec4 0.0f0)))))))
+                  (setf fragColor (vec4 0.0f0)))))))))
     (write-source *buf0-file* buf-code :format nil :tidy nil))
 
   ;; =========================================================================
@@ -441,9 +437,12 @@
                             focus_color (vec3 0.2f0 0.9f0 0.2f0))
                       
                       ;; Dynamically generate the slider forms using make-slider-overlay to avoid code duplication
-                      ,@(loop for (idx val-expr y-center min-val max-val) in '((0 smax_blend 0.125f0 0.0f0 2.0f0)
-                                                                              (1 shadow_k 0.205f0 1.0f0 100.0f0)
-                                                                              (2 maxDist 0.285f0 2.0f0 50.0f0))
+                      ,@(loop for (idx comp delta min-val max-val y-min y-max) in *widget-meta*
+                              for val-expr = (case idx
+                                               (0 'smax_blend)
+                                               (1 'shadow_k)
+                                               (2 'maxDist))
+                              for y-center = (/ (+ y-min y-max) 2.0f0)
                               collect (make-slider-overlay idx val-expr y-center min-val max-val)))
                     
                     (setf fragColor (vec4 col 1.0f0)))))))))
