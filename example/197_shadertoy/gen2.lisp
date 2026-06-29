@@ -149,39 +149,62 @@
                     (setf point_size (dot state x))
                     
                     (let ((min_depth 100000.0f0)
-                          (hitColor (vec3 0.0f0)))
+                          (hitColor (vec3 0.1f0 0.15f0 0.2f0)))
                       (declare (type float min_depth)
                                (type vec3 hitColor))
                       
-                      ;; Rasterize 1000 points
-                      (for ("int i = 0" (< i 1000) (incf i))
-                        (let (theta phi R r p cy sy rotY rotX proj p_pixel dist size depth)
-                          (declare (type float theta phi R r dist size depth cy sy)
+                      ;; 1. Render Checkerboard Ground Plane
+                      (let ((uv (/ (- fragCoord (* 0.5f0 (dot iResolution xy))) (dot iResolution y)))
+                            (ro (vec3 0.0f0 1.0f0 -3.0f0)))
+                        (declare (type vec2 uv)
+                                 (type vec3 ro))
+                        (let ((rd (normalize (vec3 (* uv 2.0f0) 1.0f0))))
+                          (declare (type vec3 rd))
+                          (when (< (dot rd y) 0.0f0)
+                            (let ((tVal (/ -2.0f0 (dot rd y))))
+                              (declare (type float tVal))
+                              (let ((p_plane (+ ro (* rd tVal))))
+                                (declare (type vec3 p_plane))
+                                (when (> (dot p_plane z) 0.0f0)
+                                  (setf min_depth (dot p_plane z))
+                                  (let ((checker (mod (+ (floor (dot p_plane x)) (floor (dot p_plane z))) 2.0f0)))
+                                    (declare (type float checker))
+                                    (setf hitColor (mix (vec3 0.35f0 0.38f0 0.40f0) (vec3 0.45f0 0.48f0 0.50f0) checker)))))))))
+                      
+                      ;; 2. Rasterize 800 Fibonacci Sphere Points
+                      (for ("int i = 0" (< i 800) (incf i))
+                        (let (y radius theta x z p cy sy rotY rotX proj p_pixel dist size depth)
+                          (declare (type float y radius theta x z dist size depth cy sy)
                                    (type vec3 p)
                                    (type vec2 proj p_pixel)
                                    (type mat2 rotY rotX))
-                          ;; Generate a rotating torus knot point cloud
-                          (setf theta (* (float i) 0.006283f0) ;; 2*pi/1000
-                                phi (* (float i) 0.03f0)       ;; frequency
-                                R 1.6f0
-                                r 0.6f0
-                                p (vec3 (* (+ R (* r (cos (* phi 3.0f0)))) (cos (* phi 2.0f0)))
-                                        (* r (sin (* phi 3.0f0)))
-                                        (* (+ R (* r (cos (* phi 3.0f0)))) (sin (* phi 2.0f0)))))
+                          ;; Fibonacci sphere point distribution
+                          (setf y (- 1.0f0 (* (/ (float i) 799.0f0) 2.0f0))
+                                radius (sqrt (- 1.0f0 (* y y)))
+                                theta (* (float i) 2.399963f0)
+                                x (* (cos theta) radius)
+                                z (* (sin theta) radius)
+                                p (vec3 x y z))
                           
-                          ;; Rotation
+                          ;; Scale the sphere shell to radius 0.8
+                          (setf p (* p 0.8f0))
+                          ;; Float sphere above ground
+                          (incf (dot p y) 0.3f0)
+                          
+                          ;; Rotation around Y
                           (setf cy (cos (* iTime 0.3f0))
                                 sy (sin (* iTime 0.3f0))
                                 rotY (mat2 cy (- sy) sy cy)
-                                (dot p xz) (* rotY (dot p xz))
-                                
-                                cy (cos (* iTime 0.15f0))
+                                (dot p xz) (* rotY (dot p xz)))
+                          
+                          ;; Rotation around X
+                          (setf cy (cos (* iTime 0.15f0))
                                 sy (sin (* iTime 0.15f0))
                                 rotX (mat2 cy (- sy) sy cy)
                                 (dot p yz) (* rotX (dot p yz)))
                           
                           ;; Translate point in front of camera
-                          (incf (dot p z) 5.0f0)
+                          (incf (dot p z) 4.5f0)
                           
                           ;; Project to screen coordinates
                           (setf proj (/ (dot p xy) (dot p z))
@@ -193,8 +216,9 @@
                             (setf depth (dot p z))
                             (when (< depth min_depth)
                               (setf min_depth depth
+                                    ;; Color gradient based on sphere point coordinates
                                     hitColor (+ (vec3 0.5f0 0.5f0 0.5f0)
-                                                (* 0.5f0 (vec3 (cos phi) (sin (* phi 2.0f0)) (cos (* phi 3.0f0))))))))))
+                                                (* 0.5f0 (vec3 x y z))))))))
                       
                       (if (< min_depth 10000.0f0)
                           (setf fragColor (vec4 hitColor min_depth))

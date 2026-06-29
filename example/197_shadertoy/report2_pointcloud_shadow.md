@@ -38,7 +38,7 @@ To render shadows directly on a 3D point cloud, three main approaches exist. The
 
 To demonstrate the hybrid Screen-Space Shadows + Eye-Dome Lighting pipeline, we created [gen2.lisp](file:///home/kiel/stage/cl-cpp-generator2/example/197_shadertoy/gen2.lisp). The shaders generated are:
 
-1. [buf0.glsl](file:///home/kiel/stage/cl-cpp-generator2/example/197_shadertoy/vulkan-shadertoy-x11/launcher/shaders/shadertoy/buf0.glsl): Simulates the point cloud rendering pass. It rasterizes a rotating 3D torus knot point cloud (1,000 points) and writes their colors and camera-space depth ($z$) into a texture buffer.
+1. [buf0.glsl](file:///home/kiel/stage/cl-cpp-generator2/example/197_shadertoy/vulkan-shadertoy-x11/launcher/shaders/shadertoy/buf0.glsl): Simulates the point cloud rendering pass. It renders a solid checkerboard ground plane and rasterizes a rotating 3D Fibonacci sphere point cloud (800 points), combining them in the color/depth texture buffer (iChannel0).
 2. [main_image.glsl](file:///home/kiel/stage/cl-cpp-generator2/example/197_shadertoy/vulkan-shadertoy-x11/launcher/shaders/shadertoy/main_image.glsl): The post-processing pass. It reads the color and depth buffer, performs screen-space reconstruction, normal estimation, diffuse shading, screen-space raymarched shadows, and EDL outlining.
 
 Here are the key algorithms implemented in S-Expressions:

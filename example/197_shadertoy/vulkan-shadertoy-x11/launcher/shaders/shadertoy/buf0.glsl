@@ -78,12 +78,25 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
                                 float point_size; 
                 (point_size)=(state.x); 
                 float min_depth = 1.00e+5F; 
-        vec3 hitColor = vec3(0.F); 
-        for ( int i = 0;(i)<(1000);(i)++ ) {
-                                    float theta; 
-            float phi; 
-            float R; 
-            float r; 
+        vec3 hitColor = vec3(0.10F, 0.150F, 0.20F); 
+                vec2 uv = ((fragCoord)-((0.50F)*(iResolution.xy)))/(iResolution.y); 
+        vec3 ro = vec3(0.F, 1.0F, -3.0F); 
+                vec3 rd = normalize(vec3((uv)*(2.0F), 1.0F)); 
+        if ( (rd.y)<(0.F) ) {
+                                                float tVal = (-2.0F)/(rd.y); 
+                        vec3 p_plane = (ro)+((rd)*(tVal)); 
+            if ( (p_plane.z)>(0.F) ) {
+                                                                (min_depth)=(p_plane.z); 
+                                float checker = mod((floor(p_plane.x))+(floor(p_plane.z)), 2.0F); 
+                                (hitColor)=(mix(vec3(0.350F, 0.380F, 0.40F), vec3(0.450F, 0.480F, 0.50F), checker));   
+}    
+}   
+        for ( int i = 0;(i)<(800);(i)++ ) {
+                                    float y; 
+            float radius; 
+            float theta; 
+            float x; 
+            float z; 
             vec3 p; 
             float cy; 
             float sy; 
@@ -94,20 +107,23 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
             float dist; 
             float size; 
             float depth; 
-                        (theta)=((float(i))*(6.2830e-3F));
-            (phi)=((float(i))*(3.00e-2F));
-            (R)=(1.60F);
-            (r)=(0.60F);
-            (p)=(vec3(((R)+((r)*(cos((phi)*(3.0F)))))*(cos((phi)*(2.0F))), (r)*(sin((phi)*(3.0F))), ((R)+((r)*(cos((phi)*(3.0F)))))*(sin((phi)*(2.0F))))); 
+                        (y)=((1.0F)-(((float(i))/(799.F))*(2.0F)));
+            (radius)=(sqrt((1.0F)-((y)*(y))));
+            (theta)=((float(i))*(2.3999630F));
+            (x)=((cos(theta))*(radius));
+            (z)=((sin(theta))*(radius));
+            (p)=(vec3(x, y, z)); 
+                        (p)=((p)*(0.80F)); 
+            (p.y)+=(0.30F);
                         (cy)=(cos((iTime)*(0.30F)));
             (sy)=(sin((iTime)*(0.30F)));
             (rotY)=(mat2(cy,  -(sy), sy, cy));
-            (p.xz)=((rotY)*(p.xz));
-            (cy)=(cos((iTime)*(0.150F)));
+            (p.xz)=((rotY)*(p.xz)); 
+                        (cy)=(cos((iTime)*(0.150F)));
             (sy)=(sin((iTime)*(0.150F)));
             (rotX)=(mat2(cy,  -(sy), sy, cy));
             (p.yz)=((rotX)*(p.yz)); 
-            (p.z)+=(5.0F);
+            (p.z)+=(4.50F);
                         (proj)=((p.xy)/(p.z));
             (p_pixel)=((((proj)*(0.50F))+(0.50F))*(iResolution.xy));
             (dist)=(length((fragCoord)-(p_pixel)));
@@ -116,7 +132,7 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
                                                                 (depth)=(p.z); 
                 if ( (depth)<(min_depth) ) {
                                                                                 (min_depth)=(depth);
-                    (hitColor)=((vec3(0.50F, 0.50F, 0.50F))+((0.50F)*(vec3(cos(phi), sin((phi)*(2.0F)), cos((phi)*(3.0F))))));  
+                    (hitColor)=((vec3(0.50F, 0.50F, 0.50F))+((0.50F)*(vec3(x, y, z))));  
 }  
 }  
 } 
