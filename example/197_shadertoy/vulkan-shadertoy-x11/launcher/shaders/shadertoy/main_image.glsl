@@ -1,134 +1,178 @@
-// --- transpiled main renderer: reconstruction, normals, shading, screen-space shadows, and EDL ---
+// --- transpiled raymarching shader from declarative DSL ---
 
-vec3 reconstructP (ivec2 pixel, float depth)        {
-            vec2 uv; 
-    vec2 proj; 
-        (uv)=(((vec2(pixel))-((0.50F)*(iResolution.xy)))/(iResolution.y));
-    (proj)=((uv)*(2.0F)); 
-    return vec3((proj)*(depth), depth); 
+float smin (float a, float b, float k)        {
+            float h; 
+        (h)=(clamp((0.50F)+((0.50F)*(((b)-(a))/(k))), 0.F, 1.0F)); 
+    return (mix(b, a, h))-((k)*(h)*((1.0F)-(h))); 
+}
+ 
+
+vec3 rotateX (vec3 p, float a)        {
+            float c; 
+    float s; 
+        (c)=(cos(a));
+    (s)=(sin(a)); 
+    return vec3(p.x, ((c)*(p.y))-((s)*(p.z)), ((s)*(p.y))+((c)*(p.z))); 
+}
+ 
+
+vec3 rotateY (vec3 p, float a)        {
+            float c; 
+    float s; 
+        (c)=(cos(a));
+    (s)=(sin(a)); 
+    return vec3(((c)*(p.x))+((s)*(p.z)), p.y, ((c)*(p.z))-((s)*(p.x))); 
+}
+ 
+
+vec3 rotateZ (vec3 p, float a)        {
+            float c; 
+    float s; 
+        (c)=(cos(a));
+    (s)=(sin(a)); 
+    return vec3(((c)*(p.x))-((s)*(p.y)), ((s)*(p.x))+((c)*(p.y)), p.z); 
+}
+ 
+
+float simple_noise (vec3 p)        {
+        return (0.3330F)*((sin(p.x))+(sin(p.y))+(sin(p.z)));
+}
+ 
+
+float sdSphere (vec3 p, float s)        {
+        return (length(p))-(s);
+}
+ 
+
+float sdBox (vec3 p, vec3 b)        {
+            vec3 q; 
+        (q)=((abs(p))-(b)); 
+    return (length(max(q, 0.F)))+(min(max(q.x, max(q.y, q.z)), 0.F)); 
+}
+ 
+
+float sdTorus (vec3 p, vec2 tVal)        {
+            vec2 q; 
+        (q)=(vec2((length(p.xz))-(tVal.x), p.y)); 
+    return (length(q))-(tVal.y); 
+}
+ 
+
+float sdCylinder (vec3 p, vec2 h)        {
+            vec2 d; 
+        (d)=((abs(vec2(length(p.xz), p.y)))-(h)); 
+    return (min(max(d.x, d.y), 0.F))+(length(max(d, 0.F))); 
+}
+ 
+
+float map (vec3 p, float heat_intensity, float spin_speed, float melt_factor)        {
+        return min((p.y)+(1.50F), max( -(sdCylinder(p, vec2(0.350F, 3.0F))), smin((sdSphere(p, 0.90F))+(((heat_intensity)*(0.150F))*(simple_noise((p)*(3.0F)))), min(sdTorus(rotateX(p, (iTime)*(spin_speed)), vec2(1.40F, 0.10F)), sdTorus(rotateY(p, (iTime)*((spin_speed)*(0.70F))), vec2(1.60F, 8.00e-2F))), melt_factor)));
+}
+ 
+
+vec3 getNormal (vec3 p, float heat_intensity, float spin_speed, float melt_factor)        {
+            vec2 e; 
+    float d; 
+    vec3 n; 
+        (e)=(vec2(1.00e-3F, 0.F));
+    (d)=(map(p, heat_intensity, spin_speed, melt_factor));
+    (n)=((d)-(vec3(map((p)-(e.xyy), heat_intensity, spin_speed, melt_factor), map((p)-(e.yxy), heat_intensity, spin_speed, melt_factor), map((p)-(e.yyx), heat_intensity, spin_speed, melt_factor)))); 
+    return normalize(n); 
+}
+ 
+
+float getShadow (vec3 ro, vec3 rd, float mint, float maxt, float k, float heat_intensity, float spin_speed, float melt_factor)        {
+            float res; 
+    float tVal; 
+        (res)=(1.0F);
+    (tVal)=(mint); 
+    for ( int i = 0;(i)<(32);(i)++ ) {
+                        float h; 
+                (h)=(map((ro)+((tVal)*(rd)), heat_intensity, spin_speed, melt_factor)); 
+        if ( (h)<(1.00e-3F) ) {
+                                    return 0.F; 
+} 
+                (res)=(min(res, ((k)*(h))/(tVal))); 
+        (tVal)+=(clamp(h, 1.00e-2F, 0.20F));
+        if ( (tVal)>(maxt) ) {
+                                    break; 
+}  
+} 
+    return clamp(res, 0.F, 1.0F); 
 }
  
 
 void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
             vec4 state; 
         (state)=(texelFetch(iChannel0, ivec2(0, 0), 0)); 
-        float point_size; 
-    float edl_strength; 
+        float heat_intensity; 
+    float spin_speed; 
     float focused_widget; 
-    float shadow_strength; 
-        (point_size)=(state.x);
-    (edl_strength)=(state.y);
+    float melt_factor; 
+        (heat_intensity)=(state.x);
+    (spin_speed)=(state.y);
     (focused_widget)=(state.z);
-    (shadow_strength)=(state.w); 
-        vec4 centerData; 
-    vec3 baseColor; 
-    float depth; 
-        (centerData)=(texelFetch(iChannel0, ivec2(fragCoord), 0));
-    (baseColor)=(centerData.rgb);
-    (depth)=(centerData.w); 
-        vec3 col; 
-    if ( (depth)>(1.00e+4F) ) {
-                        vec2 uv = ((fragCoord)-((0.50F)*(iResolution.xy)))/(iResolution.y); 
-                (col)=((vec3(0.10F, 0.150F, 0.20F))-((8.00e-2F)*(length(uv))));  
-} else {
-                        vec3 P; 
-        float depth_R; 
-        float depth_U; 
-        vec3 P_R; 
-        vec3 P_U; 
-        vec3 dPdx; 
-        vec3 dPdy; 
-        vec3 normal; 
-        vec3 normal_cross; 
-        vec3 light_pos; 
-        vec3 L; 
-        float dif; 
-        float shadow_factor; 
-        vec3 V; 
-        vec3 R_ref; 
-        float spec; 
-                (P)=(reconstructP(ivec2(fragCoord), depth)); 
-                (depth_R)=(texelFetch(iChannel0, (ivec2(fragCoord))+(ivec2(1, 0)), 0).w);
-        (depth_U)=(texelFetch(iChannel0, (ivec2(fragCoord))+(ivec2(0, 1)), 0).w); 
-        if ( (depth_R)>(1.00e+4F) ) {
-                                    (depth_R)=(depth); 
+    (melt_factor)=(state.w); 
+        vec2 uv; 
+    vec3 ro; 
+    vec3 rd; 
+    float tVal; 
+    bool hit; 
+    vec3 p; 
+    vec3 n; 
+    vec3 lightPos; 
+    vec3 l; 
+    float dif; 
+    float shadow; 
+    vec3 objectColor; 
+    vec3 col; 
+        (uv)=(((fragCoord)-((0.50F)*(iResolution.xy)))/(iResolution.y));
+    (ro)=(vec3(0.F, 1.0F, -4.50F));
+    (rd)=(normalize(vec3(uv, 1.0F)));
+    (tVal)=(0.F);
+    (hit)=(false); 
+    for ( int i = 0;i < 80;i++ ) {
+                        float d; 
+                (d)=(map((ro)+((tVal)*(rd)), heat_intensity, spin_speed, melt_factor)); 
+        if ( (d)<(1.00e-3F) ) {
+                                                (hit)=(true); 
+            break; 
 } 
-        if ( (depth_U)>(1.00e+4F) ) {
-                                    (depth_U)=(depth); 
-} 
-                (P_R)=(reconstructP((ivec2(fragCoord))+(ivec2(1, 0)), depth_R));
-        (P_U)=(reconstructP((ivec2(fragCoord))+(ivec2(0, 1)), depth_U));
-        (dPdx)=((P_R)-(P));
-        (dPdy)=((P_U)-(P));
-        (normal_cross)=(cross(dPdx, dPdy)); 
-        if ( (length(normal_cross))<(1.00e-4F) ) {
-                                    (normal)=(vec3(0.F, 0.F, -1.0F)); 
-} else {
-                                    (normal)=(normalize(normal_cross)); 
-} 
-                (light_pos)=(vec3((2.50F)*(cos((iTime)*(0.50F))), 2.50F, ((2.50F)*(sin((iTime)*(0.50F))))+(4.50F)));
-        (L)=(normalize((light_pos)-(P)));
-        (V)=(normalize( -(P))); 
-        if ( (dot(normal, V))<(0.F) ) {
-                                                (normal)=( -(normal));  
-} 
-                (dif)=(clamp(dot(normal, L), 0.F, 1.0F));
-        (R_ref)=(reflect( -(L), normal));
-        (spec)=((pow(max(dot(R_ref, V), 0.F), 16.F))*(0.30F)); 
-                vec3 ray_dir = normalize((light_pos)-(P)); 
-        float light_dist = length((light_pos)-(P)); 
-        float t_max = min(light_dist, 5.0F); 
-        int steps = 24; 
-        float thickness = 0.350F; 
-                (shadow_factor)=(1.0F); 
-        for ( int step_idx = 1;(step_idx)<=(steps);(step_idx)++ ) {
-                                    float tVal; 
-            vec3 P_curr; 
-            vec2 proj_curr; 
-            vec2 uv_curr; 
-            ivec2 pixel_curr; 
-            float map_depth; 
-                        (tVal)=(((float(step_idx))/(float(steps)))*(t_max));
-            (P_curr)=((P)+((ray_dir)*(tVal)));
-            (proj_curr)=((P_curr.xy)/(P_curr.z));
-            (uv_curr)=((proj_curr)*(0.50F));
-            (pixel_curr)=(ivec2(((uv_curr)*(iResolution.y))+((0.50F)*(iResolution.xy)))); 
-            if ( ((pixel_curr.x)<(0))||((pixel_curr.x)>=(iResolution.x))||((pixel_curr.y)<(0))||((pixel_curr.y)>=(iResolution.y)) ) {
-                                                break; 
-} 
-                        (map_depth)=(texelFetch(iChannel0, pixel_curr, 0).w); 
-            if ( ((map_depth)<(1.00e+3F))&&((P_curr.z)>((map_depth)+(8.00e-2F)))&&((P_curr.z)<((map_depth)+(thickness))) ) {
-                                                                (shadow_factor)=((1.0F)-(shadow_strength)); 
-                break; 
+        (tVal)+=(d);
+        if ( (tVal)>(12.F) ) {
+                                    break; 
 }  
-}  
-                (col)=(((baseColor)*(((dif)*(shadow_factor))+(0.150F)))+((vec3(spec))*(shadow_factor)));  
 } 
-        float sum = 0.F; 
-    float edl_radius = 2.0F; 
-    vec2 offsets[4] = vec2[](vec2(0.0f, 1.0f), vec2(0.0f, -1.0f), vec2(1.0f, 0.0f), vec2(-1.0f, 0.0f)); 
-    for ( int idx = 0;(idx)<(4);(idx)++ ) {
-                        float neighborDepth; 
-                (neighborDepth)=(texelFetch(iChannel0, clamp(ivec2((ivec2(fragCoord))+(ivec2(((offsets)[(idx)])*(edl_radius)))), ivec2(0), (ivec2(iResolution.xy))-(1)), 0).w); 
-        if ( (neighborDepth)>(1.00e+4F) ) {
-                                                (neighborDepth)=(depth);  
+        (col)=(vec3(2.00e-2F, 2.00e-2F, 4.00e-2F)); 
+    if ( hit ) {
+                                (p)=((ro)+((tVal)*(rd)));
+        (n)=(getNormal(p, heat_intensity, spin_speed, melt_factor));
+        (lightPos)=(vec3(2.0F, 4.0F, -3.0F));
+        (l)=(normalize((lightPos)-(p)));
+        (dif)=(clamp(dot(n, l), 0.F, 1.0F));
+        (shadow)=(getShadow((p)+((n)*(1.00e-2F)), l, 1.00e-2F, 5.0F, 16.F, heat_intensity, spin_speed, melt_factor)); 
+        if ( (p.y)>(-1.490F) ) {
+                                    float centerDist; 
+                        (centerDist)=(length(p));
+            (objectColor)=(mix(vec3(0.90F, 0.30F, 0.F), vec3(0.70F, 0.70F, 0.80F), clamp(centerDist, 0.F, 1.0F)));  
+} else {
+                                    (objectColor)=(vec3(0.150F, 0.150F, 0.150F)); 
 } 
-                (sum)=((sum)+(max(0.F, (depth)-(neighborDepth))));  
+                (col)=((objectColor)*(((dif)*(shadow))+(0.10F)));
+        (col)=(pow(col, vec3(0.45450F)));  
 } 
-        (col)=((col)*(exp(( -(sum))*(1.50e+2F)*(edl_strength))));  
-        (col)=(pow(col, vec3(0.45450F))); 
         vec2 scr_uv; 
     vec3 bar_color; 
     vec3 handle_color; 
     vec3 focus_color; 
         (scr_uv)=((fragCoord)/(iResolution.xy));
-    (bar_color)=(vec3(0.40F));
-    (handle_color)=(vec3(0.80F));
-    (focus_color)=(vec3(0.20F, 0.90F, 0.20F)); 
+    (bar_color)=(vec3(0.30F));
+    (handle_color)=(vec3(0.70F));
+    (focus_color)=(vec3(0.90F, 0.30F, 0.10F)); 
         float VAL_0; 
     float Y_CENTER_0; 
     bool IS_FOCUSED_0; 
-        (VAL_0)=(((point_size)-(1.0F))/(14.F));
+        (VAL_0)=(((heat_intensity)-(0.F))/(2.0F));
     (Y_CENTER_0)=(0.1250F);
     (IS_FOCUSED_0)=((focused_widget)==(0.F)); 
         float HX_0; 
@@ -142,7 +186,7 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
         float VAL_1; 
     float Y_CENTER_1; 
     bool IS_FOCUSED_1; 
-        (VAL_1)=(((edl_strength)-(0.F))/(5.0F));
+        (VAL_1)=(((spin_speed)-(0.F))/(4.0F));
     (Y_CENTER_1)=(0.2050F);
     (IS_FOCUSED_1)=((focused_widget)==(1.0F)); 
         float HX_1; 
@@ -156,7 +200,7 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
         float VAL_2; 
     float Y_CENTER_2; 
     bool IS_FOCUSED_2; 
-        (VAL_2)=(((shadow_strength)-(0.F))/(1.0F));
+        (VAL_2)=(((melt_factor)-(0.10F))/(1.40F));
     (Y_CENTER_2)=(0.2850F);
     (IS_FOCUSED_2)=((focused_widget)==(2.0F)); 
         float HX_2; 
@@ -167,6 +211,6 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
     if ( (length((scr_uv)-(vec2(HX_2, Y_CENTER_2))))<(1.20e-2F) ) {
                                 (col)=(mix(col, (IS_FOCUSED_2) ? (focus_color) : (handle_color), 1.0F));  
 }    
-        (fragColor)=(vec4(col, 1.0F));     
+        (fragColor)=(vec4(col, 1.0F));    
 }
  

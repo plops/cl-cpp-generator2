@@ -16,7 +16,7 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 cd "$SCRIPT_DIR"
 
 echo "=== Step 1: Running Lisp Transpiler ==="
-sbcl --load gen2.lisp --quit
+sbcl --load gen3.lisp --quit
 
 echo "=== Step 2: Compiling Shaders to SPIR-V ==="
 cd vulkan-shadertoy-x11/launcher/shaders/
