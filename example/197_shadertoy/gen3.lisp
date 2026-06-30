@@ -59,8 +59,11 @@
         (args (rest deform)))
     (case op
       (noise-displace
-       (destructuring-bind (&key (amplitude 0.1f0) (frequency 1.0f0) &allow-other-keys) args
-         `(+ ,base-dist (* ,(coerce-float amplitude) (simple_noise (* ,p-var ,(coerce-float frequency)))))))
+       (destructuring-bind (&key (amplitude 0.1f0) (frequency 1.0f0) (animate t) &allow-other-keys) args
+         (let ((noise-coord (if animate
+                                `(+ (* ,p-var ,(coerce-float frequency)) (vec3 0.0f0 (* iTime 2.0f0) 0.0f0))
+                                `(* ,p-var ,(coerce-float frequency)))))
+           `(+ ,base-dist (* ,(coerce-float amplitude) (simple_noise ,noise-coord))))))
       (t base-dist))))
 
 (defun extract-positional-args (lst)
@@ -147,7 +150,7 @@
      :expected "smin(sdSphere(p, 0.90F), sdBox(p, vec3(0.50F)), 0.40F)")
     (:input (sphere :radius 0.9 :transform (translate 0.0 1.0 0.0))
      :expected "sdSphere((p)-(vec3(0.F, 1.0F, 0.F)), 0.90F)")
-    (:input (sphere :radius 0.9 :deform (noise-displace :amplitude 0.1 :frequency 2.0))
+    (:input (sphere :radius 0.9 :deform (noise-displace :amplitude 0.1 :frequency 2.0 :animate nil))
      :expected "(sdSphere(p, 0.90F))+((0.10F)*(simple_noise((p)*(2.0F))))")))
 
 (defun run-unit-tests ()
@@ -212,10 +215,11 @@
     (infinite-plane :height 1.5f0)
     (difference
      (smooth-blend :radius melt_factor
-                   (sphere :radius 0.9f0 :deform (noise-displace :amplitude (* heat_intensity 0.15f0) :frequency 3.0f0))
+                   (sphere :radius (+ 0.85f0 (* 0.10f0 (sin (* iTime 3.0f0))))
+                           :deform (noise-displace :amplitude (* heat_intensity 0.15f0) :frequency 3.0f0))
                    (union
-                    (torus :radius-major 1.4f0 :radius-minor 0.1f0 :transform (rotate-x (* iTime spin_speed)))
-                    (torus :radius-major 1.6f0 :radius-minor 0.08f0 :transform (rotate-y (* iTime (* spin_speed 0.7f0))))))
+                    (torus :radius-major 1.10f0 :radius-minor 0.12f0 :transform (rotate-x (* iTime spin_speed)))
+                    (torus :radius-major 1.25f0 :radius-minor 0.10f0 :transform (rotate-z (* iTime (* spin_speed 0.80f0))))))
      (cylinder :radius 0.35f0 :height 3.0f0))))
 
 (progn

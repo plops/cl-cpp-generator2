@@ -66,7 +66,7 @@ float sdCylinder (vec3 p, vec2 h)        {
  
 
 float map (vec3 p, float heat_intensity, float spin_speed, float melt_factor)        {
-        return min((p.y)+(1.50F), max( -(sdCylinder(p, vec2(0.350F, 3.0F))), smin((sdSphere(p, 0.90F))+(((heat_intensity)*(0.150F))*(simple_noise((p)*(3.0F)))), min(sdTorus(rotateX(p, (iTime)*(spin_speed)), vec2(1.40F, 0.10F)), sdTorus(rotateY(p, (iTime)*((spin_speed)*(0.70F))), vec2(1.60F, 8.00e-2F))), melt_factor)));
+        return min((p.y)+(1.50F), max( -(sdCylinder(p, vec2(0.350F, 3.0F))), smin((sdSphere(p, (0.850F)+((0.10F)*(sin((iTime)*(3.0F))))))+(((heat_intensity)*(0.150F))*(simple_noise(((p)*(3.0F))+(vec3(0.F, (iTime)*(2.0F), 0.F))))), min(sdTorus(rotateX(p, (iTime)*(spin_speed)), vec2(1.10F, 0.120F)), sdTorus(rotateZ(p, (iTime)*((spin_speed)*(0.80F))), vec2(1.250F, 0.10F))), melt_factor)));
 }
  
 
