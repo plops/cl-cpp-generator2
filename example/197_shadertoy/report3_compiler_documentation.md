@@ -1,4 +1,4 @@
-# SDF DSL Compiler - Technische Dokumentation & Entwickler-Leitfaden
+# SDF DSL Compiler - Technische Dokumentation & Entwickler-Leitfaden (Report 3)
 
 Diese Dokumentation beschreibt die Architektur, Funktionsweise und Syntax des deklarativen SDF (Signed Distance Field) DSL-Compilers, der in [gen3.lisp](file:///home/kiel/stage/cl-cpp-generator2/example/197_shadertoy/gen3.lisp) implementiert ist. Das Ziel dieses Dokuments ist es, ein vollständiges, in sich geschlossenes Verständnis des Compilers zu vermitteln, ohne dass der Leser externe Fachliteratur heranziehen muss.
 
@@ -30,7 +30,7 @@ $$f_{\text{Sphere}, t}(p) = \|p - t\| - r$$
 Dieser Ansatz – das Transformieren des Raums statt des Objekts selbst – ist das fundamentale Prinzip für Translationen und Rotationen in SDFs.
 
 ### 1.2 Der Raymarching-Algorithmus
-Da Grafikkarten (GPUs) Pixel parallel berechnen, arbeitet ein Fragment-Shader pro Pixel. Raymarching ist eine Technik, um eine 3D-Szene aus SDFs auf einen 2D-Bildschirm zu projizieren:
+Da Grafikkarten (GPUs) Pixel parallel berechnen, arbeitet ein Fragment-Shader pro Pixel. Raymarching ist eine technik, um eine 3D-Szene aus SDFs auf einen 2D-Bildschirm zu projizieren:
 
 1.  **Strahl erzeugen:** Für jedes Pixel der Kamera wird ein Strahl (*Ray*) mit einem Ursprung $R_0$ (Kamera-Position) und einer normierten Richtung $R_d$ definiert.
 2.  **Märschen (Schrittweise vortasten):** Wir tasten uns entlang des Strahls voran. Die aktuelle Position ist $p(t) = R_0 + t \cdot R_d$.
@@ -111,12 +111,12 @@ Beispiel für `sphere`:
 
 #### Raum-Transformationen (`compile-transform`)
 Hierbei wird der Vektor `p` modifiziert:
-*   `translate(x, y, z)` $\rightarrow$ Verschiebung. Mathematisch subtrahieren wir den Translationsvektor: `(- p (vec3 x y z))`
+*   `translate(x, y, z)` $\rightarrow$ Verschiebung. Mathematisch subtrahieren wir den Translationsvektor: `p-vec3(x, y, z)` (nach Vereinfachung).
 *   `rotate-x/y/z(angle)` $\rightarrow$ Rotiert den Raum mittels vordefinierter Rotationsfunktionen: `(rotateX p angle)`
 
 #### Oberflächen-Deformationen (`compile-deform`)
 *   `noise-displace` $\rightarrow$ Addiert Rauschen zur berechneten Distanz. Wenn `:animate t` aktiv ist (Standard), wird die Koordinate des Rauschens mit `iTime` verschoben, um Fließeffekte zu erzeugen:
-    `(+ base-dist (* amplitude (simple_noise (+ (* p frequency) (vec3 0.0f0 (* iTime 2.0f0) 0.0f0)))))`
+    `base_dist + amplitude * simple_noise(p * frequency + vec3(0.0, iTime * 2.0, 0.0))`
 
 ### 3.4 CSG-Kombinationen (Mengenlehre)
 *   **Union (`union`):** Kombiniert mehrere Formen zu einer Szene. Das mathematische Äquivalent ist das Minimum der Distanzen: `min(d1, d2)`.
@@ -135,22 +135,22 @@ Dieses Beispiel demonstriert ein komplexes Ineinandergreifen von dynamischer Rad
 *   **Lisp-Quellcode ([gen3_exA.lisp](file:///home/kiel/stage/cl-cpp-generator2/example/197_shadertoy/gen3_exA.lisp)):**
     ```lisp
     (let* ((input '(sphere :radius (+ 0.85f0 (* 0.10f0 (sin (* iTime 3.0f0))))
-                           :deform (noise-displace :amplitude (* heat_intensity 0.15f0) :frequency 3.0f0)))
+                       :deform (noise-displace :amplitude (* heat_intensity 0.15f0) :frequency 3.0f0)))
            (compiled (compile-sdf-form input 'p))
-           (glsl (emit-c :code compiled)))
+           (glsl (emit-c :code compiled :omit-redundant-parentheses t)))
       ;; Gibt die Übersetzung aus ...
       )
     ```
 
-*   **Kompilierter GLSL-Code:**
+*   **Kompilierter GLSL-Code (mit omit-parens):**
     ```glsl
-    (sdSphere(p, (0.850F)+((0.10F)*(sin((iTime)*(3.0F))))))+(((heat_intensity)*(0.150F))*(simple_noise(((p)*(3.0F))+(vec3(0.F, (iTime)*(2.0F), 0.F)))))
+    sdSphere(p, 0.850F+0.10F*sin(iTime*3.0F))+heat_intensity*0.150F*simple_noise(p*3.0F+vec3(0.F, iTime*2.0F, 0.F))
     ```
-    *Details:* Der Radius ist eine Sinuswelle, die im Sekundentakt schwingt. Die Deformations-Koordinate verschiebt sich entlang der Y-Achse um `iTime * 2.0`, wodurch die Wellen nach oben fließen.
+    *Details:* Der Radius ist eine Sinuswelle, die im Sekundentakt schwingt. Die Deformations-Koordinate verschiebt sich entlang der Y-Achse um `iTime * 2.0`, wodurch die Wellen nach oben fließen. Redundante Klammern wurden komplett optimiert.
 
 ---
 
-### 4.2 Beispiel B: Rotierender Torus (`gen3_exB.lisp`)
+### 4.2 Beispiel B: Rotierter Torus (`gen3_exB.lisp`)
 Dieses Beispiel zeigt, wie der Compiler Koordinaten-Transformationen vor der eigentlichen Geometrieberechnung durchführt.
 
 *   **Lisp-Quellcode ([gen3_exB.lisp](file:///home/kiel/stage/cl-cpp-generator2/example/197_shadertoy/gen3_exB.lisp)):**
@@ -158,14 +158,14 @@ Dieses Beispiel zeigt, wie der Compiler Koordinaten-Transformationen vor der eig
     (let* ((input '(torus :radius-major 1.25f0 :radius-minor 0.10f0
                           :transform (rotate-z (* iTime (* spin_speed 0.80f0)))))
            (compiled (compile-sdf-form input 'p))
-           (glsl (emit-c :code compiled)))
+           (glsl (emit-c :code compiled :omit-redundant-parentheses t)))
       ;; ...
       )
     ```
 
-*   **Kompilierter GLSL-Code:**
+*   **Kompilierter GLSL-Code (mit omit-parens):**
     ```glsl
-    sdTorus(rotateZ(p, (iTime)*((spin_speed)*(0.80F))), vec2(1.250F, 0.10F))
+    sdTorus(rotateZ(p, iTime*spin_speed*0.80F), vec2(1.250F, 0.10F))
     ```
     *Details:* Der Koordinatenvektor `p` wird durch den Funktionsaufruf `rotateZ` rotiert, bevor er an die Distanzfunktion `sdTorus` übergeben wird. Dies umgeht die Rotationssymmetrie auf der Y-Achse und lässt den Torus taumeln.
 
@@ -182,14 +182,14 @@ Hier wird das Ineinanderschachteln komplexer boolescher Mengenoperationen demons
                                   (torus :radius-major 1.10f0 :radius-minor 0.12f0))
                     (cylinder :radius 0.35f0 :height 3.0f0)))
            (compiled (compile-sdf-form input 'p))
-           (glsl (emit-c :code compiled)))
+           (glsl (emit-c :code compiled :omit-redundant-parentheses t)))
       ;; ...
       )
     ```
 
-*   **Kompilierter GLSL-Code:**
+*   **Kompilierter GLSL-Code (mit omit-parens):**
     ```glsl
-    max( -(sdCylinder(p, vec2(0.350F, 3.0F))), smin(sdSphere(p, 0.90F), sdTorus(p, vec2(1.10F, 0.120F)), melt_factor))
+    max( -sdCylinder(p, vec2(0.350F, 3.0F)), smin(sdSphere(p, 0.90F), sdTorus(p, vec2(1.10F, 0.120F)), melt_factor))
     ```
     *Details:* Der Compiler berechnet zuerst das `smin` (die weiche Verschmelzung) zwischen Kugel und Torus. Anschließend zieht er das Ergebnis der Zylinder-Distanz über ein `max(-dist_cyl, dist_blend)` ab, was eine glatte Aushöhlung erzeugt.
 

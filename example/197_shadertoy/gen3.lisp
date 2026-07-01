@@ -145,13 +145,13 @@
     (:input (union (sphere :radius 0.9) (box :size (vec3 0.5)))
      :expected "min(sdSphere(p, 0.90F), sdBox(p, vec3(0.50F)))")
     (:input (difference (sphere :radius 0.9) (cylinder :radius 0.3 :height 2.0))
-     :expected "max( -(sdCylinder(p, vec2(0.30F, 2.0F))), sdSphere(p, 0.90F))")
+     :expected "max( -sdCylinder(p, vec2(0.30F, 2.0F)), sdSphere(p, 0.90F))")
     (:input (smooth-blend :radius 0.4 (sphere :radius 0.9) (box :size (vec3 0.5)))
      :expected "smin(sdSphere(p, 0.90F), sdBox(p, vec3(0.50F)), 0.40F)")
     (:input (sphere :radius 0.9 :transform (translate 0.0 1.0 0.0))
-     :expected "sdSphere((p)-(vec3(0.F, 1.0F, 0.F)), 0.90F)")
+     :expected "sdSphere(p-vec3(0.F, 1.0F, 0.F), 0.90F)")
     (:input (sphere :radius 0.9 :deform (noise-displace :amplitude 0.1 :frequency 2.0 :animate nil))
-     :expected "(sdSphere(p, 0.90F))+((0.10F)*(simple_noise((p)*(2.0F))))")))
+     :expected "sdSphere(p, 0.90F)+0.10F*simple_noise(p*2.0F)")))
 
 (defun run-unit-tests ()
   (format t "~%=== RUNNING DSL COMPILER UNIT TESTS ===~%")
@@ -162,7 +162,7 @@
       (let* ((input (getf tc :input))
              (expected (getf tc :expected))
              (compiled-ast (compile-sdf-form input 'p))
-             (generated-code (format nil "~A" (emit-c :code compiled-ast))))
+             (generated-code (format nil "~A" (emit-c :code compiled-ast :omit-redundant-parentheses t))))
         ;; Remove trailing newlines/whitespace for comparison
         (setf generated-code (string-trim '(#\Space #\Newline #\Tab #\Return) generated-code))
         (if (string= generated-code expected)
@@ -331,7 +331,7 @@
                 
                 (unless (== ipx (ivec2 0 0))
                   (setf fragColor (vec4 0.0f0))))))))
-    (write-source *buf0-file* buf-code :format nil :tidy nil))
+    (write-source *buf0-file* buf-code :format t :tidy nil :omit-parens t))
 
   ;; =========================================================================
   ;; 5. MAIN RENDERER GENERATION (main_image.glsl)
@@ -534,4 +534,4 @@
                               collect (make-slider-overlay idx val-expr y-center min-val max-val)))
                     
                     (setf fragColor (vec4 col 1.0f0)))))))))
-    (write-source *main-file* main-code :format nil :tidy nil)))
+    (write-source *main-file* main-code :format t :tidy nil :omit-parens t)))
