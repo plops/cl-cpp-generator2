@@ -85,6 +85,18 @@ sbcl --load gen3.lisp --eval '(sb-ext:exit)'
 sbcl --load gen2.lisp --eval '(sb-ext:exit)'
 ```
 
+### Generate the Animated Earth Globe (`gen4.lisp`)
+```bash
+sbcl --noinform --non-interactive --load gen4.lisp
+```
+This one writes to its own directory (`.../shaders/earth/`) and is rendered with
+`--shader-dir`; see [earth_shader.md](earth_shader.md).
+```bash
+./headless_gpu_runner --res 1920 1080 --frames 2 --time 6.0 \
+  --shader-dir vulkan-shadertoy-x11/launcher/shaders/earth \
+  --screenshot earth.png
+```
+
 This writes the generated GLSL code to:
 - `vulkan-shadertoy-x11/launcher/shaders/shadertoy/buf0.glsl` (State / Simulation pass)
 - `vulkan-shadertoy-x11/launcher/shaders/shadertoy/main_image.glsl` (Raymarching / Render pass)
@@ -131,6 +143,8 @@ To run hardware GPU profiling and throughput analysis:
 | **1440p QHD** | 2560 x 1440 | 3.69 MP | **586.74 FPS** | **1.704 ms** | 2.092 ms | **2.16 GPixels/sec** |
 | **4K UHD** | 3840 x 2160 | 8.29 MP | **413.44 FPS** | **2.419 ms** | 2.952 ms | **3.43 GPixels/sec** |
 | **Point Cloud (1080p)** | 1920 x 1080 | 2.07 MP | **111.15 FPS** | **8.997 ms** | 9.380 ms | **0.23 GPixels/sec** |
+| **Earth Globe (1080p)** | 1920 x 1080 | 2.07 MP | **494.24 FPS** | **2.023 ms** | 2.328 ms | **1.02 GPixels/sec** |
+| **Earth Globe (4K)** | 3840 x 2160 | 8.29 MP | **129.16 FPS** | **7.742 ms** | 8.890 ms | **1.07 GPixels/sec** |
 
 ---
 
@@ -140,6 +154,24 @@ To run hardware GPU profiling and throughput analysis:
 | :--- | :--- | :--- | :--- |
 | `--res` | `<W> <H>` | Render viewport resolution | `1280 720` |
 | `--frames` | `<N>` | Number of simulation frames to step | `60` |
+| `--time` | `<seconds>` | Start value for `iTime` (jump into an animation without stepping every frame) | `0` |
 | `--screenshot` | `<file.png>` | File path to write RGBA PNG screenshot | `gpu_screenshot.png` |
 | `--benchmark` | `[N]` | Run warmup + N-frame statistical benchmark | `500` |
 | `--shader-dir` | `<path>` | Custom directory containing `buf0.glsl` & `main_image.glsl` | `vulkan-shadertoy-x11/launcher/shaders/shadertoy` |
+
+---
+
+## 8. Driver Limits Worth Knowing
+
+Both were hit while building the Earth globe shader (see
+[earth_shader.md](earth_shader.md)):
+
+* **Long unsynchronized frame batches get dropped.** Queuing ~860 frames at
+  1440x900 without a fence returned an untouched FBO (all zeros). The runner now
+  calls `glFinish()` once per simulation frame.
+* **Dynamically indexed `const uint[]` tables are slow and capped at ~16 KB.**
+  Above roughly 4096 uints the shader fails to link with
+  `error C5041: cannot locate suitable resource to bind variable ... Possibly
+  large array`, and even below that limit 16 lookups per pixel cost 19.5 ms per
+  1080p frame. Unpacking such tables into the state buffer once per frame and
+  reading them back with `texelFetch` was 9.6x faster.

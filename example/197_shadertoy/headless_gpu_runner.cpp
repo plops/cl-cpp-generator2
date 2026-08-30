@@ -200,6 +200,7 @@ int main(int argc, char** argv) {
     int res_w = 1280;
     int res_h = 720;
     int num_frames = 60;
+    float time_offset = 0.0f;
     bool do_benchmark = false;
     int benchmark_frames = 500;
     std::string screenshot_file = "gpu_screenshot.png";
@@ -212,6 +213,8 @@ int main(int argc, char** argv) {
             res_h = atoi(argv[++i]);
         } else if (arg == "--frames" && i + 1 < argc) {
             num_frames = atoi(argv[++i]);
+        } else if (arg == "--time" && i + 1 < argc) {
+            time_offset = (float)atof(argv[++i]);
         } else if (arg == "--screenshot" && i + 1 < argc) {
             screenshot_file = argv[++i];
         } else if (arg == "--benchmark") {
@@ -225,6 +228,7 @@ int main(int argc, char** argv) {
             printf("Usage: %s [options]\n", argv[0]);
             printf("  --res <W> <H>         Set render resolution (default 1280 720)\n");
             printf("  --frames <N>          Number of simulation frames (default 60)\n");
+            printf("  --time <seconds>      Start time offset for iTime (default 0)\n");
             printf("  --screenshot <file>   Save PNG screenshot (default gpu_screenshot.png)\n");
             printf("  --benchmark [N]       Run benchmark for N frames (default 500)\n");
             printf("  --shader-dir <path>   Directory with buf0.glsl, main_image.glsl\n");
@@ -400,10 +404,13 @@ int main(int argc, char** argv) {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     };
 
-    printf("\n🎬 Running simulation (%d frames at 60 FPS)...\n", num_frames);
+    printf("\n🎬 Running simulation (%d frames at 60 FPS, t0 = %.2f s)...\n", num_frames, time_offset);
     float dt = 1.0f / 60.0f;
     for (int f = 0; f < num_frames; f++) {
-        render_frame(f, f * dt, dt);
+        render_frame(f, time_offset + f * dt, dt);
+        // Sync every frame: queuing hundreds of full-resolution frames without a
+        // fence makes the driver drop the batch (empty FBO) on large viewports.
+        glFinish();
     }
     glFinish();
 
