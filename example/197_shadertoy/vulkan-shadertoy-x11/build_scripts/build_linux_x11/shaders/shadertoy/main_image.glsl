@@ -1,118 +1,281 @@
-// --- transpiled main renderer: reconstruction, normals, shading, screen-space shadows, and EDL ---
+// --- transpiled raymarching shader with smin and shadows ---
+struct Dual { float v; vec3 d; }; 
+struct Dual3 { vec3 v; mat3 d; }; 
 
-vec3 reconstructP (ivec2 pixel, float depth)        {
-            vec2 uv; 
-    vec2 proj; 
-        (uv)=(((vec2(pixel))-((0.50F)*(iResolution.xy)))/(iResolution.y));
-    (proj)=((uv)*(2.0F)); 
-    return vec3((proj)*(depth), depth); 
+Dual addDual (Dual a, Dual b)        {
+            Dual r; 
+        (r.v)=((a.v)+(b.v));
+    (r.d)=((a.d)+(b.d)); 
+    return r; 
+}
+ 
+
+Dual subDual (Dual a, Dual b)        {
+            Dual r; 
+        (r.v)=((a.v)-(b.v));
+    (r.d)=((a.d)-(b.d)); 
+    return r; 
+}
+ 
+
+Dual3 subDual3 (Dual3 a, vec3 b)        {
+            Dual3 r; 
+        (r.v)=((a.v)-(b));
+    (r.d)=(a.d); 
+    return r; 
+}
+ 
+
+Dual3 mulMat3Dual3 (mat3 m, Dual3 p)        {
+            Dual3 r; 
+        (r.v)=((m)*(p.v));
+    (r.d)=((m)*(p.d)); 
+    return r; 
+}
+ 
+
+Dual getX (Dual3 q)        {
+        return Dual(q.v.x, (q.d)[(0)]);
+}
+ 
+
+Dual getY (Dual3 q)        {
+        return Dual(q.v.y, (q.d)[(1)]);
+}
+ 
+
+Dual getZ (Dual3 q)        {
+        return Dual(q.v.z, (q.d)[(2)]);
+}
+ 
+
+Dual maxDualDual (Dual a, Dual b)        {
+        if ( (a.v)>(b.v) ) {
+                return a;
+} else {
+                return b;
+} 
+}
+ 
+
+Dual maxDualFloat (Dual a, float b)        {
+        if ( (a.v)>(b) ) {
+                return a;
+} else {
+                return Dual(b, vec3(0.F));
+} 
+}
+ 
+
+Dual minDualDual (Dual a, Dual b)        {
+        if ( (a.v)<(b.v) ) {
+                return a;
+} else {
+                return b;
+} 
+}
+ 
+
+Dual minDualFloat (Dual a, float b)        {
+        if ( (a.v)<(b) ) {
+                return a;
+} else {
+                return Dual(b, vec3(0.F));
+} 
+}
+ 
+
+Dual3 absDual3 (Dual3 p)        {
+            Dual3 r; 
+        (r.v)=(abs(p.v));
+    (r.d)=(mat3(((p.d)[(0)])*(((p.v.x)>=(0.F)) ? (1.0F) : (-1.0F)), ((p.d)[(1)])*(((p.v.y)>=(0.F)) ? (1.0F) : (-1.0F)), ((p.d)[(2)])*(((p.v.z)>=(0.F)) ? (1.0F) : (-1.0F)))); 
+    return r; 
+}
+ 
+
+Dual3 maxDual3Float (Dual3 a, float b)        {
+            Dual3 r; 
+        (r.v)=(max(a.v, vec3(b)));
+    (r.d)=(mat3(((a.v.x)>(b)) ? ((a.d)[(0)]) : (vec3(0.F)), ((a.v.y)>(b)) ? ((a.d)[(1)]) : (vec3(0.F)), ((a.v.z)>(b)) ? ((a.d)[(2)]) : (vec3(0.F)))); 
+    return r; 
+}
+ 
+
+Dual lengthDual3 (Dual3 a)        {
+            Dual r; 
+    float lenVal; 
+        (lenVal)=(length(a.v));
+    (r.v)=(lenVal); 
+    if ( (lenVal)>(0.F) ) {
+                        (r.d)=((normalize(a.v))*(a.d)); 
+} else {
+                        (r.d)=(vec3(0.F)); 
+} 
+    return r; 
+}
+ 
+
+float sdSphere (vec3 p, float s)        {
+        return (length(p))-(s);
+}
+ 
+
+Dual sdSphereDual (Dual3 p, float s)        {
+            Dual len; 
+        (len)=(lengthDual3(p)); 
+    return Dual((len.v)-(s), len.d); 
+}
+ 
+
+float sdBox (vec3 p, vec3 b)        {
+            vec3 q; 
+        (q)=((abs(p))-(b)); 
+    return (length(max(q, 0.F)))+(min(max(q.x, max(q.y, q.z)), 0.F)); 
+}
+ 
+
+Dual sdBoxDual (Dual3 p, vec3 b)        {
+            Dual3 q; 
+    Dual len; 
+    Dual mx; 
+    Dual mn; 
+        (q)=(subDual3(absDual3(p), b));
+    (len)=(lengthDual3(maxDual3Float(q, 0.F)));
+    (mx)=(maxDualDual(getX(q), maxDualDual(getY(q), getZ(q))));
+    (mn)=(minDualFloat(mx, 0.F)); 
+    return Dual((len.v)+(mn.v), (len.d)+(mn.d)); 
+}
+ 
+
+float smin (float a, float b, float k)        {
+            float h; 
+        (h)=(clamp((0.50F)+((0.50F)*(((b)-(a))/(k))), 0.F, 1.0F)); 
+    return (mix(b, a, h))-((k)*(h)*((1.0F)-(h))); 
+}
+ 
+
+Dual sminDual (Dual a, Dual b, float k)        {
+            float h; 
+    Dual r; 
+        (h)=(clamp((0.50F)+((0.50F)*(((b.v)-(a.v))/(k))), 0.F, 1.0F));
+    (r.v)=((mix(b.v, a.v, h))-((k)*(h)*((1.0F)-(h))));
+    (r.d)=(mix(b.d, a.d, h)); 
+    return r; 
+}
+ 
+
+Dual mapDual (vec3 p_val, float smax_blend)        {
+            Dual3 p; 
+    Dual plane; 
+    float c; 
+    float s; 
+    mat3 rot; 
+    Dual3 pRot; 
+    Dual box; 
+    Dual sphere; 
+    Dual blendedObject; 
+        (p.v)=(p_val);
+    (p.d)=(mat3(1.0F));
+    (plane)=(Dual((p.v.y)+(1.0F), (p.d)[(1)]));
+    (c)=(cos(iTime));
+    (s)=(sin(iTime));
+    (rot)=(mat3(c, 0.F, s, 0.F, 1.0F, 0.F,  -(s), 0.F, c));
+    (pRot)=(mulMat3Dual3(rot, p));
+    (box)=(sdBoxDual(pRot, vec3(0.60F)));
+    (sphere)=(sdSphereDual(subDual3(pRot, vec3(0.F, 0.20F, 0.F)), 0.750F));
+    (blendedObject)=(sminDual(box, sphere, smax_blend)); 
+    return minDualDual(plane, blendedObject); 
+}
+ 
+
+float map (vec3 p, float smax_blend)        {
+        return mapDual(p, smax_blend).v;
+}
+ 
+
+vec3 getNormal (vec3 p, float smax_blend)        {
+        return normalize(mapDual(p, smax_blend).d);
+}
+ 
+
+float getShadow (vec3 ro, vec3 rd, float mint, float maxt, float k, float smax_blend)        {
+            float res; 
+    float tVal; 
+        (res)=(1.0F);
+    (tVal)=(mint); 
+    for ( int i = 0;(i)<(32);(i)++ ) {
+                        float h; 
+                (h)=(map((ro)+((tVal)*(rd)), smax_blend)); 
+        if ( (h)<(1.00e-3F) ) {
+                                    return 0.F; 
+} 
+                (res)=(min(res, ((k)*(h))/(tVal))); 
+        (tVal)+=(clamp(h, 1.00e-2F, 0.20F));
+        if ( (tVal)>(maxt) ) {
+                                    break; 
+}  
+} 
+    return clamp(res, 0.F, 1.0F); 
 }
  
 
 void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
             vec4 state; 
         (state)=(texelFetch(iChannel0, ivec2(0, 0), 0)); 
-        float point_size; 
-    float edl_strength; 
+        float smax_blend; 
+    float shadow_k; 
     float focused_widget; 
-    float shadow_strength; 
-        (point_size)=(state.x);
-    (edl_strength)=(state.y);
+    float maxDist; 
+        (smax_blend)=(state.x);
+    (shadow_k)=(state.y);
     (focused_widget)=(state.z);
-    (shadow_strength)=(state.w); 
-        vec4 centerData; 
-    vec3 baseColor; 
-    float depth; 
-        (centerData)=(texelFetch(iChannel0, ivec2(fragCoord), 0));
-    (baseColor)=(centerData.rgb);
-    (depth)=(centerData.w); 
-        vec3 col; 
-    if ( (depth)>(1.00e+4F) ) {
-                        vec2 uv = ((fragCoord)-((0.50F)*(iResolution.xy)))/(iResolution.y); 
-                (col)=((vec3(0.10F, 0.150F, 0.20F))-((8.00e-2F)*(length(uv))));  
-} else {
-                        vec3 P; 
-        float depth_R; 
-        float depth_U; 
-        vec3 P_R; 
-        vec3 P_U; 
-        vec3 dPdx; 
-        vec3 dPdy; 
-        vec3 normal; 
-        vec3 normal_cross; 
-        vec3 light_pos; 
-        vec3 L; 
-        float dif; 
-        float shadow_factor; 
-        vec3 V; 
-        vec3 R_ref; 
-        float spec; 
-                (P)=(reconstructP(ivec2(fragCoord), depth)); 
-                (depth_R)=(texelFetch(iChannel0, (ivec2(fragCoord))+(ivec2(1, 0)), 0).w);
-        (depth_U)=(texelFetch(iChannel0, (ivec2(fragCoord))+(ivec2(0, 1)), 0).w); 
-        if ( (depth_R)>(1.00e+4F) ) {
-                                    (depth_R)=(depth); 
+    (maxDist)=(state.w); 
+        vec2 uv; 
+    vec3 ro; 
+    vec3 rd; 
+    float tVal; 
+    bool hit; 
+    vec3 p; 
+    vec3 n; 
+    vec3 lightPos; 
+    vec3 l; 
+    float dif; 
+    float shadow; 
+    vec3 objectColor; 
+    vec3 col; 
+        (uv)=(((fragCoord)-((0.50F)*(iResolution.xy)))/(iResolution.y));
+    (ro)=(vec3(0.F, 1.0F, -3.0F));
+    (rd)=(normalize(vec3(uv, 1.0F)));
+    (tVal)=(0.F);
+    (hit)=(false); 
+    for ( int i = 0;i < 80;i++ ) {
+                        float d; 
+                (d)=(map((ro)+((tVal)*(rd)), smax_blend)); 
+        if ( (d)<(1.00e-3F) ) {
+                                                (hit)=(true); 
+            break; 
 } 
-        if ( (depth_U)>(1.00e+4F) ) {
-                                    (depth_U)=(depth); 
-} 
-                (P_R)=(reconstructP((ivec2(fragCoord))+(ivec2(1, 0)), depth_R));
-        (P_U)=(reconstructP((ivec2(fragCoord))+(ivec2(0, 1)), depth_U));
-        (dPdx)=((P_R)-(P));
-        (dPdy)=((P_U)-(P));
-        (normal_cross)=(cross(dPdx, dPdy)); 
-        if ( (length(normal_cross))<(1.00e-4F) ) {
-                                    (normal)=(vec3(0.F, 0.F, -1.0F)); 
-} else {
-                                    (normal)=(normalize(normal_cross)); 
-} 
-                (light_pos)=(vec3((2.50F)*(cos((iTime)*(0.50F))), 2.50F, ((2.50F)*(sin((iTime)*(0.50F))))+(4.50F)));
-        (L)=(normalize((light_pos)-(P)));
-        (dif)=(clamp(dot(normal, L), 0.F, 1.0F));
-        (V)=(normalize( -(P)));
-        (R_ref)=(reflect( -(L), normal));
-        (spec)=((pow(max(dot(R_ref, V), 0.F), 16.F))*(0.30F)); 
-                vec3 ray_dir = normalize((light_pos)-(P)); 
-        float light_dist = length((light_pos)-(P)); 
-        float t_max = min(light_dist, 5.0F); 
-        int steps = 24; 
-                (shadow_factor)=(1.0F); 
-        for ( int step_idx = 1;(step_idx)<=(steps);(step_idx)++ ) {
-                                    float tVal; 
-            vec3 P_curr; 
-            vec2 proj_curr; 
-            vec2 uv_curr; 
-            ivec2 pixel_curr; 
-            float map_depth; 
-                        (tVal)=(((float(step_idx))/(float(steps)))*(t_max));
-            (P_curr)=((P)+((ray_dir)*(tVal)));
-            (proj_curr)=((P_curr.xy)/(P_curr.z));
-            (uv_curr)=((proj_curr)*(0.50F));
-            (pixel_curr)=(ivec2(((uv_curr)*(iResolution.y))+((0.50F)*(iResolution.xy)))); 
-            if ( ((pixel_curr.x)<(0))||((pixel_curr.x)>=(iResolution.x))||((pixel_curr.y)<(0))||((pixel_curr.y)>=(iResolution.y)) ) {
-                                                break; 
-} 
-                        (map_depth)=(texelFetch(iChannel0, pixel_curr, 0).w); 
-            if ( ((map_depth)<(1.00e+3F))&&((P_curr.z)>((map_depth)+(8.00e-2F))) ) {
-                                                                (shadow_factor)=((1.0F)-(shadow_strength)); 
-                break; 
+        (tVal)+=(d);
+        if ( (tVal)>(maxDist) ) {
+                                    break; 
 }  
-}  
-                (col)=(((baseColor)*(((dif)*(shadow_factor))+(0.150F)))+((vec3(spec))*(shadow_factor)));  
 } 
-        float sum = 0.F; 
-    float edl_radius = 2.0F; 
-    vec2 offsets[4] = vec2[](vec2(0.0f, 1.0f), vec2(0.0f, -1.0f), vec2(1.0f, 0.0f), vec2(-1.0f, 0.0f)); 
-    for ( int idx = 0;(idx)<(4);(idx)++ ) {
-                        float neighborDepth; 
-                (neighborDepth)=(texelFetch(iChannel0, clamp(ivec2((ivec2(fragCoord))+(ivec2(((offsets)[(idx)])*(edl_radius)))), ivec2(0), (ivec2(iResolution.xy))-(1)), 0).w); 
-        if ( (neighborDepth)>(1.00e+4F) ) {
-                                                (neighborDepth)=(depth);  
+        (col)=(vec3(0.10F, 0.150F, 0.20F)); 
+    if ( hit ) {
+                                (p)=((ro)+((tVal)*(rd)));
+        (n)=(getNormal(p, smax_blend));
+        (lightPos)=(vec3(2.0F, 4.0F, -1.0F));
+        (l)=(normalize((lightPos)-(p)));
+        (dif)=(clamp(dot(n, l), 0.F, 1.0F));
+        (shadow)=(getShadow((p)+((n)*(1.00e-2F)), l, 1.00e-2F, 5.0F, shadow_k, smax_blend)); 
+        if ( (p.y)>(-0.990F) ) {
+                                    (objectColor)=(vec3(0.90F, 0.40F, 0.10F)); 
+} else {
+                                    (objectColor)=(vec3(0.50F)); 
 } 
-                (sum)=((sum)+(max(0.F, (depth)-(neighborDepth))));  
+                (col)=((objectColor)*(((dif)*(shadow))+(0.10F)));
+        (col)=(pow(col, vec3(0.45450F)));  
 } 
-        (col)=((col)*(exp(( -(sum))*(1.50e+2F)*(edl_strength))));  
-        (col)=(pow(col, vec3(0.45450F))); 
         vec2 scr_uv; 
     vec3 bar_color; 
     vec3 handle_color; 
@@ -124,7 +287,7 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
         float VAL_0; 
     float Y_CENTER_0; 
     bool IS_FOCUSED_0; 
-        (VAL_0)=(((point_size)-(1.0F))/(14.F));
+        (VAL_0)=(((smax_blend)-(0.F))/(2.0F));
     (Y_CENTER_0)=(0.1250F);
     (IS_FOCUSED_0)=((focused_widget)==(0.F)); 
         float HX_0; 
@@ -138,7 +301,7 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
         float VAL_1; 
     float Y_CENTER_1; 
     bool IS_FOCUSED_1; 
-        (VAL_1)=(((edl_strength)-(0.F))/(5.0F));
+        (VAL_1)=(((shadow_k)-(1.0F))/(99.F));
     (Y_CENTER_1)=(0.2050F);
     (IS_FOCUSED_1)=((focused_widget)==(1.0F)); 
         float HX_1; 
@@ -152,7 +315,7 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
         float VAL_2; 
     float Y_CENTER_2; 
     bool IS_FOCUSED_2; 
-        (VAL_2)=(((shadow_strength)-(0.F))/(1.0F));
+        (VAL_2)=(((maxDist)-(2.0F))/(48.F));
     (Y_CENTER_2)=(0.2850F);
     (IS_FOCUSED_2)=((focused_widget)==(2.0F)); 
         float HX_2; 
@@ -163,6 +326,6 @@ void mainImage (out vec4 fragColor, in vec2 fragCoord)        {
     if ( (length((scr_uv)-(vec2(HX_2, Y_CENTER_2))))<(1.20e-2F) ) {
                                 (col)=(mix(col, (IS_FOCUSED_2) ? (focus_color) : (handle_color), 1.0F));  
 }    
-        (fragColor)=(vec4(col, 1.0F));     
+        (fragColor)=(vec4(col, 1.0F));    
 }
  
