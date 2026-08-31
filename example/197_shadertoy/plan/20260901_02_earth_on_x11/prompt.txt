@@ -1,0 +1,13 @@
+# Prompt / Auftrag
+
+Der bestehende Earth-Shader in `197_shadertoy` soll zusätzlich zur vorhandenen
+headless-EGL-Ausführung auch in einem X11-Fenster laufen.
+
+Anforderungen:
+
+- Den generierten Earth-Shader in den vorhandenen X11/Vulkan-Shadertoy-Launcher
+  integrieren, ohne die generischen Buffer-B/C/D-Pässe zu beschädigen.
+- Ein Shell-Skript bereitstellen, das den Earth-GLSL generiert, die Vulkan-
+  Shader kompiliert, den X11-Launcher baut/staged und das Fenster startet.
+- Den Startpfad auf einem System mit X11-Display und NVIDIA Vulkan testen.
+- Die Umsetzung, aufgetretene Probleme und die Validierung dokumentieren.

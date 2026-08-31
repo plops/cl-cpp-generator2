@@ -43,8 +43,8 @@ bool is_pause=bool(constants.pCustom-(constants.pCustom/10)*10);
 
 layout (location = 0) out vec4 out_color;
 
-#include "../shadertoy/common.glsl"
-#include "../shadertoy/buf0.glsl"
+#include "../earth/common.glsl"
+#include "../earth/buf0.glsl"
 
 void main()
 {
