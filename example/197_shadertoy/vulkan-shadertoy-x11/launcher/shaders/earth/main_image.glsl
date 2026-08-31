@@ -16,7 +16,7 @@ float landCov(int ix, int iy) {
 
 float coastTexel(int ix, int iy) {
   return texelFetch(iChannel0,
-                    ivec2(COAST_X + ((ix & (SMALL_W - 1))),
+                    ivec2(COAST_X + (ix & (SMALL_W - 1)),
                           SMALL_Y + clamp(iy, 0, SMALL_H - 1)),
                     0)
       .x;
@@ -24,7 +24,7 @@ float coastTexel(int ix, int iy) {
 
 vec3 albTexel(int ix, int iy) {
   return texelFetch(iChannel0,
-                    ivec2(ALB_X + ((ix & (SMALL_W - 1))),
+                    ivec2(ALB_X + (ix & (SMALL_W - 1)),
                           SMALL_Y + clamp(iy, 0, SMALL_H - 1)),
                     0)
       .xyz;
@@ -32,7 +32,7 @@ vec3 albTexel(int ix, int iy) {
 
 float litTexel(int ix, int iy) {
   return texelFetch(iChannel0,
-                    ivec2(LIT_X + ((ix & (SMALL_W - 1))),
+                    ivec2(LIT_X + (ix & (SMALL_W - 1)),
                           SMALL_Y + clamp(iy, 0, SMALL_H - 1)),
                     0)
       .x;
@@ -231,7 +231,7 @@ vec3 starField(vec3 rd) {
   float tw = 0.F;
   float tint = 0.F;
   bd = (dot(rd, bandAxis) / 0.330F);
-  col += vec3(4.50e-2F, 4.00e-2F, 7.50e-2F) * exp(-bd * bd) *
+  col += vec3(4.50e-2F, 4.00e-2F, 7.50e-2F) * exp(-(bd * bd)) *
          (0.350F + 0.650F * fbmN(rd * 5.0F, 4));
   for (int k = 0; k < 3; k++) {
     sc = 70.F * (1.0F + 1.350F * float(k));
@@ -308,8 +308,8 @@ vec3 markerSurface(vec3 ld, float active) {
     e1 = ((ang - rr) / 7.50e-3F);
     e2 = ((ang - 3.00e-2F) / 4.50e-3F);
     acc += ci * hi *
-           (core * 4.0F + halo + 2.0F * exp(-e1 * e1) * (1.0F - ph) +
-            1.10F * exp(-e2 * e2) * (0.550F + 0.450F * sin(iTime * 3.0F)));
+           (core * 4.0F + halo + 2.0F * exp(-(e1 * e1)) * (1.0F - ph) +
+            1.10F * exp(-(e2 * e2)) * (0.550F + 0.450F * sin(iTime * 3.0F)));
   }
   mi = vec3(-0.7286451F, 0.652270F, 0.2088531F);
   ci = vec3(0.350F, 0.90F, 1.0F);
@@ -323,8 +323,8 @@ vec3 markerSurface(vec3 ld, float active) {
     e1 = ((ang - rr) / 7.50e-3F);
     e2 = ((ang - 3.00e-2F) / 4.50e-3F);
     acc += ci * hi *
-           (core * 4.0F + halo + 2.0F * exp(-e1 * e1) * (1.0F - ph) +
-            1.10F * exp(-e2 * e2) * (0.550F + 0.450F * sin(iTime * 3.0F)));
+           (core * 4.0F + halo + 2.0F * exp(-(e1 * e1)) * (1.0F - ph) +
+            1.10F * exp(-(e2 * e2)) * (0.550F + 0.450F * sin(iTime * 3.0F)));
   }
   mi = vec3(-0.6302457F, -0.38923648F, 0.6717777F);
   ci = vec3(0.550F, 1.0F, 0.550F);
@@ -338,8 +338,8 @@ vec3 markerSurface(vec3 ld, float active) {
     e1 = ((ang - rr) / 7.50e-3F);
     e2 = ((ang - 3.00e-2F) / 4.50e-3F);
     acc += ci * hi *
-           (core * 4.0F + halo + 2.0F * exp(-e1 * e1) * (1.0F - ph) +
-            1.10F * exp(-e2 * e2) * (0.550F + 0.450F * sin(iTime * 3.0F)));
+           (core * 4.0F + halo + 2.0F * exp(-(e1 * e1)) * (1.0F - ph) +
+            1.10F * exp(-(e2 * e2)) * (0.550F + 0.450F * sin(iTime * 3.0F)));
   }
   mi = vec3(0.26224550F, -0.5581072F, 0.7872379F);
   ci = vec3(1.0F, 0.550F, 0.750F);
@@ -353,8 +353,8 @@ vec3 markerSurface(vec3 ld, float active) {
     e1 = ((ang - rr) / 7.50e-3F);
     e2 = ((ang - 3.00e-2F) / 4.50e-3F);
     acc += ci * hi *
-           (core * 4.0F + halo + 2.0F * exp(-e1 * e1) * (1.0F - ph) +
-            1.10F * exp(-e2 * e2) * (0.550F + 0.450F * sin(iTime * 3.0F)));
+           (core * 4.0F + halo + 2.0F * exp(-(e1 * e1)) * (1.0F - ph) +
+            1.10F * exp(-(e2 * e2)) * (0.550F + 0.450F * sin(iTime * 3.0F)));
   }
   mi = vec3(0.5259458F, 0.5832010F, -0.6190780F);
   ci = vec3(1.0F, 0.450F, 0.350F);
@@ -368,8 +368,8 @@ vec3 markerSurface(vec3 ld, float active) {
     e1 = ((ang - rr) / 7.50e-3F);
     e2 = ((ang - 3.00e-2F) / 4.50e-3F);
     acc += ci * hi *
-           (core * 4.0F + halo + 2.0F * exp(-e1 * e1) * (1.0F - ph) +
-            1.10F * exp(-e2 * e2) * (0.550F + 0.450F * sin(iTime * 3.0F)));
+           (core * 4.0F + halo + 2.0F * exp(-(e1 * e1)) * (1.0F - ph) +
+            1.10F * exp(-(e2 * e2)) * (0.550F + 0.450F * sin(iTime * 3.0F)));
   }
   mi = vec3(0.39989248F, -0.5572959F, -0.7276725F);
   ci = vec3(0.70F, 0.70F, 1.0F);
@@ -383,8 +383,8 @@ vec3 markerSurface(vec3 ld, float active) {
     e1 = ((ang - rr) / 7.50e-3F);
     e2 = ((ang - 3.00e-2F) / 4.50e-3F);
     acc += ci * hi *
-           (core * 4.0F + halo + 2.0F * exp(-e1 * e1) * (1.0F - ph) +
-            1.10F * exp(-e2 * e2) * (0.550F + 0.450F * sin(iTime * 3.0F)));
+           (core * 4.0F + halo + 2.0F * exp(-(e1 * e1)) * (1.0F - ph) +
+            1.10F * exp(-(e2 * e2)) * (0.550F + 0.450F * sin(iTime * 3.0F)));
   }
   return acc;
 }
@@ -680,7 +680,7 @@ vec4 shadeClouds(vec3 ro, vec3 rd, float bb, vec4 qi, vec3 sunDir) {
   if (d2 < 0.F) {
     return vec4(0.F);
   }
-  ts = (-bb - sqrt(d2));
+  ts = ((-bb) - sqrt(d2));
   if (ts < 0.F) {
     return vec4(0.F);
   }
@@ -762,7 +762,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   cc = (dot(ro, ro) - (EARTH_R * EARTH_R));
   disc = ((bb * bb) - cc);
   if (disc > 0.F) {
-    tHit = (-bb - sqrt(disc));
+    tHit = ((-bb) - sqrt(disc));
   }
   if (tHit > 0.F) {
     col = shadeSurface(ro, rd, tHit, q, qi, sunDir, active);

@@ -737,7 +737,7 @@ float landCovRaw(int ix, int iy) {
   uint w = uint(0);
   uint sh = uint(0);
   w = EARTH_LAND[(idx >> 4)];
-  sh = uint(((idx & 15)) * 2);
+  sh = uint((idx & 15) * 2);
   return 0.33333334F * float((w >> sh & uint(3)));
 }
 
@@ -748,7 +748,7 @@ float coastRaw(int ix, int iy) {
   uint v = uint(0);
   uint sh = uint(0);
   v = EARTH_COAST[(idx >> 3)];
-  sh = uint(((idx & 7)) * 4);
+  sh = uint((idx & 7) * 4);
   return float((v >> sh & uint(15))) / 15.F;
 }
 
@@ -759,7 +759,7 @@ vec3 albRaw(int ix, int iy) {
   uint w = uint(0);
   uint v = uint(0);
   w = EARTH_ALB[(idx >> 1)];
-  v = (w >> uint(((idx & 1)) * 16) & uint(65535));
+  v = (w >> uint((idx & 1) * 16) & uint(65535));
   return vec3(float((v >> uint(11) & uint(31))) / 31.F,
               float((v >> uint(5) & uint(63))) / 63.F,
               float((v & uint(31))) / 31.F);
@@ -772,7 +772,7 @@ float litRaw(int ix, int iy) {
   uint v = uint(0);
   uint sh = uint(0);
   v = EARTH_LIT[(idx >> 3)];
-  sh = uint(((idx & 7)) * 4);
+  sh = uint((idx & 7) * 4);
   return float((v >> sh & uint(15))) / 15.F;
 }
 

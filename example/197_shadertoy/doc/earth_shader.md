@@ -212,18 +212,26 @@ echte Zeilennummern abbildbar sind.
 
 ---
 
-## 8. Fallstrick im Codegenerator
+## 8. Fallstrick im Codegenerator (behoben)
 
-Mit `:omit-parens t` verliert ein negierter Ausdruck vor einer Division seine
+Mit `:omit-parens t` verlor ein negierter Ausdruck vor einer Division seine
 Klammern:
 
 ```lisp
 (exp (/ (- (- perp EARTH_R)) 0.055f0))
-;; -> exp(-perp - EARTH_R / 5.50e-2F)      FALSCH
+;; -> exp(-perp - EARTH_R / 5.50e-2F)      FALSCH (vor 2026-08-30)
+;; -> exp(( -(perp-EARTH_R))/5.50e-2F)     korrekt (seit dem Fix)
 ```
 
 Das ließ den Atmosphären-Halo verschwinden (`g ≈ e^-19`), sichtbar als dunkler
-Ring am Rand. Abhilfe: Zwischenvariable statt geschachtelter Vorzeichen:
+Ring am Rand. Ursache war ein Fehler in `paren*`: der intern erzeugte Operator
+`-unary` fehlte in `*operators*`, weshalb der Operand des unären Minus als
+Funktionsaufruf behandelt und ungeklammert emittiert wurde. Behoben in `c.lisp`,
+abgedeckt von `t/02_paren_precedence/`; Details in
+`plan/20260830_01_omit_paren_bug/walkthrough.md`.
+
+Die hier verwendete Zwischenvariable bleibt trotzdem stehen — sie ist lesbarer
+und vermeidet die (jetzt korrekten, aber redundanten) Klammern:
 
 ```lisp
 (setf hgt (- perp EARTH_R)
