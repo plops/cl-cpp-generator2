@@ -10,9 +10,6 @@
  (defparameter *main-file* (merge-pathnames "main.cpp" *server-dir*))
  (ensure-directories-exist *server-dir*)
 
- ;; -------------------------------------------------------------------------
- ;; 4a. common.glsl -- quaternion algebra, marker table, camera tour
- ;; -------------------------------------------------------------------------
  (write-source
   *main-file*
   `(do0
