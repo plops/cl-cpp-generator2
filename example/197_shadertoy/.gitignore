@@ -1,0 +1,10 @@
+*.spv
+**/spv/
+
+# downloaded source data for tools/bake_earth_data.py (re-fetched on demand)
+tools/cache/
+
+# Large local validation renders; regenerate with run_earth.sh or make_animation.py
+earth_*.png
+earth_tour.gif
+earth_tour_contact_sheet.png

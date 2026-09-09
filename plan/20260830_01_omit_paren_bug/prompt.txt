@@ -1,0 +1,23 @@
+du befindest dich in einem docker container mit ubuntu 26 und solltest alle programme haben um die aufgabe zu loesen.
+falls programme fehlen, installiere sie im container.
+
+du arbeitest fuer wol pumba (wolpumba@gmail.com)
+
+waehrend der implementierung von 197 example ist uns folgendes aufgefallen:
+
+
+## 8. Fallstrick im Codegenerator
+
+Mit `:omit-parens t` verliert ein negierter Ausdruck vor einer Division seine
+Klammern:
+
+```lisp
+(exp (/ (- (- perp EARTH_R)) 0.055f0))
+;; -> exp(-perp - EARTH_R / 5.50e-2F)      FALSCH
+```
+
+das ist ein verheerendes problem. stelle sicher, dass du diese art fehler mit unit tests abdeckst.
+und dann korrigiere die fehler.
+
+speichere die resultate und unerwartete findings deiner untersuchung in diesem plan ordner als walkthrough.md ab
+commite die aenderungen

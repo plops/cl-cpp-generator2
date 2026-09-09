@@ -16,8 +16,6 @@ example/**/{b,build,cmake-build}*/
 *.pyc
 example/154*/project/*
 
-# --- Added by Antigravity ---
-
 # Build Systems & IDEs
 **/.clwb/
 **/bazel-*
@@ -38,6 +36,8 @@ reflection_demo
 jit_example
 pro
 p2
+headless_gpu_runner
+VK_shadertoy
 
 # Third Party
 **/lua-*/
@@ -49,3 +49,4 @@ p2
 *.ppm
 review.txt
 .DS_Store
+.aider*

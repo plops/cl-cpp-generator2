@@ -1,0 +1,24 @@
+# Prompt / Auftrag
+
+Erstelle im Beispiel `197_shadertoy` einen cool aussehenden, animierten Earth-Shader
+für das headless GPU-Rendering im Docker-Container.
+
+Anforderungen:
+
+- `doc/headless.md` lesen und den vorhandenen EGL-Runner verwenden.
+- Die Erde mit Shading, Wolken, Atmosphäre, Nachtlichtern und animierter Bewegung
+darstellen. Wenn echte Kartendaten verfügbar sind, diese verwenden; sonst eine
+plausible prozedurale Erde erzeugen.
+- Einen oder mehrere Marker darstellen.
+- Eine Rotationsanimation zwischen den Markern zeigen, z.B. per Quaternion-
+Interpolation/SLERP.
+- Headless rendern und die erzeugten Screenshots zur Validierung ansehen.
+- Die Implementierung dokumentieren und committen.
+
+Zusätzliche Steering-Anforderungen:
+
+- Die Planungsdateien `prompt.txt`, `implementation_plan.md` und `walkthrough.md`
+in einem Ordner `plan/202609.../` ablegen.
+- Keine riesigen Render-/Binärdateien committen.
+- Skripte bereitstellen, mit denen Texturen und Polygoninformationen reproduzierbar
+heruntergeladen werden können.

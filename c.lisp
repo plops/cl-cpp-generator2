@@ -356,9 +356,8 @@ A string representing the variable declaration."
 		    collect
 		    (if (listp decl) ;; split into name and initform
 			(destructuring-bind (name &optional value) decl
-			  ;; FIXME: introducing initializer lists is better for C++ but not working with GLSL (and possibly C)
-			  (format nil ;"~a ~@[ = ~a~];"
-				  "~a~a ~@[{~a}~];"
+			  (format nil
+				  "~a~a~@[ = ~a~];"
 				  (if const "const " "")
 				  (if decltype
 				      (if value
@@ -791,9 +790,13 @@ of digits.
 		;(substitute #\e #\d (format nil "~,vG" digits a))
 		))
 (defparameter *operators*
-	`(comma semicolon space space-n comments paren* paren angle bracket curly designated-initializer new indent split-header-and-code do0 pragma include include<> progn namespace do defclass+ defclass protected public defmethod defun defun* defun+ return co_return co_await co_yield throw cast let setf not bitwise-not deref ref + - * ^ xor & / or and logior logand = /= *= ^= <= < != == % << >> incf decf string string-r string-u8 char hex ? if when unless if-constexpr dot aref -> lambda case for for-range dotimes foreach while deftype struct defstruct0 handler-case)
+	`(comma semicolon scope space space-n comments paren* paren angle bracket curly designated-initializer new indent split-header-and-code do0 pragma include include<> progn namespace do defclass+ defclass protected public defmethod defun defun* defun+ return co_return co_await co_yield throw cast let setf not bitwise-not deref ref + - -unary * ^ xor & / or and logior logand = /= *= ^= <=> <= < > >= != == % << >> incf decf string string-r string-u8 char hex ? if when unless if-constexpr dot aref -> lambda case for for-range dotimes foreach while deftype struct defstruct0 handler-case)
   "This variable stores a list of operators that are supported by the EMIT-C function.
- It is used in the PAREN* form to determine whether parentheses are needed.")
+
+ Note that -UNARY is not a form that can be written by the user. EMIT-C
+ introduces it internally when (- x) is emitted as the unary minus -x. It has to
+ be part of this list (and of *PRECEDENCE*), otherwise PAREN* would treat the
+ unary minus as an unknown function call and drop required parentheses.")
 
 
 ;; https://en.cppreference.com/w/cpp/language/operator_precedence
@@ -903,7 +906,7 @@ of digits.
 				     incf decf
 				     *= /= %=
 				     <<= >>=
-				     &= ^-	; |=
+				     &= ^=	; |=
 				     ) :assoc r)
 			     (:op (comma) :assoc l)
 			     )
@@ -927,6 +930,78 @@ of digits.
 	   (destructuring-bind (&key op (assoc 'l)) e
 	     (when (member operator op)
 	       (return assoc)))))
+
+(defparameter *chain-operators*
+  '(+ * ^ or and logior logand << >> comma dot scope)
+  "Operators that EMIT-C renders by joining all their arguments with the
+   corresponding C++ operator. Given a single argument such a form emits only
+   that argument, so the precedence of the result is the precedence of that
+   argument and not the precedence of the chain operator itself.
+   Example: (or 255) emits 255, not (255).")
+
+(defparameter *self-delimited-operators*
+  '(paren curly designated-initializer &)
+  "Forms that always emit their own enclosing brackets. Their result therefore
+   behaves like a primary expression and never needs additional parentheses.")
+
+(defparameter *associative-operators*
+  '(+ * ^ and or logand logior comma)
+  "Operators for which (op a (op b c)) and (op (op a b) c) produce the same
+   result, so that PAREN* may drop the parentheses of an operand that has the
+   same precedence as the surrounding operator.
+
+   Note that + and * are only associative for integers; for floating point
+   numbers the rounding of the intermediate result differs. EMIT-C has always
+   treated them as associative (see t/01_paren) and keeps doing so.
+
+   Everything not in this list (-, /, %, <<, >>, the comparisons, ?: and the
+   assignments) needs its grouping preserved. Which operand has to be
+   parenthesized depends on the associativity of the operator and on the
+   position of the operand, see PAREN*.")
+
+(defun effective-operator (arg)
+  "Determine the C++ operator that governs the precedence of the expression
+   EMIT-C will emit for the s-expression ARG.
+
+   This is deliberately not simply (CAR ARG):
+
+   - (- x) emits the unary minus -x, which binds much tighter than the binary
+     minus of (- x y). Reporting - here is what made PAREN* drop the
+     parentheses in (/ (- (- a b)) c).
+   - (+ x), (* x), (or x), ... emit just x and therefore inherit the precedence
+     of x.
+   - (paren ...), (curly ...) and (& ...) bring their own brackets and behave
+     like primary expressions.
+
+   Returns NIL when ARG does not emit an operator expression (atoms, function
+   calls, self delimited forms, unknown forms). NIL means: behaves like a
+   primary expression, parentheses are never required."
+  (when (and (consp arg)
+	     (or (symbolp (car arg))
+		 (stringp (car arg))))
+    (let ((op (car arg))
+	  (n (length arg)))
+      (cond
+	;; (- x) is the unary minus and binds much tighter than (- x y)
+	((and (eq op '-) (eql n 2)) '-unary)
+	;; (< a b c) and friends expand into the chained comparison
+	;; a<b && b<c, so the result is governed by &&
+	((and (member op '(< <= > >=)) (eql n 4)) 'logand)
+	;; forms that already carry their own brackets
+	((member op *self-delimited-operators*) nil)
+	;; a chain of length one emits only its single argument
+	((and (eql n 2) (member op *chain-operators*))
+	 (effective-operator (second arg)))
+	(t op)))))
+
+(defun binds-looser-p (arg parent-op)
+  "True when the C++ expression that EMIT-C emits for ARG binds looser than
+   PARENT-OP, i.e. when ARG has to be wrapped in parentheses in order to be used
+   as an operand of PARENT-OP. Atoms, primary expressions, function calls and
+   self delimited forms never need parentheses and yield NIL."
+  (let ((p1 (lookup-precedence (effective-operator arg)))
+	(p0 (lookup-precedence parent-op)))
+    (and p0 p1 (< p0 p1))))
 
 ;; The `string-op` class is used in the `emit-c` function for the
 ;; implementation of the PAREN* form to expand branches of the
@@ -1087,33 +1162,44 @@ emit-c into a string. Except lists: Those stay lists."
 				  ,(format nil "*/")))))
 		   )
 		  (paren*
-		   ;; paren* parent-op arg
+		   ;; paren* parent-op arg [position]
 		   ;; place a pair of parentheses only when needed
 		   ;; if omit-redundant-parentheses=true, act the same as paren
 
 		   ;; The paren* form conditionally adds parentheses
-		   ;; around an expression. It takes two arguments: a
-		   ;; parent operator and an argument. The parent
-		   ;; operator is the operator that is being applied
-		   ;; to the argument. The argument can be any
+		   ;; around an expression. It takes two or three
+		   ;; arguments: a parent operator, an argument and
+		   ;; optionally the position of the argument. The
+		   ;; parent operator is the operator that is being
+		   ;; applied to the argument. The argument can be any
 		   ;; expression.
 
 		   ;; The paren* form will add parentheses around the
-		   ;; argument if the parent operator has a lower
-		   ;; precedence in Python than the argument. This is
-		   ;; necessary to ensure that the Python expression
-		   ;; is evaluated in the correct order.
-                       
-		   
+		   ;; argument if the parent operator binds tighter
+		   ;; than the operator of the argument. This is
+		   ;; necessary to ensure that the C++ expression is
+		   ;; evaluated in the correct order.
+
+		   ;; POSITION tells paren* where the argument sits in
+		   ;; the parent expression: L for the left (first)
+		   ;; operand, R for a right operand, NIL when it does
+		   ;; not matter (unary operators, function arguments).
+		   ;; It is needed when parent and argument have the
+		   ;; same precedence: a<(b<c) has to keep its
+		   ;; parentheses because < is left associative, while
+		   ;; (a=b)=c has to keep them because = is right
+		   ;; associative.
+
 		   (if (not omit-redundant-parentheses)
-		       (destructuring-bind (parent-op &rest args) (cdr code)
+		       (destructuring-bind (parent-op arg &optional position) (cdr code)
+			 (declare (ignore parent-op position))
 			 (m 'paren
-			    (format nil "~a" (emit-c :code `(paren ,@args)))))
+			    (format nil "~a" (emit-c :code `(paren ,arg)))))
 		       (progn  
 					;(format t "<paren* code='~a'>~%" code)
-			 (unless (eq 3 (length code))
-			   (break "paren* expects only two arguments"))
-			 (destructuring-bind (parent-op arg &rest rest) (cdr code)
+			 (unless (member (length code) '(3 4))
+			   (break "paren* expects two or three arguments, got '~a'" code))
+			 (destructuring-bind (parent-op arg &optional position) (cdr code)
 					;let ((arg (second (cdr code))))
 			   (cond
 			     ((symbolp arg)
@@ -1151,79 +1237,66 @@ emit-c into a string. Except lists: Those stay lists."
 				 (format nil (if diag  "Astring.~a" "~a") arg)))
 			     ((listp arg)
 			      ;; a list can be an arbitrary abstract syntax tree of operators
-			      (cond
-				((<= (length arg) 2)
-				 ;; two or one elements doesn't need paren
-				 (let ((op0 (car arg)) 
-				       (rest (cdr arg)))
-				   (assert (or (symbolp op0)
-					       (stringp op0)))
-				   (assert (listp rest))
-				   (emit (if diag
-					     `(space ,(format nil "/*<~a len=~a>*/" arg (length arg) )
-						     (,op0 ,@rest))
-					     `(,op0 ,@rest)))))
-				(t
-				 (let ((op0 parent-op
-					;(car arg)
-					    ) ;; use precedence list to check if parens are needed
-				       (rest  ; arg
-					 (cdr arg)
-					 ))
-				   (assert (or (symbolp op0)
-					       (stringp op0)))
-				   (assert (listp rest))
-				   (if (and (member  op0
-						     *operators*)
-					    (member  (car arg)
-						     *operators*))
-				       (let* ((p0 (lookup-precedence op0))
-					      (p0assoc (lookup-associativity op0))
-					      (op1 (car arg))
-					      (p1 (lookup-precedence op1)
-					;(+ 1 (length *precedence*))
-						  )
-					      (p1assoc ;'l
-						(lookup-associativity op1)
-						)
-					      )
-					 #+nil (loop for e in rest
-						     do
-							(when (or (listp e)
-								  (typep e 'string-op))
-							  (let* ((op1v (cond ((listp e) (first e))
-									     ((typep e 'string-op) (operator-of e))
-									     (t (break "unknown operator '~a'" e))))
-								 
-								 (p1v (lookup-precedence op1v))
-								 (p1a (lookup-associativity op1v)))
-							    (when p1
-							      (setf op1 op1v
-								    p1 p1v
-								    p1assoc p1a)
-							      ))))
-					 ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
-					 ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
-					 (if 
-					  (or (< p0 p1)
-					      (and (eq p0 p1)
-						   (not (eq p0assoc p1assoc))
-						   )
-					      (member op0 `(/ % -))
-					      (member op1 `(/ % -)))
-					  (emit `(paren  ,(if diag
-							      `(space ,(format nil "/*(op0='~a' op1='~a' arg=~a ~a)*/" op0 op1 arg (list  p0 p1 p0assoc p1assoc))
-								      (,op1 ,@rest))
-							      `(,op1 ,@rest))))
-					  (emit (if diag
-						    `(space ,(format nil "/*nopar op0='~a' (~a) op1='~a' arg=~a ~a*/" op0 (type-of op0) op1 arg (list  p0 p1 p0assoc p1assoc))
-							    (,op1 ,@rest))
-						    `(,op1 ,@rest)))))
-				       (progn
-					 ;; (break "unknown operator '~a'" op0)
-					 ;; function call
-					 (emit `(,(car arg) ,@rest))
-					 ))))))
+			      ;;
+			      ;; Note: There used to be a shortcut here that emitted
+			      ;; every two element list without parentheses ("two or
+			      ;; one elements doesn't need paren"). That is wrong for
+			      ;; unary operators: (- (- a b)) is a two element list
+			      ;; but emits -a-b, which regroups the expression. The
+			      ;; precedence comparison below handles lists of every
+			      ;; length instead.
+			      (let* ((op0 parent-op) ;; operator that arg is an operand of
+				     (real-op (car arg)) ;; the form that has to be emitted
+				     (op1 (effective-operator arg)) ;; operator that governs arg
+				     (rest (cdr arg))
+				     (p0 (lookup-precedence op0))
+				     (p1 (lookup-precedence op1)))
+				(assert (or (symbolp op0)
+					    (stringp op0)))
+				(assert (listp rest))
+				(if (and p0 p1)
+				    (let ((p0assoc (lookup-associativity op0))
+					  (p1assoc (lookup-associativity op1)))
+				      ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
+				      ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
+				      (if
+				       (or ;; arg binds looser than the surrounding
+					   ;; operator, so it must be protected
+					   (< p0 p1)
+					   ;; equal precedence: only the operand on
+					   ;; the side the associativity does not
+					   ;; favour needs parentheses, and only when
+					   ;; the two operators are not associative
+					   ;; among themselves.  a-(b-c), a<(b<c),
+					   ;; (a=b)=c, (a?b:c)?d:e, a*(b/c)
+					   (and (eql p0 p1)
+						(not (and (member op0 *associative-operators*)
+							  (member op1 *associative-operators*)))
+						(if (eq p0assoc 'r)
+						    (eq position 'l)
+						    (eq position 'r)))
+					   ;; -, / and % are neither associative nor
+					   ;; commutative and integer division
+					   ;; truncates, so keep parentheses when
+					   ;; one of them is involved
+					   (member op0 `(/ % -))
+					   (member op1 `(/ % -)))
+				       (emit `(paren  ,(if diag
+							   `(space ,(format nil "/*(op0='~a' op1='~a' arg=~a ~a)*/" op0 op1 arg (list  p0 p1 p0assoc p1assoc))
+								   (,real-op ,@rest))
+							   `(,real-op ,@rest))))
+				       (emit (if diag
+						 `(space ,(format nil "/*nopar op0='~a' (~a) op1='~a' arg=~a ~a*/" op0 (type-of op0) op1 arg (list  p0 p1 p0assoc p1assoc))
+							 (,real-op ,@rest))
+						 `(,real-op ,@rest)))))
+				    ;; No entry in the precedence table: function
+				    ;; call, primary expression or a form that
+				    ;; carries its own brackets. None of those needs
+				    ;; parentheses.
+				    (emit (if diag
+					      `(space ,(format nil "/*nopar-primary op0='~a' arg=~a*/" op0 arg)
+						      (,real-op ,@rest))
+					      `(,real-op ,@rest))))))
 			     ((typep arg 'string-op)
 			      (break "string-op ~a" arg)
 			      arg	;(string-of arg)
@@ -1537,9 +1610,14 @@ emit-c into a string. Except lists: Those stay lists."
 		  (throw (m 'throw (format nil "throw ~a" (emit (car (cdr code))))))
 		  (cast (destructuring-bind (type value) (cdr code)
 			  (m 'cast
+			     ;; A C style cast binds tighter than every binary
+			     ;; operator, so (cast int (+ a b)) must not emit
+			     ;; "(int) a+b" -- that would only cast a.
 			     (format nil "(~a) ~a"
 				     (emit type)
-				     (emit value)))))
+				     (if (binds-looser-p value 'cast)
+					 (emit `(paren ,value))
+					 (emit value))))))
 
 		  (let (parse-let code #'emit)) ;; normal variable declaration (defaults to auto), e.g. auto v =0;
 		  (letc (parse-let code #'emit :const t)) ;; const declaration, e.g. const auto b = True;
@@ -1587,7 +1665,9 @@ emit-c into a string. Except lists: Those stay lists."
 		  (- (let ((args (cdr code)))
 		       (if (eq 1 (length args))
 			   (m '-unary (format nil " -~a" (emit `(paren* -unary ,(car args))))) ;; py
-			   (m '- (format nil "~{~a~^-~}" (mapcar #'(lambda (x) (emit `(paren* - ,x))) args))))))
+			   (m '- (format nil "~{~a~^-~}"
+				 (loop for x in args and i from 0
+				       collect (emit `(paren* - ,x ,(if (zerop i) 'l 'r)))))))))
 		  (* (m '*
 			(let ((args (cdr code)))
 			  (format nil "~{~a~^*~}" (mapcar #'(lambda (x) (emit `(paren* * ,x))) args)))))
@@ -1598,8 +1678,10 @@ emit-c into a string. Except lists: Those stay lists."
 			     (format nil "(~{~a~^&~})" (mapcar #'(lambda (x) (emit `(paren* & ,x))) args)))))
 		  (/ (m '/ (let ((args (cdr code)))
 			     (if (eq 1 (length args))
-				 (format nil "1.0/~a" (emit `(paren* ,(car args)))) ;; py
-				 (format nil "~{~a~^/~}" (mapcar #'(lambda (x) (emit `(paren* / ,x))) args))))))
+				 (format nil "1.0/~a" (emit `(paren* / ,(car args)))) ;; py
+				 (format nil "~{~a~^/~}"
+					 (loop for x in args and i from 0
+					       collect (emit `(paren* / ,x ,(if (zerop i) 'l 'r)))))))))
 		  (or (let ((args (cdr code))) ;; py
 			(m 'or
 			   (format nil "~{~a~^ | ~}" (mapcar #'(lambda (x) (emit `(paren* or ,x))) args)))))
@@ -1613,52 +1695,66 @@ emit-c into a string. Except lists: Those stay lists."
 				       (format nil "~{~a~^&&~}" (mapcar #'(lambda (x) (emit `(paren* logand ,x))) args)))))
 		  (= (m '= (destructuring-bind (a b) (cdr code)
 			     ;; = pair
-			     (format nil "~a=~a" (emit `(paren* = ,a)) (emit `(paren* = ,b))))))
+			     (format nil "~a=~a" (emit `(paren* = ,a l)) (emit `(paren* = ,b r))))))
 		  (/= (m '/= (destructuring-bind (a b) (cdr code)
-			       (format nil "~a/=~a" (emit `(paren* /= ,a)) (emit `(paren* /= ,b))))))
+			       (format nil "~a/=~a" (emit `(paren* /= ,a l)) (emit `(paren* /= ,b r))))))
 		  (*= (m '*= (destructuring-bind (a b) (cdr code)
-			       (format nil "~a*=~a" (emit `(paren* *= ,a)) (emit `(paren* *= ,b))))))
+			       (format nil "~a*=~a" (emit `(paren* *= ,a l)) (emit `(paren* *= ,b r))))))
 		  (^= (m '^= (destructuring-bind (a b) (cdr code)
-			       (format nil "~a^=~a" (emit `(paren* ^= ,a)) (emit `(paren* ^= ,b))))))
+			       (format nil "~a^=~a" (emit `(paren* ^= ,a l)) (emit `(paren* ^= ,b r))))))
 		  (<=> (m '<=> (destructuring-bind (a b) (cdr code)
-				 (format nil "~a<=>~a" (emit `(paren* <=> ,a)) (emit `(paren* <=> ,b))))))
+				 (format nil "~a<=>~a" (emit `(paren* <=> ,a l)) (emit `(paren* <=> ,b r))))))
 		  (<= (m '<= (destructuring-bind (a b &optional c) (cdr code)
 			       (if c
 				   (format nil "~a<=~a && ~a<=~a"
-					   (emit `(paren* ,a)) (emit `(paren* ,b))
-					   (emit `(paren* ,b)) (emit `(paren* ,c)))
-				   (format nil "~a<=~a" (emit `(paren* <= ,a)) (emit `(paren*  <= ,b)))))))
+					   (emit `(paren* <= ,a l)) (emit `(paren* <= ,b r))
+					   (emit `(paren* <= ,b l)) (emit `(paren* <= ,c r)))
+				   (format nil "~a<=~a" (emit `(paren* <= ,a l)) (emit `(paren*  <= ,b r)))))))
 		  (< (m '< (destructuring-bind (a b &optional c) (cdr code)
 			     (if c
 				 (format nil "~a<~a && ~a<~a"
-					 (emit `(paren* < ,a)) (emit `(paren* < ,b))
-					 (emit `(paren* < ,b)) (emit `(paren* < ,c)))
+					 (emit `(paren* < ,a l)) (emit `(paren* < ,b r))
+					 (emit `(paren* < ,b l)) (emit `(paren* < ,c r)))
 				 (format nil "~a<~a"
-					 (emit `(paren* < ,a))
-					 (emit `(paren* < ,b)))))))
+					 (emit `(paren* < ,a l))
+					 (emit `(paren* < ,b r)))))))
+		  (>= (m '>= (destructuring-bind (a b &optional c) (cdr code)
+			       (if c
+				   (format nil "~a>=~a && ~a>=~a"
+					   (emit `(paren* >= ,a l)) (emit `(paren* >= ,b r))
+					   (emit `(paren* >= ,b l)) (emit `(paren* >= ,c r)))
+				   (format nil "~a>=~a" (emit `(paren* >= ,a l)) (emit `(paren* >= ,b r)))))))
+		  (> (m '> (destructuring-bind (a b &optional c) (cdr code)
+			     (if c
+				 (format nil "~a>~a && ~a>~a"
+					 (emit `(paren* > ,a l)) (emit `(paren* > ,b r))
+					 (emit `(paren* > ,b l)) (emit `(paren* > ,c r)))
+				 (format nil "~a>~a"
+					 (emit `(paren* > ,a l))
+					 (emit `(paren* > ,b r)))))))
 		  (!= (m '!= (destructuring-bind (a b) (cdr code)
-			       (format nil "~a!=~a" (emit `(paren* != ,a)) (emit `(paren* != ,b))))))
+			       (format nil "~a!=~a" (emit `(paren* != ,a l)) (emit `(paren* != ,b r))))))
 		  (== (m '== (destructuring-bind (a b) (cdr code)
-			       (format nil "~a==~a" (emit `(paren* == ,a)) (emit `(paren* == ,b))))))
+			       (format nil "~a==~a" (emit `(paren* == ,a l)) (emit `(paren* == ,b r))))))
 		  
 		  (% (m '% (destructuring-bind (a b) (cdr code)
-			     (format nil "~a%~a" (emit `(paren* % ,a)) (emit `(paren* % ,b))))))
+			     (format nil "~a%~a" (emit `(paren* % ,a l)) (emit `(paren* % ,b r))))))
 		  (<< (m '<< (destructuring-bind (a &rest rest) (cdr code)
 			       (format nil "~a~{<<~a~}"
-				       (emit `(paren* << ,a))
-				       (mapcar #'(lambda (x) (emit `(paren* << ,x))) rest)))))
+				       (emit `(paren* << ,a l))
+				       (mapcar #'(lambda (x) (emit `(paren* << ,x r))) rest)))))
 		  (>> (m '>> (destructuring-bind (a &rest rest) (cdr code)
-			       (format nil "~a~{>>~a~}" (emit `(paren* >> ,a))
-				       (mapcar #'(lambda (x) (emit `(paren* >> ,x))) rest)))))
+			       (format nil "~a~{>>~a~}" (emit `(paren* >> ,a l))
+				       (mapcar #'(lambda (x) (emit `(paren* >> ,x r))) rest)))))
 		  (incf (m 'incf (destructuring-bind (a &optional b) (cdr code) ;; py
 				   (if b
-				       (format nil "~a+=~a" (emit `(paren* incf ,a))
-					       (emit `(paren* incf ,b)))
-				       (format nil "~a++" (emit `(paren* incf ,a)))))))
+				       (format nil "~a+=~a" (emit `(paren* incf ,a l))
+					       (emit `(paren* incf ,b r)))
+				       (format nil "~a++" (emit `(paren* incf ,a l)))))))
 		  (decf (m 'decf (destructuring-bind (a &optional b) (cdr code)
 				   (if b
-				       (format nil "~a-=~a" (emit `(paren* decf ,a)) (emit `(paren* decf ,b)))
-				       (format nil "~a--" (emit `(paren* decf ,a)))))))
+				       (format nil "~a-=~a" (emit `(paren* decf ,a l)) (emit `(paren* decf ,b r)))
+				       (format nil "~a--" (emit `(paren* decf ,a l)))))))
 		  (string (m 'string (format nil "\"~a\"" (cadr code))))
 		  ;; if raw string contains )" it will stop, in order to prevent this a pre and suffix can be introduced, like R"x( .. )" .. )x"
 		  (string-r (m 'string (format nil "R\"(~a)\"" (cadr code))))
@@ -1669,11 +1765,14 @@ emit-c into a string. Except lists: Those stay lists."
 		  (? (m '? (destructuring-bind (a b &optional c) (cdr code)
 			     (if c
 				 (format nil "~a ? ~a : ~a"
-					 (emit `(paren* ? ,a))
+					 ;; ?: is right associative, so a nested
+					 ;; conditional in the condition needs
+					 ;; parentheses: (a ? b : c) ? d : e
+					 (emit `(paren* ? ,a l))
 					 ;; in C++ the second argument of ?: is interpreted as if it was placed in parens
 					 (emit `(paren* paren ,b))
 					 (emit `(paren* paren ,c)))
-				 (format nil "~a ? ~a" (emit `(paren* ? ,a)) (emit `(paren* paren ,b)))))))
+				 (format nil "~a ? ~a" (emit `(paren* ? ,a l)) (emit `(paren* paren ,b)))))))
 		  (if (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
 			(with-output-to-string (s)
 			  (format s "if ( ~a ) ~a"
@@ -1721,8 +1820,15 @@ emit-c into a string. Except lists: Those stay lists."
 
 		  (dot (m 'dot
 			  (let ((args (cdr code)))
-			    (format nil "~{~a~^.~}" (mapcar #'emit (remove-if #'null
-									      args))))))
+			    (format nil "~{~a~^.~}"
+				    (mapcar #'(lambda (x)
+						;; member access binds tighter than
+						;; every operator, so an operand like
+						;; (- a b) has to be parenthesized
+						(if (binds-looser-p x 'dot)
+						    (emit `(paren ,x))
+						    (emit x)))
+					    (remove-if #'null args))))))
 
 
 		  (aref (m 'aref
