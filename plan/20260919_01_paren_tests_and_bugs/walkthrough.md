@@ -79,3 +79,23 @@ sofort aufgerufene Lambdas, Mehrfach-`values` klaeren, `t/run_all.sh`,
 Nichts Neues noetig. Benoetigt und vorhanden: `sbcl` (mit Quicklisp),
 `g++`/`clang++`, `python3`, `parenmedic`-Binary. Kein `xvfb`, keine
 Rust-Toolchain, keine zusaetzlichen Lisp-Libraries.
+
+## 7. Fortsetzung: Schritte 4–5 (2026-09-19)
+
+Zwei echte Transpiler-Bugs gefunden und behoben (jeweils per `g++`
+bestaetigt, vorher/nachher):
+
+- `(capture x =)` → `[x,=]` (Fehler: `expected identifier before '='`).
+  Neu: `capture-default-p` + `sort-captures` (`c.lisp`) stellen `=`/`&`
+  nach vorn → `[=,x]` kompiliert.
+- `(values int float)` in Lambda → `-> (int, float)` (ungueltig). Neu:
+  `break` wie `parse-defun` ("multiple return values unsupported").
+
+Suite auf 12 Faelle + 1 Error-Test gewachsen (`15 checks, 0 failures`),
+u.a. IIFE (`:direct`-Modus im Value-Layer), `auto`-Parameter,
+mehrteilige Ruempfe. Learning: `break` umgeht `handler-case`
+(`invoke-debugger`), daher faengt der Error-Layer die Meldung per
+werfendem `sb-ext:*invoke-debugger-hook*` ab. `t/run_all.sh` fasst
+`t/02` + `t/03` zusammen (Exit 0); `t/01` bleibt wegen hartcodierter
+Pfade aussen vor. Naechster Schritt laut `task.md`: Schritt 6
+(`SUPPORTED_FORMS.md`-Generierung).

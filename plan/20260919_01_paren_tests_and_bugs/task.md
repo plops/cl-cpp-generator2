@@ -34,23 +34,29 @@ Conventional Commits nach `plan.md`, Abschnitt 4:
 
 Gate pro Commit: beide Suites gruen, `git status` ohne `build/`-Artefakte.
 
-## 4. Suite ausbauen (offen, je Fall String- + Value-Test)
+## 4. Suite ausbauen (erledigt, 2026-09-19)
 
-- [ ] `(capture =)` (by value) und gemischte Captures (`x &y`).
-- [ ] Untypisierte Parameter (`auto`-Fallback).
-- [ ] Lambda mit Rumpf aus mehreren Formen.
-- [ ] Sofort aufgerufene Lambda (`((lambda ...) args)`), falls `emit-c` das
-      stuetzt — sonst als Negativ-Test dokumentieren.
-- [ ] Klaeren: mehrere `values`-Typen in Lambda → `break` wie `parse-defun`
-      oder dokumentieren (vgl. `plan.md`, Punkt 6).
-- [ ] Gate: `t/03_lambda/run.sh` und `t/02_paren_precedence/run.sh` gruen.
+- [x] `(capture =)` (by value) und gemischte Captures (`x &y`).
+      Befund dabei: `(capture x =)` emittierte `[x,=]` (harter g++-Fehler).
+      Fix: `sort-captures` stellt Capture-Defaults (`=`/`&`) nach vorn
+      (`[=,x]` kompiliert; `[=,x]` redundant → nur Warnung).
+- [x] Untypisierte Parameter (`auto`-Fallback).
+- [x] Lambda mit Rumpf aus mehreren Formen.
+- [x] Sofort aufgerufene Lambda (`((lambda ...) args)`): funktioniert
+      (`(...)(41)`), als `:direct`-Fall im Value-Layer.
+- [x] Mehrere `values`-Typen: `break` wie `parse-defun` (statt ungueltigem
+      `-> (int, float)`); per Error-Layer getestet (vgl. `plan.md`, Punkt 6).
+- [x] Gate: `t/03_lambda/run.sh` → `15 checks, 0 failures`,
+      `t/02_paren_precedence/run.sh` → `111 checks, 0 failures`.
 
-## 5. Runner zusammenfassen (offen, optional)
+## 5. Runner zusammenfassen (erledigt, 2026-09-19)
 
-- [ ] Skript `t/run_all.sh`, das `t/01_paren` (soweit automatisierbar),
-      `t/02_paren_precedence/run.sh` und `t/03_lambda/run.sh` nacheinander
-      aufruft und den ersten Fehler propagiert.
-- [ ] Gate: ein Durchlauf, Exit 0.
+- [x] Skript `t/run_all.sh` ruft `t/02_paren_precedence/run.sh` und
+      `t/03_lambda/run.sh` auf, propagiert den ersten Fehler.
+      `t/01_paren` bleibt ausgeschlossen: manueller Workflow mit
+      hartcodierten Absolutpfaden, destruktiven `rm`-Schritten und ohne
+      Exit-Code-Vertrag (Begruendung im Skriptkopf).
+- [x] Gate: ein Durchlauf, Exit 0.
 
 ## 6. Doku aus Tests erzeugen (offen, spaeter)
 

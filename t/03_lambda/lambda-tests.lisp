@@ -4,7 +4,7 @@
 ;;;;   sbcl --noinform --disable-debugger --load t/03_lambda/lambda-tests.lisp --quit
 ;;;; or via t/03_lambda/run.sh
 ;;;;
-;;;; Two layers (proof of concept, mirroring t/02_paren_precedence):
+;;;; Three layers (proof of concept, mirroring t/02_paren_precedence):
 ;;;;
 ;;;;   1. STRING TESTS -- emitted C++ against hand-verified reference strings
 ;;;;      (whitespace is normalised before comparison).
@@ -13,6 +13,11 @@
 ;;;;      `auto' variable, calls it and compares against an expected integer.
 ;;;;      A missing `()' or a wrong capture list fails to compile or fails
 ;;;;      the value check, so this layer is the semantic ground truth.
+;;;;      Entries with :direct t hold a complete expression (e.g. an
+;;;;      immediately invoked lambda) emitted verbatim instead.
+;;;;
+;;;;   3. ERROR TESTS -- forms that must signal (e.g. multiple `values'
+;;;;      types, mirroring parse-defun) are checked for their message.
 ;;;;
 ;;;; Layer 2 is skipped (with a warning, not a failure) when no C++ compiler
 ;;;; is available. Generated C++ lands in build/ (gitignored via **/build/).
@@ -92,14 +97,57 @@
      :code (lambda () (declare (capture x y) (values int)) (return (+ x y)))
      :expected "[x,y]() -> int { return (x)+(y); }"
      :call "()"
-     :value 12))
+     :value 12)
+    (:name by-value-default
+     :code (lambda () (declare (capture =) (values int)) (return 42))
+     :expected "[=]() -> int { return 42; }"
+     :call "()"
+     :value 42)
+    (:name capture-default-moves-first
+     :code (lambda () (declare (capture x =) (values int)) (return (+ x 1)))
+     :expected "[=,x]() -> int { return (x)+(1); }"
+     :call "()"
+     :value 6)
+    (:name mixed-captures-with-params
+     :code (lambda (a b) (declare (capture x &y)
+                                  (type int a) (type int b)
+                                  (values int))
+             (return (+ (+ a b) (+ x y))))
+     :expected "[x,&y](int a, int b) -> int { return ((a)+(b))+((x)+(y)); }"
+     :call "(1, 2)"
+     :value 15)
+    (:name untyped-param-is-auto
+     :code (lambda (q) (return q))
+     :expected "[&](auto q) { return q; }"
+     :call "(9)"
+     :value 9)
+    (:name multi-form-body
+     :code (lambda () (declare (values int))
+             (let ((y 2))
+               (return (+ y 40))))
+     :expected "[&]() -> int { auto y = 2; return (y)+(40); }"
+     :call "()"
+     :value 42)
+    (:name immediate-call
+     :code ((lambda (a) (declare (type int a) (values int)) (return a)) 41)
+     :expected "([&](int a) -> int { return a; })(41)"
+     :value 41
+     :direct t))
+)
+
+;;; :code s-expression that must signal instead of emitting
+;;; :error substring of the expected condition message
+(defparameter *lambda-error-tests*
+  '((:name multiple-values-error
+     :code (lambda () (declare (values int float)) (return 1))
+     :error "multiple return values unsupported"))
 )
 
 (defun run-string-tests ()
   (format t "~&== string tests ==~%")
   (dolist (e *lambda-tests*)
-    (destructuring-bind (&key name code expected call value) e
-      (declare (ignore call value))
+    (destructuring-bind (&key name code expected call value direct) e
+      (declare (ignore call value direct))
       (let ((got (handler-case (normalize (emit-str code))
                    (condition (c) (format nil "<error ~a>" c)))))
         (report (string= got expected) name
@@ -129,15 +177,18 @@
           (format s "int main() {~%  int fails = 0;~%")
           (format s "  int x = 5; int y = 7;~%")
           (dolist (e *lambda-tests*)
-            (destructuring-bind (&key name code expected call value) e
+            (destructuring-bind (&key name code expected call value direct) e
               (declare (ignore expected))
               (let ((lam (emit-str code)))
-                (format s "  {~%    auto f = ~a;~%" lam)
-                (format s "    long got = (long)(f~a);~%" call)
+                (if direct
+                  (format s "  {~%    long got = (long)(~a);~%" lam)
+                  (progn
+                    (format s "  {~%    auto f = ~a;~%" lam)
+                    (format s "    long got = (long)(f~a);~%" call))))
                 (format s "    if (got != ~a) { std::printf(\"FAIL ~a: %ld != ~a\\n\", got); fails++; }~%"
                   value name value)
                 (format s "    else { std::printf(\"ok   ~a = %ld\\n\", got); }~%" name)
-                (format s "  }~%"))))
+                (format s "  }~%")))
           (format s "  std::printf(\"%d value failures\\n\", fails);~%")
           (format s "  return fails == 0 ? 0 : 1;~%}~%"))
         (let ((compile-ok
@@ -162,11 +213,32 @@
   )
 )
 
+(defun run-error-tests ()
+  (format t "~&== error tests ==~%")
+  (dolist (e *lambda-error-tests*)
+    (destructuring-bind (&key name code error) e
+      ;; break enters the debugger via *invoke-debugger-hook* and bypasses
+      ;; handler-case, so catch its message with a throwing hook instead
+      (let ((msg (catch 'broke
+                   (let ((sb-ext:*invoke-debugger-hook*
+                           (lambda (c hook)
+                             (declare (ignore hook))
+                             (throw 'broke (format nil "~a" c)))))
+                     (emit-str code)
+                     "<no error>"))))
+        (report (and (string/= msg "<no error>")
+                  (search error msg)
+                  t)
+          name "got ~s expected substring ~s" msg error)))
+  )
+)
+
 (defun run-lambda-tests ()
   (setf *failures* 0)
   (setf *checks* 0)
   (run-string-tests)
   (run-value-tests)
+  (run-error-tests)
   (format t "~%~a checks, ~a failures~%" *checks* *failures*)
   (unless (zerop *failures*)
     (sb-ext:quit :unix-status 1))
