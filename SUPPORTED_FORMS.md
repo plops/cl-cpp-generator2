@@ -1210,6 +1210,12 @@ A parameterless lambda with a return type keeps its empty parameter list. Omitti
 (lambda () (declare (values int)) (return 42))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[&]() -> int { return 42; }
+```
+
+Fully parenthesized:
 ```cpp
 [&]() -> int { return 42; }
 ```
@@ -1224,6 +1230,12 @@ Without a return type the parameter list is still emitted; the type is deduced f
 (lambda () (return 42))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[&]() { return 42; }
+```
+
+Fully parenthesized:
 ```cpp
 [&]() { return 42; }
 ```
@@ -1241,6 +1253,12 @@ An explicit by-copy capture appears in the first bracket pair.
   (return x))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[x]() -> int { return x; }
+```
+
+Fully parenthesized:
 ```cpp
 [x]() -> int { return x; }
 ```
@@ -1258,6 +1276,12 @@ With no capture declaration the lambda defaults to `[&]` and sees outer variable
   (return (+ a x)))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[&](int a) -> int { return a+x; }
+```
+
+Fully parenthesized:
 ```cpp
 [&](int a) -> int { return (a)+(x); }
 ```
@@ -1275,6 +1299,12 @@ Typed parameters render as a C++ parameter list; no `->` without `values`.
   (return (+ a b)))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[&](int a, int b) { return a+b; }
+```
+
+Fully parenthesized:
 ```cpp
 [&](int a, int b) { return (a)+(b); }
 ```
@@ -1292,6 +1322,12 @@ Multiple explicit captures are comma-separated.
   (return (+ x y)))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[x,y]() -> int { return x+y; }
+```
+
+Fully parenthesized:
 ```cpp
 [x,y]() -> int { return (x)+(y); }
 ```
@@ -1309,6 +1345,12 @@ A `=` capture-default captures outer variables by copy.
   (return 42))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[=]() -> int { return 42; }
+```
+
+Fully parenthesized:
 ```cpp
 [=]() -> int { return 42; }
 ```
@@ -1326,6 +1368,12 @@ A capture-default must come first in C++; the generator reorders `(capture x =)`
   (return (+ x 1)))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[=,x]() -> int { return x+1; }
+```
+
+Fully parenthesized:
 ```cpp
 [=,x]() -> int { return (x)+(1); }
 ```
@@ -1345,6 +1393,12 @@ Explicit by-copy and by-reference captures mix freely alongside parameters.
   (return (+ (+ a b) (+ x y))))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[x,&y](int a, int b) -> int { return a+b+x+y; }
+```
+
+Fully parenthesized:
 ```cpp
 [x,&y](int a, int b) -> int { return ((a)+(b))+((x)+(y)); }
 ```
@@ -1359,6 +1413,12 @@ Parameters without a declared type become `auto` (a C++14 generic lambda).
 (lambda (q) (return q))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[&](auto q) { return q; }
+```
+
+Fully parenthesized:
 ```cpp
 [&](auto q) { return q; }
 ```
@@ -1376,6 +1436,12 @@ Bodies hold multiple forms; earlier forms emit as statements before `return`.
     (return (+ y 40))))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[&]() -> int { auto y = 2; return y+40; }
+```
+
+Fully parenthesized:
 ```cpp
 [&]() -> int { auto y = 2; return (y)+(40); }
 ```
@@ -1394,6 +1460,12 @@ A lambda in head position is parenthesised and can be invoked immediately.
  41)
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+([&](int a) -> int { return a; })(41)
+```
+
+Fully parenthesized:
 ```cpp
 ([&](int a) -> int { return a; })(41)
 ```
@@ -1412,6 +1484,12 @@ A string-form `&` default reorders to the front just like `=`.
   (return (+ a x)))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[&,x](int a) -> int { return a+x; }
+```
+
+Fully parenthesized:
 ```cpp
 [&,x](int a) -> int { return (a)+(x); }
 ```
@@ -1429,6 +1507,12 @@ Captures pass through verbatim, so init-captures work.
   (return (+ x 1)))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[x = 5]() -> int { return x+1; }
+```
+
+Fully parenthesized:
 ```cpp
 [x = 5]() -> int { return (x)+(1); }
 ```
@@ -1446,6 +1530,12 @@ A `this` capture for member functions (string test only: no object exists here).
   (return 1))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[this]() -> int { return 1; }
+```
+
+Fully parenthesized:
 ```cpp
 [this]() -> int { return 1; }
 ```
@@ -1464,6 +1554,12 @@ A lambda passes as a call argument, the callback shape (string test only: no cal
    (return a)))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+foo([&](int a) -> int { return a; })
+```
+
+Fully parenthesized:
 ```cpp
 foo([&](int a) -> int { return a; })
 ```
@@ -1478,6 +1574,12 @@ An untyped parameter with a declared return type.
 (lambda (q) (declare (values int)) (return q))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[&](auto q) -> int { return q; }
+```
+
+Fully parenthesized:
 ```cpp
 [&](auto q) -> int { return q; }
 ```
@@ -1495,6 +1597,12 @@ An explicit `void` return with a side effect, checked via a custom condition.
   (setf c 42))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[&c]() -> void { c=42; }
+```
+
+Fully parenthesized:
 ```cpp
 [&c]() -> void { (c)=(42); }
 ```
@@ -1516,6 +1624,12 @@ An immediately invoked lambda nests as a return expression.
     41)))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[&]() -> int { return ([&](int a) -> int { return a; })(41); }
+```
+
+Fully parenthesized:
 ```cpp
 [&]() -> int { return ([&](int a) -> int { return a; })(41); }
 ```
@@ -1530,6 +1644,12 @@ Type collection stops at `&optional`, so this declares a plain `int` return.
 (lambda () (declare (values int &optional)) (return 42))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[&]() -> int { return 42; }
+```
+
+Fully parenthesized:
 ```cpp
 [&]() -> int { return 42; }
 ```
@@ -1544,6 +1664,12 @@ A pointer return type passes through; dereferenced in a custom check.
 (lambda () (declare (values int*)) (return (ref y)))
 ```
 
+Elided (`:omit-parens t`):
+```cpp
+[&]() -> int* { return &y; }
+```
+
+Fully parenthesized:
 ```cpp
 [&]() -> int* { return &(y); }
 ```

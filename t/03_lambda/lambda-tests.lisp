@@ -40,8 +40,8 @@
     ok name (apply #'format nil fmt args))
 )
 
-(defun emit-str (code)
-  (m-of (emit-c :code code))
+(defun emit-str (code &key omit)
+  (m-of (emit-c :code code :omit-redundant-parentheses omit))
 )
 
 (defun normalize (s)
@@ -62,7 +62,9 @@
 )
 
 ;;; :code     s-expression handed to emit-c
-;;; :expected hand-verified C++ text (compared whitespace-normalised)
+;;; :expected hand-verified C++ text, fully parenthesized mode
+;;; :omit     hand-verified C++ text with :omit-parens t
+;;;            (both compared whitespace-normalised)
 ;;; :call     suffix appended to `f' in the value test, e.g. "()" or "(37)"
 ;;; :value    expected integer when the lambda is invoked
 (defparameter *lambda-tests*
@@ -72,48 +74,56 @@
      :description "A parameterless lambda with a return type keeps its empty parameter list. Omitting the `()` is invalid C++."
      :code (lambda () (declare (values int)) (return 42))
      :expected "[&]() -> int { return 42; }"
+     :omit "[&]() -> int { return 42; }"
      :call "()"
      :value 42)
     (:name no-params-no-return
      :description "Without a return type the parameter list is still emitted; the type is deduced from `return`."
      :code (lambda () (return 42))
      :expected "[&]() { return 42; }"
+     :omit "[&]() { return 42; }"
      :call "()"
      :value 42)
     (:name explicit-capture-with-return
      :description "An explicit by-copy capture appears in the first bracket pair."
      :code (lambda () (declare (capture x) (values int)) (return x))
      :expected "[x]() -> int { return x; }"
+     :omit "[x]() -> int { return x; }"
      :call "()"
      :value 5)
     (:name default-capture-sees-outer-x
      :description "With no capture declaration the lambda defaults to `[&]` and sees outer variables."
      :code (lambda (a) (declare (type int a) (values int)) (return (+ a x)))
      :expected "[&](int a) -> int { return (a)+(x); }"
+     :omit "[&](int a) -> int { return a+x; }"
      :call "(37)"
      :value 42)
     (:name two-params-no-return
      :description "Typed parameters render as a C++ parameter list; no `->` without `values`."
      :code (lambda (a b) (declare (type int a) (type int b)) (return (+ a b)))
      :expected "[&](int a, int b) { return (a)+(b); }"
+     :omit "[&](int a, int b) { return a+b; }"
      :call "(40, 2)"
      :value 42)
     (:name two-captures-with-return
      :description "Multiple explicit captures are comma-separated."
      :code (lambda () (declare (capture x y) (values int)) (return (+ x y)))
      :expected "[x,y]() -> int { return (x)+(y); }"
+     :omit "[x,y]() -> int { return x+y; }"
      :call "()"
      :value 12)
     (:name by-value-default
      :description "A `=` capture-default captures outer variables by copy."
      :code (lambda () (declare (capture =) (values int)) (return 42))
      :expected "[=]() -> int { return 42; }"
+     :omit "[=]() -> int { return 42; }"
      :call "()"
      :value 42)
     (:name capture-default-moves-first
      :description "A capture-default must come first in C++; the generator reorders `(capture x =)` to `[=,x]`."
      :code (lambda () (declare (capture x =) (values int)) (return (+ x 1)))
      :expected "[=,x]() -> int { return (x)+(1); }"
+     :omit "[=,x]() -> int { return x+1; }"
      :call "()"
      :value 6)
     (:name mixed-captures-with-params
@@ -123,12 +133,14 @@
                                   (values int))
              (return (+ (+ a b) (+ x y))))
      :expected "[x,&y](int a, int b) -> int { return ((a)+(b))+((x)+(y)); }"
+     :omit "[x,&y](int a, int b) -> int { return a+b+x+y; }"
      :call "(1, 2)"
      :value 15)
     (:name untyped-param-is-auto
      :description "Parameters without a declared type become `auto` (a C++14 generic lambda)."
      :code (lambda (q) (return q))
      :expected "[&](auto q) { return q; }"
+     :omit "[&](auto q) { return q; }"
      :call "(9)"
      :value 9)
     (:name multi-form-body
@@ -137,12 +149,14 @@
              (let ((y 2))
                (return (+ y 40))))
      :expected "[&]() -> int { auto y = 2; return (y)+(40); }"
+     :omit "[&]() -> int { auto y = 2; return y+40; }"
      :call "()"
      :value 42)
     (:name immediate-call
      :description "A lambda in head position is parenthesised and can be invoked immediately."
      :code ((lambda (a) (declare (type int a) (values int)) (return a)) 41)
      :expected "([&](int a) -> int { return a; })(41)"
+     :omit "([&](int a) -> int { return a; })(41)"
      :value 41
      :direct t)
     (:name string-default-reorders-first
@@ -151,6 +165,7 @@
                                 (type int a) (values int))
              (return (+ a x)))
      :expected "[&,x](int a) -> int { return (a)+(x); }"
+     :omit "[&,x](int a) -> int { return a+x; }"
      :call "(1)"
      :value 6)
     (:name init-capture
@@ -158,22 +173,26 @@
      :code (lambda () (declare (capture "x = 5") (values int))
              (return (+ x 1)))
      :expected "[x = 5]() -> int { return (x)+(1); }"
+     :omit "[x = 5]() -> int { return x+1; }"
      :call "()"
      :value 6)
     (:name this-capture
      :description "A `this` capture for member functions (string test only: no object exists here)."
      :code (lambda () (declare (capture this) (values int))
              (return 1))
-     :expected "[this]() -> int { return 1; }")
+     :expected "[this]() -> int { return 1; }"
+     :omit "[this]() -> int { return 1; }")
     (:name lambda-as-argument
      :description "A lambda passes as a call argument, the callback shape (string test only: no callee exists here)."
      :code (foo (lambda (a) (declare (type int a) (values int))
                   (return a)))
-     :expected "foo([&](int a) -> int { return a; })")
+     :expected "foo([&](int a) -> int { return a; })"
+     :omit "foo([&](int a) -> int { return a; })")
     (:name auto-param-with-return
      :description "An untyped parameter with a declared return type."
      :code (lambda (q) (declare (values int)) (return q))
      :expected "[&](auto q) -> int { return q; }"
+     :omit "[&](auto q) -> int { return q; }"
      :call "(7)"
      :value 7)
     (:name void-setter
@@ -181,6 +200,7 @@
      :code (lambda () (declare (capture &c) (values void))
              (setf c 42))
      :expected "[&c]() -> void { (c)=(42); }"
+     :omit "[&c]() -> void { c=42; }"
      :call "()"
      :void t
      :check "c == 42")
@@ -193,6 +213,7 @@
                         (return a))
                       41)))
      :expected "[&]() -> int { return ([&](int a) -> int { return a; })(41); }"
+     :omit "[&]() -> int { return ([&](int a) -> int { return a; })(41); }"
      :call "()"
      :value 41)
     (:name values-optional-stops-types
@@ -200,6 +221,7 @@
      :code (lambda () (declare (values int &optional))
              (return 42))
      :expected "[&]() -> int { return 42; }"
+     :omit "[&]() -> int { return 42; }"
      :call "()"
      :value 42)
     (:name pointer-return
@@ -207,6 +229,7 @@
      :code (lambda () (declare (values int*))
              (return (ref y)))
      :expected "[&]() -> int* { return &(y); }"
+     :omit "[&]() -> int* { return &y; }"
      :call "()"
      :check "(*f() == 7)"))
 )
@@ -223,12 +246,16 @@
 (defun run-string-tests ()
   (format t "~&== string tests ==~%")
   (dolist (e *lambda-tests*)
-    (destructuring-bind (&key name code expected call value direct check void description) e
+    (destructuring-bind (&key name code expected omit call value direct check void description) e
       (declare (ignore call value direct check void description))
-      (let ((got (handler-case (normalize (emit-str code))
-                   (condition (c) (format nil "<error ~a>" c)))))
-        (report (string= got expected) name
-          "got ~s expected ~s" got expected)))
+      (let ((got-full (handler-case (normalize (emit-str code))
+                        (condition (c) (format nil "<error ~a>" c))))
+            (got-omit (handler-case (normalize (emit-str code :omit t))
+                        (condition (c) (format nil "<error ~a>" c)))))
+        (report (string= got-full expected) name
+          "full: got ~s expected ~s" got-full expected)
+        (report (string= got-omit omit) name
+          "omit: got ~s expected ~s" got-omit omit)))
   )
 )
 
@@ -237,12 +264,12 @@
     when (probe-file c) return c)
 )
 
-(defun write-value-case (s e)
+(defun write-value-case (s e omit)
   "Emit one `got == value` block. Entries with :direct hold a complete
 expression; the rest bind `auto f` first."
-  (destructuring-bind (&key name code expected call value direct check void description) e
-    (declare (ignore expected check void description))
-    (let ((lam (emit-str code)))
+  (destructuring-bind (&key name code expected omit call value direct check void description) e
+    (declare (ignore expected omit check void description))
+    (let ((lam (emit-str code :omit omit)))
       (if direct
         (format s "  {~%    long got = (long)(~a);~%" lam)
         (progn
@@ -254,11 +281,11 @@ expression; the rest bind `auto f` first."
     (format s "  }~%"))
 )
 
-(defun write-check-case (s e)
+(defun write-check-case (s e omit)
   "Emit one custom-condition block for :void or non-integer results."
-  (destructuring-bind (&key name code expected call value direct check void description) e
-    (declare (ignore expected value direct description))
-    (let ((lam (emit-str code)))
+  (destructuring-bind (&key name code expected omit call value direct check void description) e
+    (declare (ignore expected omit value direct description))
+    (let ((lam (emit-str code :omit omit)))
       (format s "  {~%    auto f = ~a;~%" lam)
       (if void
         (format s "    f~a;~%" call))
@@ -268,29 +295,33 @@ expression; the rest bind `auto f` first."
       (format s "  }~%")))
 )
 
-(defun run-value-tests ()
-  (format t "~&== value tests ==~%")
-  (let ((compiler (cxx-compiler)))
+(defun run-value-tests (&key omit)
+  "Compile and run one C++ program per emit mode. Both modes must yield
+the same values: the fully parenthesized output is the oracle for the
+elided output (and vice versa), like t/02's vfull/vomit comparison."
+  (format t "~&== value tests~@[ (omit)~] ==~%" omit)
+  (let ((compiler (cxx-compiler))
+        (tag (if omit "omit" "full")))
     (if (not compiler)
       (format t "SKIP no C++ compiler found~%")
       (let* ((dir (asdf:system-relative-pathname
                     'cl-cpp-generator2 "t/03_lambda/build/"))
-             (src (merge-pathnames "lambda_value_tests.cpp" dir))
-             (exe (merge-pathnames "lambda_value_tests" dir)))
+             (src (merge-pathnames (format nil "lambda_value_tests_~a.cpp" tag) dir))
+             (exe (merge-pathnames (format nil "lambda_value_tests_~a" tag) dir)))
         (ensure-directories-exist dir)
         (with-open-file (s src :direction :output :if-exists :supersede
                           :if-does-not-exist :create)
-          (format s "// generated by t/03_lambda/lambda-tests.lisp~%")
+          (format s "// generated by t/03_lambda/lambda-tests.lisp (~a)~%" tag)
           (format s "#include <cstdio>~%~%")
           (format s "int main() {~%  int fails = 0;~%")
           (format s "  int x = 5; int y = 7; int c = 0;~%")
           (dolist (e (remove-if-not (lambda (e) (getf e :value))
                        *lambda-tests*))
-            (write-value-case s e))
+            (write-value-case s e omit))
           (dolist (e (remove-if-not (lambda (e) (getf e :check))
                        *lambda-tests*))
-            (write-check-case s e))
-          (format s "  std::printf(\"%d value failures\\n\", fails);~%")
+            (write-check-case s e omit))
+          (format s "  std::printf(\"%d value failures (~a)\\n\", fails);~%" tag)
           (format s "  return fails == 0 ? 0 : 1;~%}~%"))
         (let ((compile-ok
                 (zerop (sb-ext:process-exit-code
@@ -300,13 +331,14 @@ expression; the rest bind `auto f` first."
                              (namestring src))
                            :output *standard-output*
                            :error *standard-output*)))))
-          (report compile-ok "value-tests-compile" "~a" (namestring src))
+          (report compile-ok (format nil "value-tests-compile-~a" tag)
+            "~a" (namestring src))
           (when compile-ok
             (let ((code (sb-ext:process-exit-code
                           (sb-ext:run-program (namestring exe) nil
                             :output *standard-output*
                             :error *standard-output*))))
-              (report (zerop code) "value-tests-run"
+              (report (zerop code) (format nil "value-tests-run-~a" tag)
                 "~a value and ~a check case~:p compiled from ~a"
                 (count-if (lambda (e) (getf e :value)) *lambda-tests*)
                 (count-if (lambda (e) (getf e :check)) *lambda-tests*)
@@ -342,6 +374,7 @@ expression; the rest bind `auto f` first."
   (setf *checks* 0)
   (run-string-tests)
   (run-value-tests)
+  (run-value-tests :omit t)
   (run-error-tests)
   (format t "~%~a checks, ~a failures~%" *checks* *failures*)
   (unless (zerop *failures*)

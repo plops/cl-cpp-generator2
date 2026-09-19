@@ -40,13 +40,15 @@ incompatible emit-str, so the shared generator calls emit-c directly."
 )
 
 (defun write-lambda-entry (s e)
-  (destructuring-bind (&key name code expected call value direct check void description) e
-    (declare (ignore expected void))
+  (destructuring-bind (&key name code expected omit call value direct check void description) e
+    (declare (ignore expected omit void))
     (format s "### ~a~%~%" name)
     (when description
       (format s "~a~%~%" description))
     (format s "```lisp~%~S~%```~%~%" code)
-    (format s "```cpp~%~a~%```~%~%"
+    (format s "Elided (`:omit-parens t`):~%```cpp~%~a~%```~%~%"
+      (normalize (m-of (emit-c :code code :omit-redundant-parentheses t))))
+    (format s "Fully parenthesized:~%```cpp~%~a~%```~%~%"
       (normalize (m-of (emit-c :code code))))
     (cond (check
             (format s "Verified by the custom condition `~a`.~%~%" check))

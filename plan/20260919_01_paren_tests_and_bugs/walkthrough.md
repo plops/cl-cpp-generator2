@@ -138,3 +138,14 @@ weil `parse-lambda` sie ignoriert (bewusst, vgl. `plan.md` Punkt 3).
 README ohne PoC-Vermerk, Doku-Generator rendert `:check`-Faelle als
 "Verified by the custom condition". 101 Fall-Abschnitte in
 `SUPPORTED_FORMS.md`.
+
+## 11. Dual-Mode-Tests fuer t/03 (2026-09-19)
+
+Frage aus Review: Warum so viele Klammern — wird Omit nicht mitgetestet?
+Antwort: Der Omit-Flag propagiert via `emit`-Closure bis in Lambda-Ruempfe
+(`(a)+(b)` → `a+b` verifiziert), aber `t/03` forderte Omit nie an. Jetzt wie
+vorgeschlagen und nach Rust-Vorbild dual: String-Layer prueft `:expected`
+(full) und `:omit` je Fall (42 Checks), Value-Layer kompiliert zwei
+Programme (`_full`/`_omit`), beide muessen identische Werte liefern
+(`47 checks, 0 failures`). Doku zeigt beide Varianten. Nebenbefund: `setf`
+elidiert ebenfalls (`(c)=(42)` → `c=42`).
