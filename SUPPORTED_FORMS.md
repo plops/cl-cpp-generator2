@@ -12,7 +12,7 @@ Every example below is an executed test case: the Lisp form really does produce 
 
 ## Parenthesis elision
 
-79 cases from `t/02_paren_precedence/paren-tests.lisp`. Value tests use `int a = 7, b = 3, c = 2, d = 5;` and `int arr[8] = {10, 20, ..., 80};` (see `*variables*` there).
+82 cases from `t/02_paren_precedence/paren-tests.lisp`. Value tests use `int a = 7, b = 3, c = 2, d = 5;` and `int arr[8] = {10, 20, ..., 80};` (see `*variables*` there).
 
 ### unary-minus-over-division
 
@@ -47,6 +47,11 @@ Elided (`:omit-parens t`):
 a/( -(b-c))
 ```
 
+Fully parenthesized:
+```cpp
+(a)/( -((b)-(c)))
+```
+
 Evaluates to `-7`.
 
 ### unary-minus-over-multiplication
@@ -60,6 +65,11 @@ A negated difference as a multiplication operand keeps its parentheses.
 Elided (`:omit-parens t`):
 ```cpp
  -(a-b)*c
+```
+
+Fully parenthesized:
+```cpp
+( -((a)-(b)))*(c)
 ```
 
 Evaluates to `-8`.
@@ -77,6 +87,11 @@ Elided (`:omit-parens t`):
  -(a-b)+c
 ```
 
+Fully parenthesized:
+```cpp
+( -((a)-(b)))+(c)
+```
+
 Evaluates to `-2`.
 
 ### unary-minus-over-modulo
@@ -90,6 +105,11 @@ A negated difference in front of `%` keeps its parentheses.
 Elided (`:omit-parens t`):
 ```cpp
 ( -(a-b))%c
+```
+
+Fully parenthesized:
+```cpp
+( -((a)-(b)))%(c)
 ```
 
 Evaluates to `0`.
@@ -107,6 +127,11 @@ Elided (`:omit-parens t`):
  -(a+b)*c
 ```
 
+Fully parenthesized:
+```cpp
+( -((a)+(b)))*(c)
+```
+
 Evaluates to `-20`.
 
 ### unary-minus-of-product
@@ -120,6 +145,11 @@ Parentheses around a product under unary minus are redundant but harmless -- cor
 Elided (`:omit-parens t`):
 ```cpp
  -(a*b)
+```
+
+Fully parenthesized:
+```cpp
+ -((a)*(b))
 ```
 
 Evaluates to `-21`.
@@ -137,6 +167,11 @@ Elided (`:omit-parens t`):
  - -(a-b)
 ```
 
+Fully parenthesized:
+```cpp
+ -( -((a)-(b)))
+```
+
 Evaluates to `4`.
 
 ### unary-minus-of-symbol
@@ -150,6 +185,11 @@ A plain negated symbol needs no parentheses.
 Elided (`:omit-parens t`):
 ```cpp
  -a+b
+```
+
+Fully parenthesized:
+```cpp
+( -(a))+(b)
 ```
 
 Evaluates to `-4`.
@@ -167,6 +207,11 @@ Elided (`:omit-parens t`):
 a<< -(c-b)
 ```
 
+Fully parenthesized:
+```cpp
+(a)<<( -((c)-(b)))
+```
+
 Evaluates to `14`.
 
 ### unary-minus-in-ternary-condition
@@ -180,6 +225,11 @@ A negated difference as a ternary condition.
 Elided (`:omit-parens t`):
 ```cpp
  -(a-b) ? c : d
+```
+
+Fully parenthesized:
+```cpp
+( -((a)-(b))) ? (c) : (d)
 ```
 
 Evaluates to `2`.
@@ -197,6 +247,11 @@ Elided (`:omit-parens t`):
  -(a-b)==c
 ```
 
+Fully parenthesized:
+```cpp
+( -((a)-(b)))==(c)
+```
+
 Evaluates to `0`.
 
 ### unary-minus-in-call
@@ -210,6 +265,11 @@ A negated difference as a function-call argument.
 Elided (`:omit-parens t`):
 ```cpp
 abs( -(a-b))
+```
+
+Fully parenthesized:
+```cpp
+abs( -((a)-(b)))
 ```
 
 Evaluates to `4`.
@@ -227,6 +287,11 @@ Elided (`:omit-parens t`):
  -arr[1]
 ```
 
+Fully parenthesized:
+```cpp
+ -((arr)[(1)])
+```
+
 Evaluates to `-20`.
 
 ### unary-minus-index
@@ -240,6 +305,11 @@ The index is bracketed anyway, but the grouping inside has to survive.
 Elided (`:omit-parens t`):
 ```cpp
 arr[( -(b-a))]
+```
+
+Fully parenthesized:
+```cpp
+(arr)[( -((b)-(a)))]
 ```
 
 Evaluates to `50`.
@@ -297,6 +367,11 @@ Elided (`:omit-parens t`):
 (int) a*b
 ```
 
+Fully parenthesized:
+```cpp
+((int) a)*(b)
+```
+
 Evaluates to `21`.
 
 ### dot-of-expression
@@ -312,6 +387,11 @@ Elided (`:omit-parens t`):
 ( -(a-b)).c
 ```
 
+Fully parenthesized:
+```cpp
+( -((a)-(b))).c
+```
+
 ### arrow-of-expression
 
 The same for pointer member access.
@@ -323,6 +403,11 @@ The same for pointer member access.
 Elided (`:omit-parens t`):
 ```cpp
 ( -(a-b))->c
+```
+
+Fully parenthesized:
+```cpp
+( -((a)-(b)))->(c)
 ```
 
 ### reciprocal
@@ -338,6 +423,11 @@ Elided (`:omit-parens t`):
 1.0/a
 ```
 
+Fully parenthesized:
+```cpp
+1.0/(a)
+```
+
 ### reciprocal-of-sum
 
 The sum still needs its parentheses under the reciprocal.
@@ -351,6 +441,11 @@ Elided (`:omit-parens t`):
 1.0/(a+b)
 ```
 
+Fully parenthesized:
+```cpp
+1.0/((a)+(b))
+```
+
 ### single-or-stays-bare
 
 A single-argument chain emits just its argument: `~255`, not `~(255)`.
@@ -362,6 +457,11 @@ A single-argument chain emits just its argument: `~255`, not `~(255)`.
 Elided (`:omit-parens t`):
 ```cpp
 ~255
+```
+
+Fully parenthesized:
+```cpp
+~((255))
 ```
 
 Evaluates to `-256`.
@@ -379,6 +479,11 @@ Elided (`:omit-parens t`):
 5 & 1==1
 ```
 
+Fully parenthesized:
+```cpp
+(5) & (((1)==(1)))
+```
+
 Evaluates to `1`.
 
 ### chained-compare
@@ -392,6 +497,11 @@ A three-way comparison expands to `c<=b && b<=a`.
 Elided (`:omit-parens t`):
 ```cpp
 c<=b && b<=a
+```
+
+Fully parenthesized:
+```cpp
+(c)<=(b) && (b)<=(a)
 ```
 
 Evaluates to `1`.
@@ -409,6 +519,11 @@ Elided (`:omit-parens t`):
 !(c<=b && b<=a)
 ```
 
+Fully parenthesized:
+```cpp
+!((c)<=(b) && (b)<=(a))
+```
+
 Evaluates to `0`.
 
 ### chained-compare-in-bitor
@@ -422,6 +537,11 @@ The `&&`-expansion needs parentheses inside `|`.
 Elided (`:omit-parens t`):
 ```cpp
 (c<=b && b<=a) | 0
+```
+
+Fully parenthesized:
+```cpp
+((c)<=(b) && (b)<=(a)) | (0)
 ```
 
 Evaluates to `1`.
@@ -439,6 +559,11 @@ Elided (`:omit-parens t`):
 (a ? b : c) ? d : 1
 ```
 
+Fully parenthesized:
+```cpp
+((a) ? (b) : (c)) ? (d) : (1)
+```
+
 Evaluates to `5`.
 
 ### compare-of-compare
@@ -452,6 +577,11 @@ Evaluates to `5`.
 Elided (`:omit-parens t`):
 ```cpp
 a<(b<c)
+```
+
+Fully parenthesized:
+```cpp
+(a)<((b)<(c))
 ```
 
 Evaluates to `0`.
@@ -469,6 +599,11 @@ Elided (`:omit-parens t`):
 a==(b==c)
 ```
 
+Fully parenthesized:
+```cpp
+(a)==((b)==(c))
+```
+
 Evaluates to `0`.
 
 ### shift-of-shift
@@ -482,6 +617,11 @@ The same for `<<` on the right.
 Elided (`:omit-parens t`):
 ```cpp
 a<<(b<<c)
+```
+
+Fully parenthesized:
+```cpp
+(a)<<((b)<<(c))
 ```
 
 Evaluates to `28672`.
@@ -499,6 +639,11 @@ Elided (`:omit-parens t`):
 a*(b/c)
 ```
 
+Fully parenthesized:
+```cpp
+(a)*((b)/(c))
+```
+
 Evaluates to `7`.
 
 ### quotient-of-product
@@ -512,6 +657,11 @@ A left-nested product keeps its parentheses under `/`.
 Elided (`:omit-parens t`):
 ```cpp
 (a*b)/c
+```
+
+Fully parenthesized:
+```cpp
+((a)*(b))/(c)
 ```
 
 Evaluates to `10`.
@@ -529,6 +679,11 @@ Elided (`:omit-parens t`):
 a+b+c
 ```
 
+Fully parenthesized:
+```cpp
+(a)+((b)+(c))
+```
+
 Evaluates to `12`.
 
 ### compound-xor-assign
@@ -544,6 +699,11 @@ Elided (`:omit-parens t`):
 a^=b+c
 ```
 
+Fully parenthesized:
+```cpp
+(a)^=((b)+(c))
+```
+
 ### bitand-needs-parens-in-sum
 
 `&` binds looser than `+`, so the operand keeps its parentheses.
@@ -555,6 +715,11 @@ a^=b+c
 Elided (`:omit-parens t`):
 ```cpp
 (a & b)+c
+```
+
+Fully parenthesized:
+```cpp
+((a) & (b))+(c)
 ```
 
 Evaluates to `5`.
@@ -572,6 +737,11 @@ Elided (`:omit-parens t`):
 (a&b)+c
 ```
 
+Fully parenthesized:
+```cpp
+(((a)&(b)))+(c)
+```
+
 Evaluates to `5`.
 
 ### basic1
@@ -585,6 +755,11 @@ A tighter sum keeps its parentheses as a product operand.
 Elided (`:omit-parens t`):
 ```cpp
 3*(1+2)
+```
+
+Fully parenthesized:
+```cpp
+(3)*((1)+(2))
 ```
 
 Evaluates to `9`.
@@ -602,6 +777,11 @@ Elided (`:omit-parens t`):
 3*1+2
 ```
 
+Fully parenthesized:
+```cpp
+((3)*(1))+(2)
+```
+
 Evaluates to `5`.
 
 ### basic3
@@ -615,6 +795,11 @@ Two sums as factors of a product.
 Elided (`:omit-parens t`):
 ```cpp
 (3+4)*3*(1+2)
+```
+
+Fully parenthesized:
+```cpp
+((3)+(4))*(3)*((1)+(2))
 ```
 
 Evaluates to `63`.
@@ -632,6 +817,11 @@ Elided (`:omit-parens t`):
 (3+4)*(13/4)*((171+2)/5)
 ```
 
+Fully parenthesized:
+```cpp
+((3)+(4))*((13)/(4))*(((171)+(2))/(5))
+```
+
 Evaluates to `714`.
 
 ### basic5
@@ -645,6 +835,11 @@ A sum and a difference as factors.
 Elided (`:omit-parens t`):
 ```cpp
 (3+4)*(7-3)
+```
+
+Fully parenthesized:
+```cpp
+((3)+(4))*((7)-(3))
 ```
 
 Evaluates to `28`.
@@ -662,6 +857,11 @@ Elided (`:omit-parens t`):
 3+4+(7-3)
 ```
 
+Fully parenthesized:
+```cpp
+((3)+(4))+((7)-(3))
+```
+
 Evaluates to `11`.
 
 ### basic7
@@ -675,6 +875,11 @@ A sum and a difference around a minus both keep parentheses.
 Elided (`:omit-parens t`):
 ```cpp
 (3+4)-(7-3)
+```
+
+Fully parenthesized:
+```cpp
+((3)+(4))-((7)-(3))
 ```
 
 Evaluates to `3`.
@@ -692,6 +897,11 @@ Elided (`:omit-parens t`):
 (7-3)-(3+4)
 ```
 
+Fully parenthesized:
+```cpp
+((7)-(3))-((3)+(4))
+```
+
 Evaluates to `-3`.
 
 ### basic9
@@ -705,6 +915,11 @@ A difference nests flat into a sum on the left.
 Elided (`:omit-parens t`):
 ```cpp
 (7-3)+3+4
+```
+
+Fully parenthesized:
+```cpp
+((7)-(3))+((3)+(4))
 ```
 
 Evaluates to `11`.
@@ -722,6 +937,11 @@ Elided (`:omit-parens t`):
 2* -1
 ```
 
+Fully parenthesized:
+```cpp
+(2)*(-1)
+```
+
 Evaluates to `-2`.
 
 ### basicb
@@ -735,6 +955,11 @@ A negative literal as a subtraction operand.
 Elided (`:omit-parens t`):
 ```cpp
 2- -1
+```
+
+Fully parenthesized:
+```cpp
+(2)-(-1)
 ```
 
 Evaluates to `3`.
@@ -752,6 +977,11 @@ Elided (`:omit-parens t`):
 (3*5)%4
 ```
 
+Fully parenthesized:
+```cpp
+((3)*(5))%(4)
+```
+
 Evaluates to `3`.
 
 ### mod2
@@ -765,6 +995,11 @@ A product keeps its parentheses behind `%`.
 Elided (`:omit-parens t`):
 ```cpp
 74%(3*5)
+```
+
+Fully parenthesized:
+```cpp
+(74)%((3)*(5))
 ```
 
 Evaluates to `14`.
@@ -782,6 +1017,11 @@ Elided (`:omit-parens t`):
 74%(17/5)
 ```
 
+Fully parenthesized:
+```cpp
+(74)%((17)/(5))
+```
+
 Evaluates to `2`.
 
 ### hex1
@@ -795,6 +1035,11 @@ A hex literal as a sum operand.
 Elided (`:omit-parens t`):
 ```cpp
 0xad+3
+```
+
+Fully parenthesized:
+```cpp
+(0xad)+(3)
 ```
 
 Evaluates to `176`.
@@ -812,6 +1057,11 @@ Elided (`:omit-parens t`):
 17/5
 ```
 
+Fully parenthesized:
+```cpp
+(17)/(5)
+```
+
 Evaluates to `3`.
 
 ### div1
@@ -825,6 +1075,11 @@ A quotient as the left operand of a sum.
 Elided (`:omit-parens t`):
 ```cpp
 (17/5)+3
+```
+
+Fully parenthesized:
+```cpp
+((17)/(5))+(3)
 ```
 
 Evaluates to `6`.
@@ -842,6 +1097,11 @@ Elided (`:omit-parens t`):
 3+(17/5)
 ```
 
+Fully parenthesized:
+```cpp
+(3)+((17)/(5))
+```
+
 Evaluates to `6`.
 
 ### array0
@@ -855,6 +1115,11 @@ An array element and a quotient as sum operands.
 Elided (`:omit-parens t`):
 ```cpp
 arr[0]+3+(17/5)
+```
+
+Fully parenthesized:
+```cpp
+((arr)[(0)])+(3)+((17)/(5))
 ```
 
 Evaluates to `16`.
@@ -872,6 +1137,11 @@ Elided (`:omit-parens t`):
 arr[((1*(1+1))-1)]+3+(17/5)
 ```
 
+Fully parenthesized:
+```cpp
+((arr)[(((1)*((1)+(1)))-(1))])+(3)+((17)/(5))
+```
+
 Evaluates to `26`.
 
 ### colon0
@@ -887,6 +1157,11 @@ Elided (`:omit-parens t`):
 bla::i<<3+1
 ```
 
+Fully parenthesized:
+```cpp
+(bla::i)<<((3)+(1))
+```
+
 ### ternary0
 
 A ternary with a comparison condition.
@@ -898,6 +1173,11 @@ A ternary with a comparison condition.
 Elided (`:omit-parens t`):
 ```cpp
 5==3 ? 1 : 2
+```
+
+Fully parenthesized:
+```cpp
+((5)==(3)) ? (1) : (2)
 ```
 
 Evaluates to `2`.
@@ -915,6 +1195,11 @@ Elided (`:omit-parens t`):
 7-(5==3 ? 1 : 2)
 ```
 
+Fully parenthesized:
+```cpp
+(7)-(((5)==(3)) ? (1) : (2))
+```
+
 Evaluates to `5`.
 
 ### ternary2
@@ -928,6 +1213,11 @@ A ternary as a comparison operand.
 Elided (`:omit-parens t`):
 ```cpp
 (5==3 ? 1 : 2)==7
+```
+
+Fully parenthesized:
+```cpp
+(((5)==(3)) ? (1) : (2))==(7)
 ```
 
 Evaluates to `0`.
@@ -945,6 +1235,11 @@ Elided (`:omit-parens t`):
 ((5-3) ? 1 : 2)==7
 ```
 
+Fully parenthesized:
+```cpp
+((((5)-(3)) ? (1) : (2)))==(7)
+```
+
 Evaluates to `0`.
 
 ### unary0
@@ -958,6 +1253,11 @@ A negative literal in a comparison.
 Elided (`:omit-parens t`):
 ```cpp
  -1==2
+```
+
+Fully parenthesized:
+```cpp
+(-1)==(2)
 ```
 
 Evaluates to `0`.
@@ -975,6 +1275,11 @@ Elided (`:omit-parens t`):
 2== -1
 ```
 
+Fully parenthesized:
+```cpp
+(2)==(-1)
+```
+
 Evaluates to `0`.
 
 ### logorand0
@@ -988,6 +1293,11 @@ Evaluates to `0`.
 Elided (`:omit-parens t`):
 ```cpp
 1||0&&1
+```
+
+Fully parenthesized:
+```cpp
+(1)||((0)&&(1))
 ```
 
 Evaluates to `1`.
@@ -1005,6 +1315,11 @@ Elided (`:omit-parens t`):
 ~(240 | 15)
 ```
 
+Fully parenthesized:
+```cpp
+~((240) | (15))
+```
+
 Evaluates to `-256`.
 
 ### assigneq0
@@ -1018,6 +1333,11 @@ A comparison as an assignment operand.
 Elided (`:omit-parens t`):
 ```cpp
 d=a==7
+```
+
+Fully parenthesized:
+```cpp
+(d)=((a)==(7))
 ```
 
 Evaluates to `1`.
@@ -1035,6 +1355,11 @@ Elided (`:omit-parens t`):
 pcar->w.j
 ```
 
+Fully parenthesized:
+```cpp
+(pcar)->(w).j
+```
+
 ### div-of-div
 
 A left-nested division keeps its parentheses.
@@ -1046,6 +1371,11 @@ A left-nested division keeps its parentheses.
 Elided (`:omit-parens t`):
 ```cpp
 (a/b)/c
+```
+
+Fully parenthesized:
+```cpp
+((a)/(b))/(c)
 ```
 
 Evaluates to `1`.
@@ -1063,6 +1393,11 @@ Elided (`:omit-parens t`):
 a/(b/c)
 ```
 
+Fully parenthesized:
+```cpp
+(a)/((b)/(c))
+```
+
 Evaluates to `7`.
 
 ### minus-of-minus
@@ -1076,6 +1411,11 @@ A right-nested subtraction keeps its parentheses.
 Elided (`:omit-parens t`):
 ```cpp
 a-(b-c)
+```
+
+Fully parenthesized:
+```cpp
+(a)-((b)-(c))
 ```
 
 Evaluates to `6`.
@@ -1093,6 +1433,11 @@ Elided (`:omit-parens t`):
 (a-b)-c
 ```
 
+Fully parenthesized:
+```cpp
+((a)-(b))-(c)
+```
+
 Evaluates to `2`.
 
 ### shift-of-sum
@@ -1106,6 +1451,11 @@ Evaluates to `2`.
 Elided (`:omit-parens t`):
 ```cpp
 a+b<<c
+```
+
+Fully parenthesized:
+```cpp
+((a)+(b))<<(c)
 ```
 
 Evaluates to `40`.
@@ -1123,6 +1473,11 @@ Elided (`:omit-parens t`):
 a==7 & b==3
 ```
 
+Fully parenthesized:
+```cpp
+((a)==(7)) & ((b)==(3))
+```
+
 Evaluates to `1`.
 
 ### booland-of-eq
@@ -1136,6 +1491,11 @@ Comparisons need no parentheses inside `&&`.
 Elided (`:omit-parens t`):
 ```cpp
 a==7&&b==3
+```
+
+Fully parenthesized:
+```cpp
+((a)==(7))&&((b)==(3))
 ```
 
 Evaluates to `1`.
@@ -1153,6 +1513,11 @@ Elided (`:omit-parens t`):
 (a ? b : c)*d
 ```
 
+Fully parenthesized:
+```cpp
+((a) ? (b) : (c))*(d)
+```
+
 Evaluates to `15`.
 
 ### not-of-sum
@@ -1166,6 +1531,11 @@ Evaluates to `15`.
 Elided (`:omit-parens t`):
 ```cpp
 !(a+b)
+```
+
+Fully parenthesized:
+```cpp
+!((a)+(b))
 ```
 
 Evaluates to `0`.
@@ -1183,6 +1553,11 @@ Elided (`:omit-parens t`):
 *(pa+b)
 ```
 
+Fully parenthesized:
+```cpp
+*((pa)+(b))
+```
+
 ### bitnot-of-minus
 
 `~` over a difference.
@@ -1196,7 +1571,67 @@ Elided (`:omit-parens t`):
 ~(a-b)
 ```
 
+Fully parenthesized:
+```cpp
+~((a)-(b))
+```
+
 Evaluates to `-5`.
+
+### call-chain
+
+Port of t/01 call0: an unknown call keeps its argument parentheses while the outer product elides.
+
+```lisp
+(* 3 (H (+ 3 1)))
+```
+
+Elided (`:omit-parens t`):
+```cpp
+3*H(3+1)
+```
+
+Fully parenthesized:
+```cpp
+(3)*(H((3)+(1)))
+```
+
+### insertion-chain
+
+Port of t/01 insertion0: a stream-insertion chain inside comma/paren forms.
+
+```lisp
+(paren
+ (comma (<< oss "std::fixed" ("std::setprecision" 3) 3.14159) (dot oss (str))))
+```
+
+Elided (`:omit-parens t`):
+```cpp
+(oss<<std::fixed<<std::setprecision(3)<<3.141590F, oss.str())
+```
+
+Fully parenthesized:
+```cpp
+((oss)<<(std::fixed)<<(std::setprecision(3))<<(3.141590F), oss.str())
+```
+
+### string-concat
+
+Port of t/01 string0: string literals as sum operands.
+
+```lisp
+(+ str (string "hello ") (string "worlds"))
+```
+
+Elided (`:omit-parens t`):
+```cpp
+str+"hello "+"worlds"
+```
+
+Fully parenthesized:
+```cpp
+(str)+("hello ")+("worlds")
+```
 
 ## Lambda emission
 

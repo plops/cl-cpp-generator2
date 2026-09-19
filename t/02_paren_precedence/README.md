@@ -9,10 +9,11 @@ Unit tests for the parenthesis elision of `emit-c` (`write-source … :omit-pare
 Exit code 0 on success, 1 on failure. Four layers:
 
 1. **string tests** — emitted C++ against hand-verified reference strings, for
-   the paren-eliding mode and (where given) the fully parenthesized mode. This
+   the paren-eliding mode and the fully parenthesized mode alike. This
    is the only layer that catches bugs which are equally wrong in both modes.
-2. **value tests** — one generated C++ program evaluates every expression in
-   both modes and compares against an expected integer.
+2. **value tests** — one generated C++ program evaluates every pure-integer
+   expression in both modes and compares against an expected integer
+   (statements, float results and undeclared names are string-tested only).
 3. **helper tests** — `effective-operator` and `binds-looser-p`.
 4. **randomized differential test** — random expressions, fully parenthesized
    output as the oracle, compared numerically in C++. Fixed seed, so failures

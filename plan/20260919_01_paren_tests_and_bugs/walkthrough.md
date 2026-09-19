@@ -149,3 +149,24 @@ vorgeschlagen und nach Rust-Vorbild dual: String-Layer prueft `:expected`
 Programme (`_full`/`_omit`), beide muessen identische Werte liefern
 (`47 checks, 0 failures`). Doku zeigt beide Varianten. Nebenbefund: `setf`
 elidiert ebenfalls (`(c)=(42)` → `c=42`).
+
+## 12. Dual-Abdeckung fuer alle Suites (2026-09-19)
+
+Nachfrage: beide Modi ueberall testen und vergleichen. Audit-Ergebnis:
+
+- `t/03`: bereits dual (String + zwei kompilierte Programme).
+- `t/02`: Value-Layer und Random-Test waren dual, aber 75 von 79 Faellen
+  hatten kein `:full`. Jetzt pinnt jeder Fall beide Strings
+  (`193 checks, 0 failures`); die 8 Faelle ohne `:value` wurden einzeln
+  geprueft (Mitgliederzugriff auf Ints, Floats, mutierende Zuweisung und
+  undeklarierte Namen laufen im Integer-Harness nicht — Legende in der
+  Tabelle).
+- `t/01`: 31/37 Faelle existierten in `t/02` bereits; `andeq0`/`singleor0`
+  sind Duplikate, `ternary4` ist kein kompilierbares C++. Die restlichen
+  drei (`call0`, `insertion0`, `string0`) sind als String-only-Faelle
+  portiert (Call-Ketten, Stream-Insertion, String-Literale). `t/01` selbst
+  bleibt manueller Workflow (hartcodierte Pfade, destruktive Schritte).
+- Fast schiefgegangen: mein Einfuege-Skript trennte beim letzten
+  Tabelleneintrag `)))` auf (Entry/Liste/`defparameter`) — per SBCL-Read
+  gefunden, Backup eingespielt, Skript korrigiert (alle schliessenden
+  Klammern wandern mit). 104 Doku-Abschnitte.
