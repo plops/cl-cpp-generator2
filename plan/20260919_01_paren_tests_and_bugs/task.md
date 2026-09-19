@@ -68,5 +68,7 @@ Gate pro Commit: beide Suites gruen, `git status` ohne `build/`-Artefakte.
 - [x] Gate: `--check` gibt Exit 1 bei veralteter Datei (stale=1, fresh=0
       verifiziert); das Laden der Suites bricht vorher bei roten Tests ab,
       Doku kann nie aus Fehlschlag entstehen.
-- [ ] Folgearbeit: `:description`-Felder fuer `t/02`-Faelle nachtragen
-      (Generator unterstuetzt sie bereits, gerendert wird auch ohne).
+- [x] Folgearbeit (2026-09-19): `:description`-Felder fuer alle 79
+      `t/02`-Faelle nachgetragen (Inline-`;;`-Kommentare wo vorhanden in
+      Prosa ueberfuehrt); Destrukturierungs-Stellen + Tabellenkommentar
+      angepasst. Gate: `run_all.sh` gruen, `--check` gruen.

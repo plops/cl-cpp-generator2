@@ -16,6 +16,8 @@ Every example below is an executed test case: the Lisp form really does produce 
 
 ### unary-minus-over-division
 
+The bug that started this suite: a negated difference over a division keeps its parentheses, otherwise `-(a-b)/c` degrades to `-a-b/c`.
+
 ```lisp
 (/ (- (- a b)) c)
 ```
@@ -34,6 +36,8 @@ Evaluates to `-2`.
 
 ### unary-minus-over-division-rhs
 
+The same hazard on the right-hand side of a division.
+
 ```lisp
 (/ a (- (- b c)))
 ```
@@ -46,6 +50,8 @@ a/( -(b-c))
 Evaluates to `-7`.
 
 ### unary-minus-over-multiplication
+
+A negated difference as a multiplication operand keeps its parentheses.
 
 ```lisp
 (* (- (- a b)) c)
@@ -60,6 +66,8 @@ Evaluates to `-8`.
 
 ### unary-minus-over-plus
 
+A negated difference as a sum operand keeps its parentheses.
+
 ```lisp
 (+ (- (- a b)) c)
 ```
@@ -72,6 +80,8 @@ Elided (`:omit-parens t`):
 Evaluates to `-2`.
 
 ### unary-minus-over-modulo
+
+A negated difference in front of `%` keeps its parentheses.
 
 ```lisp
 (% (- (- a b)) c)
@@ -86,6 +96,8 @@ Evaluates to `0`.
 
 ### unary-minus-of-sum
 
+A negated sum as a multiplication operand.
+
 ```lisp
 (* (- (+ a b)) c)
 ```
@@ -98,6 +110,8 @@ Elided (`:omit-parens t`):
 Evaluates to `-20`.
 
 ### unary-minus-of-product
+
+Parentheses around a product under unary minus are redundant but harmless -- correctness first.
 
 ```lisp
 (- (* a b))
@@ -112,6 +126,8 @@ Evaluates to `-21`.
 
 ### unary-minus-nested
 
+A doubly negated difference.
+
 ```lisp
 (- (- (- a b)))
 ```
@@ -124,6 +140,8 @@ Elided (`:omit-parens t`):
 Evaluates to `4`.
 
 ### unary-minus-of-symbol
+
+A plain negated symbol needs no parentheses.
 
 ```lisp
 (+ (- a) b)
@@ -138,6 +156,8 @@ Evaluates to `-4`.
 
 ### unary-minus-shift
 
+A negated difference as a shift operand.
+
 ```lisp
 (<< a (- (- c b)))
 ```
@@ -150,6 +170,8 @@ a<< -(c-b)
 Evaluates to `14`.
 
 ### unary-minus-in-ternary-condition
+
+A negated difference as a ternary condition.
 
 ```lisp
 (? (- (- a b)) c d)
@@ -164,6 +186,8 @@ Evaluates to `2`.
 
 ### unary-minus-in-comparison
 
+A negated difference in a comparison.
+
 ```lisp
 (== (- (- a b)) c)
 ```
@@ -176,6 +200,8 @@ Elided (`:omit-parens t`):
 Evaluates to `0`.
 
 ### unary-minus-in-call
+
+A negated difference as a function-call argument.
 
 ```lisp
 (abs (- (- a b)))
@@ -190,6 +216,8 @@ Evaluates to `4`.
 
 ### unary-minus-of-array-element
 
+A negated array element needs no parentheses.
+
 ```lisp
 (- (aref arr 1))
 ```
@@ -203,6 +231,8 @@ Evaluates to `-20`.
 
 ### unary-minus-index
 
+The index is bracketed anyway, but the grouping inside has to survive.
+
 ```lisp
 (aref arr (- (- b a)))
 ```
@@ -215,6 +245,8 @@ arr[( -(b-a))]
 Evaluates to `50`.
 
 ### cast-of-sum
+
+A C++ cast binds only to the next unary expression, so the sum keeps its parentheses.
 
 ```lisp
 (cast int (+ a b))
@@ -234,6 +266,8 @@ Evaluates to `10`.
 
 ### cast-of-symbol
 
+A cast over a plain symbol needs no parentheses.
+
 ```lisp
 (cast int a)
 ```
@@ -252,6 +286,8 @@ Evaluates to `7`.
 
 ### cast-in-product
 
+A cast binds tighter than `*`.
+
 ```lisp
 (* (cast int a) b)
 ```
@@ -265,6 +301,8 @@ Evaluates to `21`.
 
 ### dot-of-expression
 
+Member access binds tighter than every operator, so the object expression is parenthesised.
+
 ```lisp
 (dot (- (- a b)) c)
 ```
@@ -275,6 +313,8 @@ Elided (`:omit-parens t`):
 ```
 
 ### arrow-of-expression
+
+The same for pointer member access.
 
 ```lisp
 (-> (- (- a b)) c)
@@ -287,6 +327,8 @@ Elided (`:omit-parens t`):
 
 ### reciprocal
 
+Single-argument division emits `1.0/x`.
+
 ```lisp
 (/ a)
 ```
@@ -298,6 +340,8 @@ Elided (`:omit-parens t`):
 
 ### reciprocal-of-sum
 
+The sum still needs its parentheses under the reciprocal.
+
 ```lisp
 (/ (+ a b))
 ```
@@ -308,6 +352,8 @@ Elided (`:omit-parens t`):
 ```
 
 ### single-or-stays-bare
+
+A single-argument chain emits just its argument: `~255`, not `~(255)`.
 
 ```lisp
 (bitwise-not (or 255))
@@ -322,6 +368,8 @@ Evaluates to `-256`.
 
 ### single-logior-in-bitand
 
+A single-argument `logior` of a comparison stays bare inside `&`.
+
 ```lisp
 (and 5 (logior (== 1 1)))
 ```
@@ -334,6 +382,8 @@ Elided (`:omit-parens t`):
 Evaluates to `1`.
 
 ### chained-compare
+
+A three-way comparison expands to `c<=b && b<=a`.
 
 ```lisp
 (<= c b a)
@@ -348,6 +398,8 @@ Evaluates to `1`.
 
 ### chained-compare-negated
 
+Negation wraps the whole `&&`-expansion.
+
 ```lisp
 (not (<= c b a))
 ```
@@ -360,6 +412,8 @@ Elided (`:omit-parens t`):
 Evaluates to `0`.
 
 ### chained-compare-in-bitor
+
+The `&&`-expansion needs parentheses inside `|`.
 
 ```lisp
 (or (<= c b a) 0)
@@ -374,6 +428,8 @@ Evaluates to `1`.
 
 ### nested-ternary-in-condition
 
+`?:` is right-associative, so a nested ternary in condition position keeps its parentheses.
+
 ```lisp
 (? (? a b c) d 1)
 ```
@@ -386,6 +442,8 @@ Elided (`:omit-parens t`):
 Evaluates to `5`.
 
 ### compare-of-compare
+
+`<` is left-associative; the right operand keeps its parentheses.
 
 ```lisp
 (< a (< b c))
@@ -400,6 +458,8 @@ Evaluates to `0`.
 
 ### eq-of-eq
 
+The same for `==` on the right.
+
 ```lisp
 (== a (== b c))
 ```
@@ -412,6 +472,8 @@ a==(b==c)
 Evaluates to `0`.
 
 ### shift-of-shift
+
+The same for `<<` on the right.
 
 ```lisp
 (<< a (<< b c))
@@ -426,6 +488,8 @@ Evaluates to `28672`.
 
 ### product-of-quotient
 
+`*` and `/` share a precedence row but are not mutually associative; the quotient keeps its parentheses.
+
 ```lisp
 (* a (/ b c))
 ```
@@ -438,6 +502,8 @@ a*(b/c)
 Evaluates to `7`.
 
 ### quotient-of-product
+
+A left-nested product keeps its parentheses under `/`.
 
 ```lisp
 (/ (* a b) c)
@@ -452,6 +518,8 @@ Evaluates to `10`.
 
 ### sum-of-sum-stays-flat
 
+`+` is mutually associative, so nesting stays flat.
+
 ```lisp
 (+ a (+ b c))
 ```
@@ -465,6 +533,8 @@ Evaluates to `12`.
 
 ### compound-xor-assign
 
+`^=` once missed its precedence entry (it was spelled `^-`), which made paren* compare NIL with a number.
+
 ```lisp
 (^= a (+ b c))
 ```
@@ -475,6 +545,8 @@ a^=b+c
 ```
 
 ### bitand-needs-parens-in-sum
+
+`&` binds looser than `+`, so the operand keeps its parentheses.
 
 ```lisp
 (+ (and a b) c)
@@ -489,6 +561,8 @@ Evaluates to `5`.
 
 ### bitand-form-brings-own-parens
 
+`(& ...)` already emits its own brackets; no second pair is added.
+
 ```lisp
 (+ (& a b) c)
 ```
@@ -501,6 +575,8 @@ Elided (`:omit-parens t`):
 Evaluates to `5`.
 
 ### basic1
+
+A tighter sum keeps its parentheses as a product operand.
 
 ```lisp
 (* 3 (+ 1 2))
@@ -515,6 +591,8 @@ Evaluates to `9`.
 
 ### basic2
 
+A tighter product needs no parentheses as a sum operand.
+
 ```lisp
 (+ (* 3 1) 2)
 ```
@@ -527,6 +605,8 @@ Elided (`:omit-parens t`):
 Evaluates to `5`.
 
 ### basic3
+
+Two sums as factors of a product.
 
 ```lisp
 (* (+ 3 4) 3 (+ 1 2))
@@ -541,6 +621,8 @@ Evaluates to `63`.
 
 ### basic4
 
+Sums and quotients as factors of a product.
+
 ```lisp
 (* (+ 3 4) (/ 13 4) (/ (+ 171 2) 5))
 ```
@@ -553,6 +635,8 @@ Elided (`:omit-parens t`):
 Evaluates to `714`.
 
 ### basic5
+
+A sum and a difference as factors.
 
 ```lisp
 (* (+ 3 4) (- 7 3))
@@ -567,6 +651,8 @@ Evaluates to `28`.
 
 ### basic6
 
+A difference nests into a sum on the right.
+
 ```lisp
 (+ (+ 3 4) (- 7 3))
 ```
@@ -579,6 +665,8 @@ Elided (`:omit-parens t`):
 Evaluates to `11`.
 
 ### basic7
+
+A sum and a difference around a minus both keep parentheses.
 
 ```lisp
 (- (+ 3 4) (- 7 3))
@@ -593,6 +681,8 @@ Evaluates to `3`.
 
 ### basic8
 
+A left-nested difference keeps its parentheses.
+
 ```lisp
 (- (- 7 3) (+ 3 4))
 ```
@@ -605,6 +695,8 @@ Elided (`:omit-parens t`):
 Evaluates to `-3`.
 
 ### basic9
+
+A difference nests flat into a sum on the left.
 
 ```lisp
 (+ (- 7 3) (+ 3 4))
@@ -619,6 +711,8 @@ Evaluates to `11`.
 
 ### basica
 
+A negative literal as a multiplication operand.
+
 ```lisp
 (* 2 -1)
 ```
@@ -631,6 +725,8 @@ Elided (`:omit-parens t`):
 Evaluates to `-2`.
 
 ### basicb
+
+A negative literal as a subtraction operand.
 
 ```lisp
 (- 2 -1)
@@ -645,6 +741,8 @@ Evaluates to `3`.
 
 ### mod1
 
+A product keeps its parentheses in front of `%`.
+
 ```lisp
 (% (* 3 5) 4)
 ```
@@ -657,6 +755,8 @@ Elided (`:omit-parens t`):
 Evaluates to `3`.
 
 ### mod2
+
+A product keeps its parentheses behind `%`.
 
 ```lisp
 (% 74 (* 3 5))
@@ -671,6 +771,8 @@ Evaluates to `14`.
 
 ### mod3
 
+A quotient keeps its parentheses behind `%`.
+
 ```lisp
 (% 74 (/ 17 5))
 ```
@@ -683,6 +785,8 @@ Elided (`:omit-parens t`):
 Evaluates to `2`.
 
 ### hex1
+
+A hex literal as a sum operand.
 
 ```lisp
 (+ (hex ad) 3)
@@ -697,6 +801,8 @@ Evaluates to `176`.
 
 ### div0
 
+Plain integer division.
+
 ```lisp
 (/ 17 5)
 ```
@@ -709,6 +815,8 @@ Elided (`:omit-parens t`):
 Evaluates to `3`.
 
 ### div1
+
+A quotient as the left operand of a sum.
 
 ```lisp
 (+ (/ 17 5) 3)
@@ -723,6 +831,8 @@ Evaluates to `6`.
 
 ### div2
 
+A quotient as the right operand of a sum.
+
 ```lisp
 (+ 3 (/ 17 5))
 ```
@@ -735,6 +845,8 @@ Elided (`:omit-parens t`):
 Evaluates to `6`.
 
 ### array0
+
+An array element and a quotient as sum operands.
 
 ```lisp
 (+ (aref arr 0) 3 (/ 17 5))
@@ -749,6 +861,8 @@ Evaluates to `16`.
 
 ### array1
 
+A computed index with full grouping plus sum operands.
+
 ```lisp
 (+ (aref arr (- (* 1 (+ 1 1)) 1)) 3 (/ 17 5))
 ```
@@ -762,6 +876,8 @@ Evaluates to `26`.
 
 ### colon0
 
+A `::` scope and a sum as shift operands.
+
 ```lisp
 (<< (scope bla i) (+ 3 1))
 ```
@@ -772,6 +888,8 @@ bla::i<<3+1
 ```
 
 ### ternary0
+
+A ternary with a comparison condition.
 
 ```lisp
 (? (== 5 3) 1 2)
@@ -786,6 +904,8 @@ Evaluates to `2`.
 
 ### ternary1
 
+A ternary as a subtraction operand.
+
 ```lisp
 (- 7 (? (== 5 3) 1 2))
 ```
@@ -798,6 +918,8 @@ Elided (`:omit-parens t`):
 Evaluates to `5`.
 
 ### ternary2
+
+A ternary as a comparison operand.
 
 ```lisp
 (== (? (== 5 3) 1 2) 7)
@@ -812,6 +934,8 @@ Evaluates to `0`.
 
 ### ternary3
 
+An explicitly parenthesised ternary as a comparison operand.
+
 ```lisp
 (== (paren (? (- 5 3) 1 2)) 7)
 ```
@@ -824,6 +948,8 @@ Elided (`:omit-parens t`):
 Evaluates to `0`.
 
 ### unary0
+
+A negative literal in a comparison.
 
 ```lisp
 (== -1 2)
@@ -838,6 +964,8 @@ Evaluates to `0`.
 
 ### unary1
 
+A negative literal on the right of a comparison.
+
 ```lisp
 (== 2 -1)
 ```
@@ -850,6 +978,8 @@ Elided (`:omit-parens t`):
 Evaluates to `0`.
 
 ### logorand0
+
+`||` over `&&` needs no parentheses.
 
 ```lisp
 (logior 1 (logand 0 1))
@@ -864,6 +994,8 @@ Evaluates to `1`.
 
 ### doubleor0
 
+Bitwise not over a multi-argument `or`.
+
 ```lisp
 (bitwise-not (or 240 15))
 ```
@@ -876,6 +1008,8 @@ Elided (`:omit-parens t`):
 Evaluates to `-256`.
 
 ### assigneq0
+
+A comparison as an assignment operand.
 
 ```lisp
 (= d (== a 7))
@@ -890,6 +1024,8 @@ Evaluates to `1`.
 
 ### deref0
 
+Chained pointer member access needs no parentheses.
+
 ```lisp
 (dot (-> pcar w) j)
 ```
@@ -900,6 +1036,8 @@ pcar->w.j
 ```
 
 ### div-of-div
+
+A left-nested division keeps its parentheses.
 
 ```lisp
 (/ (/ a b) c)
@@ -914,6 +1052,8 @@ Evaluates to `1`.
 
 ### div-by-div
 
+A right-nested division keeps its parentheses.
+
 ```lisp
 (/ a (/ b c))
 ```
@@ -926,6 +1066,8 @@ a/(b/c)
 Evaluates to `7`.
 
 ### minus-of-minus
+
+A right-nested subtraction keeps its parentheses.
 
 ```lisp
 (- a (- b c))
@@ -940,6 +1082,8 @@ Evaluates to `6`.
 
 ### minus-chain
 
+A left-nested subtraction keeps its parentheses.
+
 ```lisp
 (- (- a b) c)
 ```
@@ -952,6 +1096,8 @@ Elided (`:omit-parens t`):
 Evaluates to `2`.
 
 ### shift-of-sum
+
+`+` binds tighter than `<<`, so no parentheses are needed.
 
 ```lisp
 (<< (+ a b) c)
@@ -966,6 +1112,8 @@ Evaluates to `40`.
 
 ### bitand-of-eq
 
+Comparisons need no parentheses inside `&`.
+
 ```lisp
 (and (== a 7) (== b 3))
 ```
@@ -978,6 +1126,8 @@ a==7 & b==3
 Evaluates to `1`.
 
 ### booland-of-eq
+
+Comparisons need no parentheses inside `&&`.
 
 ```lisp
 (logand (== a 7) (== b 3))
@@ -992,6 +1142,8 @@ Evaluates to `1`.
 
 ### ternary-in-product
 
+A ternary as a multiplication operand keeps its parentheses.
+
 ```lisp
 (* (? a b c) d)
 ```
@@ -1004,6 +1156,8 @@ Elided (`:omit-parens t`):
 Evaluates to `15`.
 
 ### not-of-sum
+
+`!` over a sum.
 
 ```lisp
 (not (+ a b))
@@ -1018,6 +1172,8 @@ Evaluates to `0`.
 
 ### deref-of-sum
 
+Pointer dereference over a sum.
+
 ```lisp
 (deref (+ pa b))
 ```
@@ -1028,6 +1184,8 @@ Elided (`:omit-parens t`):
 ```
 
 ### bitnot-of-minus
+
+`~` over a difference.
 
 ```lisp
 (bitwise-not (- a b))

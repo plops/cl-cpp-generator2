@@ -113,5 +113,12 @@ Werten und — soweit in den Tabellen vorhanden — Prosa. Stolpersteine:
 - Das Laden der Suites fuehrt sie aus (Abbruch bei Rot) — die Doku
   entsteht dadurch garantiert nur aus gruenen Tabellen.
 
-`--check`-Gate verifiziert (stale → Exit 1, fresh → Exit 0). Offen:
-`:description`-Prosa fuer die 79 `t/02`-Faelle nachtragen.
+`--check`-Gate verifiziert (stale → Exit 1, fresh → Exit 0).
+
+## 9. Folgearbeit: t/02-Descriptions (2026-09-19)
+
+Alle 79 `t/02`-Faelle haben jetzt `:description`-Prosa; vorhandene
+Inline-`;;`-Kommentare (mit den kaputten Rechenwegen) sind in die Felder
+eingeflossen statt daneben zu stehen. `SUPPORTED_FORMS.md` liest sich
+dadurch als echte Doku. Gates: `run_all.sh` Exit 0 (111 + 15 Checks),
+`--check` Exit 0, Klammer-Balance neutral (9 = HEAD).

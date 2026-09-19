@@ -44,6 +44,8 @@
 ;;; ------------------------------------------------------------------
 ;;; 1+2. expression test table
 ;;;
+;;; :name       short identifier, used as heading in SUPPORTED_FORMS.md
+;;; :description what the case pins down (rendered into SUPPORTED_FORMS.md)
 ;;; :code      s-expression handed to emit-c
 ;;; :omit      expected C++ text with :omit-parens t
 ;;; :full      expected C++ text without paren elision (optional)
@@ -61,83 +63,98 @@
     ;; division lost its parentheses, turning -(a-b)/c into -a-b/c
     ;; --------------------------------------------------------------
     (:name unary-minus-over-division
+     :description "The bug that started this suite: a negated difference over a division keeps its parentheses, otherwise `-(a-b)/c` degrades to `-a-b/c`."
      :code (/ (- (- a b)) c)
      :omit "( -(a-b))/c"
      :full "( -((a)-(b)))/(c)"
      :value -2)			   ; -(7-3)/2 = -4/2 = -2, wrong: -7-3/2 = -8
     (:name unary-minus-over-division-rhs
+     :description "The same hazard on the right-hand side of a division."
      :code (/ a (- (- b c)))
      :omit "a/( -(b-c))"
      :value -7)			   ; 7/(-(3-2)) = -7, wrong: 7/-3-2 = -4
     (:name unary-minus-over-multiplication
+     :description "A negated difference as a multiplication operand keeps its parentheses."
      :code (* (- (- a b)) c)
      :omit " -(a-b)*c"
      :value -8)			   ; -(7-3)*2 = -8, wrong: -7-3*2 = -13
     (:name unary-minus-over-plus
+     :description "A negated difference as a sum operand keeps its parentheses."
      :code (+ (- (- a b)) c)
      :omit " -(a-b)+c"
      :value -2)			   ; -(7-3)+2 = -2, wrong: -7-3+2 = -8
     (:name unary-minus-over-modulo
+     :description "A negated difference in front of `%` keeps its parentheses."
      :code (% (- (- a b)) c)
      :omit "( -(a-b))%c"
      :value 0)			   ; -4 % 2 = 0, wrong: -7-3%2 = -8
     (:name unary-minus-of-sum
+     :description "A negated sum as a multiplication operand."
      :code (* (- (+ a b)) c)
      :omit " -(a+b)*c"
      :value -20)		   ; -(7+3)*2 = -20, wrong: -7+3*2 = -1
     (:name unary-minus-of-product
+     :description "Parentheses around a product under unary minus are redundant but harmless -- correctness first."
      :code (- (* a b))
-     ;; unary minus binds tighter than *, the parentheses are redundant but
-     ;; harmless -- correctness first
      :omit " -(a*b)"
      :value -21)
     (:name unary-minus-nested
+     :description "A doubly negated difference."
      :code (- (- (- a b)))
      :omit " - -(a-b)"
      :value 4)
     (:name unary-minus-of-symbol
+     :description "A plain negated symbol needs no parentheses."
      :code (+ (- a) b)
      :omit " -a+b"
      :value -4)
     (:name unary-minus-shift
+     :description "A negated difference as a shift operand."
      :code (<< a (- (- c b)))
      :omit "a<< -(c-b)"
      :value 14)			   ; 7 << -(2-3) = 7 << 1
     (:name unary-minus-in-ternary-condition
+     :description "A negated difference as a ternary condition."
      :code (? (- (- a b)) c d)
      :omit " -(a-b) ? c : d"
      :value 2)
     (:name unary-minus-in-comparison
+     :description "A negated difference in a comparison."
      :code (== (- (- a b)) c)
      :omit " -(a-b)==c"
      :value 0)
     (:name unary-minus-in-call
+     :description "A negated difference as a function-call argument."
      :code (abs (- (- a b)))
      :omit "abs( -(a-b))"
      :value 4)
     (:name unary-minus-of-array-element
+     :description "A negated array element needs no parentheses."
      :code (- (aref arr 1))
      :omit " -arr[1]"
      :value -20)
     (:name unary-minus-index
+     :description "The index is bracketed anyway, but the grouping inside has to survive."
      :code (aref arr (- (- b a)))
-     ;; the index is bracketed anyway, but the grouping has to survive
      :omit "arr[( -(b-a))]"
      :value 50)			   ; arr[-(3-7)] = arr[4]
     ;; --------------------------------------------------------------
     ;; C style cast: the cast only binds to the next unary expression
     ;; --------------------------------------------------------------
     (:name cast-of-sum
+     :description "A C++ cast binds only to the next unary expression, so the sum keeps its parentheses."
      :code (cast int (+ a b))
      :omit "(int) (a+b)"
      :full "(int) ((a)+(b))"
      :value 10)
     (:name cast-of-symbol
+     :description "A cast over a plain symbol needs no parentheses."
      :code (cast int a)
      :omit "(int) a"
      :full "(int) a"
      :value 7)
     (:name cast-in-product
+     :description "A cast binds tighter than `*`."
      :code (* (cast int a) b)
      :omit "(int) a*b"
      :value 21)
@@ -145,25 +162,31 @@
     ;; member access binds tighter than every operator
     ;; --------------------------------------------------------------
     (:name dot-of-expression
+     :description "Member access binds tighter than every operator, so the object expression is parenthesised."
      :code (dot (- (- a b)) c)
      :omit "( -(a-b)).c")
     (:name arrow-of-expression
+     :description "The same for pointer member access."
      :code (-> (- (- a b)) c)
      :omit "( -(a-b))->c")
     ;; --------------------------------------------------------------
     ;; single argument forms
     ;; --------------------------------------------------------------
     (:name reciprocal
+     :description "Single-argument division emits `1.0/x`."
      :code (/ a)
      :omit "1.0/a")
     (:name reciprocal-of-sum
+     :description "The sum still needs its parentheses under the reciprocal."
      :code (/ (+ a b))
      :omit "1.0/(a+b)")
     (:name single-or-stays-bare
+     :description "A single-argument chain emits just its argument: `~255`, not `~(255)`."
      :code (bitwise-not (or 255))
      :omit "~255"
      :value -256)
     (:name single-logior-in-bitand
+     :description "A single-argument `logior` of a comparison stays bare inside `&`."
      :code (and 5 (logior (== 1 1)))
      :omit "5 & 1==1"
      :value 1)
@@ -171,14 +194,17 @@
     ;; chained comparison (a<b<c expands to a<b && b<c)
     ;; --------------------------------------------------------------
     (:name chained-compare
+     :description "A three-way comparison expands to `c<=b && b<=a`."
      :code (<= c b a)
      :omit "c<=b && b<=a"
      :value 1)
     (:name chained-compare-negated
+     :description "Negation wraps the whole `&&`-expansion."
      :code (not (<= c b a))
      :omit "!(c<=b && b<=a)"
      :value 0)
     (:name chained-compare-in-bitor
+     :description "The `&&`-expansion needs parentheses inside `|`."
      :code (or (<= c b a) 0)
      :omit "(c<=b && b<=a) | 0"
      :value 1)
@@ -187,32 +213,37 @@
     ;; associativity does not favour has to keep its parentheses
     ;; --------------------------------------------------------------
     (:name nested-ternary-in-condition
-     ;; ?: is right associative: a?b:c ? d : e would regroup
+     :description "`?:` is right-associative, so a nested ternary in condition position keeps its parentheses."
      :code (? (? a b c) d 1)
      :omit "(a ? b : c) ? d : 1"
      :value 5)
     (:name compare-of-compare
+     :description "`<` is left-associative; the right operand keeps its parentheses."
      :code (< a (< b c))
      :omit "a<(b<c)"
      :value 0)
     (:name eq-of-eq
+     :description "The same for `==` on the right."
      :code (== a (== b c))
      :omit "a==(b==c)"
      :value 0)
     (:name shift-of-shift
+     :description "The same for `<<` on the right."
      :code (<< a (<< b c))
      :omit "a<<(b<<c)"
      :value 28672)
     (:name product-of-quotient
+     :description "`*` and `/` share a precedence row but are not mutually associative; the quotient keeps its parentheses."
      :code (* a (/ b c))
      :omit "a*(b/c)"
      :value 7)
     (:name quotient-of-product
+     :description "A left-nested product keeps its parentheses under `/`."
      :code (/ (* a b) c)
      :omit "(a*b)/c"
      :value 10)
     (:name sum-of-sum-stays-flat
-     ;; + is associative, no parentheses needed
+     :description "`+` is mutually associative, so nesting stays flat."
      :code (+ a (+ b c))
      :omit "a+b+c"
      :value 12)
@@ -220,17 +251,16 @@
     ;; forms that used to signal an error instead of emitting code
     ;; --------------------------------------------------------------
     (:name compound-xor-assign
-     ;; ^= had no entry in *precedence* (it was spelled ^-), which made
-     ;; paren* compare NIL with a number
+     :description "`^=` once missed its precedence entry (it was spelled `^-`), which made paren* compare NIL with a number."
      :code (^= a (+ b c))
      :omit "a^=b+c")
     (:name bitand-needs-parens-in-sum
-     ;; (and ...) emits a & b without brackets, & binds looser than +
+     :description "`&` binds looser than `+`, so the operand keeps its parentheses."
      :code (+ (and a b) c)
      :omit "(a & b)+c"
      :value 5)
     (:name bitand-form-brings-own-parens
-     ;; (& ...) always emits its own brackets, no second pair
+     :description "`(& ...)` already emits its own brackets; no second pair is added."
      :code (+ (& a b) c)
      :omit "(a&b)+c"
      :value 5)
@@ -238,54 +268,137 @@
     ;; regression cases that already worked, kept as a safety net
     ;; (references taken from t/01_paren/gen00.lisp)
     ;; --------------------------------------------------------------
-    (:name basic1 :code (* 3 (+ 1 2)) :omit "3*(1+2)" :value 9)
-    (:name basic2 :code (+ (* 3 1) 2) :omit "3*1+2" :value 5)
-    (:name basic3 :code (* (+ 3 4) 3 (+ 1 2)) :omit "(3+4)*3*(1+2)" :value 63)
-    (:name basic4 :code (* (+ 3 4) (/ 13 4) (/ (+ 171 2) 5))
+    (:name basic1
+     :description "A tighter sum keeps its parentheses as a product operand."
+     :code (* 3 (+ 1 2)) :omit "3*(1+2)" :value 9)
+    (:name basic2
+     :description "A tighter product needs no parentheses as a sum operand."
+     :code (+ (* 3 1) 2) :omit "3*1+2" :value 5)
+    (:name basic3
+     :description "Two sums as factors of a product."
+     :code (* (+ 3 4) 3 (+ 1 2)) :omit "(3+4)*3*(1+2)" :value 63)
+    (:name basic4
+     :description "Sums and quotients as factors of a product."
+     :code (* (+ 3 4) (/ 13 4) (/ (+ 171 2) 5))
      :omit "(3+4)*(13/4)*((171+2)/5)" :value 714)
-    (:name basic5 :code (* (+ 3 4) (- 7 3)) :omit "(3+4)*(7-3)" :value 28)
-    (:name basic6 :code (+ (+ 3 4) (- 7 3)) :omit "3+4+(7-3)" :value 11)
-    (:name basic7 :code (- (+ 3 4) (- 7 3)) :omit "(3+4)-(7-3)" :value 3)
-    (:name basic8 :code (- (- 7 3) (+ 3 4)) :omit "(7-3)-(3+4)" :value -3)
-    (:name basic9 :code (+ (- 7 3) (+ 3 4)) :omit "(7-3)+3+4" :value 11)
-    (:name basica :code (* 2 -1) :omit "2* -1" :value -2)
-    (:name basicb :code (- 2 -1) :omit "2- -1" :value 3)
-    (:name mod1 :code (% (* 3 5) 4) :omit "(3*5)%4" :value 3)
-    (:name mod2 :code (% 74 (* 3 5)) :omit "74%(3*5)" :value 14)
-    (:name mod3 :code (% 74 (/ 17 5)) :omit "74%(17/5)" :value 2)
-    (:name hex1 :code (+ (hex ad) 3) :omit "0xad+3" :value 176)
-    (:name div0 :code (/ 17 5) :omit "17/5" :value 3)
-    (:name div1 :code (+ (/ 17 5) 3) :omit "(17/5)+3" :value 6)
-    (:name div2 :code (+ 3 (/ 17 5)) :omit "3+(17/5)" :value 6)
-    (:name array0 :code (+ (aref arr 0) 3 (/ 17 5)) :omit "arr[0]+3+(17/5)" :value 16)
-    (:name array1 :code (+ (aref arr (- (* 1 (+ 1 1)) 1)) 3 (/ 17 5))
+    (:name basic5
+     :description "A sum and a difference as factors."
+     :code (* (+ 3 4) (- 7 3)) :omit "(3+4)*(7-3)" :value 28)
+    (:name basic6
+     :description "A difference nests into a sum on the right."
+     :code (+ (+ 3 4) (- 7 3)) :omit "3+4+(7-3)" :value 11)
+    (:name basic7
+     :description "A sum and a difference around a minus both keep parentheses."
+     :code (- (+ 3 4) (- 7 3)) :omit "(3+4)-(7-3)" :value 3)
+    (:name basic8
+     :description "A left-nested difference keeps its parentheses."
+     :code (- (- 7 3) (+ 3 4)) :omit "(7-3)-(3+4)" :value -3)
+    (:name basic9
+     :description "A difference nests flat into a sum on the left."
+     :code (+ (- 7 3) (+ 3 4)) :omit "(7-3)+3+4" :value 11)
+    (:name basica
+     :description "A negative literal as a multiplication operand."
+     :code (* 2 -1) :omit "2* -1" :value -2)
+    (:name basicb
+     :description "A negative literal as a subtraction operand."
+     :code (- 2 -1) :omit "2- -1" :value 3)
+    (:name mod1
+     :description "A product keeps its parentheses in front of `%`."
+     :code (% (* 3 5) 4) :omit "(3*5)%4" :value 3)
+    (:name mod2
+     :description "A product keeps its parentheses behind `%`."
+     :code (% 74 (* 3 5)) :omit "74%(3*5)" :value 14)
+    (:name mod3
+     :description "A quotient keeps its parentheses behind `%`."
+     :code (% 74 (/ 17 5)) :omit "74%(17/5)" :value 2)
+    (:name hex1
+     :description "A hex literal as a sum operand."
+     :code (+ (hex ad) 3) :omit "0xad+3" :value 176)
+    (:name div0
+     :description "Plain integer division."
+     :code (/ 17 5) :omit "17/5" :value 3)
+    (:name div1
+     :description "A quotient as the left operand of a sum."
+     :code (+ (/ 17 5) 3) :omit "(17/5)+3" :value 6)
+    (:name div2
+     :description "A quotient as the right operand of a sum."
+     :code (+ 3 (/ 17 5)) :omit "3+(17/5)" :value 6)
+    (:name array0
+     :description "An array element and a quotient as sum operands."
+     :code (+ (aref arr 0) 3 (/ 17 5)) :omit "arr[0]+3+(17/5)" :value 16)
+    (:name array1
+     :description "A computed index with full grouping plus sum operands."
+     :code (+ (aref arr (- (* 1 (+ 1 1)) 1)) 3 (/ 17 5))
      :omit "arr[((1*(1+1))-1)]+3+(17/5)" :value 26)
-    (:name colon0 :code (<< (scope bla i) (+ 3 1)) :omit "bla::i<<3+1")
-    (:name ternary0 :code (? (== 5 3) 1 2) :omit "5==3 ? 1 : 2" :value 2)
-    (:name ternary1 :code (- 7 (? (== 5 3) 1 2)) :omit "7-(5==3 ? 1 : 2)" :value 5)
-    (:name ternary2 :code (== (? (== 5 3) 1 2) 7) :omit "(5==3 ? 1 : 2)==7" :value 0)
-    (:name ternary3 :code (== (paren (? (- 5 3) 1 2)) 7) :omit "((5-3) ? 1 : 2)==7" :value 0)
-    (:name unary0 :code (== -1 2) :omit " -1==2" :value 0)
-    (:name unary1 :code (== 2 -1) :omit "2== -1" :value 0)
-    (:name logorand0 :code (logior 1 (logand 0 1)) :omit "1||0&&1" :value 1)
-    (:name doubleor0 :code (bitwise-not (or 240 15)) :omit "~(240 | 15)" :value -256)
-    (:name assigneq0 :code (= d (== a 7)) :omit "d=a==7" :value 1)
-    (:name deref0 :code (dot (-> pcar w) j) :omit "pcar->w.j")
+    (:name colon0
+     :description "A `::` scope and a sum as shift operands."
+     :code (<< (scope bla i) (+ 3 1)) :omit "bla::i<<3+1")
+    (:name ternary0
+     :description "A ternary with a comparison condition."
+     :code (? (== 5 3) 1 2) :omit "5==3 ? 1 : 2" :value 2)
+    (:name ternary1
+     :description "A ternary as a subtraction operand."
+     :code (- 7 (? (== 5 3) 1 2)) :omit "7-(5==3 ? 1 : 2)" :value 5)
+    (:name ternary2
+     :description "A ternary as a comparison operand."
+     :code (== (? (== 5 3) 1 2) 7) :omit "(5==3 ? 1 : 2)==7" :value 0)
+    (:name ternary3
+     :description "An explicitly parenthesised ternary as a comparison operand."
+     :code (== (paren (? (- 5 3) 1 2)) 7) :omit "((5-3) ? 1 : 2)==7" :value 0)
+    (:name unary0
+     :description "A negative literal in a comparison."
+     :code (== -1 2) :omit " -1==2" :value 0)
+    (:name unary1
+     :description "A negative literal on the right of a comparison."
+     :code (== 2 -1) :omit "2== -1" :value 0)
+    (:name logorand0
+     :description "`||` over `&&` needs no parentheses."
+     :code (logior 1 (logand 0 1)) :omit "1||0&&1" :value 1)
+    (:name doubleor0
+     :description "Bitwise not over a multi-argument `or`."
+     :code (bitwise-not (or 240 15)) :omit "~(240 | 15)" :value -256)
+    (:name assigneq0
+     :description "A comparison as an assignment operand."
+     :code (= d (== a 7)) :omit "d=a==7" :value 1)
+    (:name deref0
+     :description "Chained pointer member access needs no parentheses."
+     :code (dot (-> pcar w) j) :omit "pcar->w.j")
     ;; --------------------------------------------------------------
     ;; non associative operators keep their grouping
     ;; --------------------------------------------------------------
-    (:name div-of-div :code (/ (/ a b) c) :omit "(a/b)/c" :value 1)
-    (:name div-by-div :code (/ a (/ b c)) :omit "a/(b/c)" :value 7)
-    (:name minus-of-minus :code (- a (- b c)) :omit "a-(b-c)" :value 6)
-    (:name minus-chain :code (- (- a b) c) :omit "(a-b)-c" :value 2)
-    ;; + binds tighter than <<, so no parentheses are needed here
-    (:name shift-of-sum :code (<< (+ a b) c) :omit "a+b<<c" :value 40)
-    (:name bitand-of-eq :code (and (== a 7) (== b 3)) :omit "a==7 & b==3" :value 1)
-    (:name booland-of-eq :code (logand (== a 7) (== b 3)) :omit "a==7&&b==3" :value 1)
-    (:name ternary-in-product :code (* (? a b c) d) :omit "(a ? b : c)*d" :value 15)
-    (:name not-of-sum :code (not (+ a b)) :omit "!(a+b)" :value 0)
-    (:name deref-of-sum :code (deref (+ pa b)) :omit "*(pa+b)")
-    (:name bitnot-of-minus :code (bitwise-not (- a b)) :omit "~(a-b)" :value -5)))
+    (:name div-of-div
+     :description "A left-nested division keeps its parentheses."
+     :code (/ (/ a b) c) :omit "(a/b)/c" :value 1)
+    (:name div-by-div
+     :description "A right-nested division keeps its parentheses."
+     :code (/ a (/ b c)) :omit "a/(b/c)" :value 7)
+    (:name minus-of-minus
+     :description "A right-nested subtraction keeps its parentheses."
+     :code (- a (- b c)) :omit "a-(b-c)" :value 6)
+    (:name minus-chain
+     :description "A left-nested subtraction keeps its parentheses."
+     :code (- (- a b) c) :omit "(a-b)-c" :value 2)
+    (:name shift-of-sum
+     :description "`+` binds tighter than `<<`, so no parentheses are needed."
+     :code (<< (+ a b) c) :omit "a+b<<c" :value 40)
+    (:name bitand-of-eq
+     :description "Comparisons need no parentheses inside `&`."
+     :code (and (== a 7) (== b 3)) :omit "a==7 & b==3" :value 1)
+    (:name booland-of-eq
+     :description "Comparisons need no parentheses inside `&&`."
+     :code (logand (== a 7) (== b 3)) :omit "a==7&&b==3" :value 1)
+    (:name ternary-in-product
+     :description "A ternary as a multiplication operand keeps its parentheses."
+     :code (* (? a b c) d) :omit "(a ? b : c)*d" :value 15)
+    (:name not-of-sum
+     :description "`!` over a sum."
+     :code (not (+ a b)) :omit "!(a+b)" :value 0)
+    (:name deref-of-sum
+     :description "Pointer dereference over a sum."
+     :code (deref (+ pa b)) :omit "*(pa+b)")
+    (:name bitnot-of-minus
+     :description "`~` over a difference."
+     :code (bitwise-not (- a b)) :omit "~(a-b)" :value -5)))
 
 ;;; ------------------------------------------------------------------
 ;;; layer 1: string comparison
@@ -293,8 +406,8 @@
 (defun run-string-tests ()
   (format t "~&== string tests ==~%")
   (dolist (e *expression-tests*)
-    (destructuring-bind (&key name code omit full value) e
-      (declare (ignore value))
+    (destructuring-bind (&key name code omit full value description) e
+      (declare (ignore value description))
       (let ((got-omit (handler-case (emit-str code :omit t)
 			(condition (c) (format nil "<error ~a>" c)))))
 	(report (string= got-omit omit) name
@@ -329,8 +442,8 @@
 	    (format s "#include <cstdio>~%#include <cstdlib>~%~%")
 	    (format s "int main() {~%  int fails = 0;~%")
 	    (dolist (e cases)
-	      (destructuring-bind (&key name code omit full value) e
-		(declare (ignore omit full))
+	      (destructuring-bind (&key name code omit full value description) e
+		(declare (ignore omit full description))
 		(let ((full-str (emit-str code))
 		      (omit-str (emit-str code :omit t)))
 		  (format s "  {~%    ~a~%" *variables*)
