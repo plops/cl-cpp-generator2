@@ -1,0 +1,81 @@
+# Walkthrough: Lambda-`(values ...)`-Bug + PoC-Tests
+
+Datum: 2026-09-19.
+Auftrag: `plan/20260919_01_paren_tests_and_bugs/prompt.txt`.
+Arbeit von Wol Pumba beauftragt; Container: Ubuntu mit SBCL 2.6.0, g++ 15.2.
+
+## 1. Was implementiert wurde
+
+**Fix in `c.lisp`, `parse-lambda` (2 Zeilen).** Leere Parameterliste wird als
+`"()"` statt `""` emittiert, Format von `"[~{~a~^,~}] ~a~@[-> ~a ~]"` auf
+`"[~{~a~^,~}]~a~@[ -> ~a~] "` gestellt. Nebeneffekt (beabsichtigt):
+parameterlose Lambdas ohne Rueckgabetyp geben jetzt `[&]() { ... }` statt
+`[&] { ... }` — beides gueltig, die neue Form entspricht dem Stil der
+generierten Beispiele (`example/131_sdr/...: ([&]() {`).
+
+**PoC-Suite `t/03_lambda/`** nach dem Vorbild von `t/02_paren_precedence`:
+`lambda-tests.lisp` (6 Faelle, String- plus Value-Layer), `run.sh`, `README.md`.
+Der Value-Layer generiert `build/lambda_value_tests.cpp` (per `**/build/`
+ignoriert), kompiliert mit `g++ -std=c++20` und prueft Ruckgabewerte —
+damit sind Rueckgabetyp *und* Captures (`x`, `x y`, Default-`&`) semantisch
+abgedeckt, nicht nur als String.
+
+**Plan-Dokumente** in `plan/20260919_01_paren_tests_and_bugs/`:
+`plan.md` (Befund, 6 Vorschlaege fuer fehlende Requirements, Datei-Guide fuer
+einen unabhaengigen Agenten, Commit-Konvention), `task.md` (serielle Schritte
+mit Gates), `deps.md` (keine neuen Abhaengigkeiten).
+
+## 2. Verifikation
+
+- `./t/03_lambda/run.sh` → `8 checks, 0 failures`, Exit 0 (6 String-, 1
+  Compile-, 1 Run-Check; das C++-Programm meldet `0 value failures`).
+- `./t/02_paren_precedence/run.sh` → `111 checks, 0 failures` (keine
+  Regression durch den Fix).
+- Vor dem Fix per `g++ -std=c++20 -fsyntax-only` bestaetigt: `[&] -> int`
+  zieht `-Wc++23-extensions` (ohne C++23 ungueltig), `[&]() -> int` ist
+  warnungsfrei.
+- Klammer-Balance (Python-Tracker aus `.agents/AGENTS.md`, Strings und
+  `;`-Kommentare uebersprungen): 0 in `c.lisp`-Diff-Region und
+  `t/03_lambda/lambda-tests.lisp`. Backup vor der Aenderung:
+  `/tmp/c.lisp.known-good`.
+
+## 3. Unerwartete Findings
+
+- **parenmedic meldet False Positives.** Im unveraenderten `c.lisp`
+  ("9 extra closing parentheses", v.a. um `#-nil`/`#+nil`-Reader-Conditionals)
+  und in der neuen Testdatei (`#\Space`-Char-Literale). Massgeblich ist der
+  SBCL-Load plus der String-sensible Balance-Tracker — beide gruen.
+- **`(sb-ext:quit :code 1)` ist falsch.** Die Option heisst `:unix-status`;
+  erste Version der Suite lud mit Style-Warning. Analog pruefen, falls andere
+  Skripte `:code` verwenden.
+- **`destructuring-bind` mit `&key` ohne `&allow-other-keys`** bricht bei
+  unerwarteten Schluesseln hart ab (erster Suite-Lauf). Bei wachsenden
+  Tabellen defensiv `&allow-other-keys` erwägen oder alle Schluessel
+  destrukturieren.
+- **DeepWiki-MCP und Rust-Toolchain-Schritte aus dem Auftrag waren nicht
+  anwendbar**: kein MCP in dieser Umgebung (durch lokale Quellen ersetzt),
+  keine neue Abhaengigkeit (daher kein Versionswechsel noetig).
+- **xvfb nicht benoetigt**: reine Compiler-Tests ohne GUI/GL-Kontext.
+
+## 4. Learnings
+
+- Der Value-Layer ist das eigentliche Orakel: Der String-Test haette auch die
+  falsche Erwartung `[&] -> int` "bestaetigen" koennen; erst `g++` beweist die
+  Gueltigkeit. String-Tests pinnen, Value-Tests beweisen.
+- `t/02` als Schablone (Tabellenformat, `cxx-compiler`-Suche,
+  `build/`-Konvention, Skip-ohne-Compiler) macht neue Suites billig — `t/03`
+  ist in einem Durchgang entstanden.
+- Zwei-Zeilen-Fix, null neue Abhaengigkeiten: Die hacekleine Loesung war hier
+  die richtige; kein Umbau von `parse-lambda` noetig.
+
+## 5. Moegliche Erweiterungen (Details in `plan.md`/`task.md`)
+
+`=`-/Misch-Captures, `auto`-Fallback-Parameter, mehrteilige Rümpfe,
+sofort aufgerufene Lambdas, Mehrfach-`values` klaeren, `t/run_all.sh`,
+`SUPPORTED_FORMS.md`-Generierung nach Rust-Vorbild.
+
+## 6. Programme fuer den Docker-Container
+
+Nichts Neues noetig. Benoetigt und vorhanden: `sbcl` (mit Quicklisp),
+`g++`/`clang++`, `python3`, `parenmedic`-Binary. Kein `xvfb`, keine
+Rust-Toolchain, keine zusaetzlichen Lisp-Libraries.
