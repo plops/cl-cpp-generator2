@@ -706,10 +706,10 @@ Common Lisp DEFMETHOD form.
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
 	(with-output-to-string (s)
-	  (format s "[~{~a~^,~}] ~a~@[-> ~a ~]"
+	  (format s "[~{~a~^,~}]~a~@[ -> ~a~] "
 		  (mapcar emit captures)
 		  (if (null req-param)
-		      ""
+		      "()"
 		      (funcall emit `(paren
 				      ,@(loop for p in req-param collect
 								 (format nil "~a ~a"
