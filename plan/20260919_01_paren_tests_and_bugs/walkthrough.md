@@ -97,5 +97,21 @@ mehrteilige Ruempfe. Learning: `break` umgeht `handler-case`
 (`invoke-debugger`), daher faengt der Error-Layer die Meldung per
 werfendem `sb-ext:*invoke-debugger-hook*` ab. `t/run_all.sh` fasst
 `t/02` + `t/03` zusammen (Exit 0); `t/01` bleibt wegen hartcodierter
-Pfade aussen vor. Naechster Schritt laut `task.md`: Schritt 6
-(`SUPPORTED_FORMS.md`-Generierung).
+Pfade aussen vor.
+
+## 8. Schritt 6: SUPPORTED_FORMS.md (2026-09-19)
+
+`t/generate-docs.lisp` + `t/generate_docs.sh [--check]` portieren den
+Rust-Ansatz (`generate-documentation`): 92 Fall-Abschnitte (79 Klammer-,
+12 Lambda-, 1 Error-Fall) mit Lisp-Form, live re-emittiertem C++,
+Werten und — soweit in den Tabellen vorhanden — Prosa. Stolpersteine:
+
+- `t/02` und `t/03` definieren je ein inkompatibles `emit-str`; der
+  Generator ruft `emit-c` direkt auf statt sie zu teilen.
+- `~S` druckte `cl-cpp-generator2::`-Prefixes, bis `*package*` wie im
+  Rust-Generator explizit gebunden wurde.
+- Das Laden der Suites fuehrt sie aus (Abbruch bei Rot) — die Doku
+  entsteht dadurch garantiert nur aus gruenen Tabellen.
+
+`--check`-Gate verifiziert (stale → Exit 1, fresh → Exit 0). Offen:
+`:description`-Prosa fuer die 79 `t/02`-Faelle nachtragen.

@@ -58,8 +58,15 @@ Gate pro Commit: beide Suites gruen, `git status` ohne `build/`-Artefakte.
       Exit-Code-Vertrag (Begruendung im Skriptkopf).
 - [x] Gate: ein Durchlauf, Exit 0.
 
-## 6. Doku aus Tests erzeugen (offen, spaeter)
+## 6. Doku aus Tests erzeugen (erledigt, 2026-09-19)
 
-- [ ] Nach dem Vorbild von `cl-rust-generator::generate-documentation` eine
-      `SUPPORTED_FORMS.md`-Generierung aus den Testtabellen bauen.
-- [ ] Gate: generierte Datei ist aktuell (CI-Check oder Pre-Commit-Hook).
+- [x] Nach dem Vorbild von `cl-rust-generator::generate-documentation`:
+      `t/generate-docs.lisp` + `t/generate_docs.sh [--check]` erzeugen
+      `SUPPORTED_FORMS.md` (Repo-Wurzel) aus den Tabellen von `t/02` (79
+      Faelle) und `t/03` (12 + 1 Error-Fall). Ausgabe wird live
+      re-emittiert, `:description`-Felder (bisher nur `t/03`) als Prosa.
+- [x] Gate: `--check` gibt Exit 1 bei veralteter Datei (stale=1, fresh=0
+      verifiziert); das Laden der Suites bricht vorher bei roten Tests ab,
+      Doku kann nie aus Fehlschlag entstehen.
+- [ ] Folgearbeit: `:description`-Felder fuer `t/02`-Faelle nachtragen
+      (Generator unterstuetzt sie bereits, gerendert wird auch ohne).
