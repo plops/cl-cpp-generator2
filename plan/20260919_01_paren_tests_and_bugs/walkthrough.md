@@ -122,3 +122,19 @@ Inline-`;;`-Kommentare (mit den kaputten Rechenwegen) sind in die Felder
 eingeflossen statt daneben zu stehen. `SUPPORTED_FORMS.md` liest sich
 dadurch als echte Doku. Gates: `run_all.sh` Exit 0 (111 + 15 Checks),
 `--check` Exit 0, Klammer-Balance neutral (9 = HEAD).
+
+## 10. t/03 vervollstaendigt (2026-09-19)
+
+Der PoC ist zur vollstaendigen Suite gewachsen (21 Faelle + 1 Error-Test,
+`24 checks, 0 failures`): String-Default-Reorder (`[&,x]`), Init-Capture
+(`[x = 5]`), `this`-Capture und Lambda-als-Argument (beide String-only,
+kein Objekt/Callee im Harness), `auto`-Parameter mit `values`,
+`void`-Setter, verschachtelter IIFE-Return, `&optional`-Cutoff und
+Pointer-Return. Dafuer bekam der Value-Layer `:check`-Faelle (eigene
+Bedingung statt `got == value`) und `:void`-Faelle (Aufruf ohne
+Rueckgabewert) sowie einen `int c = 0` im Setup; Eintraege ohne `:value`
+werden uebersprungen. `noexcept`/`const`/`mutable` bleiben ungetestet,
+weil `parse-lambda` sie ignoriert (bewusst, vgl. `plan.md` Punkt 3).
+README ohne PoC-Vermerk, Doku-Generator rendert `:check`-Faelle als
+"Verified by the custom condition". 101 Fall-Abschnitte in
+`SUPPORTED_FORMS.md`.

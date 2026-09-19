@@ -40,17 +40,20 @@ incompatible emit-str, so the shared generator calls emit-c directly."
 )
 
 (defun write-lambda-entry (s e)
-  (destructuring-bind (&key name code expected call value direct description) e
-    (declare (ignore expected))
+  (destructuring-bind (&key name code expected call value direct check void description) e
+    (declare (ignore expected void))
     (format s "### ~a~%~%" name)
     (when description
       (format s "~a~%~%" description))
     (format s "```lisp~%~S~%```~%~%" code)
     (format s "```cpp~%~a~%```~%~%"
       (normalize (m-of (emit-c :code code))))
-    (if direct
-      (format s "The complete expression evaluates to `~a`.~%~%" value)
-      (format s "Called as `f~a` it evaluates to `~a`.~%~%" call value)))
+    (cond (check
+            (format s "Verified by the custom condition `~a`.~%~%" check))
+      (direct
+        (format s "The complete expression evaluates to `~a`.~%~%" value))
+      (t
+        (format s "Called as `f~a` it evaluates to `~a`.~%~%" call value))))
 )
 
 (defun write-error-entry (s e)

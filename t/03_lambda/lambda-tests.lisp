@@ -144,7 +144,71 @@
      :code ((lambda (a) (declare (type int a) (values int)) (return a)) 41)
      :expected "([&](int a) -> int { return a; })(41)"
      :value 41
-     :direct t))
+     :direct t)
+    (:name string-default-reorders-first
+     :description "A string-form `&` default reorders to the front just like `=`."
+     :code (lambda (a) (declare (capture x "&")
+                                (type int a) (values int))
+             (return (+ a x)))
+     :expected "[&,x](int a) -> int { return (a)+(x); }"
+     :call "(1)"
+     :value 6)
+    (:name init-capture
+     :description "Captures pass through verbatim, so init-captures work."
+     :code (lambda () (declare (capture "x = 5") (values int))
+             (return (+ x 1)))
+     :expected "[x = 5]() -> int { return (x)+(1); }"
+     :call "()"
+     :value 6)
+    (:name this-capture
+     :description "A `this` capture for member functions (string test only: no object exists here)."
+     :code (lambda () (declare (capture this) (values int))
+             (return 1))
+     :expected "[this]() -> int { return 1; }")
+    (:name lambda-as-argument
+     :description "A lambda passes as a call argument, the callback shape (string test only: no callee exists here)."
+     :code (foo (lambda (a) (declare (type int a) (values int))
+                  (return a)))
+     :expected "foo([&](int a) -> int { return a; })")
+    (:name auto-param-with-return
+     :description "An untyped parameter with a declared return type."
+     :code (lambda (q) (declare (values int)) (return q))
+     :expected "[&](auto q) -> int { return q; }"
+     :call "(7)"
+     :value 7)
+    (:name void-setter
+     :description "An explicit `void` return with a side effect, checked via a custom condition."
+     :code (lambda () (declare (capture &c) (values void))
+             (setf c 42))
+     :expected "[&c]() -> void { (c)=(42); }"
+     :call "()"
+     :void t
+     :check "c == 42")
+    (:name nested-iife-return
+     :description "An immediately invoked lambda nests as a return expression."
+     :code (lambda ()
+             (declare (values int))
+             (return ((lambda (a)
+                        (declare (type int a) (values int))
+                        (return a))
+                      41)))
+     :expected "[&]() -> int { return ([&](int a) -> int { return a; })(41); }"
+     :call "()"
+     :value 41)
+    (:name values-optional-stops-types
+     :description "Type collection stops at `&optional`, so this declares a plain `int` return."
+     :code (lambda () (declare (values int &optional))
+             (return 42))
+     :expected "[&]() -> int { return 42; }"
+     :call "()"
+     :value 42)
+    (:name pointer-return
+     :description "A pointer return type passes through; dereferenced in a custom check."
+     :code (lambda () (declare (values int*))
+             (return (ref y)))
+     :expected "[&]() -> int* { return &(y); }"
+     :call "()"
+     :check "(*f() == 7)"))
 )
 
 ;;; :code s-expression that must signal instead of emitting
@@ -159,8 +223,8 @@
 (defun run-string-tests ()
   (format t "~&== string tests ==~%")
   (dolist (e *lambda-tests*)
-    (destructuring-bind (&key name code expected call value direct description) e
-      (declare (ignore call value direct description))
+    (destructuring-bind (&key name code expected call value direct check void description) e
+      (declare (ignore call value direct check void description))
       (let ((got (handler-case (normalize (emit-str code))
                    (condition (c) (format nil "<error ~a>" c)))))
         (report (string= got expected) name
@@ -171,6 +235,37 @@
 (defun cxx-compiler ()
   (loop for c in '("/usr/bin/g++" "/usr/bin/clang++" "/usr/bin/c++")
     when (probe-file c) return c)
+)
+
+(defun write-value-case (s e)
+  "Emit one `got == value` block. Entries with :direct hold a complete
+expression; the rest bind `auto f` first."
+  (destructuring-bind (&key name code expected call value direct check void description) e
+    (declare (ignore expected check void description))
+    (let ((lam (emit-str code)))
+      (if direct
+        (format s "  {~%    long got = (long)(~a);~%" lam)
+        (progn
+          (format s "  {~%    auto f = ~a;~%" lam)
+          (format s "    long got = (long)(f~a);~%" call))))
+    (format s "    if (got != ~a) { std::printf(\"FAIL ~a: %ld != ~a\\n\", got); fails++; }~%"
+      value name value)
+    (format s "    else { std::printf(\"ok   ~a = %ld\\n\", got); }~%" name)
+    (format s "  }~%"))
+)
+
+(defun write-check-case (s e)
+  "Emit one custom-condition block for :void or non-integer results."
+  (destructuring-bind (&key name code expected call value direct check void description) e
+    (declare (ignore expected value direct description))
+    (let ((lam (emit-str code)))
+      (format s "  {~%    auto f = ~a;~%" lam)
+      (if void
+        (format s "    f~a;~%" call))
+      (format s "    if (!(~a)) { std::printf(\"FAIL ~a: check failed\\n\"); fails++; }~%"
+        check name)
+      (format s "    else { std::printf(\"ok   ~a check holds\\n\"); }~%" name)
+      (format s "  }~%")))
 )
 
 (defun run-value-tests ()
@@ -188,20 +283,13 @@
           (format s "// generated by t/03_lambda/lambda-tests.lisp~%")
           (format s "#include <cstdio>~%~%")
           (format s "int main() {~%  int fails = 0;~%")
-          (format s "  int x = 5; int y = 7;~%")
-          (dolist (e *lambda-tests*)
-            (destructuring-bind (&key name code expected call value direct description) e
-              (declare (ignore expected description))
-              (let ((lam (emit-str code)))
-                (if direct
-                  (format s "  {~%    long got = (long)(~a);~%" lam)
-                  (progn
-                    (format s "  {~%    auto f = ~a;~%" lam)
-                    (format s "    long got = (long)(f~a);~%" call))))
-                (format s "    if (got != ~a) { std::printf(\"FAIL ~a: %ld != ~a\\n\", got); fails++; }~%"
-                  value name value)
-                (format s "    else { std::printf(\"ok   ~a = %ld\\n\", got); }~%" name)
-                (format s "  }~%")))
+          (format s "  int x = 5; int y = 7; int c = 0;~%")
+          (dolist (e (remove-if-not (lambda (e) (getf e :value))
+                       *lambda-tests*))
+            (write-value-case s e))
+          (dolist (e (remove-if-not (lambda (e) (getf e :check))
+                       *lambda-tests*))
+            (write-check-case s e))
           (format s "  std::printf(\"%d value failures\\n\", fails);~%")
           (format s "  return fails == 0 ? 0 : 1;~%}~%"))
         (let ((compile-ok
@@ -219,8 +307,10 @@
                             :output *standard-output*
                             :error *standard-output*))))
               (report (zerop code) "value-tests-run"
-                "~a lambda~:p compiled from ~a"
-                (length *lambda-tests*) (namestring src)))))
+                "~a value and ~a check case~:p compiled from ~a"
+                (count-if (lambda (e) (getf e :value)) *lambda-tests*)
+                (count-if (lambda (e) (getf e :check)) *lambda-tests*)
+                (namestring src)))))
       )
     )
   )

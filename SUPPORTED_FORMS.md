@@ -1200,7 +1200,7 @@ Evaluates to `-5`.
 
 ## Lambda emission
 
-12 cases from `t/03_lambda/lambda-tests.lisp`. Value tests use `int x = 5; int y = 7;`.
+21 cases from `t/03_lambda/lambda-tests.lisp`. Value tests use `int x = 5; int y = 7;`.
 
 ### no-params-with-return
 
@@ -1399,6 +1399,156 @@ A lambda in head position is parenthesised and can be invoked immediately.
 ```
 
 The complete expression evaluates to `41`.
+
+### string-default-reorders-first
+
+A string-form `&` default reorders to the front just like `=`.
+
+```lisp
+(lambda (a)
+  (declare (capture x "&")
+           (type int a)
+           (values int))
+  (return (+ a x)))
+```
+
+```cpp
+[&,x](int a) -> int { return (a)+(x); }
+```
+
+Called as `f(1)` it evaluates to `6`.
+
+### init-capture
+
+Captures pass through verbatim, so init-captures work.
+
+```lisp
+(lambda ()
+  (declare (capture "x = 5")
+           (values int))
+  (return (+ x 1)))
+```
+
+```cpp
+[x = 5]() -> int { return (x)+(1); }
+```
+
+Called as `f()` it evaluates to `6`.
+
+### this-capture
+
+A `this` capture for member functions (string test only: no object exists here).
+
+```lisp
+(lambda ()
+  (declare (capture this)
+           (values int))
+  (return 1))
+```
+
+```cpp
+[this]() -> int { return 1; }
+```
+
+Called as `fnil` it evaluates to `nil`.
+
+### lambda-as-argument
+
+A lambda passes as a call argument, the callback shape (string test only: no callee exists here).
+
+```lisp
+(foo
+ (lambda (a)
+   (declare (type int a)
+            (values int))
+   (return a)))
+```
+
+```cpp
+foo([&](int a) -> int { return a; })
+```
+
+Called as `fnil` it evaluates to `nil`.
+
+### auto-param-with-return
+
+An untyped parameter with a declared return type.
+
+```lisp
+(lambda (q) (declare (values int)) (return q))
+```
+
+```cpp
+[&](auto q) -> int { return q; }
+```
+
+Called as `f(7)` it evaluates to `7`.
+
+### void-setter
+
+An explicit `void` return with a side effect, checked via a custom condition.
+
+```lisp
+(lambda ()
+  (declare (capture &c)
+           (values void))
+  (setf c 42))
+```
+
+```cpp
+[&c]() -> void { (c)=(42); }
+```
+
+Verified by the custom condition `c == 42`.
+
+### nested-iife-return
+
+An immediately invoked lambda nests as a return expression.
+
+```lisp
+(lambda ()
+  (declare (values int))
+  (return
+   ((lambda (a)
+      (declare (type int a)
+               (values int))
+      (return a))
+    41)))
+```
+
+```cpp
+[&]() -> int { return ([&](int a) -> int { return a; })(41); }
+```
+
+Called as `f()` it evaluates to `41`.
+
+### values-optional-stops-types
+
+Type collection stops at `&optional`, so this declares a plain `int` return.
+
+```lisp
+(lambda () (declare (values int &optional)) (return 42))
+```
+
+```cpp
+[&]() -> int { return 42; }
+```
+
+Called as `f()` it evaluates to `42`.
+
+### pointer-return
+
+A pointer return type passes through; dereferenced in a custom check.
+
+```lisp
+(lambda () (declare (values int*)) (return (ref y)))
+```
+
+```cpp
+[&]() -> int* { return &(y); }
+```
+
+Verified by the custom condition `(*f() == 7)`.
 
 ## Lambda errors
 
