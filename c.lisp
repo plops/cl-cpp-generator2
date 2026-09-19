@@ -660,6 +660,22 @@ Common Lisp DEFMETHOD form.
 	  (when (or inline-p (not header-only))
 	    (format s "~a" (funcall emit `(progn ,@body)))))))))
 
+(defun capture-default-p (c)
+  "True for a capture-default (= or &), given as string or symbol."
+  (member (format nil "~a" c) '("=" "&")
+    :test #'string=
+  )
+)
+
+(defun sort-captures (captures)
+  "Move a capture-default (= or &) to the front of the capture list.
+C++ requires the capture-default first: (capture x =) must emit [=,x]
+rather than the invalid [x,=]."
+  (append (remove-if-not #'capture-default-p captures)
+    (remove-if #'capture-default-p captures)
+  )
+)
+
 (defun parse-lambda (code emit)
   "Parse a Common Lisp LAMBDA form and emit similar C++ code.
 
@@ -696,9 +712,11 @@ Common Lisp DEFMETHOD form.
  
   (destructuring-bind (lambda-list &rest body) (cdr code)
     (multiple-value-bind (body env captures constructs const-p) (consume-declare body)
-      ;; empty captures shall default to "&"
+      ;; empty captures shall default to "&", a capture-default (= or &)
+      ;; moves to the front (C++ requires it first)
       (when (null captures)
 	(setf captures `("&")))
+      (setf captures (sort-captures captures))
       (multiple-value-bind (req-param opt-param res-param
 			    key-param other-key-p
 			    aux-param key-exist-p)
@@ -724,7 +742,8 @@ Common Lisp DEFMETHOD form.
 									 )))))
 		  (let ((r (gethash 'return-values env)))
 		    (if (< 1 (length r))
-			(funcall emit `(paren ,@r))
+			(break "multiple return values unsupported: ~a"
+			  r)
 			(car r))))
 	  (format s "~a" (funcall emit `(progn ,@body))))))))
 
